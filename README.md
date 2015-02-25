@@ -1,1 +1,1 @@
-# typorama
+# Typorama
