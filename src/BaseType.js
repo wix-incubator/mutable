@@ -1,18 +1,22 @@
 var BaseType = function(value) {
-    this.__value__ = (value !== undefined) ? value : this.constructor.defaults();
-    this._mergeDefaults();
+    this.__value__ = BaseType.mergeDefaults(
+        (value === undefined) ? this.constructor.defaults(): value,
+        this.constructor._spec
+    );
+};
+
+BaseType.mergeDefaults = function (value, spec){
+    Object.keys(spec).forEach((key) => {
+        if(value[key] === undefined) {
+            value[key] = spec[key].defaults();
+        }
+    });
+    return value;
 };
 
 BaseType.prototype = {
     constructor: BaseType,
-    _mergeDefaults: function(){
-        Object.keys(this.constructor._spec).forEach((key) => {
-            if(this.__value__[key] === undefined) {
-                this.__value__[key] = this.constructor._spec[key].defaults();
-            }
-        });
-    },
-    asReadOnly: function(){
+    $asReadOnly: function(){
         var readOnlyInstance = new this.constructor(this.__value__);
         readOnlyInstance.__proto__ = this.constructor.readOnlyPrototype;
         return readOnlyInstance;

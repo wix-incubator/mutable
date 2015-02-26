@@ -1,5 +1,4 @@
 let expect = require('expect.js');
-let path = require('path');
 let Typeorama = require('../');
 
 
@@ -28,6 +27,22 @@ describe('Custom data', function() {
             expect(fieldsDesc.name.type).to.eql(Typeorama.String.type);
             expect(fieldsDesc.age.defaults()).to.equal(10);
             expect(fieldsDesc.age.type).to.eql(Typeorama.Number.type);
+        });
+    });
+
+    describe('Type definition', () => {
+        it('Should throw error for reserved keys', () => {
+
+            expect(function(){
+                var UserType = Typeorama.define('User', {
+                    spec: function(UserType) {
+                        return {
+                            $asReadOnly: Typeorama.String
+                        };
+                    }
+                });
+            }).to.throwException();
+
         });
     });
 
@@ -104,7 +119,7 @@ describe('Custom data', function() {
 
         it('Should be created from data instance', () => {
             var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
+            var userReadOnly = userData.$asReadOnly();
 
             expect(userReadOnly.name).to.equal('');
             expect(userReadOnly.age).to.equal(10);
@@ -112,15 +127,15 @@ describe('Custom data', function() {
 
         xit('Should be created once for each data instance', () => {
             var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
-            var userReadOnly2 = userData.asReadOnly();
+            var userReadOnly = userData.$asReadOnly();
+            var userReadOnly2 = userData.$asReadOnly();
 
             expect(userReadOnly).to.equal(userReadOnly2);
         });
 
         it('Should be linked to data instance values', () => {
             var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
+            var userReadOnly = userData.$asReadOnly();
 
             userData.name = 'moshe';
             userData.age = 120;
@@ -131,7 +146,7 @@ describe('Custom data', function() {
 
         it('Should not change values', () => {
             var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
+            var userReadOnly = userData.$asReadOnly();
 
             userReadOnly.name = 'moshe';
             userReadOnly.age = 120;
