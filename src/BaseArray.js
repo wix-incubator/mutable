@@ -17,16 +17,13 @@ defineType('Array',{
 }, _Array);
 
 _Array.prototype.at = function(index){
-    if(this.__subtypes__){
-        return wrapItem(this.__value__[index], this.__subtypes__);
+    if(typeof this.__subtypes__ === 'function'){
+        return this.__subtypes__(this.__value__[index]);
     } else {
-        //TODO: multiple subtypes
+        var val = this.__value__[index];
+        return this.__subtypes__[this.__value__[index]._type](val);
+
     }
-
-}
-
-function wrapItem(item, type){
-    return type(item);
 }
 
 export default _Array

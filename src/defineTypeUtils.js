@@ -33,14 +33,18 @@ export function generateReadOnlyFieldsOn(obj, fieldsDefinition){
 }
 
 export function generateWithDefault(){
-    return function(defualts, test){
-        return {
-            type: this,
-            test: test || this.test,
-            defaults: ((defualts !== undefined && typeof defualts === 'function') ? defualts : function(){_.clone(defualts, true)}) || this.defaults
-        };
+    return function withDefault(defualts, test){
+        function typeWithDefault(value){
+            return typeWithDefault.type(value);
+        }
+        typeWithDefault.type = this;
+        typeWithDefault.test = test || this.test;
+        typeWithDefault.withDefault = withDefault.bind(this);
+        typeWithDefault.defaults = ((defualts !== undefined && typeof defualts === 'function') ? defualts : function(){return _.clone(defualts, true)}) || this.defaults
+        return typeWithDefault;
     }
 }
+
 
 export function generateGetDefaultValue(){
     return function() {

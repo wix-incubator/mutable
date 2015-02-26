@@ -8,22 +8,27 @@ let Typeorama = require('../');
 
 describe('Custom data', function() {
 
+
+
     var UserType = Typeorama.define('User', {
         spec: function(UserType) {
             return {
-                name: Typeorama.String.withDefault(''),
-                age: Typeorama.Number.withDefault(10)
+                name: Typeorama.String.withDefault('leon'),
+                age: Typeorama.Number.withDefault(10),
+                address: UserType.withDefault({name: 'bob', age: 13})
             };
         }
-        //,getterFactory: (fieldName) => { return () => { return this.__value__[fieldName]; }},
-        //setterFactory: (fieldName) => { return (value) => { return this.__value__[fieldName].setValue(value); }}
     });
+
+    //var u = UserType.defaults();
+
+    //console.log()
 
     describe('Type constructor', () => {
         it('Should have getFieldsSpec()', () => {
             var fieldsDesc = UserType.getFieldsSpec();
 
-            expect(fieldsDesc.name.defaults()).to.equal('');
+            expect(fieldsDesc.name.defaults()).to.equal('leon');
             expect(fieldsDesc.name.type).to.eql(Typeorama.String.type);
             expect(fieldsDesc.age.defaults()).to.equal(10);
             expect(fieldsDesc.age.type).to.eql(Typeorama.Number.type);
@@ -51,7 +56,7 @@ describe('Custom data', function() {
         it('Should return default value for fields from custom instance when no data is passed', () => {
             var userData = new UserType();
 
-            expect(userData.name).to.equal('');
+            expect(userData.name).to.equal('leon');
             expect(userData.age).to.equal(10);
         });
 
@@ -75,7 +80,7 @@ describe('Custom data', function() {
         it('Should accept partial value', () => {
             var userData = new UserType({ age:53 });
 
-            expect(userData.name).to.equal('');
+            expect(userData.name).to.equal('leon');
             expect(userData.age).to.equal(53);
         });
 
@@ -83,8 +88,12 @@ describe('Custom data', function() {
             var userData = new UserType();
 
             expect(userData.toJSON()).to.eql({
-                name:"",
-                age:10
+                name:"leon",
+                age:10,
+                address: {
+                    name: 'bob',
+                    age: 13
+                }
             });
 
             userData.name = 'moshe';
@@ -92,7 +101,11 @@ describe('Custom data', function() {
 
             expect(userData.toJSON()).to.eql({
                 name:"moshe",
-                age:30
+                age:30,
+                address: {
+                    name: 'bob',
+                    age: 13
+                }
             });
         });
 
@@ -100,8 +113,12 @@ describe('Custom data', function() {
             var userData = new UserType();
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
-                name:"",
-                age:10
+                name:"leon",
+                age:10,
+                address: {
+                    name: 'bob',
+                    age: 13
+                }
             });
 
             userData.name = 'moshe';
@@ -109,7 +126,11 @@ describe('Custom data', function() {
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name:"moshe",
-                age:30
+                age:30,
+                address: {
+                    name: 'bob',
+                    age: 13
+                }
             });
         });
 
@@ -121,7 +142,7 @@ describe('Custom data', function() {
             var userData = new UserType();
             var userReadOnly = userData.$asReadOnly();
 
-            expect(userReadOnly.name).to.equal('');
+            expect(userReadOnly.name).to.equal('leon');
             expect(userReadOnly.age).to.equal(10);
         });
 
@@ -151,9 +172,9 @@ describe('Custom data', function() {
             userReadOnly.name = 'moshe';
             userReadOnly.age = 120;
 
-            expect(userData.name).to.equal('');
+            expect(userData.name).to.equal('leon');
             expect(userData.age).to.equal(10);
-            expect(userReadOnly.name).to.equal('');
+            expect(userReadOnly.name).to.equal('leon');
             expect(userReadOnly.age).to.equal(10);
         });
 

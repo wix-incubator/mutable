@@ -1,7 +1,7 @@
 function _Number(value){
-    return _Number.type(value)
+    return Number(value)
 }
-_Number.type = Number;
+_Number.type = _Number;
 _Number.test = function(v){return typeof v === 'number'};
 _Number.withDefault = function(defaults, test){
     var def = _Number.defaults;

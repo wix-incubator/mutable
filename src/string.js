@@ -1,15 +1,14 @@
 function _String(str){
-    return  _String.type(str);
+    return  String(str);
 }
 
-_String.type = String;
+_String.type = _String;
 _String.test = function(v){return typeof v === 'string'};
 _String.withDefault = function(defaults, test){
     var def = _String.defaults;
     if(defaults !== undefined){
         def = (typeof defaults === 'function') ? defaults : function(){ return defaults; };
     }
-
     return {
         type: _String.type,
         defaults: def,

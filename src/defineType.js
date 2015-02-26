@@ -17,7 +17,7 @@ export default function(displayName, typeDefinition, TypeConstructor){
     TypeConstructor.prototype             = Object.create(BaseType.prototype);
     TypeConstructor.prototype.constructor = TypeConstructor;
 
-    TypeConstructor.getFieldsSpec         = typeDefinition.spec;
+    TypeConstructor.getFieldsSpec         = typeDefinition.spec.bind(null, TypeConstructor);
     TypeConstructor._spec                 = typeDefinition.spec(TypeConstructor);
     TypeConstructor.readOnlyPrototype     = defineTypeUtils.generateReadOnlyFieldsOn(Object.create(BaseType.prototype), TypeConstructor._spec);
 

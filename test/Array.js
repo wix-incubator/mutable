@@ -12,6 +12,15 @@ describe('Array data', function() {
         }
     });
 
+    var SampleType2 = Typeorama.define('Sample2', {
+        spec: function(UserType) {
+            return {
+                address: Typeorama.String.withDefault(''),
+                code: Typeorama.Number.withDefault(10)
+            };
+        }
+    });
+
     //var SampleArray = Typeorama.ArrayOf(SampleType).withDefault([SampleType(), SampleType()]);
 
     describe('Type instance', () => {
@@ -40,56 +49,21 @@ describe('Array data', function() {
 
         it('Should have at() that returns a typed item', () => {
             var arr = Typeorama.Array([{name: 'avi', age: 12}], SampleType);
+            expect(arr.at(0) instanceof SampleType).to.equal(true);
             expect(arr.at(0) instanceof arr.__subtypes__.type).to.equal(true);
         });
 
-    });
 
-    xdescribe('Type read only instance', () => {
-
-        it('Should be created from data instance', () => {
-            var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
-
-            expect(userReadOnly.name).to.equal('');
-            expect(userReadOnly.age).to.equal(10);
-        });
-
-        xit('Should be created once for each data instance', () => {
-            var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
-            var userReadOnly2 = userData.asReadOnly();
-
-            expect(userReadOnly).to.equal(userReadOnly2);
-        });
-
-        it('Should be linked to data instance values', () => {
-            var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
-
-            userData.name = 'moshe';
-            userData.age = 120;
-
-            expect(userReadOnly.name).to.equal('moshe');
-            expect(userReadOnly.age).to.equal(120);
-        });
-
-        it('Should not change values', () => {
-            var userData = new UserType();
-            var userReadOnly = userData.asReadOnly();
-
-            userReadOnly.name = 'moshe';
-            userReadOnly.age = 120;
-
-            expect(userData.name).to.equal('');
-            expect(userData.age).to.equal(10);
-            expect(userReadOnly.name).to.equal('');
-            expect(userReadOnly.age).to.equal(10);
+        it('Should have at() that returns a typed item form multiple types if there is _type field', () => {
+            var data = [
+                {_type:'SampleType',  name: 'avi', age: 12},
+                {_type:'SampleType2', name: 'avi', age: 12}
+            ];
+            var arr = Typeorama.Array(data, {SampleType: SampleType, SampleType2: SampleType2});
+            expect(arr.at(0) instanceof SampleType).to.equal(true);
+            expect(arr.at(1) instanceof SampleType2).to.equal(true);
         });
 
     });
 
-    xdescribe('Type invalidation', () => {
-
-    });
 });
