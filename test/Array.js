@@ -1,13 +1,7 @@
 let expect = require('expect.js');
-let path = require('path');
 let Typeorama = require('../');
 
-
-//Typeorama.String.type('asdfasdf')
-
-//Typeorama.defineBaseType('email', Typeorama.String, de, te)
-
-describe('Custom data', function() {
+describe('Array data', function() {
 
     var UserType = Typeorama.define('User', {
         spec: function(UserType) {

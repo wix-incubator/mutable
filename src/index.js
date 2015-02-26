@@ -6,6 +6,6 @@ import numberType from "./number"
 export default {
     define: defineType,
     BaseType: BaseType,
-    string: stringType,
-    number: numberType
+    String: stringType,
+    Number: numberType
 };

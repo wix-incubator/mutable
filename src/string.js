@@ -1,9 +1,15 @@
-
-var StringType = () => {
-    throw new Error('use native string');
+function _String(defaults, test){
+    return {
+        type: _String.type,
+        defaults: defaults || _String.defaults,
+        test: test || _String.test
+    }
+}
+_String.type = String;
+_String.test = function(v){typeof v === 'string'};
+_String.withDefault = function(defaults, test){
+    return _String((defaults !== undefined && typeof defaults === 'function') ? defaults : function(){ return defaults; } || _String.defaults, test);
 };
+_String.defaults = function(){return ''};
 
-StringType.getterFactory = (fieldName) => { return () => { return this.__value__[fieldName]; }};
-StringType.setterFactory = (fieldName) => { return (value) => { return this.__value__[fieldName] = value; }};
-
-export default StringType;
+export default _String;
