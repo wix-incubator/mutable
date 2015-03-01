@@ -15,6 +15,8 @@ export function generateFieldsOn(obj, fieldsDefinition){
         Object.defineProperty(obj, fieldName, {
             get: function(){ return this.__value__[fieldName] },
             set: function(newValue){
+                this.__isInvalidated__ = true;
+
                 if(this.__isReadOnly__) {
                     console.warn('try to set value to readonly field: ', this.constructor.displayName +'.'+fieldName, '=', newValue);
                 } else if(fieldDef.type.prototype instanceof BaseType) {
