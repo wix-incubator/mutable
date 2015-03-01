@@ -19,6 +19,7 @@ export default function(displayName, typeDefinition, TypeConstructor){
 
     TypeConstructor.getFieldsSpec         = typeDefinition.spec.bind(null, TypeConstructor);
     TypeConstructor._spec                 = typeDefinition.spec(TypeConstructor);
+    TypeConstructor.wrapValue             = typeDefinition.wrapValue || BaseType.wrapValue;
 
     defineTypeUtils.generateFieldsOn(TypeConstructor.prototype, TypeConstructor._spec);
 

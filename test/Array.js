@@ -59,6 +59,11 @@ describe('Array data', function() {
                 expect(arr.at(0) instanceof UserType).to.equal(true);
             });
 
+            it('Should always return a the same reference for wrapper', () => {
+                var arr = Typeorama.Array([{name: 'avi', age: 12}], false, UserType);
+                expect(arr.at(0)).to.equal(arr.at(0));
+            });
+
             it('Should return a typed item form multiple types if there is _type field', () => {
                 var data = [
                     {_type:'UserType',  name: 'avi', age: 12},
@@ -89,6 +94,19 @@ describe('Array data', function() {
                 userWithAddress.user.name = 'you got a new name';
 
                 expect(userWithAddress.user.name).to.be.equal('you got a new name');
+            });
+
+            it('Should keep read only item as read only', () => {
+                var userDefaultName = UserWithAddressType.getFieldsSpec().user.defaults().name;
+                var readOnlyData = new UserWithAddressType().$asReadOnly();
+                var arrComplexType = Typeorama.Array([readOnlyData], false, UserWithAddressType);
+
+                var readOnlyItemData = arrComplexType.at(0);
+
+                readOnlyItemData.user.name = 'you got a new name';
+
+                expect(readOnlyItemData.user.name).to.be.equal(userDefaultName);
+                expect(readOnlyItemData).to.be.equal(readOnlyData);
             });
 
         });

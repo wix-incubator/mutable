@@ -59,13 +59,16 @@ describe('Custom data', function() {
         });
 
         it('Should modify fields', () => {
-            var userData = new UserType();
+            var userData = new UserWithChildType();
 
             userData.name = 'moshe';
             userData.age = 30;
+            userData.child = {name: 'chiki', age: 5};
 
             expect(userData.name).to.equal('moshe');
             expect(userData.age).to.equal(30);
+            expect(userData.child.name).to.equal('chiki');
+            expect(userData.child.age).to.equal(5);
         });
 
         it('Should accept value', () => {

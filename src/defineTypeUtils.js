@@ -1,4 +1,5 @@
 import _ from "lodash"
+import BaseType from "./BaseType"
 
 export function generateTest(){ // ToDo: check if its better jit-wise to move the spec to the closure: generateTestForSpec(spec)
     return function(val){
@@ -12,10 +13,12 @@ export function generateFieldsOn(obj, fieldsDefinition){
     _.forEach(fieldsDefinition, (fieldDef, fieldName) => {
         if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.displayName + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
-            get: function(){ return this.constructor._spec[fieldName].type(this.__value__[fieldName], this.__isReadOnly__); },
+            get: function(){ return this.__value__[fieldName] },
             set: function(newValue){
                 if(this.__isReadOnly__) {
                     console.warn('try to set value to readonly field: ', this.constructor.displayName +'.'+fieldName, '=', newValue);
+                } else if(fieldDef.type.prototype instanceof BaseType) {
+                    this.__value__[fieldName].setValue(newValue);
                 } else {
                     this.__value__[fieldName] = newValue;
                 }
@@ -45,7 +48,8 @@ export function generateGetDefaultValue(){
         var spec = this._spec;
         var args = arguments;
         return Object.keys(this._spec).reduce(function (val, key) {
-            val[key] = spec[key].defaults.apply(null, args);
+            var fieldSpec = spec[key];
+            val[key] = fieldSpec.defaults.apply(fieldSpec, args);
             return val;
         }, {});
     }

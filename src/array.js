@@ -33,7 +33,7 @@ _Array.defaults = function(){return [];};
 
 _Array.of = function ArrayOf(subTypes, defaults, test){
     return _Array.withDefault(defaults, test, subTypes);
-}
+};
 
 
 
