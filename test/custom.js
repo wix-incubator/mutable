@@ -82,6 +82,13 @@ describe('Custom data', function() {
             expect(userData.age).to.equal(53);
         });
 
+        xit('Should ignore type mismatch', () => {
+            var userData = new UserType({ age:{} });
+
+            expect(userData.name).to.equal('leon');
+            expect(userData.age).to.equal(30);
+        });
+
         it('Should return json value from toJSON()', () => {
             var userData = new UserWithChildType();
 
@@ -172,13 +179,12 @@ describe('Custom data', function() {
 
         it('Should return wrapped data for none native immutable fields (like custom data)', () => {
             var userData = new UserWithChildType().$asReadOnly();
-            expect(userData.child instanceof UserType).to.equal(true);
-        });
 
-        it('Should return wrapped data for none native immutable fields (like custom data)', () => {
-            var userData = new UserWithChildType().$asReadOnly();
+            var readOnlyChild = userData.child;
+            readOnlyChild.name = 'modified name';
 
-            expect(userData.child instanceof UserType).to.equal(true);
+            expect(readOnlyChild instanceof UserType).to.equal(true);
+            expect(readOnlyChild.name).to.equal('bobi');
         });
 
     });
