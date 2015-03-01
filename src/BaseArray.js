@@ -34,7 +34,10 @@ _Array.prototype.at = function(index){
 };
 
 _Array.prototype.$asReadOnly = function(){
-    return this.constructor.type(this.__value__, true, this.__subtypes__);
+    if(!this.__readOnlyInstance__) {
+        this.__readOnlyInstance__ = this.constructor.type(this.__value__, true, this.__subtypes__);
+    }
+    return this.__readOnlyInstance__;
 };
 
 export default _Array

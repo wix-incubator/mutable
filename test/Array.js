@@ -37,6 +37,14 @@ describe('Array data', function() {
             expect(numberList.length).to.equal(4);
         });
 
+        it('Should be created once for each data instance', () => {
+            var numberList = Typeorama.Array([1,2,3,4], false, Typeorama.Number);
+            var numberListReadOnly = numberList.$asReadOnly();
+            var numberListReadOnly2 = numberList.$asReadOnly();
+
+            expect(numberListReadOnly).to.equal(numberListReadOnly2);
+        });
+
         describe('at()', () => {
 
             it('Should return a number for native immutable Typeorama.Number', () => {

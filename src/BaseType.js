@@ -2,6 +2,7 @@ import _ from "lodash"
 
 var BaseType = function(value, isReadOnly = false) {
     this.__isReadOnly__ = !!isReadOnly;
+    this.__readOnlyInstance__ = this.__isReadOnly__ ? this : null;
     this.__value__ = this.constructor.wrapValue.call(
         this,
         (value === undefined) ? this.constructor.defaults(): value,
@@ -28,7 +29,10 @@ BaseType.prototype = {
         }
     },
     $asReadOnly: function(){
-        return this.constructor.type(this.__value__, true);
+        if(!this.__readOnlyInstance__) {
+            this.__readOnlyInstance__ = this.constructor.type(this.__value__, true);
+        }
+        return this.__readOnlyInstance__;
     },
     toJSON: function(){
         return Object.keys(this.constructor._spec).reduce((json, key) => {

@@ -148,7 +148,7 @@ describe('Custom data', function() {
             expect(userReadOnly.age).to.equal(10);
         });
 
-        xit('Should be created once for each data instance', () => {
+        it('Should be created once for each data instance', () => {
             var userData = new UserType();
             var userReadOnly = userData.$asReadOnly();
             var userReadOnly2 = userData.$asReadOnly();
