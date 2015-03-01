@@ -22,11 +22,12 @@ BaseType.wrapValue = function (value, spec, isReadOnly){
 BaseType.prototype = {
     constructor: BaseType,
     setValue: function(newValue){
-        if(newValue instanceof BaseType === false){
-            _.forEach(newValue, (fieldValue, fieldName) => {
-                this[fieldName] = fieldValue;
-            });
+        if(newValue instanceof BaseType){
+            newValue = newValue.toJSON();
         }
+        _.forEach(newValue, (fieldValue, fieldName) => {
+            this[fieldName] = fieldValue;
+        });
     },
     $asReadOnly: function(){
         if(!this.__readOnlyInstance__) {

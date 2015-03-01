@@ -58,7 +58,7 @@ describe('Custom data', function() {
             expect(userData.age).to.equal(10);
         });
 
-        it('Should modify fields', () => {
+        it('Should modify fields (json and primitives)', () => {
             var userData = new UserWithChildType();
 
             userData.name = 'moshe';
@@ -69,6 +69,15 @@ describe('Custom data', function() {
             expect(userData.age).to.equal(30);
             expect(userData.child.name).to.equal('chiki');
             expect(userData.child.age).to.equal(5);
+        });
+
+        it('Should modify fields (typorama data)', () => {
+            var userData = new UserWithChildType();
+
+            userData.child = UserType({name: 'yossi', age: 3});
+
+            expect(userData.child.name).to.equal('yossi');
+            expect(userData.child.age).to.equal(3);
         });
 
         it('Should accept value', () => {
