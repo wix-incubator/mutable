@@ -3,9 +3,9 @@ import * as defineTypeUtils from "./defineTypeUtils"
 import BaseType from "./BaseType"
 
 export default function(displayName, typeDefinition, TypeConstructor){
-    TypeConstructor = TypeConstructor || function Type(value){
-        if(!(this instanceof TypeConstructor)){ return new TypeConstructor(value)}
-        BaseType.call(this, value);
+    TypeConstructor = TypeConstructor || function Type(value, isReadOnly){
+        if(!(this instanceof TypeConstructor)){ return new TypeConstructor(value, isReadOnly)}
+        BaseType.call(this, value, isReadOnly);
     };
 
     TypeConstructor.displayName           = displayName;
@@ -19,7 +19,6 @@ export default function(displayName, typeDefinition, TypeConstructor){
 
     TypeConstructor.getFieldsSpec         = typeDefinition.spec.bind(null, TypeConstructor);
     TypeConstructor._spec                 = typeDefinition.spec(TypeConstructor);
-    TypeConstructor.readOnlyPrototype     = defineTypeUtils.generateReadOnlyFieldsOn(Object.create(BaseType.prototype), TypeConstructor._spec);
 
     defineTypeUtils.generateFieldsOn(TypeConstructor.prototype, TypeConstructor._spec);
 

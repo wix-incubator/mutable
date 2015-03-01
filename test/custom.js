@@ -1,42 +1,29 @@
 let expect = require('expect.js');
 let Typeorama = require('../');
 
-
-//Typeorama.String.type('asdfasdf')
-
-//Typeorama.defineBaseType('email', Typeorama.String, de, te)
-
 describe('Custom data', function() {
-
-
 
     var UserType = Typeorama.define('User', {
         spec: function(UserType) {
             return {
                 name: Typeorama.String.withDefault('leon'),
-                age: Typeorama.Number.withDefault(10),
-                address: UserType.withDefault({name: 'bob', age: 13})
+                age: Typeorama.Number.withDefault(10)
             };
         }
     });
 
-    //var u = UserType.defaults();
-
-    //console.log()
-
-    describe('Type constructor', () => {
-        it('Should have getFieldsSpec()', () => {
-            var fieldsDesc = UserType.getFieldsSpec();
-
-            expect(fieldsDesc.name.defaults()).to.equal('leon');
-            expect(fieldsDesc.name.type).to.eql(Typeorama.String.type);
-            expect(fieldsDesc.age.defaults()).to.equal(10);
-            expect(fieldsDesc.age.type).to.eql(Typeorama.Number.type);
-        });
+    var UserWithChildType = Typeorama.define('User', {
+        spec: function(UserWithChildType) {
+            return {
+                name: Typeorama.String.withDefault('leon'),
+                age: Typeorama.Number.withDefault(40),
+                child: UserType.withDefault({name: 'bobi', age: 13})
+            };
+        }
     });
 
-    describe('Type definition', () => {
-        it('Should throw error for reserved keys', () => {
+    describe('definition', () => {
+        it('Should throw error for reserved keys', () => { // ToDo: change to fields that start with $ and __
 
             expect(function(){
                 var UserType = Typeorama.define('User', {
@@ -51,7 +38,18 @@ describe('Custom data', function() {
         });
     });
 
-    describe('Type instance', () => {
+    describe('constructor', () => {
+        it('Should have getFieldsSpec()', () => {
+            var fieldsDesc = UserType.getFieldsSpec();
+
+            expect(fieldsDesc.name.defaults()).to.equal('leon');
+            expect(fieldsDesc.name.type).to.eql(Typeorama.String.type);
+            expect(fieldsDesc.age.defaults()).to.equal(10);
+            expect(fieldsDesc.age.type).to.eql(Typeorama.Number.type);
+        });
+    });
+
+    describe('(Mutable) instance', () => {
 
         it('Should return default value for fields from custom instance when no data is passed', () => {
             var userData = new UserType();
@@ -85,15 +83,12 @@ describe('Custom data', function() {
         });
 
         it('Should return json value from toJSON()', () => {
-            var userData = new UserType();
+            var userData = new UserWithChildType();
 
             expect(userData.toJSON()).to.eql({
                 name:"leon",
-                age:10,
-                address: {
-                    name: 'bob',
-                    age: 13
-                }
+                age:40,
+                child: { name: 'bobi', age: 13 }
             });
 
             userData.name = 'moshe';
@@ -102,23 +97,17 @@ describe('Custom data', function() {
             expect(userData.toJSON()).to.eql({
                 name:"moshe",
                 age:30,
-                address: {
-                    name: 'bob',
-                    age: 13
-                }
+                child: { name: 'bobi', age: 13 }
             });
         });
 
         it('Should be convertible to JSON ', () => {
-            var userData = new UserType();
+            var userData = new UserWithChildType();
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name:"leon",
-                age:10,
-                address: {
-                    name: 'bob',
-                    age: 13
-                }
+                age:40,
+                child: { name: 'bobi', age: 13 }
             });
 
             userData.name = 'moshe';
@@ -127,16 +116,19 @@ describe('Custom data', function() {
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name:"moshe",
                 age:30,
-                address: {
-                    name: 'bob',
-                    age: 13
-                }
+                child: { name: 'bobi', age: 13 }
             });
         });
 
+        it('Should return wrapped data for none native immutable fields (like custom data)', () => {
+            var userData = new UserWithChildType();
+
+            expect(userData.child instanceof UserType).to.equal(true);
+        })
+
     });
 
-    describe('Type read only instance', () => {
+    describe('(Read Only) instance', () => {
 
         it('Should be created from data instance', () => {
             var userData = new UserType();
@@ -176,6 +168,17 @@ describe('Custom data', function() {
             expect(userData.age).to.equal(10);
             expect(userReadOnly.name).to.equal('leon');
             expect(userReadOnly.age).to.equal(10);
+        });
+
+        it('Should return wrapped data for none native immutable fields (like custom data)', () => {
+            var userData = new UserWithChildType().$asReadOnly();
+            expect(userData.child instanceof UserType).to.equal(true);
+        });
+
+        it('Should return wrapped data for none native immutable fields (like custom data)', () => {
+            var userData = new UserWithChildType().$asReadOnly();
+
+            expect(userData.child instanceof UserType).to.equal(true);
         });
 
     });

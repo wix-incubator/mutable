@@ -18,14 +18,13 @@
     "babel": "^4.4.5",
     "babel-core": "^4.4.5",
     "babel-loader": "^4.0.0",
+    "babel-runtime": "^4.4.5",
+    "bluebird": "^2.9.12",
     "expect.js": "^0.3.1",
     "mocha": "^2.1.0",
     "mocha-loader": "^0.7.1",
     "webpack": "^1.5.3",
-    "webpack-dev-server": "^1.7.0",
-    "babel-runtime": "^4.4.5",
-    "bluebird": "^2.9.12",
-    "superagent": "^0.21.0"
+    "webpack-dev-server": "^1.7.0"
   },
   "dependencies": {
     "lodash": "^3.3.0",
