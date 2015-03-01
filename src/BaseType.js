@@ -1,4 +1,5 @@
-var BaseType = function(value) {
+var BaseType = function(value, isReadOnly = false) {
+    this.__isReadOnly__ = !!isReadOnly;
     this.__value__ = BaseType.mergeDefaults(
         (value === undefined) ? this.constructor.defaults(): value,
         this.constructor._spec
@@ -17,9 +18,7 @@ BaseType.mergeDefaults = function (value, spec){
 BaseType.prototype = {
     constructor: BaseType,
     $asReadOnly: function(){
-        var readOnlyInstance = new this.constructor(this.__value__);
-        readOnlyInstance.__proto__ = this.constructor.readOnlyPrototype;
-        return readOnlyInstance;
+        return this.constructor.type(this.__value__, true);
     },
     toJSON: function(){
         return this.__value__;

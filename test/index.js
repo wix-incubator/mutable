@@ -1,1 +1,2 @@
-require('./custom')
+require('./custom');
+require('./Array');

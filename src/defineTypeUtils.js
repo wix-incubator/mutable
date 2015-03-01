@@ -12,30 +12,24 @@ export function generateFieldsOn(obj, fieldsDefinition){
     _.forEach(fieldsDefinition, (fieldDef, fieldName) => {
         if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.displayName + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
-            get: function(){ return this.__value__[fieldName]; },
-            set: function(newValue){ this.__value__[fieldName] = newValue; },
+            get: function(){ return this.constructor._spec[fieldName].type(this.__value__[fieldName], this.__isReadOnly__); },
+            set: function(newValue){
+                if(this.__isReadOnly__) {
+                    console.warn('try to set value to readonly field: ', this.constructor.displayName +'.'+fieldName, '=', newValue);
+                } else {
+                    this.__value__[fieldName] = newValue;
+                }
+            },
             enumerable:true,
             configurable:false
         });
     });
-}
-
-export function generateReadOnlyFieldsOn(obj, fieldsDefinition){
-    _.forEach(fieldsDefinition, (fieldDef, fieldName) => {
-        Object.defineProperty(obj, fieldName, {
-            get: function(){ return this.__value__[fieldName]; },
-            set: function(newValue){ console.warn('try to set value to readonly field: ', fieldName, '=', newValue); },
-            enumerable:true,
-            configurable:false
-        });
-    });
-    return obj;
 }
 
 export function generateWithDefault(){
     return function withDefault(defualts, test){
-        function typeWithDefault(value){
-            return typeWithDefault.type(value);
+        function typeWithDefault(value, isReadOnly){
+            return typeWithDefault.type(value, isReadOnly);
         }
         typeWithDefault.type = this;
         typeWithDefault.test = test || this.test;

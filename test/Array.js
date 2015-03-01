@@ -3,7 +3,7 @@ let Typeorama = require('../');
 
 describe('Array data', function() {
 
-    var SampleType = Typeorama.define('Sample', {
+    var UserType = Typeorama.define('User', {
         spec: function(UserType) {
             return {
                 name: Typeorama.String.withDefault(''),
@@ -12,7 +12,7 @@ describe('Array data', function() {
         }
     });
 
-    var SampleType2 = Typeorama.define('Sample2', {
+    var AdderssType = Typeorama.define('Address', {
         spec: function(UserType) {
             return {
                 address: Typeorama.String.withDefault(''),
@@ -21,47 +21,143 @@ describe('Array data', function() {
         }
     });
 
-    //var SampleArray = Typeorama.ArrayOf(SampleType).withDefault([SampleType(), SampleType()]);
+    var UserWithAddressType = Typeorama.define('UserWithAddress', {
+        spec: function(UserWithAddressType) {
+            return {
+                user: UserType,
+                address: AdderssType
+            };
+        }
+    });
 
-    describe('Type instance', () => {
+    describe('(Mutable) instance', () => {
 
         it('Should have default length', () => {
-            var numberList = Typeorama.Array([1,2,3,4], Typeorama.Number);
+            var numberList = Typeorama.Array([1,2,3,4], false, Typeorama.Number);
             expect(numberList.length).to.equal(4);
         });
 
-        it('Should have at function that returns a typed item', () => {
-            var numberList = Typeorama.Array([1,2,3,4], Typeorama.Number);
-            expect(numberList.at(0)).to.equal(1);
-            expect(numberList.__subtypes__.test(numberList.at(0))).to.equal(true);
+        describe('at()', () => {
+
+            it('Should return a number for native immutable Typeorama.Number', () => {
+                var numberList = Typeorama.Array([1,2,3,4], false, Typeorama.Number);
+                expect(numberList.at(0)).to.equal(1);
+            });
+
+            it('Should return a string for native immutable Typeorama.String', () => {
+                var arr = Typeorama.Array(['123','sdfs'], false, Typeorama.String);
+                expect(arr.at(0)).to.equal('123');
+            });
+
+            it('Should return wrapped item that passes the test() of their type', () => {
+                var numberList = Typeorama.Array([1,2,3,4], false, Typeorama.Number);
+                expect(numberList.__subtypes__.test(numberList.at(0))).to.equal(true);
+            });
+
+            it('Should return a typed item for none immutable data (like custom types)', () => {
+                var arr = Typeorama.Array([{name: 'avi', age: 12}], false, UserType);
+                expect(arr.at(0) instanceof UserType).to.equal(true);
+            });
+
+            it('Should return a typed item form multiple types if there is _type field', () => {
+                var data = [
+                    {_type:'UserType',  name: 'avi', age: 12},
+                    {_type:'AdderssType', name: 'avi', age: 12}
+                ];
+                var arr = Typeorama.Array(data, false, {UserType: UserType, AdderssType: AdderssType});
+                expect(arr.at(0) instanceof UserType).to.equal(true);
+                expect(arr.at(1) instanceof AdderssType).to.equal(true);
+            });
+
+            it('Should modify inner complex data', () => {
+                var arrComplexType = Typeorama.Array([{}, {}, {}], false, UserWithAddressType);
+
+                arrComplexType.at(1).user.name = 'modified user name';
+
+                expect(arrComplexType.at(1).user.name).to.be('modified user name');
+            });
+
+            it('Should handle multi level array', () => {
+                var arrComplexType = Typeorama.Array([[{}], [{}], [{}]], false, Typeorama.Array.of(UserWithAddressType));
+                expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.be.equal(true);
+            });
+
+            it('Should change type form multi level array', () => {
+                var arrComplexType = Typeorama.Array([[{}], [{}], [{}]], false, Typeorama.Array.of(UserWithAddressType));
+                var userWithAddress = arrComplexType.at(0).at(0);
+
+                userWithAddress.user.name = 'you got a new name';
+
+                expect(userWithAddress.user.name).to.be.equal('you got a new name');
+            });
+
         });
 
-        it('Should have at function that returns a typed item', () => {
-            var arr = Typeorama.Array(['123','sdfs'], Typeorama.String);
-            expect(arr.at(0)).to.equal('123');
+    });
+
+    describe('(Read Only) instance', () => {
+
+        it('Should have default length', () => {
+            var numberList = Typeorama.Array([1,2,3,4], true, Typeorama.Number).$asReadOnly();
+            expect(numberList.length).to.equal(4);
         });
 
+        describe('at()', () => {
 
-        it('wrapped item must pass the test function of their type', () => {
-            var numberList = Typeorama.Array([1,2,3,4], Typeorama.Number);
-            expect(numberList.__subtypes__.test(numberList.at(0))).to.equal(true);
-        });
+            it('Should return a number for native immutable Typeorama.Number', () => {
+                var numberList = Typeorama.Array([1,2,3,4], true, Typeorama.Number).$asReadOnly();
+                expect(numberList.at(0)).to.equal(1);
+            });
 
-        it('Should have at() that returns a typed item', () => {
-            var arr = Typeorama.Array([{name: 'avi', age: 12}], SampleType);
-            expect(arr.at(0) instanceof SampleType).to.equal(true);
-            expect(arr.at(0) instanceof arr.__subtypes__.type).to.equal(true);
-        });
+            it('Should return a string for native immutable Typeorama.String', () => {
+                var arr = Typeorama.Array(['123','sdfs'], true, Typeorama.String).$asReadOnly();
+                expect(arr.at(0)).to.equal('123');
+            });
 
+            it('Should return wrapped item that passes the test() of their type', () => {
+                var numberList = Typeorama.Array([1,2,3,4], true, Typeorama.Number).$asReadOnly();
+                expect(numberList.__subtypes__.test(numberList.at(0))).to.equal(true);
+            });
 
-        it('Should have at() that returns a typed item form multiple types if there is _type field', () => {
-            var data = [
-                {_type:'SampleType',  name: 'avi', age: 12},
-                {_type:'SampleType2', name: 'avi', age: 12}
-            ];
-            var arr = Typeorama.Array(data, {SampleType: SampleType, SampleType2: SampleType2});
-            expect(arr.at(0) instanceof SampleType).to.equal(true);
-            expect(arr.at(1) instanceof SampleType2).to.equal(true);
+            it('Should return a typed item for none immutable data (like custom types)', () => {
+                var arr = Typeorama.Array([{name: 'avi', age: 12}], true, UserType).$asReadOnly();
+                expect(arr.at(0) instanceof UserType).to.equal(true);
+            });
+
+            it('Should return a typed item form multiple types if there is _type field', () => {
+                var data = [
+                    {_type:'UserType',  name: 'avi', age: 12},
+                    {_type:'AdderssType', name: 'avi', age: 12}
+                ];
+                var arr = Typeorama.Array(data, true, {UserType: UserType, AdderssType: AdderssType}).$asReadOnly();
+                expect(arr.at(0) instanceof UserType).to.equal(true);
+                expect(arr.at(1) instanceof AdderssType).to.equal(true);
+            });
+
+            it('Should not modify inner complex data', () => {
+                var userDefaultName = UserWithAddressType.getFieldsSpec().user.defaults().name;
+                var arrComplexType = Typeorama.Array([{}, {}, {}], true, UserWithAddressType).$asReadOnly();
+
+                arrComplexType.at(1).user.name = 'modified user name';
+
+                expect(arrComplexType.at(1).user.name).to.be(userDefaultName);
+
+            });
+
+            it('Should handle multi level array', () => {
+                var arrComplexType = Typeorama.Array([[{}], [{}], [{}]], true, Typeorama.Array.of(UserWithAddressType));
+                expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.be.equal(true);
+            });
+
+            it('Should not change type from multi level array', () => {
+                var arrComplexType = Typeorama.Array([[{}], [{}], [{}]], true, Typeorama.Array.of(UserWithAddressType));
+                var userWithAddress = arrComplexType.at(0).at(0);
+
+                userWithAddress.user.name = 'you got a new name';
+
+                expect(userWithAddress.user.name).to.be.equal('');
+            });
+
         });
 
     });
