@@ -13,7 +13,7 @@ describe('Array data', function() {
     });
 
     var AdderssType = Typeorama.define('Address', {
-        spec: function(UserType) {
+        spec: function(AdderssType) {
             return {
                 address: Typeorama.String.withDefault(''),
                 code: Typeorama.Number.withDefault(10)
@@ -210,6 +210,74 @@ describe('Array data', function() {
                 expect(userWithAddress.user.name).to.be.equal('');
             });
 
+        });
+
+        describe('Type Invalidation',()=>{
+            describe('$isInvalidated',() =>{
+                it('Should return false for unmodified data', () => {
+                    var numberList = Typeorama.Array.create([1,2,3,4], Typeorama.Number);
+                    expect(numberList.$isInvalidated()).to.equal(false);
+                });
+                xit('Should return true for modified data', () => {
+                    var numberList = Typeorama.Array.create([1,2,3,4], Typeorama.Number);
+                    numberList.push(5);
+                    expect(numberList.$isInvalidated()).to.equal(true);
+                });
+                it('Should return true for data when a child value has changed', () => {
+                    var arr = Typeorama.Array.create([{name: 'avi', age: 12}], UserType);
+                    arr.at(0).name = "gaga";
+                    expect(arr.$isInvalidated()).to.equal(true);
+                });
+                xit('Should return true for data when a child value has changed after isinvalidates was already called', () => {
+                    var arr = Typeorama.Array.create([{name: 'avi', age: 12}], UserType);
+                    expect(arr.$isInvalidated()).to.equal(false);
+                    arr.at(0).name = "gaga";
+                    expect(arr.$isInvalidated()).to.equal(true);
+                });
+                it('Should return false for data when only a parent/sibling value has changed', () => {
+                    var arr = Typeorama.Array.create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}], UserType);
+
+                    arr.at(0).name = "gaga";
+                    expect(arr.at(0).$isInvalidated()).to.equal(true);
+                    expect(arr.at(1).$isInvalidated()).to.equal(false);
+                    expect(arr.$isInvalidated()).to.equal(true);
+                });
+            });
+
+            describe('$revalidate',() =>{
+                xit('Should reset data invalidation', () => {
+                    var numberList = Typeorama.Array.create([1,2,3,4], Typeorama.Number);
+                    numberList.push(5);
+                    expect(numberList.$isInvalidated()).to.equal(true);
+                    numberList.$revalidate();
+                    expect(numberList.$isInvalidated()).to.equal(false);
+
+                });
+                it('Should reset deep data invalidation', () => {
+                    var arr = Typeorama.Array.create([{name: 'avi', age: 12}], UserType);
+                    arr.at(0).name = "gaga";
+                    expect(arr.$isInvalidated()).to.equal(true);
+                    expect(arr.at(0).$isInvalidated()).to.equal(true);
+                    arr.$revalidate();
+                    expect(arr.$isInvalidated()).to.equal(false);
+                    expect(arr.at(0).$isInvalidated()).to.equal(false);
+                });
+
+            });
+
+            describe('$resetValidationCheck',() =>{
+                it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', () => {
+                    var arr = Typeorama.Array.create([{name: 'avi', age: 12}], UserType);
+                    expect(arr.$isInvalidated()).to.equal(false);
+                    expect(arr.at(0).$isInvalidated()).to.equal(false);
+                    arr.at(0).name = "gaga";
+                    expect(arr.$isInvalidated()).to.equal(false);
+                    arr.$resetValidationCheck();
+                    expect(arr.$isInvalidated()).to.equal(true);
+                    expect(arr.at(0).$isInvalidated()).to.equal(true);
+                });
+
+            });
         });
 
     });

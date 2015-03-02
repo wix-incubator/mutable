@@ -59,5 +59,39 @@ _Array.prototype.$asReadOnly = function(){
     }
     return this.__readOnlyInstance__;
 };
-
+_Array.prototype.$isInvalidated = function(){
+    if(this.__isInvalidated__==-1)
+    {
+        var invalidatedField = _.find(this.__value__, (item, index)=>{
+            if(item instanceof BaseType)
+            {
+                return item.$isInvalidated();
+            }
+        });
+        if(invalidatedField) {
+            this.__isInvalidated__ = true;
+        }else{
+            this.__isInvalidated__ = false;
+        }
+    }
+    return this.__isInvalidated__;
+}
+_Array.prototype.$revalidate = function(){
+    this.__isInvalidated__ = -1;
+    _.forEach(this.__value__, (item, index)=>{
+        if(item instanceof BaseType)
+        {
+            item.$revalidate();
+        }
+    });
+}
+_Array.prototype.$resetValidationCheck = function(){
+    this.__isInvalidated__ = this.__isInvalidated__ || -1;
+    _.forEach(this.__value__, (item, index)=>{
+        if(item instanceof BaseType)
+        {
+            item.$resetValidationCheck();
+        }
+    });
+}
 export default _Array

@@ -21,7 +21,16 @@ describe('Custom data', function() {
             };
         }
     });
-
+    var UserWith2ChildType = Typeorama.define('User', {
+        spec: function(UserWithChildType) {
+            return {
+                name: Typeorama.String.withDefault('leon'),
+                age: Typeorama.Number.withDefault(40),
+                child: UserType.withDefault({name: 'bobi', age: 13}),
+                child2: UserType.withDefault({name: 'chiki', age: 5})
+            };
+        }
+    });
     describe('definition', () => {
         it('Should throw error for reserved keys', () => { // ToDo: change to fields that start with $ and __
 
@@ -202,6 +211,66 @@ describe('Custom data', function() {
     });
 
     describe('Type invalidation', () => {
+        describe('$isInvalidated',() =>{
+            it('Should return false for un modified data', () => {
+                var userData = new UserType();
+                expect(userData.$isInvalidated()).to.equal(false);
+            });
+            it('Should return true for modified data', () => {
+                var userData = new UserType();
+                userData.name = "gaga";
+                expect(userData.$isInvalidated()).to.equal(true);
+            });
+            it('Should return true for data when a child value has changed', () => {
+                var userWithChildType = new UserWithChildType();
+                userWithChildType.child.name = "gaga";
+                expect(userWithChildType.$isInvalidated()).to.equal(true);
+            });
+            xit('Should return true for data when a child value has changed after isinvalidates was already called', () => {
+                var userWithChildType = new UserWithChildType();
+                expect(userWithChildType.$isInvalidated()).to.equal(false);
+                userWithChildType.child.name = "gaga";
+                expect(userWithChildType.$isInvalidated()).to.equal(true);
+            });
+            it('Should return false for data when only a parent/sibling value has changed', () => {
+                var userWith2ChildType = new UserWith2ChildType();
 
+                userWith2ChildType.name = "gaga";
+                userWith2ChildType.child.name = "baga";
+                expect(userWith2ChildType.child.$isInvalidated()).to.equal(true);
+                expect(userWith2ChildType.child2.$isInvalidated()).to.equal(false);
+            });
+        });
+        describe('$revalidate',() =>{
+            it('Should reset data invalidation', () => {
+                var userData = new UserType();
+                userData.name = 'gaga';
+                expect(userData.$isInvalidated()).to.equal(true);
+                userData.$revalidate();
+                expect(userData.$isInvalidated()).to.equal(false);
+
+            });
+            it('Should reset deep data invalidation', () => {
+                var userWithChildType = new UserWithChildType();
+                userWithChildType.child.name = "gaga";
+                expect(userWithChildType.$isInvalidated()).to.equal(true);
+                expect(userWithChildType.child.$isInvalidated()).to.equal(true);
+                userWithChildType.$revalidate();
+                expect(userWithChildType.$isInvalidated()).to.equal(false);
+                expect(userWithChildType.child.$isInvalidated()).to.equal(false);
+            });
+
+        });
+        describe('$resetValidationCheck',() =>{
+            it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', () => {
+                var userWithChildType = new UserWithChildType();
+                expect(userWithChildType.$isInvalidated()).to.equal(false);
+                userWithChildType.child.name = "gaga";
+                expect(userWithChildType.$isInvalidated()).to.equal(false);
+                userWithChildType.$resetValidationCheck();
+                expect(userWithChildType.$isInvalidated()).to.equal(true);
+            });
+
+        });
     });
 });
