@@ -1,20 +1,21 @@
 import _ from "lodash"
 
-var BaseType = function(value, isReadOnly = false) {
+var BaseType = function(value, isReadOnly = false, options = {}) {
     this.__isReadOnly__ = !!isReadOnly;
     this.__readOnlyInstance__ = this.__isReadOnly__ ? this : null;
-    this.__value__ = this.constructor.wrapValue.call(
-        this,
+    this.__options__ = options;
+    this.__value__ = this.constructor.wrapValue(
         (value === undefined) ? this.constructor.defaults(): value,
         this.constructor._spec,
-        this.__isReadOnly__
+        this.__isReadOnly__,
+        options
     );
 };
 
-BaseType.wrapValue = function (value, spec, isReadOnly){
+BaseType.wrapValue = function (value, spec, isReadOnly, options){
     Object.keys(spec).forEach((key) => {
         var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
-        value[key] = spec[key].type(fieldValue,  isReadOnly);
+        value[key] = spec[key].type(fieldValue,  isReadOnly, spec[key].options);
     });
     return value;
 };
@@ -31,7 +32,7 @@ BaseType.prototype = {
     },
     $asReadOnly: function(){
         if(!this.__readOnlyInstance__) {
-            this.__readOnlyInstance__ = this.constructor.type(this.__value__, true);
+            this.__readOnlyInstance__ = this.constructor.type(this.__value__, true, this.__options__);
         }
         return this.__readOnlyInstance__;
     },

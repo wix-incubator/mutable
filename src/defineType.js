@@ -3,9 +3,9 @@ import * as defineTypeUtils from "./defineTypeUtils"
 import BaseType from "./BaseType"
 
 export default function(displayName, typeDefinition, TypeConstructor){
-    TypeConstructor = TypeConstructor || function Type(value, isReadOnly){
-        if(!(this instanceof TypeConstructor)){ return new TypeConstructor(value, isReadOnly)}
-        BaseType.call(this, value, isReadOnly);
+    TypeConstructor = TypeConstructor || function Type(value, isReadOnly, options){
+        if(!(this instanceof TypeConstructor)){ return new TypeConstructor(value, isReadOnly, options)}
+        BaseType.call(this, value, isReadOnly, options);
     };
 
     TypeConstructor.displayName           = displayName;

@@ -1,40 +1,46 @@
 import BaseArray from "./BaseArray"
 
-function _Array(value, isReadOnly, subtypes){
-    return _Array.type(value, isReadOnly, subtypes);
+function _Array(value, isReadOnly, options){
+    return _Array.type(value, isReadOnly, options);
 }
 
 
-_Array.type = BaseArray;
-_Array.test = function(v){return Array.isArray(v)};
-
-_Array.withDefault = function(defaults, test, subTypes){
+_Array.withDefault = function(defaults, test, options){
     var def = this.defaults;
 
-    if(defaults !== undefined){
+    if(defaults !== undefined){ // ToDo: clone defaults (add test)
         def = (typeof defaults === 'function') ? defaults : function(){ return defaults; };
     }
 
-    function typeWithDefault(value, isReadOnly, subTypes){
-        return typeWithDefault.type(value, isReadOnly, subTypes);
+    function typeWithDefault(value, isReadOnly, options){
+        return typeWithDefault.type(value, isReadOnly, options);
     }
     typeWithDefault.type = this.type;
     typeWithDefault.test = test || this.test;
     typeWithDefault.withDefault = this.withDefault.bind(this);
     typeWithDefault.defaults = def;
-    typeWithDefault.subTypes = subTypes;
+    typeWithDefault.options = options;
 
     return typeWithDefault;
 };
 
+_Array.type = BaseArray;
 
-
-_Array.defaults = function(){return [];};
-
-_Array.of = function ArrayOf(subTypes, defaults, test){
-    return _Array.withDefault(defaults, test, subTypes);
+_Array.test = function(v){
+    return Array.isArray(v);
 };
 
+_Array.defaults = function(){
+    return [];
+};
 
+_Array.of = function ArrayOf(subTypes, defaults, test){
+    return _Array.withDefault(defaults, test, { subTypes });
+};
+
+_Array.create = function ArrayOf(value, subTypes, isReadOnly){
+    //todo : if there is no subtype take the 'ANY' type!!!
+    return new BaseArray(value, isReadOnly, { subTypes });
+};
 
 export default _Array;
