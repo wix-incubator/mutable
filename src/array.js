@@ -41,8 +41,12 @@ export default class _Array extends BaseType {
         return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
     }
 
-    push(newItem){// ToDo: no push in read only
-        this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+    push(newItem){
+        if(this.__isReadOnly__){
+            return null;
+        }
+        this.__isInvalidated__= true;
+        return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
 
     setValue(newValue){
