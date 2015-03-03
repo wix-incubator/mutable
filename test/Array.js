@@ -1,5 +1,6 @@
-let expect = require('expect.js');
 let Typeorama = require('../');
+let chai = require('chai');
+let expect = chai.expect;
 
 describe('Array data', function() {
 
@@ -87,12 +88,12 @@ describe('Array data', function() {
 
                 arrComplexType.at(1).user.name = 'modified user name';
 
-                expect(arrComplexType.at(1).user.name).to.be('modified user name');
+                expect(arrComplexType.at(1).user.name).to.equal('modified user name');
             });
 
             it('Should handle multi level array', () => {
                 var arrComplexType = Typeorama.Array.of(Typeorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]]);
-                expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.be.equal(true);
+                expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.equal(true);
             });
 
             it('Should change type form multi level array', () => {
@@ -101,7 +102,7 @@ describe('Array data', function() {
 
                 userWithAddress.user.name = 'you got a new name';
 
-                expect(userWithAddress.user.name).to.be.equal('you got a new name');
+                expect(userWithAddress.user.name).to.equal('you got a new name');
             });
 
             it('Should keep read only item as read only', () => {
@@ -113,8 +114,8 @@ describe('Array data', function() {
 
                 readOnlyItemData.user.name = 'you got a new name';
 
-                expect(readOnlyItemData.user.name).to.be.equal(userDefaultName);
-                expect(readOnlyItemData).to.be.equal(readOnlyData);
+                expect(readOnlyItemData.user.name).to.equal(userDefaultName);
+                expect(readOnlyItemData).to.equal(readOnlyData);
             });
 
         });
@@ -192,12 +193,12 @@ describe('Array data', function() {
 
                 arrComplexType.at(1).user.name = 'modified user name';
 
-                expect(arrComplexType.at(1).user.name).to.be(userDefaultName);
+                expect(arrComplexType.at(1).user.name).to.equal(userDefaultName);
             });
 
             it('Should handle multi level array', () => {
                 var arrComplexType = Typeorama.Array.of(Typeorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]], true);
-                expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.be.equal(true);
+                expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.equal(true);
             });
 
             it('Should not change type from multi level array', () => {
@@ -206,7 +207,7 @@ describe('Array data', function() {
 
                 userWithAddress.user.name = 'you got a new name';
 
-                expect(userWithAddress.user.name).to.be.equal('');
+                expect(userWithAddress.user.name).to.equal('');
             });
 
         });

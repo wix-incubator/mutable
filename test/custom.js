@@ -1,5 +1,6 @@
-let expect = require('expect.js');
 let Typeorama = require('../');
+let chai = require('chai');
+let expect = chai.expect;
 
 describe('Custom data', function() {
 
@@ -35,7 +36,6 @@ describe('Custom data', function() {
         it('Should throw error for reserved keys', () => { // ToDo: change to fields that start with $ and __
 
             //expect(aDataTypeWithSpec({ $asReadOnly:Typeorama.String })).to.throwException();
-
             expect(function(){
                 var UserType = Typeorama.define('User', {
                     spec: function(UserType) {
@@ -44,7 +44,7 @@ describe('Custom data', function() {
                         };
                     }
                 });
-            }).to.throwException();
+            }).to.throw();
 
         });
     });

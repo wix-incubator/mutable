@@ -20,7 +20,7 @@
     "babel-loader": "^4.0.0",
     "babel-runtime": "^4.4.5",
     "bluebird": "^2.9.12",
-    "expect.js": "^0.3.1",
+    "chai": "^2.1.0",
     "mocha": "^2.1.0",
     "mocha-loader": "^0.7.1",
     "webpack": "^1.5.3",
