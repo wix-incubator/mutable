@@ -136,7 +136,7 @@ describe('Array data', function() {
         
         describe('splice',function(){
             it('changes the content of an array by removing existing elements and/or adding new elements', () => {
-                var numberList = Typeorama.Array.of(Typeorama.Number).create([1,2,3,4]);
+                var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
                 var removedItems = numberList.splice(1,2,7,10,13);
                 expect(numberList.length).to.equal(5);
                 expect(numberList.at(0)).to.equal(1);
@@ -147,17 +147,118 @@ describe('Array data', function() {
                 expect(removedItems.length).to.equal(2);
                 expect(removedItems[0]).to.equal(2);
                 expect(removedItems[1]).to.equal(3);
+                expect(numberList.$isInvalidated()).to.equal(true);
             });
 
             it('Should wrap items for none immutable data (like custom types)', () => {
-                var arr = Typeorama.Array.of(UserType).create([{name:'aag'},{name:'dag'}]);
+                var arr = Typorama.Array.of(UserType).create([{name:'aag'},{name:'dag'}]);
                 arr.splice(0,1,{name:'zag'});
                 expect(arr.at(1) instanceof UserType).to.equal(true);
                 expect(arr.at(0).name).to.equal('zag');
                 expect(arr.at(1).name).to.equal('dag');
             });
         });
-        
+
+        describe('every',function(){
+            it('should return true if all elements pass the test provided by the callback', () => {
+                var arr = Typorama.Array.of(Typorama.String).create(['a', 'a']);
+                var areAll = arr.every(function (element) {
+                    return element === 'a';
+                });
+                expect(areAll).to.equal(true);
+            });
+            it('should return false if at least one element in the array returns false from the callback', () => {
+                var arr = Typorama.Array.of(Typorama.String).create(['a', 'b']);
+                var areAll = arr.every(function (element) {
+                    return element === 'a';
+                });
+                expect(areAll).to.equal(false);
+            })
+        });
+
+        describe('some', function(){
+            it('should return true if any elements pass the test provided by the callback', () => {
+                var arr = Typorama.Array.of(Typorama.String).create(['a', 'b']);
+                var areAll = arr.some(function (element) {
+                    return element === 'a';
+                });
+                expect(areAll).to.equal(true);
+            });
+            it('should return false if all elements fail to pass the test provided by the callback', () => {
+                var arr = Typorama.Array.of(Typorama.String).create(['b', 'b']);
+                var areAll = arr.some(function (element) {
+                    return element === 'a';
+                });
+                expect(areAll).to.equal(false);
+            })
+        });
+
+        describe('find',function(){
+            it('should return the first element that passes the callback test', () => {
+                var arr = Typorama.Array.of(UserType).create([{name:'lando'},{name:'mollari'}]);
+                var itemFound = arr.find(function(element) {
+                    return element.name === 'mollari'
+                });
+                expect(itemFound).to.equal(arr.at(1));
+            });
+            xit('should return the first element that matches the passed object', () => {
+                var arr = Typorama.Array.of(UserType).create([{name:'lando'},{name:'mollari'}]);
+                var itemFound = arr.find({name:'mollari'});
+                expect(itemFound).to.equal(arr.at(1));
+            });
+            it('should return undefined if no elements that pass the callback test', () => {
+                var arr = Typorama.Array.of(UserType).create([{name:'lando'},{name:'mollari'}]);
+                var itemFound = arr.find(function(element) {
+                    return element.name === "G'Kar"
+                });
+                expect(itemFound).to.equal(undefined);
+            })
+
+        });
+
+        describe('findIndex',function(){
+            it('should return the index of the first element that passes the callback test', () => {
+                var arr = Typorama.Array.of(UserType).create([{name:'lando'},{name:'mollari'}]);
+                var itemIndex = arr.findIndex(function(element) {
+                    return element.name === 'mollari'
+                });
+                expect(itemIndex).to.equal(1);
+            });
+            xit('should return the index of the first element that matches the passed object', () => {
+                var arr = Typorama.Array.of(UserType).create([{name:'lando'},{name:'mollari'}]);
+                var itemIndex = arr.findIndex({name:'mollari'});
+                expect(itemIndex).to.equal(1);
+            });
+            it('should return -1 if no elements pass the callback test', () => {
+                var arr = Typorama.Array.of(UserType).create([{name:'lando'},{name:'mollari'}]);
+                var itemIndex = arr.findIndex(function(element) {
+                    return element.name === "G'Kar"
+                });
+                expect(itemIndex).to.equal(-1);
+            })
+
+        });
+
+        describe('filter',function(){
+            xit('should return a new array with all elements that pass the callback test', () => {
+                var arr = Typorama.Array.of(Typorama.Number).create([42,3,15,4,7]);
+                var filterArray = arr.filter(function(element){
+                    debugger;
+                    return element > 5;
+                });
+                expect(filterArray.length).to.equal(3);
+                expect(filterArray.valueOf()).to.equal([42,15,7]);
+            });
+            it('should return an empty array if no elements pass the callback test', () => {
+                var arr = Typorama.Array.of(Typorama.Numbers).create([42,3,15,4,7]);
+                var filterArray = arr.filter(function(element){
+                    return element > 50;
+                });
+                expect(filterArray.length).to.equal(0);
+            });
+        });
+
+
         describe('as field on data object', () => {
 
             var GroupType = Typorama.define('GroupType', {
