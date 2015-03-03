@@ -1,4 +1,4 @@
-import * as defineTypeUtils from "./defineTypeUtils"
+import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 
 export default class _String {
 
@@ -14,4 +14,4 @@ export default class _String {
 
 _String.type = _String;
 _String.create = String;
-_String.withDefault = defineTypeUtils.generateWithDefaultForSysImmutable(String);
+_String.withDefault = generateWithDefaultForSysImmutable(String);

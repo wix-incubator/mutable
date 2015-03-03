@@ -1,4 +1,4 @@
-import * as defineTypeUtils from "./defineTypeUtils"
+import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 
 export default class _Number {
 
@@ -14,4 +14,4 @@ export default class _Number {
 
 _Number.type = _Number;
 _Number.create = Number;
-_Number.withDefault = defineTypeUtils.generateWithDefaultForSysImmutable(Number);
+_Number.withDefault = generateWithDefaultForSysImmutable(Number);
