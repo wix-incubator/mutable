@@ -1,73 +1,53 @@
-let Typeorama = require('../');
-let chai = require('chai');
-let expect = chai.expect;
+import Typorama from "../";
+import {aDataTypeWithSpec} from "./testDrivers/index";
+import {expect} from "chai";
 
 describe('Custom data', function() {
 
-    var UserType = Typeorama.define('User', {
-        spec: function(UserType) {
-            return {
-                name: Typeorama.String.withDefault('leon'),
-                age: Typeorama.Number.withDefault(10)
-            };
-        }
-    });
+    var UserType = aDataTypeWithSpec({
+        name: Typorama.String.withDefault('leon'),
+        age: Typorama.Number.withDefault(10)
+    }, 'User');
 
-    var UserWithChildType = Typeorama.define('User', {
-        spec: function(UserWithChildType) {
-            return {
-                name: Typeorama.String.withDefault('leon'),
-                age: Typeorama.Number.withDefault(40),
-                child: UserType.withDefault({name: 'bobi', age: 13})
-            };
-        }
-    });
-    var UserWith2ChildType = Typeorama.define('User', {
-        spec: function(UserWithChildType) {
-            return {
-                name: Typeorama.String.withDefault('leon'),
-                age: Typeorama.Number.withDefault(40),
-                child: UserType.withDefault({name: 'bobi', age: 13}),
-                child2: UserType.withDefault({name: 'chiki', age: 5})
-            };
-        }
-    });
+    var UserWithChildType = aDataTypeWithSpec({
+        name: Typorama.String.withDefault('leon'),
+        age: Typorama.Number.withDefault(40),
+        child: UserType.withDefault({name: 'bobi', age: 13})
+    }, 'UserWithChildType');
+
+    var UserWith2ChildType = aDataTypeWithSpec({
+        name: Typorama.String.withDefault('leon'),
+        age: Typorama.Number.withDefault(40),
+        child: UserType.withDefault({name: 'bobi', age: 13}),
+        child2: UserType.withDefault({name: 'chiki', age: 5})
+    }, 'UserWith2ChildType');
+
     describe('definition', () => {
         it('Should throw error for reserved keys', () => { // ToDo: change to fields that start with $ and __
-
-            //expect(aDataTypeWithSpec({ $asReadOnly:Typeorama.String })).to.throwException();
             expect(function(){
-                var UserType = Typeorama.define('User', {
-                    spec: function(UserType) {
-                        return {
-                            $asReadOnly: Typeorama.String
-                        };
-                    }
-                });
+                aDataTypeWithSpec({ $asReadOnly:Typorama.String });
             }).to.throw();
-
         });
     });
 
     describe('constructor', () => {
         it('Should have getFieldsSpec()', () => {
-            var fieldsDesc = UserType.getFieldsSpec(); // ToDo: replace global UserType with aDataTypeWithSpec
+            var fieldsDesc = UserType.getFieldsSpec();
 
             //expect(fieldDesc).toHaveFields([
-            //    aField("name").withDefaults('leon').withType(Typeorama.String.type),
+            //    aField("name").withDefaults('leon').withType(Typorama.String.type),
             //    aField("age")....])
 
             expect(fieldsDesc.name.defaults()).to.equal('leon');
-            expect(fieldsDesc.name.type).to.eql(Typeorama.String.type);
+            expect(fieldsDesc.name.type).to.eql(Typorama.String.type);
             expect(fieldsDesc.age.defaults()).to.equal(10);
-            expect(fieldsDesc.age.type).to.eql(Typeorama.Number.type);
+            expect(fieldsDesc.age.type).to.eql(Typorama.Number.type);
         });
     });
 
     describe('(Mutable) instance', () => {
 
         it('Should return default value for fields from custom instance when no data is passed', () => {
-            debugger;
             var userData = new UserType();
 
             expect(userData.name).to.equal('leon');

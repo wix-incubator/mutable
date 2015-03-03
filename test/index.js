@@ -1,2 +1,2 @@
-require('./custom');
-require('./Array');
+import "./custom";
+import "./Array";
