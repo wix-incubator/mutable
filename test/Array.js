@@ -13,8 +13,8 @@ describe('Array data', function() {
         }
     });
 
-    var AdderssType = Typeorama.define('Address', {
-        spec: function(AdderssType) {
+    var AddressType = Typeorama.define('Address', {
+        spec: function(AddressType) {
             return {
                 address: Typeorama.String.withDefault(''),
                 code: Typeorama.Number.withDefault(10)
@@ -26,7 +26,7 @@ describe('Array data', function() {
         spec: function(UserWithAddressType) {
             return {
                 user: UserType,
-                address: AdderssType
+                address: AddressType
             };
         }
     });
@@ -76,11 +76,11 @@ describe('Array data', function() {
             it('Should return a typed item form multiple types if there is _type field', () => {
                 var data = [
                     {_type:'UserType',  name: 'avi', age: 12},
-                    {_type:'AdderssType', name: 'avi', age: 12}
+                    {_type:'AddressType', name: 'avi', age: 12}
                 ];
-                var arr = Typeorama.Array.of({UserType: UserType, AdderssType: AdderssType}).create(data);
+                var arr = Typeorama.Array.of({UserType: UserType, AddressType: AddressType}).create(data);
                 expect(arr.at(0) instanceof UserType).to.equal(true);
-                expect(arr.at(1) instanceof AdderssType).to.equal(true);
+                expect(arr.at(1) instanceof AddressType).to.equal(true);
             });
 
             it('Should modify inner complex data', () => {
@@ -120,6 +120,38 @@ describe('Array data', function() {
 
         });
 
+        describe('push',function(){
+            it('it should add a number to an array ', () => {
+                var numberList = Typeorama.Array.of(Typeorama.Number).create([1,2,3,4]);
+                var lengthBeforePush = numberList.length;
+                var newIndex = numberList.push(5);
+                expect(newIndex).to.equal(5);
+                expect(numberList.length).to.equal(lengthBeforePush+1);
+                expect(numberList.at(4)).to.equal(5);
+                expect(numberList.$isInvalidated()).to.equal(true);
+            });
+
+            it('Should add a typed item for none immutable data (like custom types)', () => {
+                var arr = Typeorama.Array.of(UserType).create([]);
+                arr.push({name:'zag'});
+                expect(arr.at(0) instanceof UserType).to.equal(true);
+            });
+
+            it('Should add a typed item form multiple types if there is _type field', () => {
+                 var arr = Typeorama.Array.of({UserType: UserType, AddressType: AddressType}).create([]);
+                arr.push({_type:'UserType'});
+                arr.push({_type:'AddressType'});
+                expect(arr.at(0) instanceof UserType).to.equal(true);
+                expect(arr.at(1) instanceof AddressType).to.equal(true);
+            });
+        });
+        
+        describe('splice',function(){
+            it('changes the content of an array by removing existing elements and/or adding new elements', () => {
+
+            });
+        });
+        
         describe('as field on data object', () => {
 
             var GroupType = Typeorama.define('GroupType', {
@@ -180,11 +212,11 @@ describe('Array data', function() {
             it('Should return a typed item form multiple types if there is _type field', () => {
                 var data = [
                     {_type:'UserType',  name: 'avi', age: 12},
-                    {_type:'AdderssType', name: 'avi', age: 12}
+                    {_type:'AddressType', name: 'avi', age: 12}
                 ];
-                var arr = Typeorama.Array.of({UserType: UserType, AdderssType: AdderssType}).create(data).$asReadOnly();
+                var arr = Typeorama.Array.of({UserType: UserType, AddressType: AddressType}).create(data).$asReadOnly();
                 expect(arr.at(0) instanceof UserType).to.equal(true);
-                expect(arr.at(1) instanceof AdderssType).to.equal(true);
+                expect(arr.at(1) instanceof AddressType).to.equal(true);
             });
 
             it('Should not modify inner complex data', () => {
@@ -211,7 +243,19 @@ describe('Array data', function() {
             });
 
         });
+        
+        describe('push',function(){
+            it('should not modify an array ', () => {
+                var numberList = Typeorama.Array.of(Typeorama.Number).create([1,2,3,4]).$asReadOnly();
+                var lengthBeforePush = numberList.length;
+                var newIndex = numberList.push(5);
+                expect(newIndex).to.equal(null);
+                expect(numberList.length).to.equal(lengthBeforePush);
+                expect(numberList.at(4)).to.equal(undefined);
 
+            })
+        });
+        
         describe('Type Invalidation',()=>{
             describe('$isInvalidated',() =>{
                 it('Should return false for unmodified data', () => {
