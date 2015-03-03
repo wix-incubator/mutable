@@ -32,14 +32,22 @@ export function generateFieldsOn(obj, fieldsDefinition){
 }
 
 export function generateWithDefault(){
-    return function withDefault(defaults, test){
-        function typeWithDefault(value, isReadOnly){
-            return typeWithDefault.type.create(value, isReadOnly);
+    return function withDefault(defaults, test, options){
+        var def = this.defaults;
+        if(defaults !== undefined){ // ToDo: clone defaults (add test)
+            def = (typeof defaults === 'function') ? defaults : function(){ return _.clone(defaults, true); };
         }
+
+        function typeWithDefault(value, isReadOnly, options){
+            return typeWithDefault.type.create(value, isReadOnly, typeWithDefault.options || options);
+        }
+
         typeWithDefault.type = this;
         typeWithDefault.test = test || this.test;
         typeWithDefault.withDefault = withDefault.bind(this);
-        typeWithDefault.defaults = ((defaults !== undefined && typeof defaults === 'function') ? defaults : function(){return _.clone(defaults, true)}) || this.defaults;
+        typeWithDefault.defaults = def;
+        typeWithDefault.options = options;
+        typeWithDefault.wrapValue = this.wrapValue;
         typeWithDefault.create = this.create;
         return typeWithDefault;
     }
@@ -48,7 +56,6 @@ export function generateWithDefault(){
 export function generateWithDefaultForSysImmutable(Type){
     return function withDefault(defaults, test){
         var def = this.defaults;
-
         if(defaults !== undefined){
             def = (typeof defaults === 'function') ? defaults : function(){ return defaults; };
         }
@@ -60,8 +67,8 @@ export function generateWithDefaultForSysImmutable(Type){
         typeWithDefault.test = test || this.test;
         typeWithDefault.withDefault = this.withDefault.bind(this);
         typeWithDefault.defaults = def;
-        typeWithDefault.create = this.create;
         typeWithDefault.wrapValue = Type;
+        typeWithDefault.create = this.create;
         return typeWithDefault;
     }
 }

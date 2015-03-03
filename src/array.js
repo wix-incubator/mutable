@@ -2,8 +2,13 @@ import _ from "lodash"
 import defineType from "./defineType"
 import BaseType from "./BaseType"
 import number from "./number"
+import {generateWithDefault} from "./defineTypeUtils"
 
 export default class _Array extends BaseType {
+
+    static defaults(){ return []; }
+
+    static test(value){ return Array.isArray(value); }
 
     static wrapValue(value, spec, isReadOnly, options){
         return value.reduce((wrappedList, itemValue) => {
@@ -23,34 +28,9 @@ export default class _Array extends BaseType {
         }
     }
 
-    static test(value){ return Array.isArray(value); }
-
-    static defaults(){ return []; }
-
     static of(subTypes, defaults, test){
         return this.withDefault(defaults, test, { subTypes });
     };
-
-    static withDefault(defaults, test, options){
-        var def = this.defaults;
-
-        if(defaults !== undefined){ // ToDo: clone defaults (add test)
-            def = (typeof defaults === 'function') ? defaults : function(){ return defaults; };
-        }
-
-        function typeWithDefault(value, isReadOnly, options){
-            return new typeWithDefault.type(value, isReadOnly, typeWithDefault.options || options);
-        }
-        typeWithDefault.type = this.type;
-        typeWithDefault.test = test || this.test;
-        typeWithDefault.withDefault = this.withDefault.bind(this);
-        typeWithDefault.defaults = def;
-        typeWithDefault.options = options;
-        typeWithDefault.wrapValue = this.wrapValue;
-        typeWithDefault.create = this.create;
-
-        return typeWithDefault;
-    }
 
     constructor(value=[], isReadOnly=false, options={}){
         BaseType.call(this, value, isReadOnly, options);
@@ -121,6 +101,8 @@ export default class _Array extends BaseType {
     }
 
 }
+
+_Array.withDefault = generateWithDefault();
 
 defineType('Array',{
     spec: function(){
