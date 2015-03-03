@@ -198,7 +198,7 @@ describe('Custom data', function() {
     });
 
     describe('Type invalidation', () => {
-        describe('$isInvalidated',() =>{
+        describe('$isInvalidated()',() =>{
             it('Should return false for un modified data', () => {
                 var userData = new UserType();
                 expect(userData.$isInvalidated()).to.equal(false);
@@ -228,7 +228,7 @@ describe('Custom data', function() {
                 expect(userWith2ChildType.child2.$isInvalidated()).to.equal(false);
             });
         });
-        describe('$revalidate',() =>{
+        describe('$revalidate()',() =>{
             it('Should reset data invalidation', () => {
                 var userData = new UserType();
                 userData.name = 'gaga';
@@ -248,7 +248,7 @@ describe('Custom data', function() {
             });
 
         });
-        describe('$resetValidationCheck',() =>{
+        describe('$resetValidationCheck()',() =>{
             it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', () => {
                 var userWithChildType = new UserWithChildType();
                 expect(userWithChildType.$isInvalidated()).to.equal(false);

@@ -5,7 +5,7 @@ import {expect} from "chai";
 describe('Array data', function() {
 
     var UserType = aDataTypeWithSpec({
-        name: Typorama.String.withDefault('leon'),
+        name: Typorama.String.withDefault(''),
         age: Typorama.Number.withDefault(10)
     }, 'User');
 
@@ -108,7 +108,7 @@ describe('Array data', function() {
 
         });
 
-        describe('push',function(){
+        describe('push()',function(){
             it('it should add a number to an array ', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
                 var lengthBeforePush = numberList.length;
@@ -134,7 +134,7 @@ describe('Array data', function() {
             });
         });
         
-        describe('splice',function(){
+        describe('splice()',function(){
             it('changes the content of an array by removing existing elements and/or adding new elements', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
                 var removedItems = numberList.splice(1,2,7,10,13);
@@ -351,7 +351,7 @@ describe('Array data', function() {
 
         });
         
-        describe('push',function(){
+        describe('push()',function(){
             it('should not modify an array ', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]).$asReadOnly();
                 var lengthBeforePush = numberList.length;
@@ -362,9 +362,9 @@ describe('Array data', function() {
 
             })
         });
-        describe('splice',function(){
+        describe('splice()',function(){
             it('should not modify an array ', () => {
-                var numberList = Typeorama.Array.of(Typeorama.Number).create([1,2,3,4]).$asReadOnly();
+                var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]).$asReadOnly();
                 var lengthBeforeSplice = numberList.length;
                 var removedItems = numberList.splice(1,2,7,6,5);
                 expect(removedItems).to.equal(null);
@@ -378,7 +378,7 @@ describe('Array data', function() {
         });
         
         describe('Type Invalidation',()=>{
-            describe('$isInvalidated',() =>{
+            describe('$isInvalidated()',() =>{
                 it('Should return false for unmodified data', () => {
                     var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
                     expect(numberList.$isInvalidated()).to.equal(false);
@@ -409,7 +409,7 @@ describe('Array data', function() {
                 });
             });
 
-            describe('$revalidate',() =>{
+            describe('$revalidate()',() =>{
                 xit('Should reset data invalidation', () => {
                     var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
                     numberList.push(5);
@@ -430,7 +430,7 @@ describe('Array data', function() {
 
             });
 
-            describe('$resetValidationCheck',() =>{
+            describe('$resetValidationCheck()',() =>{
                 it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', () => {
                     var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
                     expect(arr.$isInvalidated()).to.equal(false);
