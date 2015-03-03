@@ -148,7 +148,25 @@ describe('Array data', function() {
         
         describe('splice',function(){
             it('changes the content of an array by removing existing elements and/or adding new elements', () => {
+                var numberList = Typeorama.Array.of(Typeorama.Number).create([1,2,3,4]);
+                var removedItems = numberList.splice(1,2,7,10,13);
+                expect(numberList.length).to.equal(5);
+                expect(numberList.at(0)).to.equal(1);
+                expect(numberList.at(1)).to.equal(7);
+                expect(numberList.at(2)).to.equal(10);
+                expect(numberList.at(3)).to.equal(13);
+                expect(numberList.at(4)).to.equal(4);
+                expect(removedItems.length).to.equal(2);
+                expect(removedItems[0]).to.equal(2);
+                expect(removedItems[1]).to.equal(3);
+            });
 
+            it('Should wrap items for none immutable data (like custom types)', () => {
+                var arr = Typeorama.Array.of(UserType).create([{name:'aag'},{name:'dag'}]);
+                arr.splice(0,1,{name:'zag'});
+                expect(arr.at(1) instanceof UserType).to.equal(true);
+                expect(arr.at(0).name).to.equal('zag');
+                expect(arr.at(1).name).to.equal('dag');
             });
         });
         
@@ -252,6 +270,20 @@ describe('Array data', function() {
                 expect(newIndex).to.equal(null);
                 expect(numberList.length).to.equal(lengthBeforePush);
                 expect(numberList.at(4)).to.equal(undefined);
+
+            })
+        });
+        describe('splice',function(){
+            it('should not modify an array ', () => {
+                var numberList = Typeorama.Array.of(Typeorama.Number).create([1,2,3,4]).$asReadOnly();
+                var lengthBeforeSplice = numberList.length;
+                var removedItems = numberList.splice(1,2,7,6,5);
+                expect(removedItems).to.equal(null);
+                expect(numberList.length).to.equal(lengthBeforeSplice);
+                expect(numberList.at(0)).to.equal(1);
+                expect(numberList.at(1)).to.equal(2);
+                expect(numberList.at(2)).to.equal(3);
+                expect(numberList.at(3)).to.equal(4);
 
             })
         });

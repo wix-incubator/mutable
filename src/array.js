@@ -49,6 +49,19 @@ export default class _Array extends BaseType {
         return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
 
+    splice(index,removeCount, ...addedItems){
+        if(this.__isReadOnly__){
+            return null;
+        }
+        this.__isInvalidated__= true;
+        var spliceParams = [index,removeCount];
+        addedItems.forEach(function(newItem){
+           spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__))
+        }.bind(this));
+        return this.__value__.splice.apply(this.__value__,spliceParams);
+        //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+    }
+
     setValue(newValue){
         if(newValue instanceof _Array){
             newValue = newValue.toJSON();
