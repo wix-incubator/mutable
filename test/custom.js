@@ -34,6 +34,8 @@ describe('Custom data', function() {
     describe('definition', () => {
         it('Should throw error for reserved keys', () => { // ToDo: change to fields that start with $ and __
 
+            //expect(aDataTypeWithSpec({ $asReadOnly:Typeorama.String })).to.throwException();
+
             expect(function(){
                 var UserType = Typeorama.define('User', {
                     spec: function(UserType) {
@@ -49,7 +51,11 @@ describe('Custom data', function() {
 
     describe('constructor', () => {
         it('Should have getFieldsSpec()', () => {
-            var fieldsDesc = UserType.getFieldsSpec();
+            var fieldsDesc = UserType.getFieldsSpec(); // ToDo: replace global UserType with aDataTypeWithSpec
+
+            //expect(fieldDesc).toHaveFields([
+            //    aField("name").withDefaults('leon').withType(Typeorama.String.type),
+            //    aField("age")....])
 
             expect(fieldsDesc.name.defaults()).to.equal('leon');
             expect(fieldsDesc.name.type).to.eql(Typeorama.String.type);
@@ -61,6 +67,7 @@ describe('Custom data', function() {
     describe('(Mutable) instance', () => {
 
         it('Should return default value for fields from custom instance when no data is passed', () => {
+            debugger;
             var userData = new UserType();
 
             expect(userData.name).to.equal('leon');
@@ -83,7 +90,7 @@ describe('Custom data', function() {
         it('Should modify fields (typorama data)', () => {
             var userData = new UserWithChildType();
 
-            userData.child = UserType({name: 'yossi', age: 3});
+            userData.child = new UserType({name: 'yossi', age: 3});
 
             expect(userData.child.name).to.equal('yossi');
             expect(userData.child.age).to.equal(3);

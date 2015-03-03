@@ -32,18 +32,39 @@ export function generateFieldsOn(obj, fieldsDefinition){
 }
 
 export function generateWithDefault(){
-    return function withDefault(defualts, test){
+    return function withDefault(defaults, test){
         function typeWithDefault(value, isReadOnly){
-            return typeWithDefault.type(value, isReadOnly);
+            return typeWithDefault.type.create(value, isReadOnly);
         }
         typeWithDefault.type = this;
         typeWithDefault.test = test || this.test;
         typeWithDefault.withDefault = withDefault.bind(this);
-        typeWithDefault.defaults = ((defualts !== undefined && typeof defualts === 'function') ? defualts : function(){return _.clone(defualts, true)}) || this.defaults
+        typeWithDefault.defaults = ((defaults !== undefined && typeof defaults === 'function') ? defaults : function(){return _.clone(defaults, true)}) || this.defaults;
+        typeWithDefault.create = this.create;
         return typeWithDefault;
     }
 }
 
+export function generateWithDefaultForSysImmutable(Type){
+    return function withDefault(defaults, test){
+        var def = this.defaults;
+
+        if(defaults !== undefined){
+            def = (typeof defaults === 'function') ? defaults : function(){ return defaults; };
+        }
+
+        function typeWithDefault(value, isReadOnly){
+            return Type(value);
+        }
+        typeWithDefault.type = this.type;
+        typeWithDefault.test = test || this.test;
+        typeWithDefault.withDefault = this.withDefault.bind(this);
+        typeWithDefault.defaults = def;
+        typeWithDefault.create = this.create;
+        typeWithDefault.wrapValue = Type;
+        return typeWithDefault;
+    }
+}
 
 export function generateGetDefaultValue(){
     return function() {
