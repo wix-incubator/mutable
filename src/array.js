@@ -33,6 +33,14 @@ export default class _Array extends BaseType {
     };
 
     constructor(value=[], isReadOnly=false, options={}){
+        if(options.subTypes && _.isArray(options.subTypes))
+        {
+            var subTypesObj = {};
+            options.subTypes.forEach(function(item){
+                subTypesObj[item.displayName] = item;
+            });
+            options.subTypes = subTypesObj;
+        }
         BaseType.call(this, value, isReadOnly, options);
     }
 
@@ -70,12 +78,11 @@ export default class _Array extends BaseType {
 
     concat(...addedArrays){
         var res = new this.constructor(this.__value__,false,this.__options__);
-        debugger;
         addedArrays.forEach(function(arr){
             arr.forEach(function(item){
                 res.push(item);
             })
-        })
+        });
         return res;
     }
 

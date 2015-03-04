@@ -63,10 +63,10 @@ describe('Array data', function() {
 
             it('Should return a typed item form multiple types if there is _type field', () => {
                 var data = [
-                    {_type:'UserType',  name: 'avi', age: 12},
-                    {_type:'AddressType', name: 'avi', age: 12}
+                    {_type:'User',  name: 'avi', age: 12},
+                    {_type:'Address', name: 'avi', age: 12}
                 ];
-                var arr = Typorama.Array.of({UserType: UserType, AddressType: AddressType}).create(data);
+                var arr = Typorama.Array.of([UserType,  AddressType]).create(data);
                 expect(arr.at(0) instanceof UserType).to.equal(true);
                 expect(arr.at(1) instanceof AddressType).to.equal(true);
             });
@@ -126,9 +126,9 @@ describe('Array data', function() {
             });
 
             it('Should add a typed item form multiple types if there is _type field', () => {
-                 var arr = Typorama.Array.of({UserType: UserType, AddressType: AddressType}).create([]);
-                arr.push({_type:'UserType'});
-                arr.push({_type:'AddressType'});
+                 var arr = Typorama.Array.of([UserType,AddressType]).create([]);
+                arr.push({_type:'User'});
+                arr.push({_type:'Address'});
                 expect(arr.at(0) instanceof UserType).to.equal(true);
                 expect(arr.at(1) instanceof AddressType).to.equal(true);
             });
@@ -159,6 +159,18 @@ describe('Array data', function() {
                 {
                     expect(concatRes.at(i)).to.equal(i+1);
                 }
+            });
+            xit('should allow subtypes allowed by all the different arrays',function(){
+                var userList = Typorama.Array.of(UserType).create([{}]);
+                var addressList = Typorama.Array.of(AddressType).create([{}]);
+                var mixedList = [{_type:userList.displayName},{_type:addressList.displayName}];
+                var concatRes = userList.concat(addressList,mixedList);
+                expect(concatRes.length).to.equal(4);
+                expect(concatRes.at(0) instanceof UserType).to.equal(true);
+                expect(concatRes.at(1) instanceof AddressType).to.equal(true);
+                expect(concatRes.at(2) instanceof UserType).to.equal(true);
+                expect(concatRes.at(3) instanceof AddressType).to.equal(true);
+
             });
         });
         describe('splice()',function(){
@@ -345,10 +357,10 @@ describe('Array data', function() {
 
             it('Should return a typed item form multiple types if there is _type field', () => {
                 var data = [
-                    {_type:'UserType',  name: 'avi', age: 12},
-                    {_type:'AddressType', name: 'avi', age: 12}
+                    {_type:'User',  name: 'avi', age: 12},
+                    {_type:'Address', name: 'avi', age: 12}
                 ];
-                var arr = Typorama.Array.of({UserType: UserType, AddressType: AddressType}).create(data).$asReadOnly();
+                var arr = Typorama.Array.of([UserType, AddressType]).create(data).$asReadOnly();
                 expect(arr.at(0) instanceof UserType).to.equal(true);
                 expect(arr.at(1) instanceof AddressType).to.equal(true);
             });
