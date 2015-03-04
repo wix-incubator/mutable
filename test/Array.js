@@ -133,7 +133,34 @@ describe('Array data', function() {
                 expect(arr.at(1) instanceof AddressType).to.equal(true);
             });
         });
-        
+        describe('forEach',function(){
+            it('should call the method passed with item, index, arr',function(){
+                var sourceArr = [1,2,3];
+                var numberList = Typorama.Array.of(Typorama.Number).create(sourceArr);
+                var count = 0;
+
+                numberList.forEach(function(item,index,arr){
+                    expect(item).to.equal(sourceArr[index]);
+                    expect(index).to.equal(count);
+                    expect(arr).to.equal(numberList);
+                    count++;
+                })
+
+            });
+        });
+        describe('concat',function(){
+            it('should create a new array built from the source array and all arrays passed to it',function(){
+                var numberList = Typorama.Array.of(Typorama.Number).create([1,2]);
+                var numberList1 = Typorama.Array.of(Typorama.Number).create([3,4]);
+                var numberList2 = [5,6];
+                var concatRes = numberList.concat(numberList1,numberList2);
+                expect(concatRes.length).to.equal(6);
+                for(var i=0;i<6;i++)
+                {
+                    expect(concatRes.at(i)).to.equal(i+1);
+                }
+            });
+        });
         describe('splice()',function(){
             it('changes the content of an array by removing existing elements and/or adding new elements', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);

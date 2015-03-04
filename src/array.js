@@ -48,6 +48,12 @@ export default class _Array extends BaseType {
         this.__isInvalidated__= true;
         return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
+    forEach(cb){
+        var that = this;
+        this.__value__.forEach(function(item,index,arr){
+            cb(item,index,that);
+        });
+    }
 
     splice(index,removeCount, ...addedItems){
         if(this.__isReadOnly__){
@@ -60,6 +66,17 @@ export default class _Array extends BaseType {
         }.bind(this));
         return this.__value__.splice.apply(this.__value__,spliceParams);
         //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+    }
+
+    concat(...addedArrays){
+        var res = new this.constructor(this.__value__,false,this.__options__);
+        debugger;
+        addedArrays.forEach(function(arr){
+            arr.forEach(function(item){
+                res.push(item);
+            })
+        })
+        return res;
     }
 
     setValue(newValue){
