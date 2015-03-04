@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers js:babel/register --reporter nyan",
-    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test"
+    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-color"
   },
   "author": "core3",
   "license": "c",
