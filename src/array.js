@@ -77,15 +77,26 @@ export default class _Array extends BaseType {
     }
 
     find(cb){
+        var self = this;
+        return _.find(this.__value__, function(element, index, array) {
+            return cb(element, index, self);
+        });
         return _.find(this.__value__, cb);
     }
 
     findIndex(cb){
+        var self = this;
+        return _.findIndex(this.__value__, function (element, index, array) {
+            return cb(element, index, self)
+        })
         return _.findIndex(this.__value__, cb);
     }
 
     filter(cb){
-        var filteredArray = this.__value__.filter(cb);
+        var self = this;
+        var filteredArray = this.__value__.filter(function(element, index, array) {
+            return cb(element, index, self);
+        });
         return new this.constructor(filteredArray, false, this.__options__);
     }
 
