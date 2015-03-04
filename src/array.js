@@ -79,6 +79,44 @@ export default class _Array extends BaseType {
         return res;
     }
 
+    every(cb){
+        var self = this;
+        return this.__value__.every(function(element, index, array) {
+            return cb(element, index, self)
+        });
+    }
+
+    some(cb){
+        var self = this;
+        return this.__value__.some(function(element, index, array){
+            return cb(element, index, self);
+        });
+    }
+
+    find(cb){
+        var self = this;
+        return _.find(this.__value__, function(element, index, array) {
+            return cb(element, index, self);
+        });
+        return _.find(this.__value__, cb);
+    }
+
+    findIndex(cb){
+        var self = this;
+        return _.findIndex(this.__value__, function (element, index, array) {
+            return cb(element, index, self)
+        })
+        return _.findIndex(this.__value__, cb);
+    }
+
+    filter(cb){
+        var self = this;
+        var filteredArray = this.__value__.filter(function(element, index, array) {
+            return cb(element, index, self);
+        });
+        return new this.constructor(filteredArray, false, this.__options__);
+    }
+
     setValue(newValue){
         if(newValue instanceof _Array){
             newValue = newValue.toJSON();
