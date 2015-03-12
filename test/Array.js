@@ -44,7 +44,7 @@ describe('Array data', function() {
             it('Should return a string for native immutable Typorama.String', () => {
                 var arr = Typorama.Array.of(Typorama.String).create(['123','sdfs']);
                 expect(arr.at(0)).to.equal('123');
-            });
+            })
 
             it('Should return wrapped item that passes the test() of their type', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
@@ -107,9 +107,66 @@ describe('Array data', function() {
             });
 
         });
+        
+        describe('pop()', function() {
+            it('should remove the last element from an array', () => {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var lengthBeforePop = numberList.length;
+                var valueRemoved = numberList.pop();
+
+                expect(numberList.length).to.equal(lengthBeforePop - 1);
+                expect(valueRemoved).to.equal(4);
+                expect(numberList.$isInvalidated()).to.equal(true);
+            });
+
+            it('should return undefined if called on an empty array', () => {
+                var numberList = Typorama.Array.of(Typorama.Number).create([]);
+                expect(numberList.pop()).to.be.undefined;
+
+            });
+        });
+
+        describe('reverse()', function() {
+            it('should reverse the order of elements in an array', () => {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var newList = numberList.concat();
+                newList.reverse();
+                expect(numberList.length).to.equal(newList.length);
+                for (var i = 0; i < numberList.length; i++) {
+                    expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
+                };
+                expect(newList.$isInvalidated()).to.equal(true);
+            });
+        });
+        describe('sort()', function() {
+            it('should sort the elements of an anarray in place, and returns the array', () => {
+                var stringArray = Typorama.Array.of(Typorama.String).create(['Blue', 'Humpback', 'Beluga']);
+                var numberArray = Typorama.Array.of(Typorama.Number).create([40, 1, 5, 200]);
+
+                function compareNumbers(a, b) {
+                    return a - b;
+                }
+                expect(stringArray.sort()).to.eql(['Beluga','Blue','Humpback']);
+                expect(numberArray.sort()).to.eql([1, 200, 40, 5]);
+                expect(numberArray.sort(compareNumbers)).to.eql([1, 5, 40, 200]);
+                expect(stringArray.$isInvalidated()).to.equal(true);
+            });
+        });
+        describe('shift()', function(){
+            it('should remove the first element from an array, and returns that element', () => {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var lengthBeforePop = numberList.length;
+                var arrayBeforeShift = numberList.concat();
+                var valueRemoved = numberList.shift();
+
+                expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
+                expect(numberList.length).to.equal(lengthBeforePop - 1);
+                expect(numberList.$isInvalidated()).to.equal(true);
+            });
+        });
 
         describe('push()',function(){
-            it('it should add a number to an array ', () => {
+            it('should add a number to an array ', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
                 var lengthBeforePush = numberList.length;
                 var newIndex = numberList.push(5);
@@ -119,13 +176,13 @@ describe('Array data', function() {
                 expect(numberList.$isInvalidated()).to.equal(true);
             });
 
-            it('Should add a typed item for none immutable data (like custom types)', () => {
+            it('should add a typed item for none immutable data (like custom types)', () => {
                 var arr = Typorama.Array.of(UserType).create([]);
                 arr.push({name:'zag'});
                 expect(arr.at(0) instanceof UserType).to.equal(true);
             });
 
-            it('Should add a typed item form multiple types if there is _type field', () => {
+            it('should add a typed item form multiple types if there is _type field', () => {
                  var arr = Typorama.Array.of([UserType,AddressType]).create([]);
                 arr.push({_type:'User'});
                 arr.push({_type:'Address'});
@@ -160,7 +217,7 @@ describe('Array data', function() {
                     expect(concatRes.at(i)).to.equal(i+1);
                 }
             });
-            xit('should allow subtypes allowed by all the different arrays',function(){
+            it('should allow subtypes allowed by all the different arrays',function(){
                 var userList = Typorama.Array.of(UserType).create([{}]);
                 var addressList = Typorama.Array.of(AddressType).create([{}]);
                 var mixedList = [{_type:userList.displayName},{_type:addressList.displayName}];
@@ -173,7 +230,48 @@ describe('Array data', function() {
 
             });
         });
-        describe('splice()',function(){
+
+        describe('map()', function() {
+            it('calls a callback function on every item in an array and constructs a new array from the results', () => {
+
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3]);
+                var doubles = function(num) {
+                    return num * 2;
+                };
+                var newList = numberList.map(doubles);
+                // Take a callback function and return an array
+                expect(newList instanceof Typorama.Array).to.equal(true);
+                // Make sure the values and length are correct
+                expect(newList.__value__).to.eql([2, 4, 6]);
+                // Array to be invalidated
+                expect(newList.$isInvalidated()).to.equal(false);
+            });
+
+            it('passes the extra argument when callback is envoked', () => {
+                function A() {
+                    this.arr = [1, 2, 3];
+                    this.factor = 2;
+                    this.multi = function(n) {
+                        return n * this.factor;
+                    };
+                }
+
+                var a = new A(),
+                    b = new A();
+                a.doIt = function() {
+                    return this.arr.map(this.multi, this);
+                };
+                // This cannot run as this.multi actually runs on this.arr
+                // b.doIt = function(){
+                //   return this.arr.map(this.multi);
+                // };
+
+                expect(a.doIt()).to.eql([2, 4, 6]);
+                // expect(b.doIt()).to.eql([NaN, NaN, NaN]);
+            });
+        });
+        describe('splice()',function() {
+
             it('changes the content of an array by removing existing elements and/or adding new elements', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
                 var removedItems = numberList.splice(1,2,7,10,13);
@@ -297,7 +395,6 @@ describe('Array data', function() {
             });
         });
 
-
         describe('as field on data object', () => {
 
             var GroupType = Typorama.define('GroupType', {
@@ -398,7 +495,6 @@ describe('Array data', function() {
                 expect(newIndex).to.equal(null);
                 expect(numberList.length).to.equal(lengthBeforePush);
                 expect(numberList.at(4)).to.equal(undefined);
-
             })
         });
         describe('splice()',function(){
