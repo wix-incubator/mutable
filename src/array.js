@@ -77,13 +77,29 @@ export default class _Array extends BaseType {
     }
 
     concat(...addedArrays){
-        var res = new this.constructor(this.__value__,false,this.__options__);
+        var items = [];
+        var subTypes = [];
+        var addSubTypes = function(arr){
+            var subs = arr.__options__ && arr.__options__.subTypes;
+            if(subs===undefined)
+            {  }else if(_.isFunction(subs))
+            {
+                subTypes.push(subs);
+            }else
+            {
+                subTypes = subTypes.concat(subs);
+            }
+        };
+
+        addSubTypes(this);
         addedArrays.forEach(function(arr){
             arr.forEach(function(item){
-                res.push(item);
-            })
+                items.push(item);
+            });
+            addSubTypes(arr);
         });
-        return res;
+        subTypes = _.uniq(subTypes);
+        return new this.constructor(items,false,{subTypes:subTypes});
     }
 
     every(cb){

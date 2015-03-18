@@ -160,7 +160,7 @@ describe('Array data', function() {
                     expect(concatRes.at(i)).to.equal(i+1);
                 }
             });
-            xit('should allow subtypes allowed by all the different arrays',function(){
+            it('should allow subtypes allowed by all the different arrays',function(){
                 var userList = Typorama.Array.of(UserType).create([{}]);
                 var addressList = Typorama.Array.of(AddressType).create([{}]);
                 var mixedList = [{_type:userList.displayName},{_type:addressList.displayName}];

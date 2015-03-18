@@ -14,6 +14,9 @@ var config = {
 		test: [
         	"webpack/hot/dev-server",
 			"mocha!./test"
+        ],
+        typorama: [
+            "./src"
         ]
 	},
 	resolve: {
