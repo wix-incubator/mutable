@@ -158,24 +158,43 @@ export default class _Array extends BaseType {
     }
 
     concat(...addedArrays) {
-        // Demands more work
-        var arrHasType = function(el){
-            if (el.__options__.subTypes instanceof function){
-                return el.__options__.subTypes.displayName;
-            } else {
-                for(var item in el){
-                    // I know...
-                    return arrHasType(el);
-                }
-            }
-        }
-        for(var item in addedArrays){
-            if(arrHasType(this) !== arrHasType(item)){
-                throw new Error("Error");
-            };    
-        }
-        
 
+        // Optional validation
+            var selfSubtypes = this.__options__.subTypes;
+            if (_.isFunction(selfSubtypes)) {
+
+                addedArrays.forEach(function(array) {
+
+                    if (selfSubtypes !== array.__options__.subTypes) {
+
+                        throw new Error("Error");
+
+                    }
+                });
+
+            } else {
+                addedArrays.forEach(function(item, key) {
+
+                    if (_.isFunction(item.__options__.subTypes)) {
+                        var addedDisplayName = item.__options__.subTypes.displayName;
+
+                        if (!_.has(selfSubtypes, addedDisplayName)) {
+                            throw new Error("Error");
+                        }
+
+
+                    } else {
+                        _.forEach(item.__options__.subTypes, function(itemType, addedDisplayName) {
+
+                            if (!_.has(selfSubtypes, addedDisplayName)) {
+                                throw new Error("Error");
+                            }
+                        });
+                    }
+
+                });
+            }
+        // 
         var res = new this.constructor(this.__value__, false, this.__options__);
         addedArrays.forEach(function(arr) {
             arr.forEach(function(item) {
@@ -183,8 +202,7 @@ export default class _Array extends BaseType {
             });
         });
         return res;
-    }
-
+    };
     // includes(){} ES7 Method
 
     join(separator ? = ',') {

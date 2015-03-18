@@ -245,33 +245,33 @@ describe('Array data', () => {
 
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2]);
                 var numberList1 = Typorama.Array.of(Typorama.Number).create([3, 4]);
-                var numberList2 = [5, 6];
+                var concatRes = numberList.concat(numberList1);
 
-                var concatRes = numberList.concat(numberList1, numberList2);
-
-                expect(concatRes.length).to.equal(6);
-                for (var i = 0; i < 6; i++) {
+                expect(concatRes.length).to.equal(4);
+                for (var i = 0; i < 4; i++) {
                     expect(concatRes.at(i)).to.equal(i + 1);
                 }
             });
 
-            it('should allow subtypes allowed by all the different arrays', () => {
+            it('should fail for arrays containing different, primitive, type elements', () => {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2]);
+                var stringList = Typorama.Array.of(Typorama.String).create(['3', '4']);
 
-                
-
-                var userList = Typorama.Array.of(UserType).create([{}]);
-                var addressList = Typorama.Array.of(AddressType).create([{}]);
-                
-                var concatRes = userList.concat(addressList, mixedList);
-
-                expect(concatRes.length).to.equal(4);
-                expect(concatRes.at(0) instanceof UserType).to.be.true;
-                expect(concatRes.at(1) instanceof AddressType).to.be.true;
-                expect(concatRes.at(2) instanceof UserType).to.be.true;
-                expect(concatRes.at(3) instanceof AddressType).to.be.true;
+                expect(function() {
+                    numberList.concat(stringList);
+                }).to.throw();
             });
 
             it('should fail for arrays containing different type elements', () => {
+                var userList = Typorama.Array.of(UserType).create([{}]);
+                var addressList = Typorama.Array.of(AddressType).create([{}]);
+
+                expect(function() {
+                    userList.concat(addressList);
+                }).to.throw();
+            });
+
+            it('should pass when trying to pass an array containing an element with ONE of the subtypes contained within the other array', function() {
                 var data = [{
                     _type: 'User',
                     name: 'avi',
@@ -281,16 +281,17 @@ describe('Array data', () => {
                     name: 'avi',
                     age: 12
                 }];
-
-                var userList = Typorama.Array.of(UserType).create([{}]);
-                var addressList = Typorama.Array.of(AddressType).create([{}]);
                 var mixedList = Typorama.Array.of([UserType, AddressType]).create(data);
+                var addressList = Typorama.Array.of(AddressType).create([{}]);
 
-                expect(function() {
-                    debugger;
-                    userList.concat(addressList, mixedList);
-                }).to.throw();
+                debugger;
+                var concList = mixedList.concat(addressList);
+
+                expect(concList.length).to.equal(3);
+
             });
+
+
         });
 
         describe('join()', () => {
@@ -513,12 +514,6 @@ describe('Array data', () => {
             });
         });
 
-        describe('slice()', () => {
-            it('should execute a function once per every element in an array', () => {
-                throw 'not implemented yet';
-            });
-
-        });
         describe('as field on data object', () => {
 
             var GroupType = Typorama.define('GroupType', {
