@@ -10,7 +10,8 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --compilers js:babel/register --reporter nyan",
-    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test"
+    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-colors",
+    "webtest_old": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-color"
   },
   "author": "core3",
   "license": "c",
@@ -21,6 +22,7 @@
     "babel-runtime": "^4.4.5",
     "bluebird": "^2.9.12",
     "chai": "^2.1.0",
+    "immutable": "^3.6.4",
     "mocha": "^2.1.0",
     "mocha-loader": "^0.7.1",
     "webpack": "^1.5.3",

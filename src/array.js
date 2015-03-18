@@ -4,6 +4,12 @@ import BaseType from "./BaseType"
 import number from "./number"
 import {generateWithDefault} from "./defineTypeUtils"
 
+
+
+
+
+
+
 export default class _Array extends BaseType {
 
     static defaults(){ return []; }
@@ -11,10 +17,16 @@ export default class _Array extends BaseType {
     static test(value){ return Array.isArray(value); }
 
     static wrapValue(value, spec, isReadOnly, options){
-        return value.reduce((wrappedList, itemValue) => {
-            wrappedList.push(this._wrapSingleItem(itemValue, isReadOnly, options));
-            return wrappedList;
-        }, []);
+
+        if(value instanceof BaseType){
+            return value.__value__.map((itemValue) => {
+                return this._wrapSingleItem(itemValue, isReadOnly, options);
+            }, this);
+        }
+
+        return value.map((itemValue) => {
+            return this._wrapSingleItem(itemValue, isReadOnly, options);
+        }, this);
     }
 
     static _wrapSingleItem(itemValue, isReadOnly, options){
@@ -62,6 +74,15 @@ export default class _Array extends BaseType {
             cb(item,index,that);
         });
     }
+    map(cb){
+        var that = this;
+
+        this.__value__.map(function(item,index,arr){
+            return cb(item,index,that);
+        });
+
+    }
+
 
     splice(index,removeCount, ...addedItems){
         if(this.__isReadOnly__){
@@ -198,6 +219,27 @@ export default class _Array extends BaseType {
 }
 
 _Array.withDefault = generateWithDefault();
+
+
+
+//['map', 'filter', 'every', 'forEach'].map(function(key){
+['map'].map(function(key){
+
+    var loFn = _[key];
+
+    _Array.prototype[key] = function(fn, ctx){
+
+        return loFn(this.__value__, function(){
+            return fn.apply(ctx || this, arguments);
+        });
+
+
+    }
+
+
+});
+
+
 
 defineType('Array',{
     spec: function(){

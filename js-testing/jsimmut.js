@@ -1,6 +1,9 @@
 import _ from 'lodash'
-import React from 'react'
+import React from 'react/addons'
 import Immutable from 'immutable'
+import Typorama from '../src'
+
+debugger;
 
 window.count = 0;
 window.renderEmpty = false;

@@ -15,6 +15,10 @@ var config = {
         	"webpack/hot/dev-server",
 			"mocha!./test"
         ],
+        benchmark: [
+            "webpack/hot/dev-server",
+            "./js-testing/benchmark"
+        ],
         typorama: [
             "./src"
         ]
