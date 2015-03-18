@@ -14,6 +14,10 @@ var config = {
 		test: [
         	"webpack/hot/dev-server",
 			"mocha!./test"
+        ],
+        benchmark: [
+            "webpack/hot/dev-server",
+            "./js-testing/benchmark"
         ]
 	},
 	resolve: {

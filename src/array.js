@@ -7,6 +7,12 @@ import {
 }
 from "./defineTypeUtils"
 
+
+
+
+
+
+
 export default class _Array extends BaseType {
 
     static defaults() {
@@ -18,10 +24,16 @@ export default class _Array extends BaseType {
     }
 
     static wrapValue(value, spec, isReadOnly, options) {
-        return value.reduce((wrappedList, itemValue) => {
-            wrappedList.push(this._wrapSingleItem(itemValue, isReadOnly, options));
-            return wrappedList;
-        }, []);
+
+        if (value instanceof BaseType) {
+            return value.__value__.map((itemValue) => {
+                return this._wrapSingleItem(itemValue, isReadOnly, options);
+            }, this);
+        }
+
+        return value.map((itemValue) => {
+            return this._wrapSingleItem(itemValue, isReadOnly, options);
+        }, this);
     }
 
     static _wrapSingleItem(itemValue, isReadOnly, options) {
@@ -53,6 +65,8 @@ export default class _Array extends BaseType {
     }
 
     // To check with Nadav: map, pop, push, reverse, shift, sort 
+    // Need to fix map so that it wraps items
+
     // Mutator methods
 
     copyWithin() {
@@ -64,7 +78,7 @@ export default class _Array extends BaseType {
     }
 
     pop() {
-       if (this.__isReadOnly__) {
+        if (this.__isReadOnly__) {
             return null;
         }
         this.__isInvalidated__ = true;
@@ -80,7 +94,7 @@ export default class _Array extends BaseType {
     }
 
     reverse() {
-       if (this.__isReadOnly__) {
+        if (this.__isReadOnly__) {
             return null;
         }
         this.__isInvalidated__ = true;
@@ -102,6 +116,7 @@ export default class _Array extends BaseType {
         this.__isInvalidated__ = true;
         return this.__value__.sort(cb);
     }
+
 
     setValue(newValue) {
         if (newValue instanceof _Array) {
@@ -143,45 +158,63 @@ export default class _Array extends BaseType {
     }
 
     concat(...addedArrays) {
+        // Demands more work
+        var arrHasType = function(el){
+            if (el.__options__.subTypes instanceof function){
+                return el.__options__.subTypes.displayName;
+            } else {
+                for(var item in el){
+                    // I know...
+                    return arrHasType(el);
+                }
+            }
+        }
+        for(var item in addedArrays){
+            if(arrHasType(this) !== arrHasType(item)){
+                throw new Error("Error");
+            };    
+        }
+        
+
         var res = new this.constructor(this.__value__, false, this.__options__);
         addedArrays.forEach(function(arr) {
             arr.forEach(function(item) {
                 res.push(item);
-            })
+            });
         });
         return res;
     }
 
-    includes() {
+    // includes(){} ES7 Method
 
-    }
-
-    join() {
-
-    }
-
-    slice() {
-
+    join(separator ? = ',') {
+        return this.__value__.join(separator);
     }
 
     toSource() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     toString() {
+        throw 'Slice not implemented yet. Please do.';
+    }
 
+    valueOf() {
+        return this.__value__.map(function(item) {
+            return item.valueOf();
+        });
     }
 
     toLocaleString() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     indexOf() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     lastIndexOf() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     // Iteration methods        
@@ -194,29 +227,7 @@ export default class _Array extends BaseType {
     }
 
     entries() {
-
-    }
-
-    every(cb) {
-        var self = this;
-        return this.__value__e__.every(function(element, index, array) {
-            return cb(element, index, self)
-        });
-    }
-
-    some(cb) {
-        var self = this;
-        return this.__value__.some(function(element, index, array) {
-            return cb(element, index, self);
-        });
-    }
-
-    filter(cb) {
-        var self = this;
-        var filteredArray = this.__value__.filter(function(element, index, array) {
-            return cb(element, index, self);
-        });
-        return new this.constructor(filteredArray, false, this.__options__);
+        throw 'Slice not implemented yet. Please do.';
     }
 
     find(cb) {
@@ -236,7 +247,7 @@ export default class _Array extends BaseType {
     }
 
     keys() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     // Seeing as 'map' simply reads an array, and then duplicates it. Can I map a readOnly array?
@@ -251,15 +262,15 @@ export default class _Array extends BaseType {
     }
 
     reduce() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     reduceRight() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     values() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
 
@@ -310,6 +321,44 @@ export default class _Array extends BaseType {
 }
 
 _Array.withDefault = generateWithDefault();
+
+
+
+//['map', 'filter', 'forEach', 'concat', 'slice'].map(function(key){
+['map', 'filter', 'slice'].forEach(function(key) {
+
+    var loFn = _[key];
+
+    _Array.prototype[key] = function(fn, ctx) {
+
+        var valueArray = loFn(this.__value__, function() {
+            return fn.apply(ctx || this, arguments);
+        });
+
+        return new this.constructor(valueArray, false, this.__options__);
+
+    }
+
+
+});
+// ['every', 'some']
+['every', 'some'].forEach(function(key) {
+
+    var loFn = _[key];
+    _Array.prototype[key] = function(fn, ctx) {
+
+        var valueArray = loFn(this.__value__, function() {
+            return fn.apply(ctx || this, arguments);
+        });
+
+        return valueArray;
+
+    }
+
+
+});
+
+
 
 defineType('Array', {
     spec: function() {
