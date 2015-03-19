@@ -29,6 +29,9 @@
     "webpack": "^1.7.3",
     "webpack-dev-server": "^1.7.0"
   },
+  "engines": {
+    "node": ">=0.12"
+  },
   "dependencies": {
     "lodash": "^3.5.0"
   }
