@@ -10,17 +10,14 @@ var config = {
 	devtool: 'source-map',
 	context: __dirname,
 	entry: {
-		vendors: [],
-		test: [
-        	"webpack/hot/dev-server",
-			"mocha!./test"
-        ],
-        benchmark: [
+		// vendors: [],
+		benchmark: [
             "webpack/hot/dev-server",
             "./js-testing/benchmark"
         ],
-        typorama: [
-            "./src"
+		test: [
+        	"webpack/hot/dev-server",
+			"mocha!./test"
         ]
 	},
 	resolve: {
@@ -33,7 +30,7 @@ var config = {
 		chunkFilename : "[id].chunk.js"
 	},
 	module: {
-		noParse: [],
+		noParse: /\.min\.js$/,
 		loaders: [
 			{
 				test    : /\.js$/,

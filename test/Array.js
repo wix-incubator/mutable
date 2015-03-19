@@ -1,4 +1,4 @@
-import Typorama from "../";
+import Typorama from "../dist";
 import {aDataTypeWithSpec} from "./testDrivers/index";
 import {expect} from "chai";
 
@@ -389,7 +389,7 @@ describe('Array data', function() {
             });
 
         });
-        
+
         describe('push()',function(){
             it('should not modify an array ', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]).$asReadOnly();
@@ -415,7 +415,7 @@ describe('Array data', function() {
 
             })
         });
-        
+
         describe('Type Invalidation',()=>{
             describe('$isInvalidated()',() =>{
                 it('Should return false for unmodified data', () => {

@@ -3,15 +3,16 @@
   "name": "typorama",
   "version": "0.0.3",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "wix/typorama"
   },
   "scripts": {
-    "build": "./node_modules/.bin/babel ./src -d ./dist",
-    "test": "./node_modules/.bin/mocha --compilers js:babel/register --reporter nyan",
-    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-colors"
+    "build": "babel ./src/ -d ./dist/ --modules umd --source-maps",
+    "watch": "babel -w ./src/ -d ./dist/ --modules umd --source-maps",
+    "test": "mocha --compilers js:babel/register --reporter nyan",
+    "prepublish": "npm run build"
   },
   "author": "core3",
   "license": "c",

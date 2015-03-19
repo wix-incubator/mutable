@@ -1,5 +1,5 @@
 import _ from "lodash";
-import Typorama from "../";
+import Typorama from "../dist";
 import {aDataTypeWithSpec} from "./testDrivers/index";
 import {expect, err} from "chai";
 
