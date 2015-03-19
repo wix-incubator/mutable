@@ -3,15 +3,15 @@
   "name": "typorama",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/typorama.bundle.js",
+  "main": "./dist",
   "repository": {
     "type": "git",
     "url": "wix/typorama"
   },
   "scripts": {
+    "build": "./node_modules/.bin/babel ./src -d ./dist",
     "test": "./node_modules/.bin/mocha --compilers js:babel/register --reporter nyan",
-    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-colors",
-    "webtest_old": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-color"
+    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-colors"
   },
   "author": "core3",
   "license": "c",
