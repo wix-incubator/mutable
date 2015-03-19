@@ -15,7 +15,7 @@
     "webtest": "webpack-dev-server --progress --colors",
 
     "prepublish": "npm run build",
-    "prebuild": "npm run test",
+    "prebuild": "npm run test"
   },
   "author": "core3",
   "license": "c",

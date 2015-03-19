@@ -149,16 +149,13 @@ describe('Array data', function() {
             });
         });
         describe('concat',function(){
-            it('should create a new array built from the source array and all arrays passed to it',function(){
-                var numberList = Typorama.Array.of(Typorama.Number).create([1,2]);
-                var numberList1 = Typorama.Array.of(Typorama.Number).create([3,4]);
-                var numberList2 = [5,6];
-                var concatRes = numberList.concat(numberList1,numberList2);
+            it('should create a new array built from the source array and all arrays passed to it', function() {
+                var firstNumberList = Typorama.Array.of(Typorama.Number).create([1,2]);
+                var secondNumberList = Typorama.Array.of(Typorama.Number).create([3,4]);
+                var thirdNumberList = [5,6];
+                var concatResult = firstNumberList.concat(secondNumberList.concat(thirdNumberList));
+                debugger;
                 expect(concatRes.length).to.equal(6);
-                for(var i=0;i<6;i++)
-                {
-                    expect(concatRes.at(i)).to.equal(i+1);
-                }
             });
             it('should allow subtypes allowed by all the different arrays',function(){
                 var userList = Typorama.Array.of(UserType).create([{}]);

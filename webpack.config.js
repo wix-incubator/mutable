@@ -7,7 +7,6 @@ var config = {
 		this.module.noParse.push(new RegExp('^' + name + '$'));
 		this.entry.vendors.push(name);
 	},
-	devtool: 'source-map',
 	context: __dirname,
 	entry: {
 		// vendors: [],
