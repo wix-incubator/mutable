@@ -1,5 +1,5 @@
 var chai = require('chai');
-import Typorama from "../../";
+import Typorama from '../../src'
 
 class TypeFieldAssertion extends chai.Assertion {
 

@@ -1,6 +1,6 @@
-var _ = require('lodash');
-var chai = require('chai');
-import Typorama from "../../";
+import _ from 'lodash'
+import chai from 'chai'
+import Typorama from '../../src'
 
 chai.Assertion.addProperty("dataInstance", function(){
     var instance = this._obj;

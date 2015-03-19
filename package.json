@@ -12,7 +12,10 @@
     "build": "babel ./src/ -d ./dist/ --modules umd --source-maps",
     "watch": "babel -w ./src/ -d ./dist/ --modules umd --source-maps",
     "test": "mocha --compilers js:babel/register --reporter nyan",
-    "prepublish": "npm run build"
+    "webtest": "webpack-dev-server --progress --colors",
+
+    "prepublish": "npm run build",
+    "prebuild": "npm run test",
   },
   "author": "core3",
   "license": "c",
