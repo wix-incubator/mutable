@@ -21,7 +21,7 @@ describe('Array data', function() {
 
     describe('(Mutable) instance', () => {
 
-        it('Should have default length', () => {
+        it('Should have dssssefault length', () => {
             var numberList = new Typorama.Array([1,2,3,4], false, Typorama.Number);
             expect(numberList.length).to.equal(4);
         });
