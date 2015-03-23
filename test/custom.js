@@ -94,7 +94,15 @@ describe('Custom data', function() {
 
         });
 
-
+		it('should chain withdefault calls', function(){
+		
+			var typeWithDefaultBob = UserType.withDefault({name:'joe'}).withDefault({name:'bob'})
+			
+			var a = typeWithDefaultBob.defaults();
+			
+			expect(a.name).to.equal('bob');
+		
+		})
 
         it('should clone complex data objects on set', () => {
             var userData = new UserWithChildType();
@@ -243,6 +251,20 @@ describe('Custom data', function() {
                 expect(userData.$isInvalidated()).to.equal(false);
 
             });
+			
+			
+			it('should not invalidate if same values are set', () => {
+				var userData = new UserType();
+                userData.name = 'gaga';
+                expect(userData.$isInvalidated()).to.equal(true);
+                userData.$revalidate();
+			
+				userData.name = 'gaga';
+				
+				expect(userData.$isInvalidated()).to.equal(false);
+				
+			});
+			
             it('should reset deep data invalidation', () => {
                 var userWithChildType = new UserWithChildType();
                 userWithChildType.child.name = "gaga";

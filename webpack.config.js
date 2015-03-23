@@ -18,6 +18,9 @@ var config = {
 		test: [
         	"webpack/hot/dev-server",
 			"mocha!./test"
+		],
+        examples: [
+            "./examples"
         ]
 	},
 	resolve: {

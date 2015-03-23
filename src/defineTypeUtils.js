@@ -33,6 +33,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
 
 export function generateWithDefault(){
     return function withDefault(defaults, test, options){
+		options = options || this.options;
         var def = this.defaults;
         if(defaults !== undefined){ // ToDo: clone defaults (add test)
             def = (typeof defaults === 'function') ? defaults : function(){ return _.clone(defaults, true); };
@@ -42,9 +43,9 @@ export function generateWithDefault(){
             return typeWithDefault.type.create(value, isReadOnly, typeWithDefault.options || options);
         }
 
-        typeWithDefault.type = this;
+        typeWithDefault.type = this.type || this;
         typeWithDefault.test = test || this.test;
-        typeWithDefault.withDefault = withDefault.bind(this);
+        typeWithDefault.withDefault = withDefault//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.options = options;
         typeWithDefault.wrapValue = this.wrapValue;
@@ -65,7 +66,7 @@ export function generateWithDefaultForSysImmutable(Type){
         }
         typeWithDefault.type = this.type;
         typeWithDefault.test = test || this.test;
-        typeWithDefault.withDefault = this.withDefault.bind(this);
+        typeWithDefault.withDefault = this.withDefault//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.wrapValue = Type;
         typeWithDefault.create = this.create;

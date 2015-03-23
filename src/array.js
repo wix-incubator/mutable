@@ -173,18 +173,10 @@ export default class _Array extends BaseType {
         }
     }
 
-    $asReadOnly(){
-        if(!this.__readOnlyInstance__) {
-            this.__readOnlyInstance__ = this.constructor.type.create(this.__value__, true, this.__options__);
-        }
-        return this.__readOnlyInstance__;
-    }
-
     $isInvalidated(){
         if(this.__isInvalidated__==-1) {
             var invalidatedField = _.find(this.__value__, (item, index)=>{
-                if(item instanceof BaseType)
-                {
+                if(item instanceof BaseType) {
                     return item.$isInvalidated();
                 }
             });
@@ -200,8 +192,7 @@ export default class _Array extends BaseType {
     $revalidate(){
         this.__isInvalidated__ = -1;
         _.forEach(this.__value__, (item, index)=>{
-            if(item instanceof BaseType)
-            {
+            if(item instanceof BaseType) {
                 item.$revalidate();
             }
         });
@@ -232,7 +223,6 @@ _Array.withDefault = generateWithDefault();
         return loFn(this.__value__, function(){
             return fn.apply(ctx || this, arguments);
         });
-
 
     }
 

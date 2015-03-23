@@ -63,8 +63,7 @@ export default class BaseType {
     $revalidate(){
         this.__isInvalidated__ = -1;
         _.forEach(this.constructor._spec, (fieldDef, fieldName)=>{
-            if(fieldDef.type.prototype instanceof BaseType)
-            {
+            if(fieldDef.type.prototype instanceof BaseType){
                 this.__value__[fieldName].$revalidate();
             }
         });
@@ -72,7 +71,7 @@ export default class BaseType {
 
     $resetValidationCheck(){
         this.__isInvalidated__ = this.__isInvalidated__ || -1;
-        _.forEach(this.constructor._spec, (fieldDef, fieldName)=>{
+        _.forEach(this.constructor._spec, (fieldDef, fieldName) => {
             if(fieldDef.type.prototype instanceof BaseType) {
                 this.__value__[fieldName].$resetValidationCheck();
             }
