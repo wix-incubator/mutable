@@ -49,6 +49,12 @@ export default class _Array extends BaseType {
         BaseType.call(this, value, isReadOnly, options);
     }
 
+    toJSON(){
+        return this.__value__.map(item => {
+            return (item instanceof BaseType) ? item.toJSON() : item;
+        });
+    }
+
     at(index) {
         var item = this.__value__[index];
         return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;

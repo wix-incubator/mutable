@@ -20,7 +20,7 @@ describe('Array data', function() {
 
     describe('(Mutable) instance', () => {
 
-        it('Should have dssssefault length', () => {
+        it('Should have default length', () => {
             var numberList = new Typorama.Array([1,2,3,4], false, Typorama.Number);
             expect(numberList.length).to.equal(4);
         });
@@ -31,6 +31,18 @@ describe('Array data', function() {
             var numberListReadOnly2 = numberList.$asReadOnly();
 
             expect(numberListReadOnly).to.equal(numberListReadOnly2);
+        });
+
+        describe('setValue()', function(){
+
+            it('should replace the value of the array', function(){
+                var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
+
+                numberList.setValue([5,6,7,8]);
+
+                expect(numberList.toJSON()).to.eql([5,6,7,8]);
+            });
+
         });
 
         describe('at()', () => {
