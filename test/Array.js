@@ -3,7 +3,6 @@ import {aDataTypeWithSpec} from "./testDrivers/index";
 import {expect} from "chai";
 
 describe('Array data', function() {
-
     var UserType = aDataTypeWithSpec({
         name: Typorama.String.withDefault(''),
         age: Typorama.Number.withDefault(10)

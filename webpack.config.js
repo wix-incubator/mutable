@@ -7,6 +7,7 @@ var config = {
 		this.module.noParse.push(new RegExp('^' + name + '$'));
 		this.entry.vendors.push(name);
 	},
+	//devtool: 'source-map',//this is slow (Mar 22 2015)
 	context: __dirname,
 	entry: {
 		// vendors: [],
@@ -40,12 +41,12 @@ var config = {
 	},
 	plugins: [
 		new webpack.HotModuleReplacementPlugin()
-		//,
-		// new webpack.optimize.CommonsChunkPlugin('vendors', 'vendors.js')
+		//, new webpack.optimize.CommonsChunkPlugin('vendors', 'vendors.js')
 	],
 	debug: true
 };
-//config.addVendor('react', path.join(npm_dir, '/react/dist/react-with-addons.js'));
+
+// config.addVendor('react',     path.join(npm_dir, '/react/dist/react-with-addons.js'));
 // config.addVendor('mocha',     path.join(npm_dir, '/mocha'));
 // config.addVendor('lodash',    path.join(npm_dir, 'lodash/index.js'));
 // config.addVendor('immutable', path.join(npm_dir, 'immutable/dist/immutable.js'));
