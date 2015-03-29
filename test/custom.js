@@ -1,7 +1,7 @@
-import _ from "lodash";
-import Typorama from "../src";
-import {aDataTypeWithSpec} from "./testDrivers/index";
-import {expect, err} from "chai";
+import _ from 'lodash';
+import Typorama from '../src';
+import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
+import {expect, err} from 'chai';
 
 describe('Custom data', function() {
 

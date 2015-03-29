@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../test-kit/index.js"],"names":[],"mappings":";;;;;;;;;KAAY,iBAAiB;kBAEd;AACd,SAAO,EAAE,EAAE,iBAAiB,EAAjB,iBAAiB,EAAE;EAC9B","file":"test-kit/index.js","sourcesContent":["import * as aDataTypeWithSpec from './testDrivers/aDataTypeWithSpec'\n\nexport default {\n\tdrivers: { aDataTypeWithSpec }\n}\n"]}

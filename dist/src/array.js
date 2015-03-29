@@ -70,12 +70,10 @@
                 }
             },
             map: {
-                value: function map(cb) {
-                    var that = this;
-
+                value: function map(cb, ctx) {
                     this.__value__.map(function (item, index, arr) {
-                        return cb(item, index, that);
-                    });
+                        return cb(item, index, this);
+                    }, ctx || this);
                 }
             },
             splice: {
@@ -279,7 +277,7 @@
 
     _Array.withDefault = generateWithDefault();
 
-    //['map', 'filter', 'every', 'forEach'].map(function(key){
+    //['map', 'filter', 'every', 'forEach'].map(function(key) {
     ["map"].map(function (key) {
 
         var loFn = _[key];
