@@ -13,7 +13,6 @@ module.exports = {
 			'./test-kit'
 		],
 		test: [
-			'webpack/hot/dev-server',
 			'mocha!./test'
 		]
 	},
