@@ -2,6 +2,7 @@ import _ from "lodash"
 import defineType from "./defineType"
 import BaseType from "./BaseType"
 import number from "./number"
+import string from "./string"
 import {generateWithDefault} from "./defineTypeUtils"
 
 export default class _Array extends BaseType {
@@ -29,7 +30,14 @@ export default class _Array extends BaseType {
         } else if(typeof options.subTypes === 'function') {
             return options.subTypes.create(itemValue, isReadOnly, options.subTypes.options);
         } else if(typeof options.subTypes === 'object') {
-            var subType = options.subTypes[itemValue._type];
+
+            var subType = options.subTypes[
+                itemValue._type ? itemValue._type  :
+                number.test(itemValue) ? '_Number' :
+                string.test(itemValue) ? '_String' :
+                Object.keys(options.subTypes)[0]
+            ];
+
             return subType.create(itemValue, isReadOnly, subType.options);
         }
     }
@@ -40,16 +48,17 @@ export default class _Array extends BaseType {
 
     constructor(value=[], isReadOnly=false, options={}) {
         if(options.subTypes && _.isArray(options.subTypes)) {
-            var subTypesObj = {};
-            options.subTypes.forEach(function(item) {
-                subTypesObj[item.displayName] = item;
-            });
-            options.subTypes = subTypesObj;
+            options.subTypes = options.subTypes.reduce(function(subTypes, type) {
+                subTypes[type.displayName || type.name] = type;
+                return subTypes;
+            }, {});
         }
-        BaseType.call(this, value, isReadOnly, options);
+
+        super(value, isReadOnly, options);
+        // BaseType.call(this, value, isReadOnly, options);
     }
 
-    toJSON(){
+    toJSON() {
         return this.__value__.map(item => {
             return (item instanceof BaseType) ? item.toJSON() : item;
         });
@@ -60,12 +69,19 @@ export default class _Array extends BaseType {
         return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
     }
 
-    push(newItem) {
+    push(...newItems) {
         if(this.__isReadOnly__) {
             return null;
         }
+
         this.__isInvalidated__= true;
-        return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+
+        var options = this.__options__;
+
+        return Array.prototype.push.apply(
+            this.__value__,
+            newItems.map((item) => this.constructor._wrapSingleItem(item, false, options))
+        );
     }
 
     forEach(cb) {
@@ -95,30 +111,9 @@ export default class _Array extends BaseType {
         //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
 
-    concat(...addedArrays) {
-        var items = [];
-        var subTypes = [];
-        var addSubTypes = function(arr) {
-            var subs = arr.__options__ && arr.__options__.subTypes;
-            if(subs===undefined)
-            {  }else if(_.isFunction(subs))
-            {
-                subTypes.push(subs);
-            }else
-            {
-                subTypes = subTypes.concat(subs);
-            }
-        };
 
-        addSubTypes(this);
-        addedArrays.forEach(function(arr) {
-            arr.forEach(function(item) {
-                items.push(item);
-            });
-            addSubTypes(arr);
-        });
-        subTypes = _.uniq(subTypes);
-        return new this.constructor(items,false,{subTypes:subTypes});
+    concat(...addedArrays) {
+        return this.constructor.create(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__isReadOnly__, this.__options__);
     }
 
     every(cb) {

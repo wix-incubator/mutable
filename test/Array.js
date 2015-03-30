@@ -139,14 +139,23 @@ describe('Array data', function() {
             });
 
             it('Should add a typed item form multiple types if there is _type field', () => {
-                 var arr = Typorama.Array.of([UserType,AddressType]).create([]);
+                var arr = Typorama.Array.of([UserType,AddressType]).create([]);
                 arr.push({_type:'User'});
                 arr.push({_type:'Address'});
                 expect(arr.at(0) instanceof UserType).to.equal(true);
                 expect(arr.at(1) instanceof AddressType).to.equal(true);
             });
+
+            it('Should support multiple push items', function() {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1,2,3,4]);
+                numberList.push(5, 6);
+
+                expect(numberList.length).to.equal(6);
+                expect(numberList.at(4)).to.equal(5);
+                expect(numberList.at(5)).to.equal(6);
+            })
         });
-        describe('forEach',function(){
+        describe('forEach()',function(){
             it('should call the method passed with item, index, arr',function(){
                 var sourceArr = [1,2,3];
                 var numberList = Typorama.Array.of(Typorama.Number).create(sourceArr);
@@ -161,25 +170,43 @@ describe('Array data', function() {
 
             });
         });
-        xdescribe('concat',function(){ // ToDo: make them work
-            it('should create a new array built from the source array and all arrays passed to it', function() {
+        describe('concat()',function(){ // ToDo: make them work
+            it('should be able to concat N arrays of the same type', function() {
                 var firstNumberList = Typorama.Array.of(Typorama.Number).create([1,2]);
                 var secondNumberList = Typorama.Array.of(Typorama.Number).create([3,4]);
                 var thirdNumberList = [5,6];
-                var concatResult = firstNumberList.concat(secondNumberList.concat(thirdNumberList));
-                debugger;
-                expect(concatRes.length).to.equal(6);
+                var concatResult = firstNumberList.concat(secondNumberList, thirdNumberList);
+
+                expect(concatResult.length).to.equal(6, 'Length check');
+                expect(concatResult.__value__).to.eql([1,2,3,4,5,6], 'Equality test'); //TODO: create matcher.
             });
+
+            it('should be able to concat N arrays of the different types', function() {
+                var mixedArray = Typorama.Array.of([Typorama.Number, Typorama.String]).create([1, '2']);
+                var strings = Typorama.Array.of(Typorama.String).create(['3', '4']);
+                var numbers = [5,6];
+                var concatResult = mixedArray.concat(strings, numbers);
+                expect(concatResult.length).to.equal(6, 'Length check');
+                expect(concatResult.__value__).to.eql([1, '2', '3', '4', 5, 6], 'Equality test'); //TODO: create matcher.
+            });
+
             it('should allow subtypes allowed by all the different arrays',function(){
-                var userList = Typorama.Array.of(UserType).create([{}]);
+                var mixedInstance = Typorama.Array.of([UserType, AddressType]).create([
+                    { _type: UserType.displayName },
+                    { _type: AddressType.displayName },
+                    {}
+                ]);
                 var addressList = Typorama.Array.of(AddressType).create([{}]);
-                var mixedList = [{_type:userList.displayName},{_type:addressList.displayName}];
-                var concatRes = userList.concat(addressList,mixedList);
-                expect(concatRes.length).to.equal(4);
-                expect(concatRes.at(0) instanceof UserType).to.equal(true);
-                expect(concatRes.at(1) instanceof AddressType).to.equal(true);
-                expect(concatRes.at(2) instanceof UserType).to.equal(true);
-                expect(concatRes.at(3) instanceof AddressType).to.equal(true);
+                var mixedList = [{_type: UserType.displayName}, {_type: AddressType.displayName}];
+                var concatResult = mixedInstance.concat(addressList, mixedList);
+
+                expect(concatResult.length).to.equal(6);
+                expect(concatResult.at(0) instanceof UserType).to.equal(true, 'Type test expected:UserType');
+                expect(concatResult.at(1) instanceof AddressType).to.equal(true, 'Type test expected:AddressType');
+                expect(concatResult.at(2) instanceof UserType).to.equal(true, 'Type test expected:UserType');
+                expect(concatResult.at(3) instanceof AddressType).to.equal(true, 'Type test expected:AddressType');
+                expect(concatResult.at(4) instanceof UserType).to.equal(true, 'Type test expected:UserType');
+                expect(concatResult.at(5) instanceof AddressType).to.equal(true, 'Type test expected:AddressType');
 
             });
         });
