@@ -1,32 +1,33 @@
 import Typorama from "../src";
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from "chai";
+var UserType = aDataTypeWithSpec({
+    name: Typorama.String.withDefault(''),
+    age: Typorama.Number.withDefault(10)
+}, 'User');
+
+var AddressType = aDataTypeWithSpec({
+    address: Typorama.String.withDefault(''),
+    code: Typorama.Number.withDefault(10)
+}, 'Address');
+
+var UserWithAddressType = aDataTypeWithSpec({
+    user: UserType,
+    address: AddressType
+}, 'UserWithAddress');
 
 describe('Array data', function() {
-    var UserType = aDataTypeWithSpec({
-        name: Typorama.String.withDefault(''),
-        age: Typorama.Number.withDefault(10)
-    }, 'User');
 
-    var AddressType = aDataTypeWithSpec({
-        address: Typorama.String.withDefault(''),
-        code: Typorama.Number.withDefault(10)
-    }, 'Address');
-
-    var UserWithAddressType = aDataTypeWithSpec({
-        user: UserType,
-        address: AddressType
-    }, 'UserWithAddress');
 
     describe('(Mutable) instance', () => {
 
         it('Should have default length', () => {
-            var numberList = new Typorama.Array([1,2,3,4], false, Typorama.Number);
+            var numberList = new Typorama.Array([1,2,3,4], false, {subTypes:Typorama.Number});
             expect(numberList.length).to.equal(4);
         });
 
         it('Should be created once for each data instance', () => {
-            var numberList = new Typorama.Array([1,2,3,4], false, Typorama.Number);
+            var numberList = new Typorama.Array([1,2,3,4], false, {subTypes:Typorama.Number});
             var numberListReadOnly = numberList.$asReadOnly();
             var numberListReadOnly2 = numberList.$asReadOnly();
 
@@ -78,8 +79,8 @@ describe('Array data', function() {
                     {_type:'Address', name: 'avi', age: 12}
                 ];
                 var arr = Typorama.Array.of([UserType,  AddressType]).create(data);
-                expect(arr.at(0) instanceof UserType).to.equal(true);
-                expect(arr.at(1) instanceof AddressType).to.equal(true);
+                expect(arr.at(0) instanceof UserType).to.equal(true, 'first item');
+                expect(arr.at(1) instanceof AddressType).to.equal(true, 'second item');
             });
 
             it('Should modify inner complex data', () => {
@@ -92,6 +93,7 @@ describe('Array data', function() {
 
             it('Should handle multi level array', () => {
                 var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]]);
+
                 expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.equal(true);
             });
 
@@ -393,12 +395,17 @@ describe('Array data', function() {
             });
 
             it('Should handle multi level array', () => {
-                var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]], true);
-                expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.equal(true);
+                //var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]], true);
+                var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]]);
+
+                var arrComplexTypeReadOnly = arrComplexType.$asReadOnly();
+
+                expect(arrComplexTypeReadOnly.at(0).at(0) instanceof UserWithAddressType).to.equal(true);
             });
 
             it('Should not change type from multi level array', () => {
-                var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]], true);
+                //var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]], true);
+                var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]]).$asReadOnly();
                 var userWithAddress = arrComplexType.at(0).at(0);
 
                 userWithAddress.user.name = 'you got a new name';

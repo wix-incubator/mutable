@@ -38,7 +38,11 @@
             }
             Object.defineProperty(obj, fieldName, {
                 get: function get() {
-                    return this.__value__[fieldName];
+                    if (this.__isReadOnly__) {
+                        return fieldDef.type.prototype instanceof BaseType ? this.__value__[fieldName].$asReadOnly() : this.__value__[fieldName];
+                    } else {
+                        return this.__value__[fieldName];
+                    }
                 },
                 set: function set(newValue) {
                     this.__isInvalidated__ = true;

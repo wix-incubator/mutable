@@ -46,6 +46,13 @@
         _inherits(_Array, _BaseType);
 
         _createClass(_Array, {
+            toJSON: {
+                value: function toJSON() {
+                    return this.__value__.map(function (item) {
+                        return item instanceof BaseType ? item.toJSON() : item;
+                    });
+                }
+            },
             at: {
                 value: function at(index) {
                     var item = this.__value__[index];
