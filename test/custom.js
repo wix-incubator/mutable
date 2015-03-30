@@ -163,6 +163,22 @@ describe('Custom data', function() {
             expect(userReadOnly).to.equal(userReadOnly2);
         });
 
+        it('should keep the source instance not readOnly', () => {
+            // this is beacause the readonly instance used to have a bug in which it changed the original item value while wrapping it
+            var userData = new UserWithChildType();
+
+            userData.$asReadOnly();
+            userData.child.setValue({name:'moshe'});
+
+            expect(userData.toJSON()).to.eql({
+                name: 'leon',
+                child: {
+                    name: 'moshe',
+                    age: 13
+                }
+            });
+        });
+
         it('should be linked to data instance values', () => {
             var userData = new UserType();
             var userReadOnly = userData.$asReadOnly();

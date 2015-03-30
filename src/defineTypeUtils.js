@@ -13,7 +13,13 @@ export function generateFieldsOn(obj, fieldsDefinition){
     _.forEach(fieldsDefinition, (fieldDef, fieldName) => {
         if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.displayName + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
-            get: function(){ return this.__value__[fieldName] },
+            get: function(){
+                if(this.__isReadOnly__) {
+                    return (fieldDef.type.prototype instanceof BaseType) ? this.__value__[fieldName].$asReadOnly() : this.__value__[fieldName];
+                } else {
+                    return this.__value__[fieldName];
+                }
+            },
             set: function(newValue){
                 this.__isInvalidated__ = true;
 
