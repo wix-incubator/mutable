@@ -3,7 +3,7 @@
   "name": "typorama",
   "version": "0.0.3",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/src",
   "repository": {
     "type": "git",
     "url": "wix/typorama"
