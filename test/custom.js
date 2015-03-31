@@ -271,7 +271,7 @@ describe('Custom data', function() {
 
             });
 
-			it('should not invalidate if same values are set', function() {
+			xit('should not invalidate if same values are set', function() {
 				var userData = new UserType();
                 userData.name = 'gaga';
                 expect(userData.$isInvalidated()).to.equal(true);
