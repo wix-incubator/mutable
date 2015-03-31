@@ -13,7 +13,8 @@ module.exports = {
 		],
 		test: [
 			'mocha!./test'
-		]
+		],
+		examples: [ './examples']
 	},
 	output: {
 		path     : __dirname + '/dist',

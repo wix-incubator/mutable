@@ -197,6 +197,7 @@
             },
             $isInvalidated: {
                 value: function $isInvalidated() {
+
                     if (this.__isInvalidated__ == -1) {
                         var invalidatedField = _.find(this.__value__, function (item, index) {
                             if (item instanceof BaseType) {
