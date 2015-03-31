@@ -1,10 +1,10 @@
 (function (factory) {
     if (typeof define === "function" && define.amd) {
-        define(["exports", "../../src"], factory);
-    } else if (typeof exports !== "undefined") {
-        factory(exports, require("../../src"));
+        define(["exports", "module", "../../src"], factory);
+    } else if (typeof exports !== "undefined" && typeof module !== "undefined") {
+        factory(exports, module, require("../../src"));
     }
-})(function (exports, _src) {
+})(function (exports, module, _src) {
     "use strict";
 
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
@@ -15,69 +15,70 @@
 
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-    var chai = require("chai");
-
     var Typorama = _interopRequire(_src);
 
-    var TypeFieldAssertion = (function (_chai$Assertion) {
-        function TypeFieldAssertion() {
-            _classCallCheck(this, TypeFieldAssertion);
+    module.exports = function (chai, utils) {
 
-            if (_chai$Assertion != null) {
-                _chai$Assertion.apply(this, arguments);
-            }
-        }
+        chai.Assertion.addMethod("field", function (name) {
+            var Type = this._obj;
 
-        _inherits(TypeFieldAssertion, _chai$Assertion);
+            this.assert(Typorama.BaseType.prototype.isPrototypeOf(Type.prototype), "expected a Type but got #{act}", "expected not a Type but got #{act}", Typorama.BaseType, Type, true);
 
-        _createClass(TypeFieldAssertion, {
-            defaults: {
-                value: (function (_defaults) {
-                    var _defaultsWrapper = function defaults(_x) {
-                        return _defaults.apply(this, arguments);
-                    };
+            var TypeName = Type.displayName || Type.type;
 
-                    _defaultsWrapper.toString = function () {
-                        return _defaults.toString();
-                    };
+            var spec = Type.getFieldsSpec()[name];
 
-                    return _defaultsWrapper;
-                })(function (expectedValue) {
-                    var field = this._obj;
+            this.assert(spec !== undefined, "expected a Type with a field " + name, "expected a Type without a field " + name, name, undefined, true);
 
-                    var defaults = field.spec.defaults();
-
-                    this.assert(defaults === expectedValue, "expected field \"" + field.name + "\" defaults to be #{exp} but got #{act}", "expected field \"" + field.name + "\" defaults not to be #{exp} but got #{act}", expectedValue, defaults, true);
-
-                    return new TypeFieldAssertion(field, this);
-                })
-            },
-            type: {
-                value: function type(expectedType) {
-                    var field = this._obj;
-
-                    this.assert(field.spec.type === expectedType.type, "expected field \"" + field.name + "\" type to be #{exp} but got #{act}", "expected field \"" + field.name + "\" type not to be #{exp} but got #{act}", expectedType.displayName || expectedType, field.spec.type.displayName || field.spec.type, true);
-
-                    return new TypeFieldAssertion(field, this);
-                }
-            }
+            return new TypeFieldAssertion({ spec: spec, name: name });
         });
 
-        return TypeFieldAssertion;
-    })(chai.Assertion);
+        var TypeFieldAssertion = (function (_chai$Assertion) {
+            function TypeFieldAssertion() {
+                _classCallCheck(this, TypeFieldAssertion);
 
-    chai.Assertion.addMethod("field", function (name) {
-        var Type = this._obj;
+                if (_chai$Assertion != null) {
+                    _chai$Assertion.apply(this, arguments);
+                }
+            }
 
-        this.assert(Typorama.BaseType.prototype.isPrototypeOf(Type.prototype), "expected a Type but got #{act}", "expected not a Type but got #{act}", Typorama.BaseType, Type, true);
+            _inherits(TypeFieldAssertion, _chai$Assertion);
 
-        var TypeName = Type.displayName || Type.type;
+            _createClass(TypeFieldAssertion, {
+                defaults: {
+                    value: (function (_defaults) {
+                        var _defaultsWrapper = function defaults(_x) {
+                            return _defaults.apply(this, arguments);
+                        };
 
-        var spec = Type.getFieldsSpec()[name];
+                        _defaultsWrapper.toString = function () {
+                            return _defaults.toString();
+                        };
 
-        this.assert(spec !== undefined, "expected a Type with a field " + name, "expected a Type without a field " + name, name, undefined, true);
+                        return _defaultsWrapper;
+                    })(function (expectedValue) {
+                        var field = this._obj;
 
-        return new TypeFieldAssertion({ spec: spec, name: name });
-    });
+                        var defaults = field.spec.defaults();
+
+                        this.assert(defaults === expectedValue, "expected field \"" + field.name + "\" defaults to be #{exp} but got #{act}", "expected field \"" + field.name + "\" defaults not to be #{exp} but got #{act}", expectedValue, defaults, true);
+
+                        return new TypeFieldAssertion(field, this);
+                    })
+                },
+                type: {
+                    value: function type(expectedType) {
+                        var field = this._obj;
+
+                        this.assert(field.spec.type === expectedType.type, "expected field \"" + field.name + "\" type to be #{exp} but got #{act}", "expected field \"" + field.name + "\" type not to be #{exp} but got #{act}", expectedType.displayName || expectedType, field.spec.type.displayName || field.spec.type, true);
+
+                        return new TypeFieldAssertion(field, this);
+                    }
+                }
+            });
+
+            return TypeFieldAssertion;
+        })(chai.Assertion);
+    };
 });
 //# sourceMappingURL=dataTypeMatchers.js.map
