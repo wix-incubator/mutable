@@ -3,10 +3,9 @@ module.exports = {
 	context: __dirname,
 	entry: {
 		benchmark: [
-			'webpack/hot/dev-server',
 			'./js-testing/benchmark'
 		],
-		src: [
+		typorama: [
 			'./src'
 		],
 		'test-kit': [
@@ -17,8 +16,8 @@ module.exports = {
 		]
 	},
 	output: {
-		path     : __dirname + '/dist/bundles',
-		filename : '[name].bundle.js',
+		path     : __dirname + '/dist',
+		filename : '[name].js',
 		libraryTarget: 'umd'
 	},
 	devServer: {
