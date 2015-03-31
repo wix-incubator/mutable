@@ -1,5 +1,7 @@
 import * as aDataTypeWithSpec from './testDrivers/aDataTypeWithSpec'
+import chaiMatchers from "./matchers";
 
 export default {
-	drivers: { aDataTypeWithSpec }
+	drivers: { aDataTypeWithSpec },
+    chai: chaiMatchers
 }
