@@ -1,15 +1,17 @@
 (function (factory) {
     if (typeof define === "function" && define.amd) {
-        define(["exports", "module", "lodash", "./defineType", "./BaseType", "./number", "./defineTypeUtils"], factory);
+        define(["exports", "module", "lodash", "./defineType", "./BaseType", "./number", "./string", "./defineTypeUtils"], factory);
     } else if (typeof exports !== "undefined" && typeof module !== "undefined") {
-        factory(exports, module, require("lodash"), require("./defineType"), require("./BaseType"), require("./number"), require("./defineTypeUtils"));
+        factory(exports, module, require("lodash"), require("./defineType"), require("./BaseType"), require("./number"), require("./string"), require("./defineTypeUtils"));
     }
-})(function (exports, module, _lodash, _defineType, _BaseType2, _number, _defineTypeUtils) {
+})(function (exports, module, _lodash, _defineType, _BaseType2, _number, _string, _defineTypeUtils) {
     "use strict";
 
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+    var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
     var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
@@ -23,6 +25,8 @@
 
     var number = _interopRequire(_number);
 
+    var string = _interopRequire(_string);
+
     var generateWithDefault = _defineTypeUtils.generateWithDefault;
 
     var _Array = (function (_BaseType) {
@@ -34,18 +38,26 @@
             _classCallCheck(this, _Array);
 
             if (options.subTypes && _.isArray(options.subTypes)) {
-                var subTypesObj = {};
-                options.subTypes.forEach(function (item) {
-                    subTypesObj[item.displayName] = item;
-                });
-                options.subTypes = subTypesObj;
+                options.subTypes = options.subTypes.reduce(function (subTypes, type) {
+                    subTypes[type.displayName || type.name] = type;
+                    return subTypes;
+                }, {});
             }
-            BaseType.call(this, value, isReadOnly, options);
+
+            _get(Object.getPrototypeOf(_Array.prototype), "constructor", this).call(this, value, isReadOnly, options);
+            // BaseType.call(this, value, isReadOnly, options);
         }
 
         _inherits(_Array, _BaseType);
 
         _createClass(_Array, {
+            toJSON: {
+                value: function toJSON() {
+                    return this.__value__.map(function (item) {
+                        return item instanceof BaseType ? item.toJSON() : item;
+                    });
+                }
+            },
             at: {
                 value: function at(index) {
                     var item = this.__value__[index];
@@ -53,12 +65,24 @@
                 }
             },
             push: {
-                value: function push(newItem) {
+                value: function push() {
+                    var _this = this;
+
+                    for (var _len = arguments.length, newItems = Array(_len), _key = 0; _key < _len; _key++) {
+                        newItems[_key] = arguments[_key];
+                    }
+
                     if (this.__isReadOnly__) {
                         return null;
                     }
+
                     this.__isInvalidated__ = true;
-                    return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+
+                    var options = this.__options__;
+
+                    return Array.prototype.push.apply(this.__value__, newItems.map(function (item) {
+                        return _this.constructor._wrapSingleItem(item, false, options);
+                    }));
                 }
             },
             forEach: {
@@ -70,12 +94,10 @@
                 }
             },
             map: {
-                value: function map(cb) {
-                    var that = this;
-
+                value: function map(cb, ctx) {
                     this.__value__.map(function (item, index, arr) {
-                        return cb(item, index, that);
-                    });
+                        return cb(item, index, this);
+                    }, ctx || this);
                 }
             },
             splice: {
@@ -102,26 +124,9 @@
                         addedArrays[_key] = arguments[_key];
                     }
 
-                    var items = [];
-                    var subTypes = [];
-                    var addSubTypes = function addSubTypes(arr) {
-                        var subs = arr.__options__ && arr.__options__.subTypes;
-                        if (subs === undefined) {} else if (_.isFunction(subs)) {
-                            subTypes.push(subs);
-                        } else {
-                            subTypes = subTypes.concat(subs);
-                        }
-                    };
-
-                    addSubTypes(this);
-                    addedArrays.forEach(function (arr) {
-                        arr.forEach(function (item) {
-                            items.push(item);
-                        });
-                        addSubTypes(arr);
-                    });
-                    subTypes = _.uniq(subTypes);
-                    return new this.constructor(items, false, { subTypes: subTypes });
+                    return this.constructor.create(Array.prototype.concat.apply(this.__value__, addedArrays.map(function (array) {
+                        return array.__value__ || array;
+                    })), this.__isReadOnly__, this.__options__);
                 }
             },
             every: {
@@ -260,7 +265,9 @@
                     } else if (typeof options.subTypes === "function") {
                         return options.subTypes.create(itemValue, isReadOnly, options.subTypes.options);
                     } else if (typeof options.subTypes === "object") {
-                        var subType = options.subTypes[itemValue._type];
+
+                        var subType = options.subTypes[itemValue._type ? itemValue._type : number.test(itemValue) ? "_Number" : string.test(itemValue) ? "_String" : Object.keys(options.subTypes)[0]];
+
                         return subType.create(itemValue, isReadOnly, subType.options);
                     }
                 }
@@ -279,7 +286,7 @@
 
     _Array.withDefault = generateWithDefault();
 
-    //['map', 'filter', 'every', 'forEach'].map(function(key){
+    //['map', 'filter', 'every', 'forEach'].map(function(key) {
     ["map"].map(function (key) {
 
         var loFn = _[key];

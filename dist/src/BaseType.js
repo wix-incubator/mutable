@@ -26,7 +26,11 @@
             this.__readOnlyInstance__ = this.__isReadOnly__ ? this : null;
             this.__isInvalidated__ = -1;
             this.__options__ = options;
-            this.__value__ = this.constructor.wrapValue(value === undefined ? this.constructor.defaults() : value, this.constructor._spec, this.__isReadOnly__, options);
+            if (this.__isReadOnly__) {
+                this.__value__ = value;
+            } else {
+                this.__value__ = this.constructor.wrapValue(value === undefined ? this.constructor.defaults() : value, this.constructor._spec, this.__isReadOnly__, options);
+            }
         }
 
         _createClass(BaseType, {

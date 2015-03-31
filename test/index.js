@@ -1,5 +1,7 @@
-import "./matchers/index";
-import "./matchers/tests";
+import chai from 'chai';
+import testKit from "../test-kit";
+chai.use(testKit.chai);
 
+import "../test-kit/test";
 import "./custom";
 import "./Array";

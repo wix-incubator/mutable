@@ -1,57 +1,39 @@
-var path = require("path");
 var webpack = require('webpack');
-var npm_dir = path.join(__dirname, 'node_modules');
-var config = {
-	addVendor: function (name, path) {
-		this.resolve.alias[name] = path;
-		this.module.noParse.push(new RegExp('^' + name + '$'));
-		this.entry.vendors.push(name);
-	},
-	devtool: 'source-map',
+module.exports = {
 	context: __dirname,
 	entry: {
-		// vendors: [],
 		benchmark: [
-            "webpack/hot/dev-server",
-            "./js-testing/benchmark"
-        ],
-		test: [
-        	"webpack/hot/dev-server",
-			"mocha!./test"
+			'./js-testing/benchmark'
 		],
-        examples: [
-            "./examples"
-        ]
-	},
-	resolve: {
-		extensions: ['', '.js', '.json'],
-		alias: {}
+		typorama: [
+			'./src'
+		],
+		'test-kit': [
+			'./test-kit'
+		],
+		test: [
+			'mocha!./test'
+		],
+		examples: [ './examples']
 	},
 	output: {
-		path          : __dirname + '/dist',
-		filename      : "[name].bundle.js",
-		chunkFilename : "[id].chunk.js"
+		path     : __dirname + '/dist',
+		filename : '[name].js',
+		libraryTarget: 'umd'
+	},
+	devServer: {
+		contentBase: '/',
+		inline: true,
+		hot: true
 	},
 	module: {
-		noParse: /\.min\.js$/,
 		loaders: [
 			{
 				test    : /\.js$/,
 				exclude : /node_modules/,
 				loader  : 'babel-loader?optional=runtime'
 			}
-		]
-	},
-	plugins: [
-		new webpack.HotModuleReplacementPlugin()
-		//,
-		// new webpack.optimize.CommonsChunkPlugin('vendors', 'vendors.js')
-	],
-	debug: true
+		],
+		noParse: /\.min\.js$/
+	}
 };
-//config.addVendor('react', path.join(npm_dir, '/react/dist/react-with-addons.js'));
-// config.addVendor('mocha',     path.join(npm_dir, '/mocha'));
-// config.addVendor('lodash',    path.join(npm_dir, 'lodash/index.js'));
-// config.addVendor('immutable', path.join(npm_dir, 'immutable/dist/immutable.js'));
-
-module.exports = config;

@@ -7,7 +7,6 @@ export default function(displayName, typeDefinition, TypeConstructor){
     TypeConstructor = TypeConstructor || function Type(value, isReadOnly, options){
         BaseType.call(this, value, isReadOnly, options);
     };
-
     TypeConstructor.displayName           = displayName;
     TypeConstructor.type                  = TypeConstructor;
     TypeConstructor.test                  = TypeConstructor.test || defineTypeUtils.generateTest();

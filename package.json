@@ -1,18 +1,22 @@
 {
   "private": true,
   "name": "typorama",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/src",
   "repository": {
     "type": "git",
     "url": "wix/typorama"
   },
   "scripts": {
-    "build": "babel ./src/ -d ./dist/ --modules umd --source-maps",
-    "watch": "babel -w ./src/ -d ./dist/ --modules umd --source-maps",
+    "watch": "babel -w ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "build": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "buildtestkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
     "test": "mocha --compilers js:babel/register --reporter nyan",
-    "prepublish": "npm run build"
+    "webtest": "webpack-dev-server --progress --hot --inline --no-colors",
+    "webbuild": "webpack --progress -p --colors",
+    "prepublish": "npm run build",
+    "prebuild": "npm run test"
   },
   "author": "core3",
   "license": "c",
