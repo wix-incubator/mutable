@@ -15,8 +15,6 @@ export default class _Function {
 
 _Function.type = _Function;
 
-_Function.create = function(value) {
-	return _Function.test(value) ? value : noop;
-};
+_Function.create = Object;
 
 _Function.withDefault = generateWithDefaultForSysImmutable(_Function.create);
