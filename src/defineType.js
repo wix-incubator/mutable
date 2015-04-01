@@ -4,8 +4,8 @@ import BaseType from "./BaseType"
 
 export default function(displayName, typeDefinition, TypeConstructor){
 
-    TypeConstructor = TypeConstructor || function Type(value, isReadOnly, options){
-        BaseType.call(this, value, isReadOnly, options);
+    TypeConstructor = TypeConstructor || function Type(value, options){
+        BaseType.call(this, value, options);
     };
     TypeConstructor.displayName           = displayName;
     TypeConstructor.type                  = TypeConstructor;

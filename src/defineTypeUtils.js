@@ -42,8 +42,8 @@ export function generateWithDefault(){
 		options = options || this.options;
         var def = defaults ? function(){ return _.clone(defaults, true); } : this.defaults;
 
-        function typeWithDefault(value, isReadOnly, options){
-            return typeWithDefault.type.create(value, isReadOnly, typeWithDefault.options || options);
+        function typeWithDefault(value, options){
+            return new typeWithDefault.type(value, typeWithDefault.options || options);
         }
 
         typeWithDefault.type = this.type || this;
@@ -62,7 +62,7 @@ export function generateWithDefaultForSysImmutable(Type){
 	
 		var def = defaults ? function(){ return defaults; } : this.defaults;
 
-        function typeWithDefault(value, isReadOnly){
+        function typeWithDefault(value){
             return Type(value);
         }
         typeWithDefault.type = this.type;
