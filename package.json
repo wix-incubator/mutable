@@ -17,7 +17,7 @@
     "webbuild": "webpack --progress -p --colors",
     "prepublish": "npm run build",
     "prebuild": "npm run test",
-	"release-minor": "npm run build && git add ./dist && git commit -m rebuild && npm version minor && git push"
+	"release-minor": "npm run build && git add ./dist && git commit -m 'rebuild' && npm version minor && git push"
   },
   "author": "core3",
   "license": "c",
