@@ -8,3 +8,4 @@ import "../test-kit/test";
 import "./custom";
 import "./Array";
 import "./Function";
+import "./boolean";
