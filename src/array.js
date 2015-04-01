@@ -33,8 +33,8 @@ export default class _Array extends BaseType {
 
             var subType = options.subTypes[
                 itemValue._type ? itemValue._type  :
-                number.test(itemValue) ? '_Number' :
-                string.test(itemValue) ? '_String' :
+                number.test(itemValue) ? number.name :
+                string.test(itemValue) ? string.name :
                 Object.keys(options.subTypes)[0]
             ];
 
