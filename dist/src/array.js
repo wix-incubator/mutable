@@ -259,7 +259,7 @@
                         return options.subTypes.create(itemValue, options.subTypes.options);
                     } else if (typeof options.subTypes === "object") {
 
-                        var subType = options.subTypes[itemValue._type ? itemValue._type : number.test(itemValue) ? "_Number" : string.test(itemValue) ? "_String" : Object.keys(options.subTypes)[0]];
+                        var subType = options.subTypes[itemValue._type ? itemValue._type : number.test(itemValue) ? number.name : string.test(itemValue) ? string.name : Object.keys(options.subTypes)[0]];
 
                         return subType.create(itemValue, subType.options);
                     }
