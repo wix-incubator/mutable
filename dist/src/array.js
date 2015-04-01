@@ -180,7 +180,7 @@
                         newValue = newValue.toJSON();
                     }
                     if (_.isArray(newValue)) {
-                        this.__value__ = [];
+                        this.__value__.length = 0;
                         _.forEach(newValue, function (itemValue) {
                             _this.push(itemValue);
                         });
