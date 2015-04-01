@@ -162,6 +162,14 @@ describe('Custom data', function() {
             expect(userReadOnly.age).to.equal(10);
         });
 
+        it('should be prototype of the same type class', function(){
+            var userData = new UserType();
+            var userReadOnly = userData.$asReadOnly();
+
+            expect(userData).to.be.instanceOf(UserType);
+            expect(userReadOnly).to.be.instanceOf(UserType);
+        });
+
         it('should be created once for each data instance', function() {
             var userData = new UserType();
             var userReadOnly = userData.$asReadOnly();

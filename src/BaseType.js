@@ -1,34 +1,36 @@
 import _ from "lodash"
 
+function createReadOnly(source){
+    var readOnlyInstance = Object.create(source);
+    readOnlyInstance.__isReadOnly__ = true;
+    readOnlyInstance.constructor = source.constructor;
+    return readOnlyInstance;
+}
+
 export default class BaseType {
 
-    static create(value, isReadOnly, options){
-        return new this(value, isReadOnly, options);
+    static create(value, options){
+        return new this(value, options);
     }
 
-    static wrapValue(value, spec, isReadOnly, options){
+    static wrapValue(value, spec, options){
         Object.keys(spec).forEach((key) => {
             var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
-            value[key] = spec[key].type.create(fieldValue,  isReadOnly, spec[key].options);
+            value[key] = spec[key].type.create(fieldValue, spec[key].options);
         });
         return value;
     }
 
-    constructor(value, isReadOnly = false, options = {}){
-        this.__isReadOnly__ = !!isReadOnly;
-        this.__readOnlyInstance__ = this.__isReadOnly__ ? this : null;
+    constructor(value, options = {}){
+        this.__isReadOnly__ = false;
+        this.__readOnlyInstance__ = createReadOnly(this);
         this.__isInvalidated__ = -1;
         this.__options__ = options;
-        if(this.__isReadOnly__) {
-            this.__value__ = value;
-        } else {
-            this.__value__ = this.constructor.wrapValue(
-                (value === undefined) ? this.constructor.defaults() : value,
-                this.constructor._spec,
-                this.__isReadOnly__,
-                options
-            );
-        }
+        this.__value__ = this.constructor.wrapValue(
+            (value === undefined) ? this.constructor.defaults() : value,
+            this.constructor._spec,
+            options
+        );
     }
 
     setValue(newValue){
@@ -42,9 +44,6 @@ export default class BaseType {
     }
 
     $asReadOnly(){
-        if(!this.__readOnlyInstance__) {
-            this.__readOnlyInstance__ = this.constructor.type.create(this.__value__, true, this.__options__);
-        }
         return this.__readOnlyInstance__;
     }
 
