@@ -12,10 +12,8 @@ describe('Function data', function() {
 	});
 
 	it('Function.withDefault should return a default function', function() {
-		var typedFunction = Typorama.Function.withDefault(function() {
-			return function myfunc() {
-				return 1;
-			};
+		var typedFunction = Typorama.Function.withDefault(function myfunc() {
+			return 1;
 		});
 		expect(typedFunction.defaults()()).to.equal(1, 'wrapped function should execute properly');
 	});
