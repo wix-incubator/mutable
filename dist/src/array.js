@@ -32,8 +32,7 @@
     var _Array = (function (_BaseType) {
         function _Array() {
             var value = arguments[0] === undefined ? [] : arguments[0];
-            var isReadOnly = arguments[1] === undefined ? false : arguments[1];
-            var options = arguments[2] === undefined ? {} : arguments[2];
+            var options = arguments[1] === undefined ? {} : arguments[1];
 
             _classCallCheck(this, _Array);
 
@@ -44,8 +43,7 @@
                 }, {});
             }
 
-            _get(Object.getPrototypeOf(_Array.prototype), "constructor", this).call(this, value, isReadOnly, options);
-            // BaseType.call(this, value, isReadOnly, options);
+            _get(Object.getPrototypeOf(_Array.prototype), "constructor", this).call(this, value, options);
         }
 
         _inherits(_Array, _BaseType);
@@ -81,7 +79,7 @@
                     var options = this.__options__;
 
                     return Array.prototype.push.apply(this.__value__, newItems.map(function (item) {
-                        return _this.constructor._wrapSingleItem(item, false, options);
+                        return _this.constructor._wrapSingleItem(item, options);
                     }));
                 }
             },
@@ -95,6 +93,7 @@
             },
             map: {
                 value: function map(cb, ctx) {
+                    // ToDo: remove
                     this.__value__.map(function (item, index, arr) {
                         return cb(item, index, this);
                     }, ctx || this);
@@ -112,7 +111,7 @@
                     this.__isInvalidated__ = true;
                     var spliceParams = [index, removeCount];
                     addedItems.forEach((function (newItem) {
-                        spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+                        spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__));
                     }).bind(this));
                     return this.__value__.splice.apply(this.__value__, spliceParams);
                     //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
@@ -124,9 +123,9 @@
                         addedArrays[_key] = arguments[_key];
                     }
 
-                    return this.constructor.create(Array.prototype.concat.apply(this.__value__, addedArrays.map(function (array) {
+                    return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map(function (array) {
                         return array.__value__ || array;
-                    })), this.__isReadOnly__, this.__options__);
+                    })), this.__options__);
                 }
             },
             every: {
@@ -169,7 +168,7 @@
                     var filteredArray = this.__value__.filter(function (element, index, array) {
                         return cb(element, index, self);
                     });
-                    return new this.constructor(filteredArray, false, this.__options__);
+                    return new this.constructor(filteredArray, this.__options__, false);
                 }
             },
             setValue: {
@@ -180,19 +179,12 @@
                         newValue = newValue.toJSON();
                     }
                     if (_.isArray(newValue)) {
+                        //fix bug #33. reset the current array instead of replacing it;
                         this.__value__.length = 0;
                         _.forEach(newValue, function (itemValue) {
                             _this.push(itemValue);
                         });
                     }
-                }
-            },
-            $asReadOnly: {
-                value: function $asReadOnly() {
-                    if (!this.__readOnlyInstance__) {
-                        this.__readOnlyInstance__ = this.constructor.type.create(this.__value__, true, this.__options__);
-                    }
-                    return this.__readOnlyInstance__;
                 }
             },
             $isInvalidated: {
@@ -245,31 +237,31 @@
                 }
             },
             wrapValue: {
-                value: function wrapValue(value, spec, isReadOnly, options) {
+                value: function wrapValue(value, spec, options) {
                     var _this = this;
 
                     if (value instanceof BaseType) {
                         return value.__value__.map(function (itemValue) {
-                            return _this._wrapSingleItem(itemValue, isReadOnly, options);
+                            return _this._wrapSingleItem(itemValue, options);
                         }, this);
                     }
 
                     return value.map(function (itemValue) {
-                        return _this._wrapSingleItem(itemValue, isReadOnly, options);
+                        return _this._wrapSingleItem(itemValue, options);
                     }, this);
                 }
             },
             _wrapSingleItem: {
-                value: function _wrapSingleItem(itemValue, isReadOnly, options) {
+                value: function _wrapSingleItem(itemValue, options) {
                     if (itemValue instanceof BaseType) {
                         return itemValue;
                     } else if (typeof options.subTypes === "function") {
-                        return options.subTypes.create(itemValue, isReadOnly, options.subTypes.options);
+                        return options.subTypes.create(itemValue, options.subTypes.options);
                     } else if (typeof options.subTypes === "object") {
 
                         var subType = options.subTypes[itemValue._type ? itemValue._type : number.test(itemValue) ? "_Number" : string.test(itemValue) ? "_String" : Object.keys(options.subTypes)[0]];
 
-                        return subType.create(itemValue, isReadOnly, subType.options);
+                        return subType.create(itemValue, subType.options);
                     }
                 }
             },

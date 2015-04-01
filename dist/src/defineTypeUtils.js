@@ -68,8 +68,8 @@
                 return _.clone(defaults, true);
             } : this.defaults;
 
-            function typeWithDefault(value, isReadOnly, options) {
-                return typeWithDefault.type.create(value, isReadOnly, typeWithDefault.options || options);
+            function typeWithDefault(value, options) {
+                return new typeWithDefault.type(value, typeWithDefault.options || options);
             }
 
             typeWithDefault.type = this.type || this;
@@ -90,7 +90,7 @@
                 return defaults;
             } : this.defaults;
 
-            function typeWithDefault(value, isReadOnly) {
+            function typeWithDefault(value) {
                 return Type(value);
             }
             typeWithDefault.type = this.type;
