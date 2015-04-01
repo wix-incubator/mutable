@@ -159,7 +159,8 @@ export default class _Array extends BaseType {
             newValue = newValue.toJSON();
         }
         if(_.isArray(newValue)) {
-            this.__value__ = [];
+			//fix bug #33. reset the current array instead of replacing it;
+            this.__value__.length = 0;
             _.forEach(newValue, (itemValue) => {
                 this.push(itemValue);
             });

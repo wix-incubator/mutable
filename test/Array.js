@@ -18,6 +18,74 @@ var UserWithAddressType = aDataTypeWithSpec({
 }, 'UserWithAddress');
 
 describe('Array data', function() {
+	
+	
+	
+	
+	
+	describe('unsync __value__ array bug', function(){
+
+		
+		it('__value__ should be synced with the readonly', function(){
+			
+			var User = Typorama.define('user', {
+				
+				spec: function(){
+					
+					return {
+						name: Typorama.String
+					}
+				
+				}
+			
+			});
+			
+			var arr = Typorama.Array.of(User).create();
+			
+			var readOnly = arr.$asReadOnly();
+			
+			arr.setValue([User.defaults()])
+			
+			
+			expect(arr.__value__).to.equal(readOnly.__value__);
+			
+		
+		})	
+		
+		
+		xit('should fail', function(){
+				debugger	
+				
+		
+			
+			var Type = Typorama.define('Type',{
+			
+				spec: function(){
+					
+					return {
+						items: Typorama.Array.of(User)
+					};
+				
+				}
+				
+			});
+			
+			
+			var type = new Type();
+
+			var readOnly = type.$asReadOnly();
+			
+			type.setValue({items: Typorama.Array.of(User).create([User.defaults(), User.defaults()]) });
+			
+			var items = readOnly.items;
+			
+			expect(items.__value__).to.eql(['hello', 'world'])
+		
+		})	
+		
+	})
+
+
     describe('(Mutable) instance', function() {
 
         it('Should have default length', function() {
