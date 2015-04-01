@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "typorama",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/src",
   "repository": {
@@ -17,7 +17,7 @@
     "webbuild": "webpack --progress -p --colors",
     "prepublish": "npm run build",
     "prebuild": "npm run test",
-	"release-minor": "npm run build && git add ./dist && git commit -m 'rebuild' 2> /dev/null && npm version minor && git push"
+    "release-minor": "npm run build && git add ./dist && git commit -m 'rebuild' 2> /dev/null && npm version minor && git push"
   },
   "author": "core3",
   "license": "c",
