@@ -7,7 +7,8 @@ describe('Custom data', function() {
 
     var UserType = aDataTypeWithSpec({
         name: Typorama.String.withDefault('leon'),
-        age: Typorama.Number.withDefault(10)
+        age: Typorama.Number.withDefault(10),
+        address: Typorama.String.withDefault('no address')
     }, 'User');
 
     var UserWithChildType = aDataTypeWithSpec({
@@ -110,6 +111,7 @@ describe('Custom data', function() {
 
             expect(userData.child.name).to.equal('yossi');
             expect(userData.child.age).to.equal(3);
+            expect(userData.child.address).to.equal("no address");
         });
 
         it('should return json value from toJSON()', function() {
@@ -117,14 +119,14 @@ describe('Custom data', function() {
 
             expect(userData.toJSON()).to.eql({
                 name: 'leon',
-                child: { name: 'bobi', age: 13 }
+                child: { name: 'bobi', age: 13, address: "no address" }
             });
 
             userData.name = 'moshe';
 
             expect(userData.toJSON()).to.eql({
                 name: 'moshe',
-                child: { name: 'bobi', age: 13 }
+                child: { name: 'bobi', age: 13 , address: "no address"}
             });
         });
 
@@ -133,14 +135,14 @@ describe('Custom data', function() {
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name: 'leon',
-                child: { name: 'bobi', age: 13 }
+                child: { name: 'bobi', age: 13 ,address: "no address"}
             });
 
             userData.name = 'moshe';
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name: 'moshe',
-                child: { name: 'bobi', age: 13 }
+                child: { name: 'bobi', age: 13, address: "no address" }
             });
         });
 
@@ -189,7 +191,8 @@ describe('Custom data', function() {
                 name: 'leon',
                 child: {
                     name: 'moshe',
-                    age: 13
+                    age: 13,
+                    address: "no address"
                 }
             });
         });
