@@ -2,12 +2,12 @@ import _ from "lodash"
 import * as defineTypeUtils from "./defineTypeUtils"
 import BaseType from "./BaseType"
 
-export default function(displayName, typeDefinition, TypeConstructor){
+export default function(id, typeDefinition, TypeConstructor){
 
     TypeConstructor = TypeConstructor || function Type(value, options){
         BaseType.call(this, value, options);
     };
-    TypeConstructor.displayName           = displayName;
+    TypeConstructor.id                    = id;
     TypeConstructor.type                  = TypeConstructor;
     TypeConstructor.test                  = TypeConstructor.test || defineTypeUtils.generateTest();
     TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.generateWithDefault();

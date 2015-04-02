@@ -49,7 +49,7 @@ export default class _Array extends BaseType {
     constructor(value=[], options={}) {
         if(options.subTypes && _.isArray(options.subTypes)) {
             options.subTypes = options.subTypes.reduce(function(subTypes, type) {
-                subTypes[type.displayName || type.name] = type;
+                subTypes[type.id || type.name] = type;
                 return subTypes;
             }, {});
         }
