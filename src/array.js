@@ -3,7 +3,7 @@ import defineType from "./defineType"
 import BaseType from "./BaseType"
 import number from "./number"
 import string from "./string"
-import {generateWithDefault} from "./defineTypeUtils"
+import {generateWithDefault, dirty} from "./defineTypeUtils"
 
 export default class _Array extends BaseType {
 
@@ -73,8 +73,7 @@ export default class _Array extends BaseType {
             return null;
         }
 
-        this.__isInvalidated__= true;
-
+        this.$setDirty();
         var options = this.__options__;
 
         return Array.prototype.push.apply(
@@ -101,7 +100,7 @@ export default class _Array extends BaseType {
         if(this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__= true;
+        this.$setDirty();
         var spliceParams = [index,removeCount];
         addedItems.forEach(function(newItem) {
            spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
@@ -134,7 +133,6 @@ export default class _Array extends BaseType {
         return _.find(this.__value__, function(element, index, array) {
             return cb(element, index, self);
         });
-        return _.find(this.__value__, cb);
     }
 
     findIndex(cb) {
@@ -142,7 +140,6 @@ export default class _Array extends BaseType {
         return _.findIndex(this.__value__, function (element, index, array) {
             return cb(element, index, self)
         })
-        return _.findIndex(this.__value__, cb);
     }
 
     filter(cb) {
@@ -165,42 +162,6 @@ export default class _Array extends BaseType {
             });
         }
     }
-
-    $isInvalidated() {
-
-        if(this.__isInvalidated__==-1) {
-            var invalidatedField = _.find(this.__value__, (item, index)=>{
-                if(item instanceof BaseType) {
-                    return item.$isInvalidated();
-                }
-            });
-            if(invalidatedField) {
-                this.__isInvalidated__ = true;
-            }else{
-                this.__isInvalidated__ = false;
-            }
-        }
-        return this.__isInvalidated__;
-    }
-
-    $revalidate() {
-        this.__isInvalidated__ = -1;
-        _.forEach(this.__value__, (item, index)=>{
-            if(item instanceof BaseType) {
-                item.$revalidate();
-            }
-        });
-    }
-
-    $resetValidationCheck() {
-        this.__isInvalidated__ = this.__isInvalidated__ || -1;
-        _.forEach(this.__value__, (item, index)=>{
-            if(item instanceof BaseType) {
-                item.$resetValidationCheck();
-            }
-        });
-    }
-
 }
 
 _Array.withDefault = generateWithDefault();

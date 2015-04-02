@@ -21,7 +21,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
                 }
             },
             set: function(newValue){
-                this.__isInvalidated__ = true;
+                this.$setDirty();
 
                 if(this.__isReadOnly__) {
                     console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
@@ -86,3 +86,20 @@ export function generateGetDefaultValue(){
         }, {});
     }
 }
+
+// immutable enum type for fuzzy-logic dirty flag
+export const dirty = {
+    yes : {
+        isDirty : true,
+        isKnown : true
+    },
+    no : {
+        isDirty : false,
+        isKnown : true
+    },
+    unKnown : {
+        isKnown : false
+    }
+};
+
+
