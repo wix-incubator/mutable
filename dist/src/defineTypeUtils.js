@@ -34,7 +34,7 @@
     function generateFieldsOn(obj, fieldsDefinition) {
         _.forEach(fieldsDefinition, function (fieldDef, fieldName) {
             if (obj[fieldName]) {
-                throw new Error("fields that starts with $ character are reserved \"" + obj.constructor.displayName + "." + fieldName + "\".");
+                throw new Error("fields that starts with $ character are reserved \"" + obj.constructor.id + "." + fieldName + "\".");
             }
             Object.defineProperty(obj, fieldName, {
                 get: function get() {
@@ -48,7 +48,7 @@
                     this.__isInvalidated__ = true;
 
                     if (this.__isReadOnly__) {
-                        console.warn("try to set value to readonly field: ", this.constructor.displayName + "." + fieldName, "=", newValue);
+                        console.warn("try to set value to readonly field: ", this.constructor.id + "." + fieldName, "=", newValue);
                     } else if (fieldDef.type.prototype instanceof BaseType) {
                         this.__value__[fieldName].setValue(newValue);
                     } else {

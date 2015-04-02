@@ -15,12 +15,12 @@
 
     var BaseType = _interopRequire(_BaseType);
 
-    module.exports = function (displayName, typeDefinition, TypeConstructor) {
+    module.exports = function (id, typeDefinition, TypeConstructor) {
 
         TypeConstructor = TypeConstructor || function Type(value, options) {
             BaseType.call(this, value, options);
         };
-        TypeConstructor.displayName = displayName;
+        TypeConstructor.id = id;
         TypeConstructor.type = TypeConstructor;
         TypeConstructor.test = TypeConstructor.test || defineTypeUtils.generateTest();
         TypeConstructor.withDefault = TypeConstructor.withDefault || defineTypeUtils.generateWithDefault();
