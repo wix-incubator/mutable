@@ -261,12 +261,12 @@ describe('Array data', function() {
 
             it('should allow subtypes allowed by all the different arrays',function() {
                 var mixedInstance = Typorama.Array.of([UserType, AddressType]).create([
-                    { _type: UserType.displayName },
-                    { _type: AddressType.displayName },
+                    { _type: UserType.id },
+                    { _type: AddressType.id },
                     {}
                 ]);
                 var addressList = Typorama.Array.of(AddressType).create([{}]);
-                var mixedList = [{_type: UserType.displayName}, {_type: AddressType.displayName}];
+                var mixedList = [{_type: UserType.id}, {_type: AddressType.id}];
                 var concatResult = mixedInstance.concat(addressList, mixedList);
 
                 expect(concatResult.length).to.equal(6);
