@@ -1,6 +1,8 @@
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
+import _ from 'lodash';
+import lifecycle from './lifecycle';
 
 var UserType = aDataTypeWithSpec({
     name: Typorama.String.withDefault(''),
@@ -18,68 +20,64 @@ var UserWithAddressType = aDataTypeWithSpec({
 }, 'UserWithAddress');
 
 describe('Array data', function() {
-	
-	
-	
-	
-	
-	describe('unsync __value__ array bug', function(){
 
-		
-		it('__value__ should be synced with the readonly', function(){
-			
-			var User = Typorama.define('user', {
-				
-				spec: function(){
-					
-					return {
-						name: Typorama.String
-					}
-				
-				}
-			
-			});
-			
-			var arr = Typorama.Array.of(User).create();
-			
-			var readOnly = arr.$asReadOnly();
-			
-			arr.setValue([User.defaults()]);
-			
-			
-			expect(arr.__value__).to.equal(readOnly.__value__);
-			
-		
-		});
-		
-		
-		xit('should fail', function(){
-				debugger;
-			var Type = Typorama.define('Type',{
-				spec: function(){
+    describe('unsync __value__ array bug', function(){
 
-					return {
-						items: Typorama.Array.of(User)
-					};
-				
-				}
-				
-			});
-			
-			
-			var type = new Type();
 
-			var readOnly = type.$asReadOnly();
-			
-			type.setValue({items: Typorama.Array.of(User).create([User.defaults(), User.defaults()]) });
-			
-			var items = readOnly.items;
-			
-			expect(items.__value__).to.eql(['hello', 'world'])
-		
-		})	
-		
-	});
+        it('__value__ should be synced with the readonly', function(){
+
+            var User = Typorama.define('user', {
+
+                spec: function(){
+
+                    return {
+                        name: Typorama.String
+                    }
+
+                }
+
+            });
+
+            var arr = Typorama.Array.of(User).create();
+
+            var readOnly = arr.$asReadOnly();
+
+            arr.setValue([User.defaults()]);
+
+
+            expect(arr.__value__).to.equal(readOnly.__value__);
+
+
+        });
+
+
+        xit('should fail', function(){
+            debugger;
+            var Type = Typorama.define('Type',{
+                spec: function(){
+
+                    return {
+                        items: Typorama.Array.of(User)
+                    };
+
+                }
+
+            });
+
+
+            var type = new Type();
+
+            var readOnly = type.$asReadOnly();
+
+            type.setValue({items: Typorama.Array.of(User).create([User.defaults(), User.defaults()]) });
+
+            var items = readOnly.items;
+
+            expect(items.__value__).to.eql(['hello', 'world'])
+
+        })
+
+    });
 
 
     describe('(Mutable) instance', function() {
@@ -529,59 +527,20 @@ describe('Array data', function() {
 
             })
         });
+    });
 
-        describe('Type Invalidation',function() {
-            describe('$isDirty()',function() {
-                it('Should return false for unmodified data', function() {
-                    var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                    expect(numberList.$isDirty()).to.equal(false);
-                });
-                xit('Should return true for modified data', function() {
-                    var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                    numberList.push(5);
-                    expect(numberList.$isDirty()).to.equal(true);
-                });
-                it('Should return true for data when a child value has changed', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isDirty()).to.equal(true);
-                });
-                xit('Should return true for data when a child value has changed after isinvalidates was already called', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    expect(arr.$isDirty()).to.equal(false);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isDirty()).to.equal(true);
-                });
-                it('Should return false for data when only a parent/sibling value has changed', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]);
+    describe('Lifecycle',function() {
 
-                    arr.at(0).name = 'gaga';
-                    expect(arr.at(0).$isDirty()).to.equal(true);
-                    expect(arr.at(1).$isDirty()).to.equal(false);
-                    expect(arr.$isDirty()).to.equal(true);
-                });
-            });
+        lifecycle(
+            ()=> Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]),
+            (arr)=> arr.at(0).name = 'gaga',
+            'changing an element in an array',
+            (arr)=> !arr.at(1).$isDirty());
 
-            describe('$resetDirty()',function() {
-                xit('Should reset data invalidation', function() {
-                    var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                    numberList.push(5);
-                    expect(numberList.$isDirty()).to.equal(true);
-                    numberList.$resetDirty();
-                    expect(numberList.$isDirty()).to.equal(false);
+        var intArrLifeCycle = _.curry(lifecycle)(()=> Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]));
 
-                });
-                it('Should reset deep data invalidation', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isDirty()).to.equal(true);
-                    expect(arr.at(0).$isDirty()).to.equal(true);
-                    arr.$resetDirty();
-                    expect(arr.$isDirty()).to.equal(false);
-                    expect(arr.at(0).$isDirty()).to.equal(false);
-                });
+        intArrLifeCycle((arr)=> arr.push(5), 'adding an element to an array');
+        intArrLifeCycle((arr)=> arr.splice(1, 2, 7, 6, 5), 'splicing an array');
 
-            });
-        });
     });
 });

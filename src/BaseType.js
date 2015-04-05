@@ -58,9 +58,9 @@ export default class BaseType {
 
     // may be called after changes are paused #lifecycle
     $isDirty(cache) {
-        var result = (this.__dirty__.isKnown && this.__dirty__.isDirty) ||
+        var result = this.__dirty__.isKnown ? this.__dirty__.isDirty :
             _.any(this.__value__, (val) => val instanceof BaseType && val.$isDirty());
-        if (cache) {
+        if (cache && !this.__isReadOnly__) {
             this.__dirty__ = result ? dirty.yes : dirty.no;
         }
         return result;
@@ -68,12 +68,14 @@ export default class BaseType {
 
     // resets the dirty state to unknown #lifecycle
     $resetDirty(){
-        this.__dirty__ = dirty.unKnown;
-        _.forEach(this.__value__, (val) => {
-            if(val instanceof BaseType){
-                val.$resetDirty();
-            }
-        });
+        if (!this.__isReadOnly__) {
+            this.__dirty__ = dirty.unKnown;
+            _.forEach(this.__value__, (val) => {
+                if (val instanceof BaseType) {
+                    val.$resetDirty();
+                }
+            });
+        }
     }
 
     toJSON(){
