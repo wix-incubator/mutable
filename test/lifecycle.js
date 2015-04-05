@@ -38,7 +38,7 @@ export default function testLifeCycleContract(factory, mutator, description, fra
                 expect(this.instance.$isDirty()).to.be.false;
             });
             if (idempotent) {
-                it('idempotent mutator makes $isDirty return false on subsequent invocations', function () {
+                it('idempotent mutator makes $isDirty return true on subsequent invocations', function () {
                     mutator(this.instance);
                     expect(this.instance.$isDirty()).to.be.true; // TODO should be false
                 });
