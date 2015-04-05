@@ -68,6 +68,12 @@ describe('Custom data', function() {
                 expect(userData).to.be.a.dataInstance.with.field('age').with.defaultValue();
             });
 
+            it('should not copy fields that do not appear in the schema', function() {
+                var instance = new UserType({numOfHeads: 2});
+
+                expect(instance.numOfHeads).to.be.undefined;
+            });
+
         });
 
         describe('setters', function() {
@@ -91,6 +97,36 @@ describe('Custom data', function() {
                 expect(userData.child.age).to.equal(5);
             });
 
+        });
+
+        describe('setValue', function() {
+            it('should set all values from an incoming JSON according to schema', function() {
+                var instance = new UserType({address: '21 jump street'});
+
+                instance.setValue({name: 'zaphod', age: 42})
+
+                expect(instance.name).to.equal('zaphod');
+                expect(instance.age).to.equal(42);
+                expect(instance.address).to.equal('21 jump street');
+            });
+
+            it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
+                var instance = new UserType();
+                var wrapped = {name: 'zaphod'};
+                instance.setValue(wrapped);
+
+                wrapped.name = 'ford';
+
+                expect(instance.name).to.equal('zaphod');
+            });
+
+            it('should ignore fields that appear in the passed object but not in the type schema', function() {
+                var instance = new UserType();
+
+                instance.setValue({numOfHeads: 2});
+
+                expect(instance.numOfHeads).to.be.undefined;
+            });
         });
 
 		it('should chain withdefault calls', function() {

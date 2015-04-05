@@ -39,7 +39,9 @@ export default class BaseType {
             newValue = newValue.toJSON();
         }
         _.forEach(newValue, (fieldValue, fieldName) => {
-            this[fieldName] = fieldValue;
+            if (this.constructor._spec[fieldName]) {
+                this[fieldName] = fieldValue;
+            }
         });
     }
 
