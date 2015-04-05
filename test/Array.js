@@ -322,6 +322,7 @@ describe('Array data', () => {
                 var doubles = function(num) {
                     return num * 2;
                 };
+                debugger;
                 var newList = numberList.map(doubles);
 
                 // Take a callback function and return an array

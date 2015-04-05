@@ -7,12 +7,6 @@ import {
 }
 from "./defineTypeUtils"
 
-
-
-
-
-
-
 export default class _Array extends BaseType {
 
     static defaults() {
@@ -64,17 +58,17 @@ export default class _Array extends BaseType {
         BaseType.call(this, value, isReadOnly, options);
     }
 
-    // To check with Nadav: map, pop, push, reverse, shift, sort 
+    // To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some
     // Need to fix map so that it wraps items
 
     // Mutator methods
 
     copyWithin() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     fill() {
-
+        throw 'Slice not implemented yet. Please do.';
     }
 
     pop() {
@@ -160,40 +154,40 @@ export default class _Array extends BaseType {
     concat(...addedArrays) {
 
         // Optional validation
-            var selfSubtypes = this.__options__.subTypes;
-            if (_.isFunction(selfSubtypes)) {
+        var selfSubtypes = this.__options__.subTypes;
+        if (_.isFunction(selfSubtypes)) {
 
-                addedArrays.forEach(function(array) {
+            addedArrays.forEach(function(array) {
 
-                    if (selfSubtypes !== array.__options__.subTypes) {
+                if (selfSubtypes !== array.__options__.subTypes) {
 
+                    throw new Error("Error");
+
+                }
+            });
+
+        } else {
+            addedArrays.forEach(function(item, key) {
+
+                if (_.isFunction(item.__options__.subTypes)) {
+                    var addedDisplayName = item.__options__.subTypes.displayName;
+
+                    if (!_.has(selfSubtypes, addedDisplayName)) {
                         throw new Error("Error");
-
                     }
-                });
 
-            } else {
-                addedArrays.forEach(function(item, key) {
 
-                    if (_.isFunction(item.__options__.subTypes)) {
-                        var addedDisplayName = item.__options__.subTypes.displayName;
+                } else {
+                    _.forEach(item.__options__.subTypes, function(itemType, addedDisplayName) {
 
                         if (!_.has(selfSubtypes, addedDisplayName)) {
                             throw new Error("Error");
                         }
+                    });
+                }
 
-
-                    } else {
-                        _.forEach(item.__options__.subTypes, function(itemType, addedDisplayName) {
-
-                            if (!_.has(selfSubtypes, addedDisplayName)) {
-                                throw new Error("Error");
-                            }
-                        });
-                    }
-
-                });
-            }
+            });
+        }
         // 
         var res = new this.constructor(this.__value__, false, this.__options__);
         addedArrays.forEach(function(arr) {
@@ -268,17 +262,6 @@ export default class _Array extends BaseType {
         throw 'Slice not implemented yet. Please do.';
     }
 
-    // Seeing as 'map' simply reads an array, and then duplicates it. Can I map a readOnly array?
-    map(cb, ctx) {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        // this.__isInvalidated__= true;
-
-        var arr = this.__value__.map(cb, ctx || this);
-        return new this.constructor(arr, false, this.__options__)
-    }
-
     reduce() {
         throw 'Slice not implemented yet. Please do.';
     }
@@ -290,10 +273,6 @@ export default class _Array extends BaseType {
     values() {
         throw 'Slice not implemented yet. Please do.';
     }
-
-
-
-
 
     $asReadOnly() {
         if (!this.__readOnlyInstance__) {
@@ -344,19 +323,17 @@ _Array.withDefault = generateWithDefault();
 
 //['map', 'filter', 'forEach', 'concat', 'slice'].map(function(key){
 ['map', 'filter', 'slice'].forEach(function(key) {
-
+    
     var loFn = _[key];
-
     _Array.prototype[key] = function(fn, ctx) {
 
         var valueArray = loFn(this.__value__, function() {
-            return fn.apply(ctx || this, arguments);
-        });
+            return fn.apply(this, arguments);
+        }, ctx || this);
 
         return new this.constructor(valueArray, false, this.__options__);
 
     }
-
 
 });
 // ['every', 'some']
