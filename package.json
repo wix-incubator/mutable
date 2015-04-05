@@ -1,35 +1,43 @@
 {
   "private": true,
   "name": "typorama",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "description": "",
-  "main": "src/index.js",
+  "main": "dist/src",
   "repository": {
     "type": "git",
     "url": "wix/typorama"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --compilers js:babel/register --reporter nyan",
-    "webtest": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-colors",
-    "webtest_old": "./node_modules/.bin/webpack-dev-server mocha?compilers=js:babel/register!babel-loader!./test --no-color"
+    "watch": "babel -w ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "build": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "buildtestkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
+    "test": "mocha --compilers js:babel/register --reporter nyan",
+    "webtest": "webpack-dev-server --progress --hot --inline --no-colors",
+    "webbuild": "webpack --progress -p --colors",
+    "prepublish": "npm run build",
+    "prebuild": "npm run test"
   },
   "author": "core3",
   "license": "c",
   "devDependencies": {
-    "babel": "^4.4.5",
-    "babel-core": "^4.4.5",
-    "babel-loader": "^4.0.0",
-    "babel-runtime": "^4.4.5",
-    "bluebird": "^2.9.12",
-    "chai": "^2.1.0",
+    "babel": "^4.7.16",
+    "babel-core": "^4.7.16",
+    "babel-loader": "^4.2.0",
+    "babel-runtime": "^4.7.16",
+    "bluebird": "^2.9.14",
+    "chai": "^2.1.2",
     "immutable": "^3.6.4",
-    "mocha": "^2.1.0",
+    "mocha": "^2.2.1",
     "mocha-loader": "^0.7.1",
-    "webpack": "^1.5.3",
+    "react": "^0.13.1",
+    "webpack": "^1.7.3",
     "webpack-dev-server": "^1.7.0"
   },
+  "engines": {
+    "node": ">=0.12"
+  },
   "dependencies": {
-    "lodash": "^3.3.0",
-    "react": "^0.12.2"
+    "lodash": "^3.5.0"
   }
 }

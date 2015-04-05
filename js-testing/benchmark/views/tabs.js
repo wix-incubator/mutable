@@ -30,7 +30,7 @@ export default React.createClass({
 							});
 							return (
 								<div key={index} className={classes} onClick={() => this.setActive(index)}>
-									{index}:{title}
+									{title}
 								</div>
 							);
 						}, this)}

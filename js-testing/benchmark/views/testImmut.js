@@ -5,8 +5,6 @@ import core3Data from './core3data'
 
 import Typorama from '../../../src'
 
-
-
 window.count = 0;
 window.renderEmpty = false;
 var onlyChild;

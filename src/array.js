@@ -2,318 +2,204 @@ import _ from "lodash"
 import defineType from "./defineType"
 import BaseType from "./BaseType"
 import number from "./number"
-import {
-    generateWithDefault
-}
-from "./defineTypeUtils"
+import string from "./string"
+import {generateWithDefault} from "./defineTypeUtils"
 
 export default class _Array extends BaseType {
 
-    static defaults() {
-        return [];
-    }
+	static defaults() { return []; }
 
-    static test(value) {
-        return Array.isArray(value);
-    }
+	static test(value) { return Array.isArray(value); }
 
-    static wrapValue(value, spec, isReadOnly, options) {
+	static wrapValue(value, spec, options) {
 
-        if (value instanceof BaseType) {
-            return value.__value__.map((itemValue) => {
-                return this._wrapSingleItem(itemValue, isReadOnly, options);
-            }, this);
-        }
+		if(value instanceof BaseType) {
+			return value.__value__.map((itemValue) => {
+				return this._wrapSingleItem(itemValue, options);
+			}, this);
+		}
 
-        return value.map((itemValue) => {
-            return this._wrapSingleItem(itemValue, isReadOnly, options);
-        }, this);
-    }
+		return value.map((itemValue) => {
+			return this._wrapSingleItem(itemValue, options);
+		}, this);
+	}
 
-    static _wrapSingleItem(itemValue, isReadOnly, options) {
-        if (itemValue instanceof BaseType) {
-            return itemValue;
-        } else if (typeof options.subTypes === 'function') {
-            return options.subTypes.create(itemValue, isReadOnly, options.subTypes.options);
-        } else if (typeof options.subTypes === 'object') {
-            var subType = options.subTypes[itemValue._type];
-            return subType.create(itemValue, isReadOnly, subType.options);
-        }
-    }
+	static _wrapSingleItem(itemValue, options) {
+		if(itemValue instanceof BaseType) {
+			return itemValue;
+		} else if(typeof options.subTypes === 'function') {
+			return options.subTypes.create(itemValue, options.subTypes.options);
+		} else if(typeof options.subTypes === 'object') {
 
-    static of(subTypes, defaults, test) {
-        return this.withDefault(defaults, test, {
-            subTypes
-        });
-    };
+			var subType = options.subTypes[
+				itemValue._type ? itemValue._type  :
+				number.test(itemValue) ? number.name :
+				string.test(itemValue) ? string.name :
+				Object.keys(options.subTypes)[0]
+			];
 
-    constructor(value = [], isReadOnly = false, options = {}) {
-        if (options.subTypes && _.isArray(options.subTypes)) {
-            var subTypesObj = {};
-            options.subTypes.forEach(function(item) {
-                subTypesObj[item.displayName] = item;
-            });
-            options.subTypes = subTypesObj;
-        }
-        BaseType.call(this, value, isReadOnly, options);
-    }
+			return subType.create(itemValue, subType.options);
+		}
+	}
 
-    // To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some
-    // Need to fix map so that it wraps items
+	static of(subTypes, defaults, test) {
+		return this.withDefault(defaults, test, { subTypes });
+	};
 
-    // Mutator methods
+	constructor(value=[], options={}) {
+		if(options.subTypes && _.isArray(options.subTypes)) {
+			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
+				subTypes[type.id || type.name] = type;
+				return subTypes;
+			}, {});
+		}
 
-    copyWithin() {
-        throw 'Slice not implemented yet. Please do.';
-    }
+		super(value, options);
+	}
 
-    fill() {
-        throw 'Slice not implemented yet. Please do.';
-    }
+	toJSON() {
+		return this.__value__.map(item => {
+			return (item instanceof BaseType) ? item.toJSON() : item;
+		});
+	}
 
-    pop() {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.__isInvalidated__ = true;
-        return this.__value__.pop();
-    }
+	at(index) {
+		var item = this.__value__[index];
+		return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
+	}
 
-    push(newItem) {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.__isInvalidated__ = true;
-        return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
-    }
+	push(...newItems) {
+		if(this.__isReadOnly__) {
+			return null;
+		}
 
-    reverse() {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.__isInvalidated__ = true;
-        return this.__value__.reverse();
-    }
+		this.__isInvalidated__= true;
 
-    shift() {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.__isInvalidated__ = true;
-        return this.__value__.shift();
-    }
+		var options = this.__options__;
 
-    sort(cb) {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.__isInvalidated__ = true;
-        return this.__value__.sort(cb);
-    }
+		return Array.prototype.push.apply(
+			this.__value__,
+			newItems.map((item) => this.constructor._wrapSingleItem(item, options))
+		);
+	}
 
+	forEach(cb) {
+		var that = this;
+		this.__value__.forEach(function(item, index, arr) {
+			cb(item, index, that);
+		});
+	}
 
-    setValue(newValue) {
-        if (newValue instanceof _Array) {
-            newValue = newValue.toJSON();
-        }
-        if (_.isArray(newValue)) {
-            this.__value__ = [];
-            _.forEach(newValue, (itemValue) => {
-                this.push(itemValue);
-            });
-        }
-    }
+	map(cb, ctx) { // ToDo: remove
+		this.__value__.map(function(item, index, arr) {
+			return cb(item, index, this);
+		}, ctx || this);
 
-    splice(index, removeCount, ...addedItems) {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.__isInvalidated__ = true;
-        var spliceParams = [index, removeCount];
-        addedItems.forEach(function(newItem) {
-            spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__))
-        }.bind(this));
-        return this.__value__.splice.apply(this.__value__, spliceParams);
-        //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
-    }
+	}
 
-    unshift() {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.__isInvalidated__ = true;
-        return this.__value__.unshift();
-    }
-
-    // Accessor methods
-    at(index) {
-        var item = this.__value__[index];
-        return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
-    }
-
-    concat(...addedArrays) {
-
-        // Optional validation
-        var selfSubtypes = this.__options__.subTypes;
-        if (_.isFunction(selfSubtypes)) {
-
-            addedArrays.forEach(function(array) {
-
-                if (selfSubtypes !== array.__options__.subTypes) {
-
-                    throw new Error("Error");
-
-                }
-            });
-
-        } else {
-            addedArrays.forEach(function(item, key) {
-
-                if (_.isFunction(item.__options__.subTypes)) {
-                    var addedDisplayName = item.__options__.subTypes.displayName;
-
-                    if (!_.has(selfSubtypes, addedDisplayName)) {
-                        throw new Error("Error");
-                    }
+	splice(index, removeCount, ...addedItems) {
+		if(this.__isReadOnly__) {
+			return null;
+		}
+		this.__isInvalidated__= true;
+		var spliceParams = [index,removeCount];
+		addedItems.forEach(function(newItem) {
+		   spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+		}.bind(this));
+		return this.__value__.splice.apply(this.__value__, spliceParams);
+		//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+	}
 
 
-                } else {
-                    _.forEach(item.__options__.subTypes, function(itemType, addedDisplayName) {
+	concat(...addedArrays) {
+		return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__options__);
+	}
 
-                        if (!_.has(selfSubtypes, addedDisplayName)) {
-                            throw new Error("Error");
-                        }
-                    });
-                }
+	every(cb) {
+		var self = this;
+		return this.__value__.every(function(element, index, array) {
+			return cb(element, index, self)
+		});
+	}
 
-            });
-        }
-        // 
-        var res = new this.constructor(this.__value__, false, this.__options__);
-        addedArrays.forEach(function(arr) {
-            arr.forEach(function(item) {
-                res.push(item);
-            });
-        });
-        return res;
-    };
-    // includes(){} ES7 Method
+	some(cb) {
+		var self = this;
+		return this.__value__.some(function(element, index, array) {
+			return cb(element, index, self);
+		});
+	}
 
-    join(separator ? = ',') {
-        return this.__value__.join(separator);
-    }
+	find(cb) {
+		var self = this;
+		return _.find(this.__value__, function(element, index, array) {
+			return cb(element, index, self);
+		});
+		return _.find(this.__value__, cb);
+	}
 
-    toSource() {
-        throw 'Slice not implemented yet. Please do.';
-    }
+	findIndex(cb) {
+		var self = this;
+		return _.findIndex(this.__value__, function (element, index, array) {
+			return cb(element, index, self)
+		})
+		return _.findIndex(this.__value__, cb);
+	}
 
-    toString() {
-        throw 'Slice not implemented yet. Please do.';
-    }
+	filter(cb) {
+		var self = this;
+		var filteredArray = this.__value__.filter(function(element, index, array) {
+			return cb(element, index, self);
+		});
+		return new this.constructor(filteredArray, this.__options__, false);
+	}
 
-    valueOf() {
-        return this.__value__.map(function(item) {
-            return item.valueOf();
-        });
-    }
+	setValue(newValue) {
+		if(newValue instanceof _Array) {
+			newValue = newValue.toJSON();
+		}
+		if(_.isArray(newValue)) {
+			//fix bug #33. reset the current array instead of replacing it;
+			this.__value__.length = 0;
+			_.forEach(newValue, (itemValue) => {
+				this.push(itemValue);
+			});
+		}
+	}
 
-    toLocaleString() {
-        throw 'Slice not implemented yet. Please do.';
-    }
+	$isInvalidated() {
 
-    indexOf() {
-        throw 'Slice not implemented yet. Please do.';
-    }
+		if(this.__isInvalidated__==-1) {
+			var invalidatedField = _.find(this.__value__, (item, index)=>{
+				if(item instanceof BaseType) {
+					return item.$isInvalidated();
+				}
+			});
+			if(invalidatedField) {
+				this.__isInvalidated__ = true;
+			}else{
+				this.__isInvalidated__ = false;
+			}
+		}
+		return this.__isInvalidated__;
+	}
 
-    lastIndexOf() {
-        throw 'Slice not implemented yet. Please do.';
-    }
+	$revalidate() {
+		this.__isInvalidated__ = -1;
+		_.forEach(this.__value__, (item, index)=>{
+			if(item instanceof BaseType) {
+				item.$revalidate();
+			}
+		});
+	}
 
-    // Iteration methods        
-
-    forEach(cb) {
-        var that = this;
-        this.__value__.forEach(function(item, index, arr) {
-            cb(item, index, that);
-        });
-    }
-
-    entries() {
-        throw 'Slice not implemented yet. Please do.';
-    }
-
-    find(cb) {
-        var self = this;
-        return _.find(this.__value__, function(element, index, array) {
-            return cb(element, index, self);
-        });
-        return _.find(this.__value__, cb);
-    }
-
-    findIndex(cb) {
-        var self = this;
-        return _.findIndex(this.__value__, function(element, index, array) {
-            return cb(element, index, self)
-        })
-        return _.findIndex(this.__value__, cb);
-    }
-
-    keys() {
-        throw 'Slice not implemented yet. Please do.';
-    }
-
-    reduce() {
-        throw 'Slice not implemented yet. Please do.';
-    }
-
-    reduceRight() {
-        throw 'Slice not implemented yet. Please do.';
-    }
-
-    values() {
-        throw 'Slice not implemented yet. Please do.';
-    }
-
-    $asReadOnly() {
-        if (!this.__readOnlyInstance__) {
-            this.__readOnlyInstance__ = this.constructor.type.create(this.__value__, true, this.__options__);
-        }
-        return this.__readOnlyInstance__;
-    }
-
-    $isInvalidated() {
-        if (this.__isInvalidated__ == -1) {
-            var invalidatedField = _.find(this.__value__, (item, index) => {
-                if (item instanceof BaseType) {
-                    return item.$isInvalidated();
-                }
-            });
-            if (invalidatedField) {
-                this.__isInvalidated__ = true;
-            } else {
-                this.__isInvalidated__ = false;
-            }
-        }
-        return this.__isInvalidated__;
-    }
-
-    $revalidate() {
-        this.__isInvalidated__ = -1;
-        _.forEach(this.__value__, (item, index) => {
-            if (item instanceof BaseType) {
-                item.$revalidate();
-            }
-        });
-    }
-
-    $resetValidationCheck() {
-        this.__isInvalidated__ = this.__isInvalidated__ || -1;
-        _.forEach(this.__value__, (item, index) => {
-            if (item instanceof BaseType) {
-                item.$resetValidationCheck();
-            }
-        });
-    }
+	$resetValidationCheck() {
+		this.__isInvalidated__ = this.__isInvalidated__ || -1;
+		_.forEach(this.__value__, (item, index)=>{
+			if(item instanceof BaseType) {
+				item.$resetValidationCheck();
+			}
+		});
+	}
 
 }
 
@@ -321,44 +207,24 @@ _Array.withDefault = generateWithDefault();
 
 
 
-//['map', 'filter', 'forEach', 'concat', 'slice'].map(function(key){
-['map', 'filter', 'slice'].forEach(function(key) {
-    
-    var loFn = _[key];
-    _Array.prototype[key] = function(fn, ctx) {
+//['map', 'filter', 'every', 'forEach'].map(function(key) {
+['map'].map(function(key) {
 
-        var valueArray = loFn(this.__value__, function() {
-            return fn.apply(this, arguments);
-        }, ctx || this);
+	var loFn = _[key];
 
-        return new this.constructor(valueArray, false, this.__options__);
+	_Array.prototype[key] = function(fn, ctx) {
 
-    }
+		return loFn(this.__value__, function() {
+			return fn.apply(ctx || this, arguments);
+		});
 
-});
-// ['every', 'some']
-['every', 'some'].forEach(function(key) {
-
-    var loFn = _[key];
-    _Array.prototype[key] = function(fn, ctx) {
-
-        var valueArray = loFn(this.__value__, function() {
-            return fn.apply(ctx || this, arguments);
-        });
-
-        return valueArray;
-
-    }
-
-
+	}
 });
 
-
-
-defineType('Array', {
-    spec: function() {
-        return {
-            length: number.withDefault(0)
-        };
-    }
+defineType('Array',{
+	spec: function() {
+		return {
+			length: number.withDefault(0)
+		};
+	}
 }, _Array);

@@ -11,14 +11,20 @@ export function generateTest(){ // ToDo: check if its better jit-wise to move th
 
 export function generateFieldsOn(obj, fieldsDefinition){
     _.forEach(fieldsDefinition, (fieldDef, fieldName) => {
-        if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.displayName + '.' + fieldName+'".')}
+        if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.id + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
-            get: function(){ return this.__value__[fieldName] },
+            get: function(){
+                if(this.__isReadOnly__) {
+                    return (fieldDef.type.prototype instanceof BaseType) ? this.__value__[fieldName].$asReadOnly() : this.__value__[fieldName];
+                } else {
+                    return this.__value__[fieldName];
+                }
+            },
             set: function(newValue){
                 this.__isInvalidated__ = true;
 
                 if(this.__isReadOnly__) {
-                    console.warn('try to set value to readonly field: ', this.constructor.displayName +'.'+fieldName, '=', newValue);
+                    console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
                 } else if(fieldDef.type.prototype instanceof BaseType) {
                     this.__value__[fieldName].setValue(newValue);
                 } else {
@@ -33,18 +39,16 @@ export function generateFieldsOn(obj, fieldsDefinition){
 
 export function generateWithDefault(){
     return function withDefault(defaults, test, options){
-        var def = this.defaults;
-        if(defaults !== undefined){ // ToDo: clone defaults (add test)
-            def = (typeof defaults === 'function') ? defaults : function(){ return _.clone(defaults, true); };
+		options = options || this.options;
+        var def = defaults ? function(){ return _.clone(defaults, true); } : this.defaults;
+
+        function typeWithDefault(value, options){
+            return new typeWithDefault.type(value, typeWithDefault.options || options);
         }
 
-        function typeWithDefault(value, isReadOnly, options){
-            return typeWithDefault.type.create(value, isReadOnly, typeWithDefault.options || options);
-        }
-
-        typeWithDefault.type = this;
+        typeWithDefault.type = this.type || this;
         typeWithDefault.test = test || this.test;
-        typeWithDefault.withDefault = withDefault.bind(this);
+        typeWithDefault.withDefault = withDefault//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.options = options;
         typeWithDefault.wrapValue = this.wrapValue;
@@ -55,17 +59,15 @@ export function generateWithDefault(){
 
 export function generateWithDefaultForSysImmutable(Type){
     return function withDefault(defaults, test){
-        var def = this.defaults;
-        if(defaults !== undefined){
-            def = (typeof defaults === 'function') ? defaults : function(){ return defaults; };
-        }
+	
+		var def = defaults ? function(){ return defaults; } : this.defaults;
 
-        function typeWithDefault(value, isReadOnly){
+        function typeWithDefault(value){
             return Type(value);
         }
         typeWithDefault.type = this.type;
         typeWithDefault.test = test || this.test;
-        typeWithDefault.withDefault = this.withDefault.bind(this);
+        typeWithDefault.withDefault = this.withDefault//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.wrapValue = Type;
         typeWithDefault.create = this.create;
