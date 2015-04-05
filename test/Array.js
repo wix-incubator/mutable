@@ -190,7 +190,6 @@ describe('Array data', function() {
                 expect(newIndex).to.equal(5);
                 expect(numberList.length).to.equal(lengthBeforePush+1);
                 expect(numberList.at(4)).to.equal(5);
-                expect(numberList.$isDirty()).to.equal(true);
             });
 
             it('Should add a typed item for none immutable data (like custom types)', function() {
@@ -287,7 +286,6 @@ describe('Array data', function() {
                 expect(removedItems.length).to.equal(2);
                 expect(removedItems[0]).to.equal(2);
                 expect(removedItems[1]).to.equal(3);
-                expect(numberList.$isDirty()).to.equal(true);
             });
 
             it('Should wrap items for none immutable data (like custom types)', function() {
