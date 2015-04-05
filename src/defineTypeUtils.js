@@ -1,7 +1,7 @@
 import _ from "lodash"
 import BaseType from "./BaseType"
 
-function generateTest(){ // ToDo: check if its better jit-wise to move the spec to the closure: generateTestForSpec(spec)
+export function generateTest(){ // ToDo: check if its better jit-wise to move the spec to the closure: generateTestForSpec(spec)
     return function(val){
         return Object.keys(this._spec).every(function(key){
             return this._spec[key].test(val[key])
@@ -9,7 +9,7 @@ function generateTest(){ // ToDo: check if its better jit-wise to move the spec 
     };
 }
 
-function generateFieldsOn(obj, fieldsDefinition){
+export function generateFieldsOn(obj, fieldsDefinition){
     _.forEach(fieldsDefinition, (fieldDef, fieldName) => {
         if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.id + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
@@ -37,7 +37,7 @@ function generateFieldsOn(obj, fieldsDefinition){
     });
 }
 
-function generateWithDefault(){
+export function generateWithDefault(){
     return function withDefault(defaults, test, options){
 		options = options || this.options;
         var def = defaults ? function(){ return _.clone(defaults, true); } : this.defaults;
@@ -48,7 +48,7 @@ function generateWithDefault(){
 
         typeWithDefault.type = this.type || this;
         typeWithDefault.test = test || this.test;
-        typeWithDefault.withDefault = withDefault;//.bind(this);
+        typeWithDefault.withDefault = withDefault//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.options = options;
         typeWithDefault.wrapValue = this.wrapValue;
@@ -57,7 +57,7 @@ function generateWithDefault(){
     }
 }
 
-function generateWithDefaultForSysImmutable(Type){
+export function generateWithDefaultForSysImmutable(Type){
     return function withDefault(defaults, test){
 	
 		var def = defaults ? function(){ return defaults; } : this.defaults;
@@ -75,7 +75,7 @@ function generateWithDefaultForSysImmutable(Type){
     }
 }
 
-function generateGetDefaultValue(){
+export function generateGetDefaultValue(){
     return function() {
         var spec = this._spec;
         var args = arguments;
@@ -87,26 +87,5 @@ function generateGetDefaultValue(){
     }
 }
 
-// immutable enum type for fuzzy-logic dirty flag
-var dirty = {
-    yes : {
-        isDirty : true,
-        isKnown : true
-    },
-    no : {
-        isDirty : false,
-        isKnown : true
-    },
-    unKnown : {
-        isKnown : false
-    }
-};
 
-export default {
-    generateTest : generateTest,
-    generateFieldsOn : generateFieldsOn,
-    generateWithDefault : generateWithDefault,
-    generateWithDefaultForSysImmutable : generateWithDefaultForSysImmutable,
-    generateGetDefaultValue : generateGetDefaultValue,
-    dirty : dirty
-};
+

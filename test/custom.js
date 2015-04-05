@@ -234,29 +234,29 @@ describe('Custom data', function() {
     });
 
     describe('Type invalidation', function() {
-        describe('$isInvalidated()', function() {
+        describe('$isDirty()', function() {
             it('should return false for un modified data', function() {
                 var userData = new UserType();
-                expect(userData.$isInvalidated()).to.equal(false);
+                expect(userData.$isDirty()).to.equal(false);
             });
 
             it('should return true for modified data', function() {
                 var userData = new UserType();
                 userData.name = 'gaga';
-                expect(userData.$isInvalidated()).to.equal(true);
+                expect(userData.$isDirty()).to.equal(true);
             });
 
             it('should return true for data when a child value has changed', function() {
                 var userWithChildType = new UserWithChildType();
                 userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
+                expect(userWithChildType.$isDirty()).to.equal(true);
             });
 
             xit('should return true for data when a child value has changed after isinvalidates was already called', function() {
                 var userWithChildType = new UserWithChildType();
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
+                expect(userWithChildType.$isDirty()).to.equal(false);
                 userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
+                expect(userWithChildType.$isDirty()).to.equal(true);
             });
 
             it('should return false for data when only a parent/sibling value has changed', function() {
@@ -268,51 +268,40 @@ describe('Custom data', function() {
                 var userWith2ChildType = new UserWith2ChildType();
 
                 userWith2ChildType.child.name = 'baga';
-                expect(userWith2ChildType.child.$isInvalidated()).to.equal(true);
-                expect(userWith2ChildType.child2.$isInvalidated()).to.equal(false);
+                expect(userWith2ChildType.child.$isDirty()).to.equal(true);
+                expect(userWith2ChildType.child2.$isDirty()).to.equal(false);
             });
         });
-        describe('$revalidate()', function() {
+        describe('$resetDirty()', function() {
             it('should reset data invalidation', function() {
                 var userData = new UserType();
                 userData.name = 'gaga';
-                expect(userData.$isInvalidated()).to.equal(true);
-                userData.$revalidate();
-                expect(userData.$isInvalidated()).to.equal(false);
+                expect(userData.$isDirty()).to.equal(true);
+                userData.$resetDirty();
+                expect(userData.$isDirty()).to.equal(false);
 
             });
 
 			xit('should not invalidate if same values are set', function() {
 				var userData = new UserType();
                 userData.name = 'gaga';
-                expect(userData.$isInvalidated()).to.equal(true);
-                userData.$revalidate();
+                expect(userData.$isDirty()).to.equal(true);
+                userData.$resetDirty();
 			
 				userData.name = 'gaga';
 				
-				expect(userData.$isInvalidated()).to.equal(false);
+				expect(userData.$isDirty()).to.equal(false);
 			});
 
             it('should reset deep data invalidation', function() {
 
                 var userWithChildType = new UserWithChildType();
                 userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
-                expect(userWithChildType.child.$isInvalidated()).to.equal(true);
-                userWithChildType.$revalidate();
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
-                expect(userWithChildType.child.$isInvalidated()).to.equal(false);
-            });
-
-        });
-        describe('$resetValidationCheck()', function() {
-            it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', () => {
-                var userWithChildType = new UserWithChildType();
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
-                userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
-                userWithChildType.$resetValidationCheck();
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
+                expect(userWithChildType.$isDirty()).to.equal(true);
+                expect(userWithChildType.child.$isDirty()).to.equal(true);
+                userWithChildType.$resetDirty();
+                expect(userWithChildType.$isDirty()).to.equal(false);
+                expect(userWithChildType.child.$isDirty()).to.equal(false);
             });
 
         });

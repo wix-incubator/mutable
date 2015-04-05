@@ -3,7 +3,7 @@ import defineType from "./defineType"
 import BaseType from "./BaseType"
 import number from "./number"
 import string from "./string"
-import {generateWithDefault, dirty} from "./defineTypeUtils"
+import {generateWithDefault} from "./defineTypeUtils"
 
 export default class _Array extends BaseType {
 

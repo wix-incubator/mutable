@@ -1,5 +1,5 @@
 import _ from "lodash"
-import defineTypeUtils from "./defineTypeUtils"
+import * as defineTypeUtils from "./defineTypeUtils"
 import BaseType from "./BaseType"
 
 export default function(id, typeDefinition, TypeConstructor){

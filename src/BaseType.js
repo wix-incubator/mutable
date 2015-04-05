@@ -1,5 +1,5 @@
 import _ from "lodash"
-import defineTypeUtils from "./defineTypeUtils"
+import {dirty} from "./lifecycle"
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -7,6 +7,7 @@ function createReadOnly(source){
     readOnlyInstance.constructor = source.constructor;
     return readOnlyInstance;
 }
+
 
 export default class BaseType {
 
@@ -25,7 +26,7 @@ export default class BaseType {
     constructor(value, options = {}){
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
-        this.__dirty__ = defineTypeUtils.dirty.unKnown;
+        this.__dirty__ = dirty.unKnown;
         this.__options__ = options;
         this.__value__ = this.constructor.wrapValue(
             (value === undefined) ? this.constructor.defaults() : value,

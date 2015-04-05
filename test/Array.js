@@ -44,24 +44,20 @@ describe('Array data', function() {
 			
 			var readOnly = arr.$asReadOnly();
 			
-			arr.setValue([User.defaults()])
+			arr.setValue([User.defaults()]);
 			
 			
 			expect(arr.__value__).to.equal(readOnly.__value__);
 			
 		
-		})	
+		});
 		
 		
 		xit('should fail', function(){
-				debugger	
-				
-		
-			
+				debugger;
 			var Type = Typorama.define('Type',{
-			
 				spec: function(){
-					
+
 					return {
 						items: Typorama.Array.of(User)
 					};
@@ -83,7 +79,7 @@ describe('Array data', function() {
 		
 		})	
 		
-	})
+	});
 
 
     describe('(Mutable) instance', function() {
@@ -196,7 +192,7 @@ describe('Array data', function() {
                 expect(newIndex).to.equal(5);
                 expect(numberList.length).to.equal(lengthBeforePush+1);
                 expect(numberList.at(4)).to.equal(5);
-                expect(numberList.$isInvalidated()).to.equal(true);
+                expect(numberList.$isDirty()).to.equal(true);
             });
 
             it('Should add a typed item for none immutable data (like custom types)', function() {
@@ -293,7 +289,7 @@ describe('Array data', function() {
                 expect(removedItems.length).to.equal(2);
                 expect(removedItems[0]).to.equal(2);
                 expect(removedItems[1]).to.equal(3);
-                expect(numberList.$isInvalidated()).to.equal(true);
+                expect(numberList.$isDirty()).to.equal(true);
             });
 
             it('Should wrap items for none immutable data (like custom types)', function() {
@@ -535,69 +531,56 @@ describe('Array data', function() {
         });
 
         describe('Type Invalidation',function() {
-            describe('$isInvalidated()',function() {
+            describe('$isDirty()',function() {
                 it('Should return false for unmodified data', function() {
                     var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                    expect(numberList.$isInvalidated()).to.equal(false);
+                    expect(numberList.$isDirty()).to.equal(false);
                 });
                 xit('Should return true for modified data', function() {
                     var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                     numberList.push(5);
-                    expect(numberList.$isInvalidated()).to.equal(true);
+                    expect(numberList.$isDirty()).to.equal(true);
                 });
                 it('Should return true for data when a child value has changed', function() {
                     var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
                     arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(true);
+                    expect(arr.$isDirty()).to.equal(true);
                 });
                 xit('Should return true for data when a child value has changed after isinvalidates was already called', function() {
                     var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    expect(arr.$isInvalidated()).to.equal(false);
+                    expect(arr.$isDirty()).to.equal(false);
                     arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(true);
+                    expect(arr.$isDirty()).to.equal(true);
                 });
                 it('Should return false for data when only a parent/sibling value has changed', function() {
                     var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]);
 
                     arr.at(0).name = 'gaga';
-                    expect(arr.at(0).$isInvalidated()).to.equal(true);
-                    expect(arr.at(1).$isInvalidated()).to.equal(false);
-                    expect(arr.$isInvalidated()).to.equal(true);
+                    expect(arr.at(0).$isDirty()).to.equal(true);
+                    expect(arr.at(1).$isDirty()).to.equal(false);
+                    expect(arr.$isDirty()).to.equal(true);
                 });
             });
 
-            describe('$revalidate()',function() {
+            describe('$resetDirty()',function() {
                 xit('Should reset data invalidation', function() {
                     var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                     numberList.push(5);
-                    expect(numberList.$isInvalidated()).to.equal(true);
-                    numberList.$revalidate();
-                    expect(numberList.$isInvalidated()).to.equal(false);
+                    expect(numberList.$isDirty()).to.equal(true);
+                    numberList.$resetDirty();
+                    expect(numberList.$isDirty()).to.equal(false);
 
                 });
                 it('Should reset deep data invalidation', function() {
                     var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
                     arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(true);
-                    expect(arr.at(0).$isInvalidated()).to.equal(true);
-                    arr.$revalidate();
-                    expect(arr.$isInvalidated()).to.equal(false);
-                    expect(arr.at(0).$isInvalidated()).to.equal(false);
+                    expect(arr.$isDirty()).to.equal(true);
+                    expect(arr.at(0).$isDirty()).to.equal(true);
+                    arr.$resetDirty();
+                    expect(arr.$isDirty()).to.equal(false);
+                    expect(arr.at(0).$isDirty()).to.equal(false);
                 });
 
-            });
-
-            describe('$resetValidationCheck()',function() {
-                it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    expect(arr.$isInvalidated()).to.equal(false);
-                    expect(arr.at(0).$isInvalidated()).to.equal(false);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(false);
-                    arr.$resetValidationCheck();
-                    expect(arr.$isInvalidated()).to.equal(true);
-                    expect(arr.at(0).$isInvalidated()).to.equal(true);
-                });
             });
         });
     });
