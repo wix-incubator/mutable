@@ -22,7 +22,7 @@ export default function testLifeCycleContract(factory, mutator, description, fra
     var idempotent = isIdempotent(factory, mutator);
     var directlyDirtifies = isDirectlyDirtifies(factory, mutator);
     describe(description + ' lifecycle contract', function() {
-        describe('clean > dirty > clean', function(){
+        describe('basic clean > dirty > clean', function(){
             before('init', function() {
                 this.instance = factory();
             });
@@ -44,7 +44,7 @@ export default function testLifeCycleContract(factory, mutator, description, fra
                 });
             }
             afterEach(function(){
-                expect(framePredicate(this.instance)).to.be.true;
+                expect(framePredicate(this.instance.$asReadOnly())).to.be.true;
             });
             after('cleanup', function(){
                 delete this.instance;
@@ -52,7 +52,7 @@ export default function testLifeCycleContract(factory, mutator, description, fra
         });
 
         if (!directlyDirtifies) {
-            describe('cache on: clean > dirty > clean', function () {
+            describe('dirty flag caching', function () {
                 before('init', function () {
                     this.instance = factory();
                 });
@@ -68,12 +68,42 @@ export default function testLifeCycleContract(factory, mutator, description, fra
                     expect(this.instance.$isDirty()).to.be.false;
                 });
                 afterEach(function () {
-                    expect(framePredicate(this.instance)).to.be.true;
+                    expect(framePredicate(this.instance.$asReadOnly())).to.be.true;
                 });
                 after('cleanup', function () {
                     delete this.instance;
                 });
             });
         }
+
+        describe('read only', function(){
+            before('init', function() {
+                this.rw = factory();
+                this.ro = this.rw.$asReadOnly();
+            });
+            it('$isDirty returns false', function(){
+                expect(this.ro.$isDirty(true)).to.be.false;
+            });
+            it('mutator makes $isDirty return true, ignores read only caching attempt', function(){
+                mutator(this.rw);
+                expect(this.ro.$isDirty()).to.be.true;
+            });
+            it('$resetDirty on read only does not change anything', function(){
+                this.ro.$resetDirty();
+                expect(this.ro.$isDirty()).to.be.true;
+            });
+            it('$resetDirty on read write makes $isDirty return false again', function(){
+                this.rw.$resetDirty();
+                expect(this.ro.$isDirty()).to.be.false;
+            });
+            afterEach(function(){
+                expect(this.ro.$isDirty()).to.eq(this.rw.$isDirty());
+                expect(framePredicate(this.ro)).to.be.true;
+            });
+            after('cleanup', function(){
+                delete this.rw;
+                delete this.ro;
+            });
+        });
     });
 }
