@@ -1,5 +1,5 @@
 import chai from 'chai';
-import testKit from "../test-kit";
+import testKit from '../test-kit';
 
 chai.use(testKit.chai);
 
