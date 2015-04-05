@@ -7,94 +7,94 @@ import {generateWithDefault} from "./defineTypeUtils"
 
 export default class _Array extends BaseType {
 
-    static defaults() { return []; }
+	static defaults() { return []; }
 
-    static test(value) { return Array.isArray(value); }
+	static test(value) { return Array.isArray(value); }
 
-    static wrapValue(value, spec, options) {
+	static wrapValue(value, spec, options) {
 
-        if(value instanceof BaseType) {
-            return value.__value__.map((itemValue) => {
-                return this._wrapSingleItem(itemValue, options);
-            }, this);
-        }
+		if(value instanceof BaseType) {
+			return value.__value__.map((itemValue) => {
+				return this._wrapSingleItem(itemValue, options);
+			}, this);
+		}
 
-        return value.map((itemValue) => {
-            return this._wrapSingleItem(itemValue, options);
-        }, this);
-    }
+		return value.map((itemValue) => {
+			return this._wrapSingleItem(itemValue, options);
+		}, this);
+	}
 
-    static _wrapSingleItem(itemValue, options) {
-        if(itemValue instanceof BaseType) {
-            return itemValue;
-        } else if(typeof options.subTypes === 'function') {
-            return options.subTypes.create(itemValue, options.subTypes.options);
-        } else if(typeof options.subTypes === 'object') {
+	static _wrapSingleItem(itemValue, options) {
+		if(itemValue instanceof BaseType) {
+			return itemValue;
+		} else if(typeof options.subTypes === 'function') {
+			return options.subTypes.create(itemValue, options.subTypes.options);
+		} else if(typeof options.subTypes === 'object') {
 
-            var subType = options.subTypes[
-                itemValue._type ? itemValue._type  :
-                number.test(itemValue) ? number.name :
-                string.test(itemValue) ? string.name :
-                Object.keys(options.subTypes)[0]
-            ];
+			var subType = options.subTypes[
+				itemValue._type ? itemValue._type  :
+				number.test(itemValue) ? number.name :
+				string.test(itemValue) ? string.name :
+				Object.keys(options.subTypes)[0]
+			];
 
-            return subType.create(itemValue, subType.options);
-        }
-    }
+			return subType.create(itemValue, subType.options);
+		}
+	}
 
-    static of(subTypes, defaults, test) {
-        return this.withDefault(defaults, test, { subTypes });
-    };
+	static of(subTypes, defaults, test) {
+		return this.withDefault(defaults, test, { subTypes });
+	};
 
-    constructor(value=[], options={}) {
-        if(options.subTypes && _.isArray(options.subTypes)) {
-            options.subTypes = options.subTypes.reduce(function(subTypes, type) {
-                subTypes[type.id || type.name] = type;
-                return subTypes;
-            }, {});
-        }
+	constructor(value=[], options={}) {
+		if(options.subTypes && _.isArray(options.subTypes)) {
+			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
+				subTypes[type.id || type.name] = type;
+				return subTypes;
+			}, {});
+		}
 
-        super(value, options);
-    }
+		super(value, options);
+	}
 
-    toJSON() {
-        return this.__value__.map(item => {
-            return (item instanceof BaseType) ? item.toJSON() : item;
-        });
-    }
+	toJSON() {
+		return this.__value__.map(item => {
+			return (item instanceof BaseType) ? item.toJSON() : item;
+		});
+	}
 
-    at(index) {
-        var item = this.__value__[index];
-        return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
-    }
+	at(index) {
+		var item = this.__value__[index];
+		return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
+	}
 
-    push(...newItems) {
-        if(this.__isReadOnly__) {
-            return null;
-        }
+	push(...newItems) {
+		if(this.__isReadOnly__) {
+			return null;
+		}
 
         this.$setDirty();
         var options = this.__options__;
 
-        return Array.prototype.push.apply(
-            this.__value__,
-            newItems.map((item) => this.constructor._wrapSingleItem(item, options))
-        );
-    }
+		return Array.prototype.push.apply(
+			this.__value__,
+			newItems.map((item) => this.constructor._wrapSingleItem(item, options))
+		);
+	}
 
-    forEach(cb) {
-        var that = this;
-        this.__value__.forEach(function(item, index, arr) {
-            cb(item, index, that);
-        });
-    }
+	forEach(cb) {
+		var that = this;
+		this.__value__.forEach(function(item, index, arr) {
+			cb(item, index, that);
+		});
+	}
 
-    map(cb, ctx) { // ToDo: remove
-        this.__value__.map(function(item, index, arr) {
-            return cb(item, index, this);
-        }, ctx || this);
+	map(cb, ctx) { // ToDo: remove
+		this.__value__.map(function(item, index, arr) {
+			return cb(item, index, this);
+		}, ctx || this);
 
-    }
+	}
 
     splice(index, removeCount, ...addedItems) {
         if(this.__isReadOnly__) {
@@ -110,23 +110,23 @@ export default class _Array extends BaseType {
     }
 
 
-    concat(...addedArrays) {
-        return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__options__);
-    }
+	concat(...addedArrays) {
+		return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__options__);
+	}
 
-    every(cb) {
-        var self = this;
-        return this.__value__.every(function(element, index, array) {
-            return cb(element, index, self)
-        });
-    }
+	every(cb) {
+		var self = this;
+		return this.__value__.every(function(element, index, array) {
+			return cb(element, index, self)
+		});
+	}
 
-    some(cb) {
-        var self = this;
-        return this.__value__.some(function(element, index, array) {
-            return cb(element, index, self);
-        });
-    }
+	some(cb) {
+		var self = this;
+		return this.__value__.some(function(element, index, array) {
+			return cb(element, index, self);
+		});
+	}
 
     find(cb) {
         var self = this;
@@ -139,22 +139,22 @@ export default class _Array extends BaseType {
         var self = this;
         return _.findIndex(this.__value__, function (element, index, array) {
             return cb(element, index, self)
-        })
-    }
-
-    filter(cb) {
-        var self = this;
-        var filteredArray = this.__value__.filter(function(element, index, array) {
-            return cb(element, index, self);
         });
-        return new this.constructor(filteredArray, this.__options__, false);
     }
 
-    setValue(newValue) {
-        if(newValue instanceof _Array) {
-            newValue = newValue.toJSON();
-        }
-        if(_.isArray(newValue)) {
+	filter(cb) {
+		var self = this;
+		var filteredArray = this.__value__.filter(function(element, index, array) {
+			return cb(element, index, self);
+		});
+		return new this.constructor(filteredArray, this.__options__, false);
+	}
+
+	setValue(newValue) {
+		if(newValue instanceof _Array) {
+			newValue = newValue.toJSON();
+		}
+		if(_.isArray(newValue)) {
 			//fix bug #33. reset the current array instead of replacing it;
             this.__value__.length = 0;
             _.forEach(newValue, (itemValue) => {
@@ -171,21 +171,21 @@ _Array.withDefault = generateWithDefault();
 //['map', 'filter', 'every', 'forEach'].map(function(key) {
 ['map'].map(function(key) {
 
-    var loFn = _[key];
+	var loFn = _[key];
 
-    _Array.prototype[key] = function(fn, ctx) {
+	_Array.prototype[key] = function(fn, ctx) {
 
-        return loFn(this.__value__, function() {
-            return fn.apply(ctx || this, arguments);
-        });
+		return loFn(this.__value__, function() {
+			return fn.apply(ctx || this, arguments);
+		});
 
-    }
+	}
 });
 
 defineType('Array',{
-    spec: function() {
-        return {
-            length: number.withDefault(0)
-        };
-    }
+	spec: function() {
+		return {
+			length: number.withDefault(0)
+		};
+	}
 }, _Array);
