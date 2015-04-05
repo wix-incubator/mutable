@@ -36,7 +36,7 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        this.__dirty__ = dirty.yes;
+        this.$setDirty();
         if(newValue instanceof BaseType){
             newValue = newValue.toJSON();
         }
