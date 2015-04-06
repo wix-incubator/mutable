@@ -1,6 +1,8 @@
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
+import _ from 'lodash';
+import lifecycleContractTest from './lifecycle';
 
 var UserType = aDataTypeWithSpec({
     name: Typorama.String.withDefault(''),
@@ -18,73 +20,38 @@ var UserWithAddressType = aDataTypeWithSpec({
 }, 'UserWithAddress');
 
 describe('Array data', function() {
-	
-	
-	
-	
-	
-	describe('unsync __value__ array bug', function(){
+    describe('unsync __value__ array bug', function(){
+        it('__value__ should be synced with the readonly', function(){
+            var User = Typorama.define('user', {
+                spec: function(){
+                    return {
+                        name: Typorama.String
+                    }
+                }
 
-		
-		it('__value__ should be synced with the readonly', function(){
-			
-			var User = Typorama.define('user', {
-				
-				spec: function(){
-					
-					return {
-						name: Typorama.String
-					}
-				
-				}
-			
-			});
-			
-			var arr = Typorama.Array.of(User).create();
-			
-			var readOnly = arr.$asReadOnly();
-			
-			arr.setValue([User.defaults()])
-			
-			
-			expect(arr.__value__).to.equal(readOnly.__value__);
-			
-		
-		})	
-		
-		
-		xit('should fail', function(){
-				debugger	
-				
-		
-			
-			var Type = Typorama.define('Type',{
-			
-				spec: function(){
-					
-					return {
-						items: Typorama.Array.of(User)
-					};
-				
-				}
-				
-			});
-			
-			
-			var type = new Type();
+            });
 
-			var readOnly = type.$asReadOnly();
-			
-			type.setValue({items: Typorama.Array.of(User).create([User.defaults(), User.defaults()]) });
-			
-			var items = readOnly.items;
-			
-			expect(items.__value__).to.eql(['hello', 'world'])
-		
-		})	
-		
-	})
-
+            var arr = Typorama.Array.of(User).create();
+            var readOnly = arr.$asReadOnly();
+            arr.setValue([User.defaults()])
+            expect(arr.__value__).to.equal(readOnly.__value__);
+        });
+        xit('should fail', function(){
+            debugger
+            var Type = Typorama.define('Type',{
+                spec: function(){
+                    return {
+                        items: Typorama.Array.of(User)
+                    };
+                }
+            });
+            var type = new Type();
+            var readOnly = type.$asReadOnly();
+            type.setValue({items: Typorama.Array.of(User).create([User.defaults(), User.defaults()]) });
+            var items = readOnly.items;
+            expect(items.__value__).to.eql(['hello', 'world'])
+        })
+    });
 
     describe('(Mutable) instance', function() {
 
@@ -196,7 +163,6 @@ describe('Array data', function() {
                 expect(newIndex).to.equal(5);
                 expect(numberList.length).to.equal(lengthBeforePush+1);
                 expect(numberList.at(4)).to.equal(5);
-                expect(numberList.$isInvalidated()).to.equal(true);
             });
 
             it('Should add a typed item for none immutable data (like custom types)', function() {
@@ -293,7 +259,6 @@ describe('Array data', function() {
                 expect(removedItems.length).to.equal(2);
                 expect(removedItems[0]).to.equal(2);
                 expect(removedItems[1]).to.equal(3);
-                expect(numberList.$isInvalidated()).to.equal(true);
             });
 
             it('Should wrap items for none immutable data (like custom types)', function() {
@@ -533,72 +498,22 @@ describe('Array data', function() {
 
             })
         });
-
-        describe('Type Invalidation',function() {
-            describe('$isInvalidated()',function() {
-                it('Should return false for unmodified data', function() {
-                    var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                    expect(numberList.$isInvalidated()).to.equal(false);
-                });
-                xit('Should return true for modified data', function() {
-                    var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                    numberList.push(5);
-                    expect(numberList.$isInvalidated()).to.equal(true);
-                });
-                it('Should return true for data when a child value has changed', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(true);
-                });
-                xit('Should return true for data when a child value has changed after isinvalidates was already called', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    expect(arr.$isInvalidated()).to.equal(false);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(true);
-                });
-                it('Should return false for data when only a parent/sibling value has changed', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]);
-
-                    arr.at(0).name = 'gaga';
-                    expect(arr.at(0).$isInvalidated()).to.equal(true);
-                    expect(arr.at(1).$isInvalidated()).to.equal(false);
-                    expect(arr.$isInvalidated()).to.equal(true);
-                });
-            });
-
-            describe('$revalidate()',function() {
-                xit('Should reset data invalidation', function() {
-                    var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                    numberList.push(5);
-                    expect(numberList.$isInvalidated()).to.equal(true);
-                    numberList.$revalidate();
-                    expect(numberList.$isInvalidated()).to.equal(false);
-
-                });
-                it('Should reset deep data invalidation', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(true);
-                    expect(arr.at(0).$isInvalidated()).to.equal(true);
-                    arr.$revalidate();
-                    expect(arr.$isInvalidated()).to.equal(false);
-                    expect(arr.at(0).$isInvalidated()).to.equal(false);
-                });
-
-            });
-
-            describe('$resetValidationCheck()',function() {
-                it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', function() {
-                    var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-                    expect(arr.$isInvalidated()).to.equal(false);
-                    expect(arr.at(0).$isInvalidated()).to.equal(false);
-                    arr.at(0).name = 'gaga';
-                    expect(arr.$isInvalidated()).to.equal(false);
-                    arr.$resetValidationCheck();
-                    expect(arr.$isInvalidated()).to.equal(true);
-                    expect(arr.at(0).$isInvalidated()).to.equal(true);
-                });
-            });
-        });
     });
+    describe('Lifecycle contract',function() {
+
+        lifecycleContractTest(
+            ()=> Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]),
+            (arr)=> arr.at(0).name = 'gaga',
+            'changing an element in an array',
+            (arr)=> !arr.at(1).$isDirty());
+
+        var intArrLifeCycle = _.curry(lifecycleContractTest)(()=> Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]));
+
+        intArrLifeCycle((arr)=> arr.push(5), 'adding an element to an array');
+        intArrLifeCycle((arr)=> arr.splice(1, 2, 7, 6, 5), 'splicing an array');
+
+    });
+
+
 });
+

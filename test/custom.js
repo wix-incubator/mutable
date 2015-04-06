@@ -2,6 +2,7 @@ import _ from 'lodash';
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
+import lifecycleContractTest from './lifecycle';
 
 describe('Custom data', function() {
 
@@ -18,7 +19,7 @@ describe('Custom data', function() {
 
     describe('definition', function() {
         it('should throw error for reserved keys', function() { // ToDo: change to fields that start with $ and __
-            expect(() => aDataTypeWithSpec({ $asReadOnly: Typorama.String })).to.throw();
+            expect(() => aDataTypeWithSpec({$asReadOnly: Typorama.String})).to.throw();
         });
     });
 
@@ -34,7 +35,7 @@ describe('Custom data', function() {
         describe('instantiation', function() {
 
             it('should accept values from json', function() {
-                var userData = new UserType({ name:'yoshi', age:50 });
+                var userData = new UserType({name: 'yoshi', age: 50});
 
                 expect(userData.name).to.equal('yoshi');
                 expect(userData.age).to.equal(50);
@@ -57,13 +58,13 @@ describe('Custom data', function() {
             });
 
             it('should not provide default values for provided fields', function() {
-                var userData = new UserType({ age: 53 });
+                var userData = new UserType({age: 53});
 
                 expect(userData.age).to.equal(53);
             });
 
             xit('should provide default values for mismatching fields', function() {
-                var userData = new UserType({ age: {} });
+                var userData = new UserType({age: {}});
 
                 expect(userData).to.be.a.dataInstance.with.field('age').with.defaultValue();
             });
@@ -129,15 +130,15 @@ describe('Custom data', function() {
             });
         });
 
-		it('should chain withdefault calls', function() {
-		
-			var typeWithDefaultBob = UserType.withDefault({name: 'joe'}).withDefault({name: 'bob'});
-			
-			var a = typeWithDefaultBob.defaults();
-			
-			expect(a.name).to.equal('bob');
-		
-		})
+        it('should chain withdefault calls', function() {
+
+            var typeWithDefaultBob = UserType.withDefault({name: 'joe'}).withDefault({name: 'bob'});
+
+            var a = typeWithDefaultBob.defaults();
+
+            expect(a.name).to.equal('bob');
+
+        })
 
         it('should clone complex data objects on set', function() {
 
@@ -155,14 +156,14 @@ describe('Custom data', function() {
 
             expect(userData.toJSON()).to.eql({
                 name: 'leon',
-                child: { name: 'bobi', age: 13, address: "no address" }
+                child: {name: 'bobi', age: 13, address: "no address"}
             });
 
             userData.name = 'moshe';
 
             expect(userData.toJSON()).to.eql({
                 name: 'moshe',
-                child: { name: 'bobi', age: 13 , address: "no address"}
+                child: {name: 'bobi', age: 13, address: "no address"}
             });
         });
 
@@ -171,14 +172,14 @@ describe('Custom data', function() {
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name: 'leon',
-                child: { name: 'bobi', age: 13 ,address: "no address"}
+                child: {name: 'bobi', age: 13, address: "no address"}
             });
 
             userData.name = 'moshe';
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name: 'moshe',
-                child: { name: 'bobi', age: 13, address: "no address" }
+                child: {name: 'bobi', age: 13, address: "no address"}
             });
         });
 
@@ -200,7 +201,7 @@ describe('Custom data', function() {
             expect(userReadOnly.age).to.equal(10);
         });
 
-        it('should be prototype of the same type class', function(){
+        it('should be prototype of the same type class', function() {
             var userData = new UserType();
             var userReadOnly = userData.$asReadOnly();
 
@@ -269,88 +270,27 @@ describe('Custom data', function() {
 
     });
 
-    describe('Type invalidation', function() {
-        describe('$isInvalidated()', function() {
-            it('should return false for un modified data', function() {
-                var userData = new UserType();
-                expect(userData.$isInvalidated()).to.equal(false);
-            });
+    describe('Lifecycle contract',function() {
+        lifecycleContractTest(
+            ()=> new UserType(),
+            (u)=> u.name = 'gaga',
+            'modifying member field in a custom type');
 
-            it('should return true for modified data', function() {
-                var userData = new UserType();
-                userData.name = 'gaga';
-                expect(userData.$isInvalidated()).to.equal(true);
-            });
 
-            it('should return true for data when a child value has changed', function() {
-                var userWithChildType = new UserWithChildType();
-                userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
-            });
+        var UserWith2ChildType = aDataTypeWithSpec({
+            child: UserType,
+            child2: UserWithChildType
+        }, 'UserWith2ChildType');
 
-            xit('should return true for data when a child value has changed after isinvalidates was already called', function() {
-                var userWithChildType = new UserWithChildType();
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
-                userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
-            });
 
-            it('should return false for data when only a parent/sibling value has changed', function() {
-                var UserWith2ChildType = aDataTypeWithSpec({
-                    child: UserType.withDefault({name: 'bobi', age: 13}),
-                    child2: UserType.withDefault({name: 'chiki', age: 5})
-                }, 'UserWith2ChildType');
+        var hierarchyLifeCycleContractTest = _.curry(lifecycleContractTest)(()=> new UserWith2ChildType(), (uw2c)=> uw2c.child2.name = 'baga');
 
-                var userWith2ChildType = new UserWith2ChildType();
+        hierarchyLifeCycleContractTest(
+            'modifying a member field in a custom type, sibling is not affected',
+            (uw2c)=> !uw2c.child.$isDirty());
 
-                userWith2ChildType.child.name = 'baga';
-                expect(userWith2ChildType.child.$isInvalidated()).to.equal(true);
-                expect(userWith2ChildType.child2.$isInvalidated()).to.equal(false);
-            });
-        });
-        describe('$revalidate()', function() {
-            it('should reset data invalidation', function() {
-                var userData = new UserType();
-                userData.name = 'gaga';
-                expect(userData.$isInvalidated()).to.equal(true);
-                userData.$revalidate();
-                expect(userData.$isInvalidated()).to.equal(false);
-
-            });
-
-			xit('should not invalidate if same values are set', function() {
-				var userData = new UserType();
-                userData.name = 'gaga';
-                expect(userData.$isInvalidated()).to.equal(true);
-                userData.$revalidate();
-			
-				userData.name = 'gaga';
-				
-				expect(userData.$isInvalidated()).to.equal(false);
-			});
-
-            it('should reset deep data invalidation', function() {
-
-                var userWithChildType = new UserWithChildType();
-                userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
-                expect(userWithChildType.child.$isInvalidated()).to.equal(true);
-                userWithChildType.$revalidate();
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
-                expect(userWithChildType.child.$isInvalidated()).to.equal(false);
-            });
-
-        });
-        describe('$resetValidationCheck()', function() {
-            it('it Should allow isInvalidated to return true for data when a child value has changed after isinvalidates was already called', () => {
-                var userWithChildType = new UserWithChildType();
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
-                userWithChildType.child.name = 'gaga';
-                expect(userWithChildType.$isInvalidated()).to.equal(false);
-                userWithChildType.$resetValidationCheck();
-                expect(userWithChildType.$isInvalidated()).to.equal(true);
-            });
-
-        });
+        hierarchyLifeCycleContractTest(
+            'modifying a member field in a custom type, child is not affected',
+            (uw2c)=> !uw2c.child2.child.$isDirty());
     });
 });
