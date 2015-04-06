@@ -63,12 +63,28 @@ export default class _Array extends BaseType {
 		});
 	}
 
-	at(index) {
-		var item = this.__value__[index];
-		return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
-	}
+	// To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
 
-	push(...newItems) {
+	// Add a Warn method to BaseType
+
+	// Mutator methods
+	copyWithin() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+    fill() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+	pop() {
+        if (this.__isReadOnly__) {
+            return null;
+        }
+        this.__isInvalidated__ = true;
+        return this.__value__.pop();
+    }
+
+    push(...newItems) {
 		if(this.__isReadOnly__) {
 			return null;
 		}
@@ -83,18 +99,41 @@ export default class _Array extends BaseType {
 		);
 	}
 
-	forEach(cb) {
-		var that = this;
-		this.__value__.forEach(function(item, index, arr) {
-			cb(item, index, that);
-		});
-	}
+	reverse() {
+        if (this.__isReadOnly__) {
+            return null;
+        }
+        this.__isInvalidated__ = true;
+        return this.__value__.reverse();
+    }
 
-	map(cb, ctx) { // ToDo: remove
-		this.__value__.map(function(item, index, arr) {
-			return cb(item, index, this);
-		}, ctx || this);
+    shift() {
+        if (this.__isReadOnly__) {
+            return null;
+        }
+        this.__isInvalidated__ = true;
+        return this.__value__.shift();
+    }
 
+    sort(cb) {
+        if (this.__isReadOnly__) {
+            return null;
+        }
+        this.__isInvalidated__ = true;
+        return this.__value__.sort(cb);
+    }
+
+    setValue(newValue) {
+		if(newValue instanceof _Array) {
+			newValue = newValue.toJSON();
+		}
+		if(_.isArray(newValue)) {
+			//fix bug #33. reset the current array instead of replacing it;
+			this.__value__.length = 0;
+			_.forEach(newValue, (itemValue) => {
+				this.push(itemValue);
+			});
+		}
 	}
 
 	splice(index, removeCount, ...addedItems) {
@@ -110,26 +149,66 @@ export default class _Array extends BaseType {
 		//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
 	}
 
+	unshift() {
+        if (this.__isReadOnly__) {
+            return null;
+        }
+        this.__isInvalidated__ = true;
+        return this.__value__.unshift();
+    }
 
+	// Accessor methods
+	at(index) {
+		var item = this.__value__[index];
+		return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
+	}
 	concat(...addedArrays) {
 		return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__options__);
 	}
 
-	every(cb) {
-		var self = this;
-		return this.__value__.every(function(element, index, array) {
-			return cb(element, index, self)
+	join(separator ? = ',') {
+        return this.__value__.join(separator);
+    }
+
+    toSource() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+    toString() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+    valueOf() {
+        return this.__value__.map(function(item) {
+            return item.valueOf();
+        });
+    }
+
+    toLocaleString() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+    indexOf() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+    lastIndexOf() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+	// Iteration methods 
+
+	forEach(cb) {
+		var that = this;
+		this.__value__.forEach(function(item, index, arr) {
+			cb(item, index, that);
 		});
 	}
 
-	some(cb) {
-		var self = this;
-		return this.__value__.some(function(element, index, array) {
-			return cb(element, index, self);
-		});
-	}
+	entries() {
+        throw 'Slice not implemented yet. Please do.';
+    }	
 
-	find(cb) {
+    find(cb) {
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
 			return cb(element, index, self);
@@ -145,26 +224,25 @@ export default class _Array extends BaseType {
 		return _.findIndex(this.__value__, cb);
 	}
 
-	filter(cb) {
-		var self = this;
-		var filteredArray = this.__value__.filter(function(element, index, array) {
-			return cb(element, index, self);
-		});
-		return new this.constructor(filteredArray, this.__options__, false);
-	}
+	keys() {
+        throw 'Slice not implemented yet. Please do.';
+    }
 
-	setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-			this.__value__.length = 0;
-			_.forEach(newValue, (itemValue) => {
-				this.push(itemValue);
-			});
-		}
-	}
+    reduce() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+    reduceRight() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+    values() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+
+
+	
+	
 
 	$isInvalidated() {
 
@@ -201,26 +279,48 @@ export default class _Array extends BaseType {
 		});
 	}
 
-}
 
+}
+	// map(func,ctx){
+	// 	this.__arrayMethod__('map',func,ctx)
+
+	// }
+	// __arrayMethod__(){
+
+	// }
 _Array.withDefault = generateWithDefault();
 
 
 
-//['map', 'filter', 'every', 'forEach'].map(function(key) {
-['map'].map(function(key) {
+['map', 'filter', 'slice'].forEach(function(key) {
+    
+    var loFn = _[key];
+    _Array.prototype[key] = function(fn, ctx) {
 
-	var loFn = _[key];
+        var valueArray = loFn(this.__value__, function() {
+            return fn.apply(this, arguments);
+        }, ctx || this);
 
-	_Array.prototype[key] = function(fn, ctx) {
+        return new this.constructor(valueArray, false, this.__options__);
 
-		return loFn(this.__value__, function() {
-			return fn.apply(ctx || this, arguments);
-		});
+    }
 
-	}
 });
 
+['every', 'some'].forEach(function(key) {
+
+    var loFn = _[key];
+    _Array.prototype[key] = function(fn, ctx) {
+
+        var valueArray = loFn(this.__value__, function() {
+            return fn.apply(ctx || this, arguments);
+        });
+
+        return valueArray;
+
+    }
+
+});
 defineType('Array',{
 	spec: function() {
 		return {
