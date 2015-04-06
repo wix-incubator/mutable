@@ -9,7 +9,7 @@ export default function(id, typeDefinition, TypeConstructor){
     };
     TypeConstructor.id                    = id;
     TypeConstructor.type                  = TypeConstructor;
-    TypeConstructor.test                  = TypeConstructor.test || defineTypeUtils.generateTest();
+    TypeConstructor.validate              = TypeConstructor.validate || defineTypeUtils.generateValidate();
     TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.generateWithDefault();
     TypeConstructor.defaults              = TypeConstructor.defaults || defineTypeUtils.generateGetDefaultValue();
     TypeConstructor.create                = BaseType.create;

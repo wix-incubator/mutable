@@ -9,7 +9,7 @@ export default class _Array extends BaseType {
 
 	static defaults() { return []; }
 
-	static test(value) { return Array.isArray(value); }
+	static validate(value) { return Array.isArray(value); }
 
 	static wrapValue(value, spec, options) {
 
@@ -33,8 +33,8 @@ export default class _Array extends BaseType {
 
 			var subType = options.subTypes[
 				itemValue._type ? itemValue._type  :
-				number.test(itemValue) ? number.name :
-				string.test(itemValue) ? string.name :
+				number.validate(itemValue) ? number.name :
+				string.validate(itemValue) ? string.name :
 				Object.keys(options.subTypes)[0]
 			];
 
@@ -42,8 +42,8 @@ export default class _Array extends BaseType {
 		}
 	}
 
-	static of(subTypes, defaults, test) {
-		return this.withDefault(defaults, test, { subTypes });
+	static of(subTypes, defaults, validate) {
+		return this.withDefault(defaults, validate, { subTypes });
 	};
 
 	constructor(value=[], options={}) {
