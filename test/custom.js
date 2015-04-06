@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
-import lifecycle from './lifecycle';
+import lifecycleContractTest from './lifecycle';
 
 describe('Custom data', function() {
 
@@ -234,8 +234,8 @@ describe('Custom data', function() {
 
     });
 
-    describe('Lifecycle',function() {
-        lifecycle(
+    describe('Lifecycle contract',function() {
+        lifecycleContractTest(
             ()=> new UserType(),
             (u)=> u.name = 'gaga',
             'modifying member field in a custom type');
@@ -247,13 +247,13 @@ describe('Custom data', function() {
         }, 'UserWith2ChildType');
 
 
-        var hierarchyLifeCycle = _.curry(lifecycle)(()=> new UserWith2ChildType(), (uw2c)=> uw2c.child2.name = 'baga');
+        var hierarchyLifeCycleContractTest = _.curry(lifecycleContractTest)(()=> new UserWith2ChildType(), (uw2c)=> uw2c.child2.name = 'baga');
 
-        hierarchyLifeCycle(
+        hierarchyLifeCycleContractTest(
             'modifying a member field in a custom type, sibling is not affected',
             (uw2c)=> !uw2c.child.$isDirty());
 
-        hierarchyLifeCycle(
+        hierarchyLifeCycleContractTest(
             'modifying a member field in a custom type, child is not affected',
             (uw2c)=> !uw2c.child2.child.$isDirty());
     });

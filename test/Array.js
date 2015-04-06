@@ -2,7 +2,7 @@ import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import _ from 'lodash';
-import lifecycle from './lifecycle';
+import lifecycleContractTest from './lifecycle';
 
 var UserType = aDataTypeWithSpec({
     name: Typorama.String.withDefault(''),
@@ -499,15 +499,15 @@ describe('Array data', function() {
             })
         });
     });
-    describe('Lifecycle',function() {
+    describe('Lifecycle contract',function() {
 
-        lifecycle(
+        lifecycleContractTest(
             ()=> Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]),
             (arr)=> arr.at(0).name = 'gaga',
             'changing an element in an array',
             (arr)=> !arr.at(1).$isDirty());
 
-        var intArrLifeCycle = _.curry(lifecycle)(()=> Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]));
+        var intArrLifeCycle = _.curry(lifecycleContractTest)(()=> Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]));
 
         intArrLifeCycle((arr)=> arr.push(5), 'adding an element to an array');
         intArrLifeCycle((arr)=> arr.splice(1, 2, 7, 6, 5), 'splicing an array');
