@@ -73,9 +73,8 @@ export default class _Array extends BaseType {
 			return null;
 		}
 
-		this.__isInvalidated__= true;
-
-		var options = this.__options__;
+        this.$setDirty();
+        var options = this.__options__;
 
 		return Array.prototype.push.apply(
 			this.__value__,
@@ -97,18 +96,18 @@ export default class _Array extends BaseType {
 
 	}
 
-	splice(index, removeCount, ...addedItems) {
-		if(this.__isReadOnly__) {
-			return null;
-		}
-		this.__isInvalidated__= true;
-		var spliceParams = [index,removeCount];
-		addedItems.forEach(function(newItem) {
-		   spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
-		}.bind(this));
-		return this.__value__.splice.apply(this.__value__, spliceParams);
-		//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
-	}
+    splice(index, removeCount, ...addedItems) {
+        if(this.__isReadOnly__) {
+            return null;
+        }
+        this.$setDirty();
+        var spliceParams = [index,removeCount];
+        addedItems.forEach(function(newItem) {
+           spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+        }.bind(this));
+        return this.__value__.splice.apply(this.__value__, spliceParams);
+        //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+    }
 
 
 	concat(...addedArrays) {
@@ -129,21 +128,19 @@ export default class _Array extends BaseType {
 		});
 	}
 
-	find(cb) {
-		var self = this;
-		return _.find(this.__value__, function(element, index, array) {
-			return cb(element, index, self);
-		});
-		return _.find(this.__value__, cb);
-	}
+    find(cb) {
+        var self = this;
+        return _.find(this.__value__, function(element, index, array) {
+            return cb(element, index, self);
+        });
+    }
 
-	findIndex(cb) {
-		var self = this;
-		return _.findIndex(this.__value__, function (element, index, array) {
-			return cb(element, index, self)
-		})
-		return _.findIndex(this.__value__, cb);
-	}
+    findIndex(cb) {
+        var self = this;
+        return _.findIndex(this.__value__, function (element, index, array) {
+            return cb(element, index, self)
+        });
+    }
 
 	filter(cb) {
 		var self = this;
@@ -159,48 +156,12 @@ export default class _Array extends BaseType {
 		}
 		if(_.isArray(newValue)) {
 			//fix bug #33. reset the current array instead of replacing it;
-			this.__value__.length = 0;
-			_.forEach(newValue, (itemValue) => {
-				this.push(itemValue);
-			});
-		}
-	}
-
-	$isInvalidated() {
-
-		if(this.__isInvalidated__==-1) {
-			var invalidatedField = _.find(this.__value__, (item, index)=>{
-				if(item instanceof BaseType) {
-					return item.$isInvalidated();
-				}
-			});
-			if(invalidatedField) {
-				this.__isInvalidated__ = true;
-			}else{
-				this.__isInvalidated__ = false;
-			}
-		}
-		return this.__isInvalidated__;
-	}
-
-	$revalidate() {
-		this.__isInvalidated__ = -1;
-		_.forEach(this.__value__, (item, index)=>{
-			if(item instanceof BaseType) {
-				item.$revalidate();
-			}
-		});
-	}
-
-	$resetValidationCheck() {
-		this.__isInvalidated__ = this.__isInvalidated__ || -1;
-		_.forEach(this.__value__, (item, index)=>{
-			if(item instanceof BaseType) {
-				item.$resetValidationCheck();
-			}
-		});
-	}
-
+            this.__value__.length = 0;
+            _.forEach(newValue, (itemValue) => {
+                this.push(itemValue);
+            });
+        }
+    }
 }
 
 _Array.withDefault = generateWithDefault();
