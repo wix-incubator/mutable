@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "typorama",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "main": "dist/src",
   "repository": {
@@ -12,9 +12,7 @@
     "watch": "babel -w ./src/ -d ./dist/src/ --modules umd --source-maps",
     "build": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
     "buildtestkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
-
     "test": "mocha --compilers js:babel/register --reporter nyan",
-
     "start": "npm run webtest",
     "webtest": "webpack-dev-server --progress --hot --inline --no-colors",
     "webbuild": "webpack --progress -p --colors",
