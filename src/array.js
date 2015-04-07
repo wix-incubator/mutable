@@ -80,7 +80,6 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
         return this.__value__.pop();
     }
 
@@ -102,7 +101,6 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
         return this.__value__.reverse();
     }
 
@@ -110,7 +108,6 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
         return this.__value__.shift();
     }
 
@@ -118,7 +115,6 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
         return this.__value__.sort(cb);
     }
 
@@ -169,7 +165,9 @@ export default class _Array extends BaseType {
 	join(separator ? = ',') {
         return this.__value__.join(separator);
     }
-
+    slice() {
+        throw 'Slice not implemented yet. Please do.';
+    }
     toSource() {
         throw 'Slice not implemented yet. Please do.';
     }
@@ -240,6 +238,13 @@ export default class _Array extends BaseType {
         }
     }
 
+    map(fn, ctx) {
+    	var context = ctx || this;
+        var valueArray = _.map(this.__value__, fn, context);
+        return new this.constructor(valueArray, this.__options__);
+    }
+
+
     reduce() {
         throw 'Slice not implemented yet. Please do.';
     }
@@ -248,43 +253,21 @@ export default class _Array extends BaseType {
         throw 'Slice not implemented yet. Please do.';
     }
 
+    every() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+    some() {
+        throw 'Slice not implemented yet. Please do.';
+    }
+    filter() {
+        throw 'Slice not implemented yet. Please do.';
+    }
     values() {
         throw 'Slice not implemented yet. Please do.';
     }
+    
 }
 _Array.withDefault = generateWithDefault();
-
-
-
-['map', 'filter', 'slice'].forEach(function(key) {
-
-    var loFn = _[key];
-    _Array.prototype[key] = function(fn, ctx) {
-
-        var valueArray = loFn(this.__value__, function() {
-            return fn.apply(this, arguments);
-        }, ctx || this);
-
-        return new this.constructor(valueArray, false, this.__options__);
-
-    }
-
-});
-
-['every', 'some'].forEach(function(key) {
-
-    var loFn = _[key];
-    _Array.prototype[key] = function(fn, ctx) {
-
-        var valueArray = loFn(this.__value__, function() {
-            return fn.apply(ctx || this, arguments);
-        });
-
-        return valueArray;
-
-    }
-
-});
 
 defineType('Array',{
 	spec: function() {
