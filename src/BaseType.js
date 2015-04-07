@@ -1,4 +1,5 @@
 import _ from "lodash"
+import {dirty} from "./lifecycle"
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -6,6 +7,7 @@ function createReadOnly(source){
     readOnlyInstance.constructor = source.constructor;
     return readOnlyInstance;
 }
+
 
 export default class BaseType {
 
@@ -26,7 +28,7 @@ export default class BaseType {
     constructor(value, options = {}){
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
-        this.__isInvalidated__ = -1;
+        this.__dirty__ = dirty.unKnown;
         this.__options__ = options;
         this.__value__ = this.constructor.wrapValue(
             (value === undefined) ? this.constructor.defaults() : value,
@@ -36,51 +38,48 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         if(newValue instanceof BaseType){
             newValue = newValue.toJSON();
         }
         _.forEach(newValue, (fieldValue, fieldName) => {
-            this[fieldName] = fieldValue;
+            if (this.constructor._spec[fieldName]) {
+                this[fieldName] = fieldValue;
+            }
         });
     }
+
 
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }
 
-    $isInvalidated(){
-        if(this.__isInvalidated__ === -1) {
-            var invalidatedField = _.find(this.constructor._spec, (fieldDef, fieldName)=>{
-                if(fieldDef.type.prototype instanceof BaseType) {
-                    return this.__value__[fieldName].$isInvalidated();
+
+    // called when a change has been made to this object directly #lifecycle
+    $setDirty(){
+        this.__dirty__ = dirty.yes;
+    }
+
+    // may be called after changes are paused #lifecycle
+    $isDirty(cache) {
+        var result = this.__dirty__.isKnown ? this.__dirty__.isDirty :
+            _.any(this.__value__, (val) => val instanceof BaseType && val.$isDirty());
+        if (cache && !this.__isReadOnly__) {
+            this.__dirty__ = result ? dirty.yes : dirty.no;
+        }
+        return result;
+    }
+
+    // resets the dirty state to unknown #lifecycle
+    $resetDirty(){
+        if (!this.__isReadOnly__) {
+            this.__dirty__ = dirty.unKnown;
+            _.forEach(this.__value__, (val) => {
+                if (val instanceof BaseType) {
+                    val.$resetDirty();
                 }
             });
-            if(invalidatedField) {
-                this.__isInvalidated__ = true;
-            }else{
-                this.__isInvalidated__ = false;
-            }
         }
-        return this.__isInvalidated__;
-    }
-
-    $revalidate(){
-        this.__isInvalidated__ = -1;
-        _.forEach(this.constructor._spec, (fieldDef, fieldName)=>{
-            if(fieldDef.type.prototype instanceof BaseType){
-                this.__value__[fieldName].$revalidate();
-            }
-        });
-    }
-
-    $resetValidationCheck(){
-        this.__isInvalidated__ = this.__isInvalidated__ || -1;
-        _.forEach(this.constructor._spec, (fieldDef, fieldName) => {
-            if(fieldDef.type.prototype instanceof BaseType) {
-                this.__value__[fieldName].$resetValidationCheck();
-            }
-        });
     }
 
     toJSON(){

@@ -45,14 +45,15 @@
                     }
                 },
                 set: function set(newValue) {
-                    this.__isInvalidated__ = true;
-
                     if (this.__isReadOnly__) {
                         console.warn("try to set value to readonly field: ", this.constructor.id + "." + fieldName, "=", newValue);
-                    } else if (fieldDef.type.prototype instanceof BaseType) {
-                        this.__value__[fieldName].setValue(newValue);
                     } else {
-                        this.__value__[fieldName] = newValue;
+                        this.$setDirty();
+                        if (fieldDef.type.prototype instanceof BaseType) {
+                            this.__value__[fieldName].setValue(newValue);
+                        } else {
+                            this.__value__[fieldName] = newValue;
+                        }
                     }
                 },
                 enumerable: true,

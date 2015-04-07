@@ -2,27 +2,28 @@ var webpack = require('webpack');
 module.exports = {
 	context: __dirname,
 	entry: {
-		benchmark: [
-			'./js-testing/benchmark'
-		],
-		typorama: [
-			'./src'
-		],
-		'test-kit': [
-			'./test-kit'
-		],
-		test: [
+		typorama                : [	'./dist/src' ],
+		'test-kit'              : [ './test-kit' ],
+		test                    : [
 			'mocha!./test'
 		],
-		examples: [ './examples']
+		'examples/ReactGallery' : [ './examples/ReactGallery' ],
+		'examples/benchmark'    : [ './examples/benchmark' ],
 	},
 	output: {
 		path     : __dirname + '/dist',
 		filename : '[name].js',
 		libraryTarget: 'umd'
 	},
+	resolve: {
+		extensions: ['', '.js', '.json'],
+		alias: {
+			typorama: __dirname + '/dist/src',
+			'test-kit': __dirname + '/test-kit/'
+		}
+	},
 	devServer: {
-		contentBase: '/',
+		contentBase: __dirname + '/dist',
 		inline: true,
 		hot: true
 	},

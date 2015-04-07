@@ -56,10 +56,30 @@
                     });
                 }
             },
-            at: {
-                value: function at(index) {
-                    var item = this.__value__[index];
-                    return this.__isReadOnly__ && item instanceof BaseType ? item.$asReadOnly() : item;
+            copyWithin: {
+
+                // To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
+
+                // Add a Warn method to BaseType
+
+                // Mutator methods
+
+                value: function copyWithin() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            fill: {
+                value: function fill() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            pop: {
+                value: function pop() {
+                    if (this.__isReadOnly__) {
+                        return null;
+                    }
+                    this.__isInvalidated__ = true;
+                    return this.__value__.pop();
                 }
             },
             push: {
@@ -74,8 +94,7 @@
                         return null;
                     }
 
-                    this.__isInvalidated__ = true;
-
+                    this.$setDirty();
                     var options = this.__options__;
 
                     return Array.prototype.push.apply(this.__value__, newItems.map(function (item) {
@@ -83,92 +102,31 @@
                     }));
                 }
             },
-            forEach: {
-                value: function forEach(cb) {
-                    var that = this;
-                    this.__value__.forEach(function (item, index, arr) {
-                        cb(item, index, that);
-                    });
-                }
-            },
-            map: {
-                value: function map(cb, ctx) {
-                    // ToDo: remove
-                    this.__value__.map(function (item, index, arr) {
-                        return cb(item, index, this);
-                    }, ctx || this);
-                }
-            },
-            splice: {
-                value: function splice(index, removeCount) {
-                    for (var _len = arguments.length, addedItems = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-                        addedItems[_key - 2] = arguments[_key];
-                    }
-
+            reverse: {
+                value: function reverse() {
                     if (this.__isReadOnly__) {
                         return null;
                     }
                     this.__isInvalidated__ = true;
-                    var spliceParams = [index, removeCount];
-                    addedItems.forEach((function (newItem) {
-                        spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__));
-                    }).bind(this));
-                    return this.__value__.splice.apply(this.__value__, spliceParams);
-                    //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+                    return this.__value__.reverse();
                 }
             },
-            concat: {
-                value: function concat() {
-                    for (var _len = arguments.length, addedArrays = Array(_len), _key = 0; _key < _len; _key++) {
-                        addedArrays[_key] = arguments[_key];
+            shift: {
+                value: function shift() {
+                    if (this.__isReadOnly__) {
+                        return null;
                     }
-
-                    return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map(function (array) {
-                        return array.__value__ || array;
-                    })), this.__options__);
+                    this.__isInvalidated__ = true;
+                    return this.__value__.shift();
                 }
             },
-            every: {
-                value: function every(cb) {
-                    var self = this;
-                    return this.__value__.every(function (element, index, array) {
-                        return cb(element, index, self);
-                    });
-                }
-            },
-            some: {
-                value: function some(cb) {
-                    var self = this;
-                    return this.__value__.some(function (element, index, array) {
-                        return cb(element, index, self);
-                    });
-                }
-            },
-            find: {
-                value: function find(cb) {
-                    var self = this;
-                    return _.find(this.__value__, function (element, index, array) {
-                        return cb(element, index, self);
-                    });
-                    return _.find(this.__value__, cb);
-                }
-            },
-            findIndex: {
-                value: function findIndex(cb) {
-                    var self = this;
-                    return _.findIndex(this.__value__, function (element, index, array) {
-                        return cb(element, index, self);
-                    });
-                    return _.findIndex(this.__value__, cb);
-                }
-            },
-            filter: {
-                value: function filter(cb) {
-                    var self = this;
-                    var filteredArray = this.__value__.filter(function (element, index, array) {
-                        return cb(element, index, self);
-                    });
-                    return new this.constructor(filteredArray, this.__options__, false);
+            sort: {
+                value: function sort(cb) {
+                    if (this.__isReadOnly__) {
+                        return null;
+                    }
+                    this.__isInvalidated__ = true;
+                    return this.__value__.sort(cb);
                 }
             },
             setValue: {
@@ -187,42 +145,142 @@
                     }
                 }
             },
-            $isInvalidated: {
-                value: function $isInvalidated() {
-
-                    if (this.__isInvalidated__ == -1) {
-                        var invalidatedField = _.find(this.__value__, function (item, index) {
-                            if (item instanceof BaseType) {
-                                return item.$isInvalidated();
-                            }
-                        });
-                        if (invalidatedField) {
-                            this.__isInvalidated__ = true;
-                        } else {
-                            this.__isInvalidated__ = false;
-                        }
+            splice: {
+                value: function splice(index, removeCount) {
+                    for (var _len = arguments.length, addedItems = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+                        addedItems[_key - 2] = arguments[_key];
                     }
-                    return this.__isInvalidated__;
+
+                    if (this.__isReadOnly__) {
+                        return null;
+                    }
+                    this.$setDirty();
+                    var spliceParams = [index, removeCount];
+                    addedItems.forEach((function (newItem) {
+                        spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__));
+                    }).bind(this));
+                    return this.__value__.splice.apply(this.__value__, spliceParams);
+                    //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
                 }
             },
-            $revalidate: {
-                value: function $revalidate() {
-                    this.__isInvalidated__ = -1;
-                    _.forEach(this.__value__, function (item, index) {
-                        if (item instanceof BaseType) {
-                            item.$revalidate();
-                        }
+            unshift: {
+                value: function unshift() {
+                    if (this.__isReadOnly__) {
+                        return null;
+                    }
+                    this.__isInvalidated__ = true;
+                    return this.__value__.unshift();
+                }
+            },
+            at: {
+
+                // Accessor methods
+
+                value: function at(index) {
+                    var item = this.__value__[index];
+                    return this.__isReadOnly__ && item instanceof BaseType ? item.$asReadOnly() : item;
+                }
+            },
+            concat: {
+                value: function concat() {
+                    for (var _len = arguments.length, addedArrays = Array(_len), _key = 0; _key < _len; _key++) {
+                        addedArrays[_key] = arguments[_key];
+                    }
+
+                    return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map(function (array) {
+                        return array.__value__ || array;
+                    })), this.__options__);
+                }
+            },
+            join: {
+                value: function join() {
+                    var separator = arguments[0] === undefined ? "," : arguments[0];
+
+                    return this.__value__.join(separator);
+                }
+            },
+            toSource: {
+                value: function toSource() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            toString: {
+                value: function toString() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            valueOf: {
+                value: function valueOf() {
+                    return this.__value__.map(function (item) {
+                        return item.valueOf();
                     });
                 }
             },
-            $resetValidationCheck: {
-                value: function $resetValidationCheck() {
-                    this.__isInvalidated__ = this.__isInvalidated__ || -1;
-                    _.forEach(this.__value__, function (item, index) {
-                        if (item instanceof BaseType) {
-                            item.$resetValidationCheck();
-                        }
+            toLocaleString: {
+                value: function toLocaleString() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            indexOf: {
+                value: function indexOf() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            lastIndexOf: {
+                value: function lastIndexOf() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            forEach: {
+                // Iteration methods
+
+                value: function forEach(cb) {
+                    var that = this;
+                    this.__value__.forEach(function (item, index, arr) {
+                        cb(item, index, that);
                     });
+                }
+            },
+            entries: {
+                value: function entries() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            find: {
+                value: function find(cb) {
+                    var self = this;
+                    return _.find(this.__value__, function (element, index, array) {
+                        return cb(element, index, self);
+                    });
+                    return _.find(this.__value__, cb);
+                }
+            },
+            findIndex: {
+                value: function findIndex(cb) {
+                    var self = this;
+                    return _.findIndex(this.__value__, function (element, index, array) {
+                        return cb(element, index, self);
+                    });
+                }
+            },
+            keys: {
+                value: function keys() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            reduce: {
+                value: function reduce() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            reduceRight: {
+                value: function reduceRight() {
+                    throw "Slice not implemented yet. Please do.";
+                }
+            },
+            values: {
+                value: function values() {
+                    throw "Slice not implemented yet. Please do.";
                 }
             }
         }, {
@@ -279,16 +337,29 @@
 
     _Array.withDefault = generateWithDefault();
 
-    //['map', 'filter', 'every', 'forEach'].map(function(key) {
-    ["map"].map(function (key) {
+    ["map", "filter", "slice"].forEach(function (key) {
 
         var loFn = _[key];
-
         _Array.prototype[key] = function (fn, ctx) {
 
-            return loFn(this.__value__, function () {
+            var valueArray = loFn(this.__value__, function () {
+                return fn.apply(this, arguments);
+            }, ctx || this);
+
+            return new this.constructor(valueArray, false, this.__options__);
+        };
+    });
+
+    ["every", "some"].forEach(function (key) {
+
+        var loFn = _[key];
+        _Array.prototype[key] = function (fn, ctx) {
+
+            var valueArray = loFn(this.__value__, function () {
                 return fn.apply(ctx || this, arguments);
             });
+
+            return valueArray;
         };
     });
 
@@ -300,4 +371,6 @@
         }
     }, _Array);
 });
+
+//fix bug #33. reset the current array instead of replacing it;
 //# sourceMappingURL=array.js.map

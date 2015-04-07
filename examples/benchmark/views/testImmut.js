@@ -3,7 +3,7 @@ import React from 'react'
 import Immutable from 'immutable'
 import core3Data from './core3data'
 
-import Typorama from '../../../src'
+import Typorama from 'typorama'
 
 window.count = 0;
 window.renderEmpty = false;
