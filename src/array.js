@@ -83,7 +83,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         return this.__value__.pop();
     }
 
