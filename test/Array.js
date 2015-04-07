@@ -512,6 +512,10 @@ describe('Array data', function() {
         intArrLifeCycle((arr) => arr.push(5), 'adding an element to an array');
         intArrLifeCycle((arr) => arr.splice(1, 2, 7, 6, 5), 'splicing an array');
         intArrLifeCycle((arr) => arr.pop(), 'popping an element from an array');
+        intArrLifeCycle((arr) => arr.reverse(), 'reversing an array');
+        intArrLifeCycle((arr) => arr.shift(), 'shifting an array');
+        intArrLifeCycle((arr) => arr.sort(function(a, b) {return a > b; }), 'sorting an array');
+        intArrLifeCycle((arr) => arr.unshift(), 'unshifting an array');
 
     });
 
