@@ -76,17 +76,7 @@ export function generateWithDefaultForSysImmutable(Type){
     }
 }
 
-export function generateGetDefaultValue(){
-    return function() {
-        var spec = this._spec;
-        var args = arguments;
-        return Object.keys(this._spec).reduce(function (val, key) {
-            var fieldSpec = spec[key];
-            val[key] = fieldSpec.defaults.apply(fieldSpec, args);
-            return val;
-        }, {});
-    }
-}
+
 
 
 
