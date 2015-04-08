@@ -1,6 +1,6 @@
 import _ from "lodash"
 import {dirty} from "./lifecycle"
-import logger from "./logger"
+
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
