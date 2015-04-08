@@ -1,11 +1,14 @@
 import _ from 'lodash'
 import defineType from './defineType'
 import BaseType from './BaseType'
-import number from './number'
-import string from './string'
+import Number from './number'
+import String from './string'
 import {generateWithDefault} from './defineTypeUtils'
 
-export default class _Array extends BaseType {
+// to maintain consistency so that everything
+var Typorama = {define: defineType};
+
+class _Array extends BaseType {
 
 	static defaults() { return []; }
 
@@ -33,8 +36,8 @@ export default class _Array extends BaseType {
 
 			var subType = options.subTypes[
 				itemValue._type ? itemValue._type  :
-				number.test(itemValue) ? number.name :
-				string.test(itemValue) ? string.name :
+				Number.test(itemValue) ? Number.name :
+				String.test(itemValue) ? String.name :
 				Object.keys(options.subTypes)[0]
 			];
 
@@ -42,8 +45,8 @@ export default class _Array extends BaseType {
 		}
 	}
 
-	static of(subTypes, defaults, test) {
-		return this.withDefault(defaults, test, { subTypes });
+	static of(subTypes) {
+		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
 	constructor(value=[], options={}) {
@@ -78,6 +81,7 @@ export default class _Array extends BaseType {
 		if (this.__isReadOnly__) {
             return null;
         }
+        this.$setDirty();
         return this.__value__.pop();
     }
 
@@ -99,6 +103,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
+        this.$setDirty();
         return this.__value__.reverse();
     }
 
@@ -106,6 +111,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
+        this.$setDirty();
         return this.__value__.shift();
     }
 
@@ -113,6 +119,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
+        this.$setDirty();
         return this.__value__.sort(cb);
     }
 
@@ -146,7 +153,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         return this.__value__.unshift();
     }
 
@@ -274,10 +281,10 @@ export default class _Array extends BaseType {
 }
 _Array.withDefault = generateWithDefault();
 
-defineType('Array',{
+export default Typorama.define('Array',{
 	spec: function() {
 		return {
-			length: number.withDefault(0)
+			length: Number.withDefault(0)
 		};
 	}
 }, _Array);
