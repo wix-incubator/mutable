@@ -62,22 +62,20 @@ export default class _Array extends BaseType {
 			return (item instanceof BaseType) ? item.toJSON() : item;
 		});
 	}
-
+	
 	// To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
-
-	// Add a Warn method to BaseType
 
 	// Mutator methods
 	copyWithin() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'copyWithin not implemented yet. Please do.';
     }
 
     fill() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'fill not implemented yet. Please do.';
     }
 
 	pop() {
-        if (this.__isReadOnly__) {
+		if (this.__isReadOnly__) {
             return null;
         }
         return this.__value__.pop();
@@ -166,14 +164,19 @@ export default class _Array extends BaseType {
         return this.__value__.join(separator);
     }
     slice() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'slice not implemented yet. Please do.';
     }
     toSource() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'toSource not implemented yet. Please do.';
     }
 
     toString() {
-        throw 'Slice not implemented yet. Please do.';
+        return this.__value__.toString();
+    }
+
+    toPrettyPrint() {
+		var msg = "[" + this + "]";
+		return msg;    		
     }
 
     valueOf() {
@@ -183,15 +186,15 @@ export default class _Array extends BaseType {
     }
 
     toLocaleString() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'toLocaleString not implemented yet. Please do.';
     }
 
     indexOf() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'indexOf not implemented yet. Please do.';
     }
 
     lastIndexOf() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'lastIndexOf not implemented yet. Please do.';
     }
 	// Iteration methods
 
@@ -203,7 +206,7 @@ export default class _Array extends BaseType {
 	}
 
 	entries() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'entries not implemented yet. Please do.';
     }
 
     find(cb) {
@@ -222,7 +225,7 @@ export default class _Array extends BaseType {
     }
 
 	keys() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'keys not implemented yet. Please do.';
     }
 
 	setValue(newValue) {
@@ -239,31 +242,33 @@ export default class _Array extends BaseType {
     }
 
     map(fn, ctx) {
-    	var context = ctx || this;
-        var valueArray = _.map(this.__value__, fn, context);
-        return new this.constructor(valueArray, this.__options__);
+    	return this.__proxy__("map", fn, ctx);
     }
 
-
+    __proxy__(key, fn, ctx){
+    	var context = ctx || this;
+        var valueArray = _[key](this.__value__, fn, context);
+        return new this.constructor(valueArray, this.__options__);
+    }
     reduce() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'reduce not implemented yet. Please do.';
     }
 
     reduceRight() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'reduceRight not implemented yet. Please do.';
     }
 
     every() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'every not implemented yet. Please do.';
     }
     some() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'some not implemented yet. Please do.';
     }
     filter() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'filter not implemented yet. Please do.';
     }
     values() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'values not implemented yet. Please do.';
     }
     
 }

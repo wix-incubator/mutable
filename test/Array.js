@@ -159,6 +159,7 @@ describe('Array data', function() {
             it('should remove the last element from an array', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var lengthBeforePop = numberList.length;
+                
                 var valueRemoved = numberList.pop();
 
                 expect(numberList.length).to.equal(lengthBeforePop - 1);
@@ -221,6 +222,12 @@ describe('Array data', function() {
             });
         });
 
+        describe('toString()', () => {
+        	xit();
+        });
+        describe('prettyPrint()', () => {
+        	xit();
+        });
         describe('valueOf()', () => {
             it('should return the primitive value of the specified object', () => {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
@@ -238,7 +245,7 @@ describe('Array data', function() {
                 var doubles = function(num) {
                     return num * 2;
                 };
-                debugger;
+
                 var newList = numberList.map(doubles);
 
                 // Take a callback function and return an array
