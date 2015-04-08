@@ -21,12 +21,12 @@ function isDirectlyDirtifies(factory, mutator) {
 export default function testLifeCycleContract(factory, mutator, description, framePredicate = () => true){
     var idempotent = isIdempotent(factory, mutator);
     var directlyDirtifies = isDirectlyDirtifies(factory, mutator);
-    describe(description + ' lifecycle contract', function() {
+    describe(description , function() {
         describe('basic clean > dirty > clean', function(){
             before('init', function() {
                 this.instance = factory();
             });
-            it('$isDirty returns false', function(){
+            it('before any changes $isDirty returns false', function(){
                 expect(this.instance.$isDirty()).to.be.false;
             });
             it('mutator makes $isDirty return true', function(){

@@ -270,7 +270,7 @@ describe('Custom data', function() {
 
     });
 
-    describe('Lifecycle contract',function() {
+    describe('lifecycle contract, when',function() {
         lifecycleContractTest(
             ()=> new UserType(),
             (u)=> u.name = 'gaga',
