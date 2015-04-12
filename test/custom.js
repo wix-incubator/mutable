@@ -2,8 +2,7 @@ import _ from 'lodash';
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
-import lifecycleContractTest from './lifecycle';
-import setDirtyContractTest from './setDirty.contract.spec.js';
+import {setDirtyContractTest} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
 describe('Custom data', function() {
@@ -307,8 +306,8 @@ describe('Custom data', function() {
         setDirtyContractTest(
             factory,
             (u)=> u.child = new UserType(),
-            'assigning value to composite field',
-            noDirtyElements
+            'assigning value to composite field'
+            // TODO add noDirtyElements
         );
     });
 });

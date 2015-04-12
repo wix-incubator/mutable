@@ -2,8 +2,7 @@ import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import _ from 'lodash';
-import lifecycleContractTest from './lifecycle';
-import setDirtyContractTest from './setDirty.contract.spec.js';
+import {setDirtyContractTest, isDirtyContractTest} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
 var UserType = aDataTypeWithSpec({
@@ -503,23 +502,12 @@ describe('Array data', function() {
     });
 
 
-    describe('assume',() => {
-        it('spy works', () =>{
-            var spy = sinon.spy();
-            expect(spy.called).to.be.false;
-            spy.reset();
-
-            spy();
-            expect(spy.called).to.be.true;
-        });
-    });
-
 
     describe('lifecycle contract:',function() {
 /*
 
 // TODO review and better cover
-        lifecycleContractTest(
+        isDirtyContractTest(
             ()=> Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]),
             (arr)=> arr.at(0).name = 'gaga',
             'changing an element in an array',
