@@ -129,6 +129,7 @@ describe('Custom data', function() {
                 expect(instance.numOfHeads).to.be.undefined;
             });
         });
+        
 
         it('should chain withdefault calls', function() {
 
@@ -192,7 +193,6 @@ describe('Custom data', function() {
     });
 
     describe('(Read Only) instance', function() {
-
         it('should be created from data instance', function() {
             var userData = new UserType();
             var userReadOnly = userData.$asReadOnly();

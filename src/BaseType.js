@@ -87,10 +87,4 @@ export default class BaseType {
             return json;
         }, {});
     }
-
-    toPrettyPrint() {
-        var msg = "{" + this + "}";
-        return msg;         
-    }
-
 }

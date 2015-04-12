@@ -223,11 +223,15 @@ describe('Array data', function() {
         });
 
         describe('toString()', () => {
-        	xit();
+        	it('should take an array, and return a string', () => {
+                var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
+
+                var result = arrA.toString();
+
+                expect(result).to.eql("a,b");
+            });
         });
-        describe('prettyPrint()', () => {
-        	xit();
-        });
+        
         describe('valueOf()', () => {
             it('should return the primitive value of the specified object', () => {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
@@ -394,14 +398,14 @@ describe('Array data', function() {
         });
 
         describe('every',function() {
-            xit('should return true if all elements pass the test provided by the callback', function() {
+            it('should return true if all elements pass the test provided by the callback', function() {
                 var arr = Typorama.Array.of(Typorama.String).create(['a', 'a']);
                 var areAll = arr.every(function (element) {
                     return element === 'a';
                 });
                 expect(areAll).to.equal(true);
             });
-            xit('should return false if at least one element in the array returns false from the callback', function() {
+            it('should return false if at least one element in the array returns false from the callback', function() {
                 var arr = Typorama.Array.of(Typorama.String).create(['a', 'b']);
                 var areAll = arr.every(function (element) {
                     return element === 'a';
@@ -411,14 +415,14 @@ describe('Array data', function() {
         });
 
         describe('some', function() {
-            xit('should return true if any elements pass the test provided by the callback', function() {
+            it('should return true if any elements pass the test provided by the callback', function() {
                 var arr = Typorama.Array.of(Typorama.String).create(['a', 'b']);
                 var areAll = arr.some(function (element) {
                     return element === 'a';
                 });
                 expect(areAll).to.equal(true);
             });
-            xit('should return false if all elements fail to pass the test provided by the callback', function() {
+            it('should return false if all elements fail to pass the test provided by the callback', function() {
                 var arr = Typorama.Array.of(Typorama.String).create(['b', 'b']);
                 var areAll = arr.some(function (element) {
                     return element === 'a';
@@ -470,15 +474,15 @@ describe('Array data', function() {
         });
 
         describe('filter',function() {
-            xit('should return a new array with all elements that pass the callback test', function() {
+            it('should return a new array with all elements that pass the callback test', function() {
                 var arr = Typorama.Array.of(Typorama.Number).create([42, 3, 15, 4, 7]);
                 var filterArray = arr.filter(function(element) {
                     return element > 5;
                 });
                 expect(filterArray.length).to.equal(3);
-                expect(filterArray.valueOf()).to.equal([42, 15, 7]);
+                expect(filterArray.valueOf()).to.eql([42, 15, 7]);
             });
-            xit('should return an empty array if no elements pass the callback test', function() {
+            it('should return an empty array if no elements pass the callback test', function() {
                 var arr = Typorama.Array.of(Typorama.Numbers).create([42, 3, 15, 4, 7]);
                 var filterArray = arr.filter(function(element) {
                     return element > 50;

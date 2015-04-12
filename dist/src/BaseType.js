@@ -105,6 +105,12 @@
                         return json;
                     }, {});
                 }
+            },
+            toPrettyPrint: {
+                value: function toPrettyPrint() {
+                    var msg = "{" + this + "}";
+                    return msg;
+                }
             }
         }, {
             create: {

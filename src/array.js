@@ -66,7 +66,16 @@ class _Array extends BaseType {
 		});
 	}
 
-	// To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
+// To check with Nadav: Every, some, filter, toString,  
+    
+    __lodashProxyWrap__(key, fn, ctx){
+        var valueArray = _[key](this.__value__, fn, ctx || this);
+        return new this.constructor(valueArray, this.__options__);
+    }
+    __lodashProxy__(key, fn, ctx){
+        var valueArray = _[key](this.__value__, fn, ctx || this);
+        return valueArray;
+    }
 
 	// Mutator methods
 	copyWithin() {
@@ -170,8 +179,18 @@ class _Array extends BaseType {
 	join(separator ? = ',') {
         return this.__value__.join(separator);
     }
-    slice() {
-        throw 'slice not implemented yet. Please do.';
+    slice(begin, end) {
+        if (this.__isReadOnly__) {
+            return null;
+        }
+        this.$setDirty();
+        if(end) {
+            var newValue = this.__value__.slice(begin, end);
+            return new constructor(newValue, false, this.options);
+        } else {
+            var newValue = this.__value__.slice(begin);
+            return new constructor(newValue, false, this.options);
+        }
     }
     toSource() {
         throw 'toSource not implemented yet. Please do.';
@@ -179,10 +198,6 @@ class _Array extends BaseType {
 
     toString() {
         return this.__value__.toString();
-    }
-
-    toPrettyPrint() {
-		return `[${this}]`;
     }
 
     valueOf() {
@@ -248,12 +263,7 @@ class _Array extends BaseType {
     }
 
     map(fn, ctx) {
-    	return this.__lodashProxy__('map', fn, ctx);
-    }
-
-    __lodashProxy__(key, fn, ctx){
-        var valueArray = _[key](this.__value__, fn, ctx || this);
-        return new this.constructor(valueArray, this.__options__);
+    	return this.__lodashProxyWrap__('map', fn, ctx);
     }
 
     reduce() {
@@ -264,16 +274,16 @@ class _Array extends BaseType {
         throw 'reduceRight not implemented yet. Please do.';
     }
 
-    every() {
-        throw 'every not implemented yet. Please do.';
+    every(fn, ctx) {
+        return this.__lodashProxy__('every', fn, ctx);
     }
 
-    some() {
-        throw 'some not implemented yet. Please do.';
+    some(fn, ctx) {
+        return this.__lodashProxy__('some', fn, ctx);
     }
 
-    filter() {
-        throw 'filter not implemented yet. Please do.';
+    filter(fn, ctx) {
+        return this.__lodashProxy__('filter', fn, ctx);
     }
 
     values() {
