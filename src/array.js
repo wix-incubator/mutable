@@ -65,7 +65,7 @@ class _Array extends BaseType {
 			return (item instanceof BaseType) ? item.toJSON() : item;
 		});
 	}
-	
+
 	// To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
 
 	// Mutator methods
@@ -182,8 +182,7 @@ class _Array extends BaseType {
     }
 
     toPrettyPrint() {
-		var msg = "[" + this + "]";
-		return msg;    		
+		return `[${this}]`;
     }
 
     valueOf() {
@@ -249,14 +248,14 @@ class _Array extends BaseType {
     }
 
     map(fn, ctx) {
-    	return this.__proxy__("map", fn, ctx);
+    	return this.__lodashProxy__('map', fn, ctx);
     }
 
-    __proxy__(key, fn, ctx){
-    	var context = ctx || this;
-        var valueArray = _[key](this.__value__, fn, context);
+    __lodashProxy__(key, fn, ctx){
+        var valueArray = _[key](this.__value__, fn, ctx || this);
         return new this.constructor(valueArray, this.__options__);
     }
+
     reduce() {
         throw 'reduce not implemented yet. Please do.';
     }
@@ -268,16 +267,19 @@ class _Array extends BaseType {
     every() {
         throw 'every not implemented yet. Please do.';
     }
+
     some() {
         throw 'some not implemented yet. Please do.';
     }
+
     filter() {
         throw 'filter not implemented yet. Please do.';
     }
+
     values() {
         throw 'values not implemented yet. Please do.';
     }
-    
+
 }
 _Array.withDefault = generateWithDefault();
 
