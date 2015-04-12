@@ -188,12 +188,9 @@ class _Array extends BaseType {
             var newValue = this.__value__.slice(begin, end);
             return new constructor(newValue, false, this.options);
         } else {
-            var newValue = this.__value__.slice(begin);
+            var newValue = this.__value__.slice(b);
             return new constructor(newValue, false, this.options);
         }
-    }
-    toSource() {
-        throw 'toSource not implemented yet. Please do.';
     }
 
     toString() {
@@ -210,12 +207,12 @@ class _Array extends BaseType {
         throw 'toLocaleString not implemented yet. Please do.';
     }
 
-    indexOf() {
-        throw 'indexOf not implemented yet. Please do.';
+    indexOf(searchElement, fromIndex) {
+        return this.__value__.indexOf(searchElement, fromIndex || 0);
     }
 
-    lastIndexOf() {
-        throw 'lastIndexOf not implemented yet. Please do.';
+    lastIndexOf(searchElement, fromIndex) {
+        return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
     }
 	// Iteration methods
 

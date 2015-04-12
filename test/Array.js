@@ -231,7 +231,47 @@ describe('Array data', function() {
                 expect(result).to.eql("a,b");
             });
         });
-        
+        describe('indexOf', function () {
+            it('should return the first index of an element within an array equal to the specified value', () => {
+                var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
+
+                var result = arrA.indexOf('a');
+
+                expect(result).to.eql(0);
+            });
+            it('should return -1 if none is found', () => {
+                var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
+
+                var result = arrA.indexOf('a', 1);
+
+                expect(result).to.eql(-1);
+            });
+        });
+        describe('lastIndexOf', function () {
+            it('should return the last index at which a given element can be found in the array', () => {
+                var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
+                debugger;
+                var result = arrA.lastIndexOf('a');
+
+                expect(result).to.eql(2);
+            });
+
+            it('should take a 2nd argument, the index at which to start searching backwards', () => {
+                var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
+
+                var result = arrA.lastIndexOf('b', 2);
+
+                expect(result).to.eql(1);
+            });
+
+            it('should return -1 if none is found', () => {
+                var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
+
+                var result = arrA.lastIndexOf('c');
+
+                expect(result).to.eql(-1);
+            });
+        });
         describe('valueOf()', () => {
             it('should return the primitive value of the specified object', () => {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
