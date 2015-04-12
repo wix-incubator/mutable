@@ -11,54 +11,71 @@ describe('assume',() => {
 
         spy();
         expect(spy.called).to.be.true;
+
+        spy.reset();
+
+        expect(spy.called).to.be.false;
+        spy();
+        expect(spy.called).to.be.true;
     });
 });
 
 
 
-export function setDirtyContractTest(factory, mutator, description, ...predicates) {
+export function assertSetDirtyContract(factory, mutator, description, ...predicates) {
     describe(description, function () {
+        var ctx = new Object();
         before('init', function () {
-            this.instance = factory();
-            this.dirtySpy = sinon.spy(this.instance, '$setDirty');
+            ctx.instance = factory();
+            ctx.dirtySpy = sinon.spy(ctx.instance, '$setDirty');
         });
+        beforeEach('clear spy',() => ctx.dirtySpy.reset());
         it('calls $setDirty', function () {
-           this.dirtySpy.reset();
-            mutator(this.instance);
-            expect(this.dirtySpy.called).to.be.true;
+            mutator(ctx.instance);
+            expect(ctx.dirtySpy.called).to.be.true;
         });
         predicates.forEach(function (predicate) {
             it(predicate.description, function () {
-                var isOk = predicate.condition(this.instance);
+                var isOk = predicate.condition(ctx.instance);
                 expect(isOk).to.be.true;
             });
         });
         after('cleanup', function () {
-            delete this.instance;
+            delete ctx.instance;
         });
     });
 }
 
-export function isDirtyContractTest(containerFactory, childFactory, description, ...predicates){
-    describe(description, function () {
+export function isDirtyContractTest(containerFactory, elementFactory, description, ...predicates){
+    describe('calling $isDirty on ' + description, function () {
+        var ctx = new Object();
         before('init', function () {
-            this.child = childFactory();
-            this.container = containerFactory(this.child);
-            this.dirtyStub = sinon.stub(this.child, '$isDirty', () => true);
+            ctx.element = elementFactory();
+            ctx.container = containerFactory(ctx.element);
+            ctx.dirtyStub = sinon.stub(ctx.element, '$isDirty', () => true);
         });
-        it('calls $isDirty', function () {
-            this.dirtySpy.reset();
-            mutator(this.instance);
-            expect(this.dirtySpy.called).to.be.true;
+        beforeEach('clear spy', () => ctx.dirtyStub.reset());
+        beforeEach('clear dirty', () => ctx.container.$resetDirty());
+        it('returns true if $setDirty was called', function () {
+            ctx.container.$setDirty();
+            var dirty = ctx.container.$isDirty();
+            expect(ctx.dirtyStub.called).to.be.false;
+            expect(dirty).to.be.true;
+        });
+        it('depends on element\'s $isDirty if $setDirty not called', function () {
+            var dirty = ctx.container.$isDirty();
+            expect(ctx.dirtyStub.called).to.be.true;
+            expect(dirty).to.be.true;
         });
         predicates.forEach(function (predicate) {
             it(predicate.description, function () {
-                var isOk = predicate.condition(this.instance);
+                var isOk = predicate.condition(ctx.instance);
                 expect(isOk).to.be.true;
             });
         });
         after('cleanup', function () {
-            delete this.instance;
+            delete ctx.container;
+            delete ctx.element;
         });
     });
 }
