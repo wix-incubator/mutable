@@ -2,7 +2,7 @@ import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import _ from 'lodash';
-import {assertSetDirtyContract, isDirtyContractTest} from './lifecycle.contract.spec.js';
+import {assertSetDirtyContract, assertIsDirtyContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
 var UserType = aDataTypeWithSpec({
@@ -506,7 +506,7 @@ describe('Array data', function() {
 
     describe('$isDirty contract:',function() {
 
-        isDirtyContractTest(
+        assertIsDirtyContract(
             (u) => Typorama.Array.of(UserType).create([u]),
             () => new UserType(),
             'array with a complex element'

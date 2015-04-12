@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
-import {assertSetDirtyContract, isDirtyContractTest} from './lifecycle.contract.spec.js';
+import {assertSetDirtyContract, assertIsDirtyContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
 describe('Custom data', function() {
@@ -279,7 +279,7 @@ describe('Custom data', function() {
             child2: UserWithChildType
         }, 'UserWith2ChildType');
 
-        isDirtyContractTest(
+        assertIsDirtyContract(
             (u) => UserWith2ChildType.create({child2:u}),
             () => new UserWithChildType(),
             'object with a complex element'

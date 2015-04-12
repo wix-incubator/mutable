@@ -42,7 +42,7 @@ export function assertSetDirtyContract(factory, mutator, description, ...predica
     });
 }
 
-export function isDirtyContractTest(containerFactory, elementFactory, description, ...predicates){
+export function assertIsDirtyContract(containerFactory, elementFactory, description, ...predicates){
     describe('calling $isDirty on ' + description, function () {
         var ctx = new Object();
         before('init', function () {
