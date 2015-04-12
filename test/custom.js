@@ -3,6 +3,8 @@ import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
 import lifecycleContractTest from './lifecycle';
+import setDirtyContractTest from './setDirty.contract.spec.js';
+import sinon from 'sinon';
 
 describe('Custom data', function() {
 
@@ -270,27 +272,43 @@ describe('Custom data', function() {
 
     });
 
-    describe('lifecycle contract, when',function() {
-        lifecycleContractTest(
-            ()=> new UserType(),
+    describe('lifecycle contract:',function() {
+
+
+        /*
+         TODO lifecycle test
+         var UserWith2ChildType = aDataTypeWithSpec({
+         name: Typorama.String.withDefault('leon'),
+         child: UserType,
+         child2: UserWithChildType
+         }, 'UserWith2ChildType');
+         */
+
+        var spy = sinon.spy();
+        var noDirtyElements = {
+            description: 'does not dirty elements',
+            condition : () => !spy.called
+        };
+
+        function factory(){
+            var result = new UserWithChildType();
+            result.child.$setDirty = spy;
+            return result
+        }
+
+        setDirtyContractTest(
+            factory,
             (u)=> u.name = 'gaga',
-            'modifying member field in a custom type');
+            'assigning value to primitive field',
+            noDirtyElements
+        );
 
-
-        var UserWith2ChildType = aDataTypeWithSpec({
-            child: UserType,
-            child2: UserWithChildType
-        }, 'UserWith2ChildType');
-
-
-        var hierarchyLifeCycleContractTest = _.curry(lifecycleContractTest)(()=> new UserWith2ChildType(), (uw2c)=> uw2c.child2.name = 'baga');
-
-        hierarchyLifeCycleContractTest(
-            'modifying a member field in a custom type, sibling is not affected',
-            (uw2c)=> !uw2c.child.$isDirty());
-
-        hierarchyLifeCycleContractTest(
-            'modifying a member field in a custom type, child is not affected',
-            (uw2c)=> !uw2c.child2.child.$isDirty());
+        spy.reset();
+        setDirtyContractTest(
+            factory,
+            (u)=> u.child = new UserType(),
+            'assigning value to composite field',
+            noDirtyElements
+        );
     });
 });
