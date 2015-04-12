@@ -1,8 +1,6 @@
 import {expect} from 'chai';
 import sinon from 'sinon';
 
-
-
 describe('assume',() => {
     it('spy works', () =>{
         var spy = sinon.spy();
@@ -19,8 +17,6 @@ describe('assume',() => {
         expect(spy.called).to.be.true;
     });
 });
-
-
 
 export function assertSetDirtyContract(factory, mutator, description, ...predicates) {
     describe(description, function () {
