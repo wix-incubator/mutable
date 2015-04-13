@@ -15,6 +15,8 @@ export default class BaseType {
         return new this(value, options);
     }
 
+    static validateType(value){ return value instanceof this.type; }
+
     static wrapValue(value, spec, options){
         Object.keys(spec).forEach((key) => {
             var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
