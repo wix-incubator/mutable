@@ -1,11 +1,14 @@
 import _ from 'lodash'
 import defineType from './defineType'
 import BaseType from './BaseType'
-import number from './number'
-import string from './string'
+import Number from './number'
+import String from './string'
 import {generateWithDefault} from './defineTypeUtils'
 
-export default class _Array extends BaseType {
+// to maintain consistency so that everything
+var Typorama = {define: defineType};
+
+class _Array extends BaseType {
 
 	static defaults() { return []; }
 
@@ -49,8 +52,8 @@ export default class _Array extends BaseType {
 
 			var subType = options.subTypes[
 				itemValue._type ? itemValue._type  :
-				number.test(itemValue) ? number.name :
-				string.test(itemValue) ? string.name :
+				Number.test(itemValue) ? Number.name :
+				String.test(itemValue) ? String.name :
 				Object.keys(options.subTypes)[0]
 			];
 
@@ -58,8 +61,8 @@ export default class _Array extends BaseType {
 		}
 	}
 
-	static of(subTypes, defaults, test) {
-		return this.withDefault(defaults, test, { subTypes });
+	static of(subTypes) {
+		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
 	constructor(value=[], options={}) {
@@ -81,22 +84,20 @@ export default class _Array extends BaseType {
 
 	// To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
 
-	// Add a Warn method to BaseType
-
 	// Mutator methods
 	copyWithin() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'copyWithin not implemented yet. Please do.';
     }
 
     fill() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'fill not implemented yet. Please do.';
     }
 
 	pop() {
-        if (this.__isReadOnly__) {
+		if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         return this.__value__.pop();
     }
 
@@ -118,7 +119,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         return this.__value__.reverse();
     }
 
@@ -126,7 +127,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         return this.__value__.shift();
     }
 
@@ -134,7 +135,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         return this.__value__.sort(cb);
     }
 
@@ -168,7 +169,7 @@ export default class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.__isInvalidated__ = true;
+        this.$setDirty();
         return this.__value__.unshift();
     }
 
@@ -185,13 +186,19 @@ export default class _Array extends BaseType {
 	join(separator ? = ',') {
         return this.__value__.join(separator);
     }
-
+    slice() {
+        throw 'slice not implemented yet. Please do.';
+    }
     toSource() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'toSource not implemented yet. Please do.';
     }
 
     toString() {
-        throw 'Slice not implemented yet. Please do.';
+        return this.__value__.toString();
+    }
+
+    toPrettyPrint() {
+		return `[${this}]`;
     }
 
     valueOf() {
@@ -201,15 +208,15 @@ export default class _Array extends BaseType {
     }
 
     toLocaleString() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'toLocaleString not implemented yet. Please do.';
     }
 
     indexOf() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'indexOf not implemented yet. Please do.';
     }
 
     lastIndexOf() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'lastIndexOf not implemented yet. Please do.';
     }
 	// Iteration methods
 
@@ -221,7 +228,7 @@ export default class _Array extends BaseType {
 	}
 
 	entries() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'entries not implemented yet. Please do.';
     }
 
     find(cb) {
@@ -240,7 +247,7 @@ export default class _Array extends BaseType {
     }
 
 	keys() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'keys not implemented yet. Please do.';
     }
 
 	setValue(newValue) {
@@ -256,56 +263,46 @@ export default class _Array extends BaseType {
         }
     }
 
+    map(fn, ctx) {
+    	return this.__lodashProxy__('map', fn, ctx);
+    }
+
+    __lodashProxy__(key, fn, ctx){
+        var valueArray = _[key](this.__value__, fn, ctx || this);
+        return new this.constructor(valueArray, this.__options__);
+    }
+
     reduce() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'reduce not implemented yet. Please do.';
     }
 
     reduceRight() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'reduceRight not implemented yet. Please do.';
+    }
+
+    every() {
+        throw 'every not implemented yet. Please do.';
+    }
+
+    some() {
+        throw 'some not implemented yet. Please do.';
+    }
+
+    filter() {
+        throw 'filter not implemented yet. Please do.';
     }
 
     values() {
-        throw 'Slice not implemented yet. Please do.';
+        throw 'values not implemented yet. Please do.';
     }
+
 }
 _Array.withDefault = generateWithDefault();
 
-
-
-['map', 'filter', 'slice'].forEach(function(key) {
-
-    var loFn = _[key];
-    _Array.prototype[key] = function(fn, ctx) {
-
-        var valueArray = loFn(this.__value__, function() {
-            return fn.apply(this, arguments);
-        }, ctx || this);
-
-        return new this.constructor(valueArray, false, this.__options__);
-
-    }
-
-});
-
-['every', 'some'].forEach(function(key) {
-
-    var loFn = _[key];
-    _Array.prototype[key] = function(fn, ctx) {
-
-        var valueArray = loFn(this.__value__, function() {
-            return fn.apply(ctx || this, arguments);
-        });
-
-        return valueArray;
-
-    }
-
-});
-
-defineType('Array',{
+export default Typorama.define('Array',{
 	spec: function() {
 		return {
-			length: number.withDefault(0)
+			length: Number.withDefault(0)
 		};
 	}
 }, _Array);

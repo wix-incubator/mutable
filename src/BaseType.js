@@ -1,13 +1,13 @@
 import _ from "lodash"
 import {dirty} from "./lifecycle"
 
+
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
     readOnlyInstance.__isReadOnly__ = true;
     readOnlyInstance.constructor = source.constructor;
     return readOnlyInstance;
 }
-
 
 export default class BaseType {
 
@@ -88,6 +88,11 @@ export default class BaseType {
             json[key] = fieldValue.toJSON ? fieldValue.toJSON() : fieldValue;
             return json;
         }, {});
+    }
+
+    toPrettyPrint() {
+        var msg = "{" + this + "}";
+        return msg;         
     }
 
 }

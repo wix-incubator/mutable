@@ -2,6 +2,22 @@ import _ from "lodash"
 import * as defineTypeUtils from "./defineTypeUtils"
 import BaseType from "./BaseType"
 
+/*
+ * Called to generate a default value resolver for custom types. The default value resolver is called upon constructing an instance
+ * to populate undefined fields
+ */
+function generateDefaultValueResolver(){
+    return function() {
+        var spec = this._spec;
+        var args = arguments;
+        return Object.keys(this._spec).reduce(function (val, key) {
+            var fieldSpec = spec[key];
+            val[key] = fieldSpec.defaults.apply(fieldSpec, args);
+            return val;
+        }, {});
+    }
+}
+
 export default function(id, typeDefinition, TypeConstructor){
 
     TypeConstructor = TypeConstructor || function Type(value, options){
@@ -12,7 +28,7 @@ export default function(id, typeDefinition, TypeConstructor){
     TypeConstructor.test                  = TypeConstructor.test || defineTypeUtils.generateTest();
     TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
     TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.generateWithDefault();
-    TypeConstructor.defaults              = TypeConstructor.defaults || defineTypeUtils.generateGetDefaultValue();
+    TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
     TypeConstructor.create                = BaseType.create;
 
     if(!BaseType.prototype.isPrototypeOf(TypeConstructor.prototype)){
