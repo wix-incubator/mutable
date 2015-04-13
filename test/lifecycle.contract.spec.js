@@ -1,4 +1,5 @@
 import {expect} from 'chai';
+import _ from 'lodash';
 import sinon from 'sinon';
 
 describe('assume',() => {
@@ -21,21 +22,22 @@ describe('assume',() => {
 function spyWrapper(isDirty, setDirty){
     return (factory) =>
         (...args) => {
-        var result = factory(...args);
-        result.$isDirty = isDirty;
-        result.$setDirty = setDirty;
-        return result;
-    };
+            var result = factory(...args);
+            result.$isDirty = isDirty;
+            result.$setDirty = setDirty;
+            return result;
+        };
 }
 
 export function lifecycleContract(containerFactory, elementFactory, fixtureDescription){
 
     var ctx = {
         elementIsDirty : sinon.stub(),
-        elementSetDirty : sinon.spy()
+        elementSetDirty : sinon.spy(),
+        compositeElements : _.isObject(elementFactory())
     };
     var spyOn = spyWrapper(ctx.elementIsDirty, ctx.elementSetDirty);
-    var spiedElementFactory = spyOn(elementFactory);
+    var spiedElementFactory = ctx.compositeElements ? spyOn(elementFactory) : elementFactory;
     function init() {
         ctx.container = containerFactory(spiedElementFactory(), spiedElementFactory());
     }
@@ -89,27 +91,32 @@ export function lifecycleContract(containerFactory, elementFactory, fixtureDescr
                     ctx.container.$setDirty();
                     var dirty = ctx.container.$isDirty();
                     expect(ctx.elementIsDirty.called).to.be.false;
-                    expect(dirty).to.be.true;
+                    expect(dirty, 'container dirty flag').to.be.true;
                 });
                 it('(when $setDirty not called) recourse through all elements and returns false if none is dirty', function () {
                     ctx.elementIsDirty.returns(false);
                     var dirty = ctx.container.$isDirty();
-                    expect(ctx.elementIsDirty.calledTwice).to.be.true;
-                    expect(dirty).to.be.false;
+                    if (ctx.compositeElements) {
+                        expect(ctx.elementIsDirty.calledTwice).to.be.true;
+                    }
+                    expect(dirty, 'container dirty flag').to.be.false;
                 });
-                it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
-                    ctx.elementIsDirty.onFirstCall().returns(true);
-                    var dirty = ctx.container.$isDirty();
-                    expect(ctx.elementIsDirty.calledOnce).to.be.true;
-                    expect(dirty).to.be.true;
-                });
-                it('(when $setDirty not called) returns true after checking the second element and finding that it\'s dirty', function () {
-                    ctx.elementIsDirty.onFirstCall().returns(false);
-                    ctx.elementIsDirty.onSecondCall().returns(true);
-                    var dirty = ctx.container.$isDirty();
-                    expect(ctx.elementIsDirty.calledTwice).to.be.true;
-                    expect(dirty).to.be.true;
-                });
+
+                if (ctx.compositeElements) {
+                    it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
+                        ctx.elementIsDirty.onFirstCall().returns(true);
+                        var dirty = ctx.container.$isDirty();
+                        expect(ctx.elementIsDirty.calledOnce, 'checked one element for dirty').to.be.true;
+                        expect(dirty, 'container dirty flag').to.be.true;
+                    });
+                    it('(when $setDirty not called) returns true after checking the second element and finding that it\'s dirty', function () {
+                        ctx.elementIsDirty.onFirstCall().returns(false);
+                        ctx.elementIsDirty.onSecondCall().returns(true);
+                        var dirty = ctx.container.$isDirty();
+                        expect(ctx.elementIsDirty.calledTwice, 'checked two elements for dirty').to.be.true;
+                        expect(dirty, 'container dirty flag').to.be.true;
+                    });
+                }
                 // todo caching test
             });
             return this;

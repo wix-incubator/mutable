@@ -516,6 +516,14 @@ describe('Array data', function() {
         userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
         userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.unshift(), 'unshift');
 
+
+        var numberArrayAsserter = lifecycleContract(
+            (...elements) => Typorama.Array.of(Typorama.Number).create(elements),
+            () => 3.14,
+            'array with numbers'
+        );
+        numberArrayAsserter.assertIsDirtyContract();
+
     });
 });
 
