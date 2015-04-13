@@ -54,8 +54,9 @@ export function lifecycleContract(containerFactory, elementFactory, fixtureDescr
                 beforeEach('reset', reset);
                 after('cleanup', cleanup);
                 it('calls $setDirty', function () {
+                    var spy = sinon.spy(ctx.container, '$setDirty');
                     mutator(ctx.container, spiedElementFactory);
-                    // TODO assert container set dirty
+                    expect(spy.called).to.be.true;
                 });
                 it('does not affect elements\' lifecycle', function () {
                     mutator(ctx.container, spiedElementFactory);
