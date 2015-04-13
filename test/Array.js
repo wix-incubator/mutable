@@ -506,7 +506,7 @@ describe('Array data', function() {
         var userArrayAsserter = lifecycleContract(
             (...elements) => Typorama.Array.of(UserType).create(elements),
             () => new UserType(),
-            'array with a complex element'
+            'array with composite elements'
         );
         userArrayAsserter.assertIsDirtyContract();
         userArrayAsserter.assertMutatorCallsSetDirty((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
