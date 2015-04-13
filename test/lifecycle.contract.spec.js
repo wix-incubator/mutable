@@ -91,15 +91,25 @@ export function lifecycleContract(containerFactory, elementFactory, fixtureDescr
                     expect(ctx.elementIsDirty.called).to.be.false;
                     expect(dirty).to.be.true;
                 });
-                it('with non-dirty elements (when $setDirty not called) recourse through all elements and returns false', function () {
+                it('(when $setDirty not called) recourse through all elements and returns false if none is dirty', function () {
+                    ctx.elementIsDirty.returns(false);
                     var dirty = ctx.container.$isDirty();
-                    expect(ctx.elementIsDirty.called).to.be.true;
-                    // todo assert called twice
+                    expect(ctx.elementIsDirty.calledTwice).to.be.true;
                     expect(dirty).to.be.false;
                 });
-                // TODO test : make stub return true on 1st, assert called once
-                // TODO test : make stub return true on 2nd, assert called twice
-
+                it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
+                    ctx.elementIsDirty.onFirstCall().returns(true);
+                    var dirty = ctx.container.$isDirty();
+                    expect(ctx.elementIsDirty.calledOnce).to.be.true;
+                    expect(dirty).to.be.true;
+                });
+                it('(when $setDirty not called) returns true after checking the second element and finding that it\'s dirty', function () {
+                    ctx.elementIsDirty.onFirstCall().returns(false);
+                    ctx.elementIsDirty.onSecondCall().returns(true);
+                    var dirty = ctx.container.$isDirty();
+                    expect(ctx.elementIsDirty.calledTwice).to.be.true;
+                    expect(dirty).to.be.true;
+                });
                 // todo caching test
             });
             return this;
