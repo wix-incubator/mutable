@@ -506,7 +506,7 @@ describe('Array data', function() {
         var userArrayAsserter = lifecycleContract(
             (...elements) => Typorama.Array.of(UserType).create(elements),
             () => new UserType(),
-            'array with composite elements'
+            'array with mutable elements'
         );
         userArrayAsserter.assertIsDirtyContract();
         userArrayAsserter.assertMutatorCallsSetDirty((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
@@ -520,7 +520,7 @@ describe('Array data', function() {
         var numberArrayAsserter = lifecycleContract(
             (...elements) => Typorama.Array.of(Typorama.Number).create(elements),
             () => 3.14,
-            'array with numbers'
+            'array with primitives'
         );
         numberArrayAsserter.assertIsDirtyContract();
 

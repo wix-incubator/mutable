@@ -281,7 +281,7 @@ describe('Custom data', function() {
 		var userwith2ChildrenAsserter = lifecycleContract(
 			(u1, u2) => UserWith2ChildType.create({child1:u1, child2:u2}),
 			() => UserType.create(),
-			'object with composite elements'
+			'object with mutable elements'
 		);
 
 		userwith2ChildrenAsserter.assertIsDirtyContract();

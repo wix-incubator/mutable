@@ -34,10 +34,10 @@ export function lifecycleContract(containerFactory, elementFactory, fixtureDescr
     var ctx = {
         elementIsDirty : sinon.stub(),
         elementSetDirty : sinon.spy(),
-        compositeElements : _.isObject(elementFactory())
+        mutableElements : _.isObject(elementFactory())
     };
     var spyOn = spyWrapper(ctx.elementIsDirty, ctx.elementSetDirty);
-    var spiedElementFactory = ctx.compositeElements ? spyOn(elementFactory) : elementFactory;
+    var spiedElementFactory = ctx.mutableElements ? spyOn(elementFactory) : elementFactory;
     function init() {
         ctx.container = containerFactory(spiedElementFactory(), spiedElementFactory());
     }
@@ -96,13 +96,13 @@ export function lifecycleContract(containerFactory, elementFactory, fixtureDescr
                 it('(when $setDirty not called) recourse through all elements and returns false if none is dirty', function () {
                     ctx.elementIsDirty.returns(false);
                     var dirty = ctx.container.$isDirty();
-                    if (ctx.compositeElements) {
+                    if (ctx.mutableElements) {
                         expect(ctx.elementIsDirty.calledTwice).to.be.true;
                     }
                     expect(dirty, 'container dirty flag').to.be.false;
                 });
 
-                if (ctx.compositeElements) {
+                if (ctx.mutableElements) {
                     it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
                         ctx.elementIsDirty.onFirstCall().returns(true);
                         var dirty = ctx.container.$isDirty();
