@@ -2,7 +2,7 @@ import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import _ from 'lodash';
-import {assertSetDirtyContract, assertIsDirtyContract} from './lifecycle.contract.spec.js';
+import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
 var UserType = aDataTypeWithSpec({
@@ -502,46 +502,20 @@ describe('Array data', function() {
     });
 
 
-
-
-    describe('$isDirty contract:',function() {
-
-        assertIsDirtyContract(
-            (u) => Typorama.Array.of(UserType).create([u]),
+    describe('lifecycle:',function() {
+        var userArrayAsserter = lifecycleContract(
+            (...elements) => Typorama.Array.of(UserType).create(elements),
             () => new UserType(),
             'array with a complex element'
         );
-    });
-
-    describe('$setDirty contract:',function() {
-        var spy = sinon.spy();
-        var noDirtyElements = {
-            description: 'does not call $setDirty of elements',
-            condition : () => !spy.called
-        };
-        function element(){
-            return {$setDirty: spy};
-        }
-        function factory(){
-            return Typorama.Array.of(UserType).create([element(), element(), element()]);
-        }
-
-        assertSetDirtyContract(factory, (arr) => arr.push(element()), 'adding an element to an array', noDirtyElements);
-        spy.reset();
-        assertSetDirtyContract(factory, (arr) => arr.splice(1, 2, element()), 'splicing an array', noDirtyElements);
-        spy.reset();
-        assertSetDirtyContract(factory, (arr) => arr.pop(), 'popping an element from an array', noDirtyElements);
-        spy.reset();
-        assertSetDirtyContract(factory, (arr) => arr.reverse(), 'reversing an array', noDirtyElements);
-        spy.reset();
-        assertSetDirtyContract(factory, (arr) => arr.shift(), 'shifting an array', noDirtyElements);
-        spy.reset();
-        assertSetDirtyContract(factory, (arr) => arr.sort(function(a, b) {return a > b; }), 'sorting an array', noDirtyElements);
-        spy.reset();
-        assertSetDirtyContract(factory, (arr) => arr.unshift(), 'unshifting an array', noDirtyElements);
+        userArrayAsserter.assertIsDirtyContract();
+        userArrayAsserter.assertMutatorCallsSetDirty((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
+        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.pop(), 'pop');
+        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.reverse(), 'reverse');
+        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.shift(), 'shift');
+        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
+        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.unshift(), 'unshift');
 
     });
-
-
 });
 

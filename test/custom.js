@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
-import {assertSetDirtyContract, assertIsDirtyContract} from './lifecycle.contract.spec.js';
+import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
 describe('Custom data', function() {
@@ -268,49 +268,25 @@ describe('Custom data', function() {
 			expect(readOnlyChild instanceof UserType).to.equal(true);
 			expect(readOnlyChild.name).to.equal('bobi');
 		});
-
 	});
 
-	describe('$isDirty contract:',function() {
+	describe('lifecycle:',function() {
 
-        var UserWith2ChildType = aDataTypeWithSpec({
-            name: Typorama.String.withDefault('leon'),
-            child: UserType,
-            child2: UserWithChildType
-        }, 'UserWith2ChildType');
+		var UserWith2ChildType = aDataTypeWithSpec({
+			name: Typorama.String.withDefault('leon'),
+			child1: UserType,
+			child2: UserType
+		}, 'UserWith2ChildType');
 
-        assertIsDirtyContract(
-            (u) => UserWith2ChildType.create({child2:u}),
-            () => new UserWithChildType(),
-            'object with a complex element'
-        );
-	});
-
-	describe('$setDirty contract:',function() {
-		var spy = sinon.spy();
-		var noDirtyElements = {
-			description: 'does not call $setDirty of elements',
-			condition : () => !spy.called
-		};
-
-		function factory(){
-			var result = new UserWithChildType();
-			result.child.$setDirty = spy;
-			return result
-		}
-
-		assertSetDirtyContract(
-			factory,
-			(u)=> u.name = 'gaga',
-			'assigning value to primitive field',
-			noDirtyElements
+		var userwith2ChildrenAsserter = lifecycleContract(
+			(u1, u2) => UserWith2ChildType.create({child1:u1, child2:u2}),
+			() => UserType.create(),
+			'object with complex elements'
 		);
-		spy.reset();
-		assertSetDirtyContract(
-			factory,
-			(u)=> u.child = new UserType(),
-			'assigning value to composite field'
-			// TODO add noDirtyElements
-		);
+
+		userwith2ChildrenAsserter.assertIsDirtyContract();
+		userwith2ChildrenAsserter.assertMutatorCallsSetDirty((obj) => obj.name = 'johnny', 'assignment on primitive field');
+		// TODO
+		userwith2ChildrenAsserter.assertMutatorCallsSetDirty((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment on composite field');
 	});
 });

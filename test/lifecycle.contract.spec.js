@@ -18,60 +18,90 @@ describe('assume',() => {
     });
 });
 
-export function assertSetDirtyContract(factory, mutator, description, ...predicates) {
-    describe(description, function () {
-        var ctx = new Object();
-        before('init', function () {
-            ctx.instance = factory();
-            ctx.dirtySpy = sinon.spy(ctx.instance, '$setDirty');
-        });
-        beforeEach('clear spy',() => ctx.dirtySpy.reset());
-        it('calls $setDirty', function () {
-            mutator(ctx.instance);
-            expect(ctx.dirtySpy.called).to.be.true;
-        });
-        predicates.forEach(function (predicate) {
-            it(predicate.description, function () {
-                var isOk = predicate.condition(ctx.instance);
-                expect(isOk).to.be.true;
-            });
-        });
-        after('cleanup', function () {
-            delete ctx.instance;
-        });
-    });
+function spyWrapper(isDirty, setDirty){
+    return (factory) =>
+        (...args) => {
+        var result = factory(...args);
+        result.$isDirty = isDirty;
+        result.$setDirty = setDirty;
+        return result;
+    };
 }
 
-export function assertIsDirtyContract(containerFactory, elementFactory, description, ...predicates){
-    describe('calling $isDirty on ' + description, function () {
-        var ctx = new Object();
-        before('init', function () {
-            ctx.element = elementFactory();
-            ctx.container = containerFactory(ctx.element);
-            ctx.dirtyStub = sinon.stub(ctx.element, '$isDirty', () => true);
-        });
-        beforeEach('clear spy', () => ctx.dirtyStub.reset());
-        beforeEach('clear dirty', () => ctx.container.$resetDirty());
-        it('returns true if $setDirty was called', function () {
-            ctx.container.$setDirty();
-            var dirty = ctx.container.$isDirty();
-            expect(ctx.dirtyStub.called).to.be.false;
-            expect(dirty).to.be.true;
-        });
-        it('depends on element\'s $isDirty if $setDirty not called', function () {
-            var dirty = ctx.container.$isDirty();
-            expect(ctx.dirtyStub.called).to.be.true;
-            expect(dirty).to.be.true;
-        });
-        predicates.forEach(function (predicate) {
-            it(predicate.description, function () {
-                var isOk = predicate.condition(ctx.instance);
-                expect(isOk).to.be.true;
+export function lifecycleContract(containerFactory, elementFactory, fixtureDescription){
+
+    var ctx = {
+        elementIsDirty : sinon.stub(),
+        elementSetDirty : sinon.spy()
+    };
+    var spyOn = spyWrapper(ctx.elementIsDirty, ctx.elementSetDirty);
+    var spiedElementFactory = spyOn(elementFactory);
+    function init() {
+        ctx.container = containerFactory(spiedElementFactory(), spiedElementFactory());
+    }
+    function cleanup() {
+        delete ctx.container;
+    }
+    function reset(){
+        ctx.elementIsDirty.reset();
+        ctx.elementSetDirty.reset();
+        ctx.container.$resetDirty();
+    }
+    return {
+        assertMutatorCallsSetDirty: (mutator, description) => {
+            describe('applying ' + description + ' on ' + fixtureDescription, function () {
+                before('init', init);
+                beforeEach('reset', reset);
+                after('cleanup', cleanup);
+                it('calls $setDirty', function () {
+                    mutator(ctx.container, spiedElementFactory);
+                    // TODO assert container set dirty
+                });
+                it('does not affect elements\' lifecycle', function () {
+                    mutator(ctx.container, spiedElementFactory);
+                    expect(ctx.elementIsDirty.called).to.be.false;
+                    expect(ctx.elementSetDirty.called).to.be.false;
+                });
             });
-        });
-        after('cleanup', function () {
-            delete ctx.container;
-            delete ctx.element;
-        });
-    });
+            return this;
+        },
+        assertIsDirtyContract: () => {
+            describe('calling $setDirty on ' + fixtureDescription, function () {
+                before('init', init);
+                beforeEach('reset', reset);
+                after('cleanup', cleanup);
+                it('does not affect elements\' lifecycle', function () {
+                    var dirty = ctx.container.$setDirty();
+                    expect(ctx.elementIsDirty.called).to.be.false;
+                    expect(ctx.elementSetDirty.called).to.be.false;
+                });
+            });
+            describe('calling $isDirty on ' + fixtureDescription, function () {
+                before('init', init);
+                beforeEach('reset', reset);
+                after('cleanup', cleanup);
+                it('does not affect elements\' lifecycle', function () {
+                    var dirty = ctx.container.$isDirty();
+                    expect(ctx.elementSetDirty.called).to.be.false;
+                });
+                it('after calling $setDirty immediately returns true', function () {
+                    ctx.container.$setDirty();
+                    var dirty = ctx.container.$isDirty();
+                    expect(ctx.elementIsDirty.called).to.be.false;
+                    expect(dirty).to.be.true;
+                });
+                it('with non-dirty elements (when $setDirty not called) recourse through all elements and returns false', function () {
+                    var dirty = ctx.container.$isDirty();
+                    expect(ctx.elementIsDirty.called).to.be.true;
+                    // todo assert called twice
+                    expect(dirty).to.be.false;
+                });
+                // TODO test : make stub return true on 1st, assert called once
+                // TODO test : make stub return true on 2nd, assert called twice
+
+                // todo caching test
+            });
+            return this;
+        }
+    };
 }
