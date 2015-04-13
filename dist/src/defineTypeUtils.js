@@ -13,7 +13,6 @@
     exports.generateFieldsOn = generateFieldsOn;
     exports.generateWithDefault = generateWithDefault;
     exports.generateWithDefaultForSysImmutable = generateWithDefaultForSysImmutable;
-    exports.generateGetDefaultValue = generateGetDefaultValue;
     Object.defineProperty(exports, "__esModule", {
         value: true
     });
@@ -101,18 +100,6 @@
             typeWithDefault.wrapValue = Type;
             typeWithDefault.create = this.create;
             return typeWithDefault;
-        };
-    }
-
-    function generateGetDefaultValue() {
-        return function () {
-            var spec = this._spec;
-            var args = arguments;
-            return Object.keys(this._spec).reduce(function (val, key) {
-                var fieldSpec = spec[key];
-                val[key] = fieldSpec.defaults.apply(fieldSpec, args);
-                return val;
-            }, {});
         };
     }
 });

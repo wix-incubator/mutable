@@ -23,11 +23,14 @@
 
     var BaseType = _interopRequire(_BaseType2);
 
-    var number = _interopRequire(_number);
+    var Number = _interopRequire(_number);
 
-    var string = _interopRequire(_string);
+    var String = _interopRequire(_string);
 
     var generateWithDefault = _defineTypeUtils.generateWithDefault;
+
+    // to maintain consistency so that everything
+    var Typorama = { define: defineType };
 
     var _Array = (function (_BaseType) {
         function _Array() {
@@ -78,7 +81,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.__isInvalidated__ = true;
+                    this.$setDirty();
                     return this.__value__.pop();
                 }
             },
@@ -107,7 +110,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.__isInvalidated__ = true;
+                    this.$setDirty();
                     return this.__value__.reverse();
                 }
             },
@@ -116,7 +119,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.__isInvalidated__ = true;
+                    this.$setDirty();
                     return this.__value__.shift();
                 }
             },
@@ -125,7 +128,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.__isInvalidated__ = true;
+                    this.$setDirty();
                     return this.__value__.sort(cb);
                 }
             },
@@ -168,7 +171,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.__isInvalidated__ = true;
+                    this.$setDirty();
                     return this.__value__.unshift();
                 }
             },
@@ -317,23 +320,21 @@
                         return options.subTypes.create(itemValue, options.subTypes.options);
                     } else if (typeof options.subTypes === "object") {
 
-                        var subType = options.subTypes[itemValue._type ? itemValue._type : number.test(itemValue) ? number.name : string.test(itemValue) ? string.name : Object.keys(options.subTypes)[0]];
+                        var subType = options.subTypes[itemValue._type ? itemValue._type : Number.test(itemValue) ? Number.name : String.test(itemValue) ? String.name : Object.keys(options.subTypes)[0]];
 
                         return subType.create(itemValue, subType.options);
                     }
                 }
             },
             of: {
-                value: function of(subTypes, defaults, test) {
-                    return this.withDefault(defaults, test, { subTypes: subTypes });
+                value: function of(subTypes) {
+                    return this.withDefault(undefined, undefined, { subTypes: subTypes });
                 }
             }
         });
 
         return _Array;
     })(BaseType);
-
-    module.exports = _Array;
 
     _Array.withDefault = generateWithDefault();
 
@@ -363,10 +364,10 @@
         };
     });
 
-    defineType("Array", {
+    module.exports = Typorama.define("Array", {
         spec: function spec() {
             return {
-                length: number.withDefault(0)
+                length: Number.withDefault(0)
             };
         }
     }, _Array);
