@@ -97,53 +97,51 @@ describe('Custom data', function() {
                 stringAndNumbers: Typorama.Array.of([Typorama.String, Typorama.Number])
             }, 'StateType');
 
-                it('should not set data that does not fit the schema', function(){
-                    var state = new StateType();
-                    var image = new ImageType();
-                    var productPrevRef = state.product;
+            it('should not set data that does not fit the schema', function(){
+                var state = new StateType();
+                var image = new ImageType();
+                var productPrevRef = state.product;
 
-                    state.product = image;
+                state.product = image;
 
-                    expect(state.product).to.be.equal(productPrevRef);
-                    expect(state.product.title).to.be.equal('original title');
-                    expect(state.product.image.src).to.be.equal('original.jpg');
-                });
+                expect(state.product).to.be.equal(productPrevRef);
+                expect(state.product.title).to.be.equal('original title');
+                expect(state.product.image.src).to.be.equal('original.jpg');
+            });
 
-                it('should set data that fit the schema', function(){
-                    var state = new StateType();
-                    var newProduct = new ProductType();
+            it('should set data that fit the schema', function(){
+                var state = new StateType();
+                var newProduct = new ProductType();
 
-                    state.product = newProduct;
+                state.product = newProduct;
 
-                    expect(state.product).to.be.equal(newProduct);
-                });
+                expect(state.product).to.be.equal(newProduct);
+            });
 
-                it('should not set data that has different options', function(){
-                    var state = new StateType();
-                    var booleanList = Typorama.Array.of(Typorama.Boolean).create([]);
-                    var relatedProductsPrevRef = state.relatedProducts;
-                    var stringAndNumbersPrevRef = state.stringAndNumbers;
+            it('should not set data that has different options', function(){
+                var state = new StateType();
+                var booleanList = Typorama.Array.of(Typorama.Boolean).create([]);
+                var relatedProductsPrevRef = state.relatedProducts;
+                var stringAndNumbersPrevRef = state.stringAndNumbers;
 
-                    state.relatedProducts = booleanList;
-                    state.stringAndNumbers = booleanList;
+                state.relatedProducts = booleanList;
+                state.stringAndNumbers = booleanList;
 
-                    expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
-                    expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
-                });
+                expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
+                expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
+            });
 
-                it('should set data that has equivalent options', function(){
-                    var state = new StateType();
-                    var productList = Typorama.Array.of(ProductType).create([]);
-                    var stringAndNumbersList = Typorama.Array.of([Typorama.String, Typorama.Number]).create([]);
-                    var relatedProductsPrevRef = state.relatedProducts;
-                    var stringAndNumbersPrevRef = state.stringAndNumbers;
-                    state.relatedProducts = productList;
-                    state.stringAndNumbers = stringAndNumbersList;
+            it('should set data that has equivalent options', function(){
+                var state = new StateType();
+                var productList = Typorama.Array.of(ProductType).create([]);
+                var stringAndNumbersList = Typorama.Array.of([Typorama.String, Typorama.Number]).create([]);
+                var relatedProductsPrevRef = state.relatedProducts;
+                var stringAndNumbersPrevRef = state.stringAndNumbers;
+                state.relatedProducts = productList;
+                state.stringAndNumbers = stringAndNumbersList;
 
-                    expect(state.relatedProducts).to.be.equal(productList);
-                    expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
-                });
-
+                expect(state.relatedProducts).to.be.equal(productList);
+                expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
             });
 
             describe('primitive', function(){
@@ -173,7 +171,7 @@ describe('Custom data', function() {
             it('should set all values from an incoming JSON according to schema', function() {
                 var instance = new UserType({address: '21 jump street'});
 
-                instance.setValue({name: 'zaphod', age: 42})
+                instance.setValue({name: 'zaphod', age: 42});
 
                 expect(instance.name).to.equal('zaphod');
                 expect(instance.age).to.equal(42);
