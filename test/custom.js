@@ -97,8 +97,6 @@ describe('Custom data', function() {
                 stringAndNumbers: Typorama.Array.of([Typorama.String, Typorama.Number])
             }, 'StateType');
 
-            describe('typorama', function(){
-
                 it('should not set data that does not fit the schema', function(){
                     var state = new StateType();
                     var image = new ImageType();
@@ -130,9 +128,7 @@ describe('Custom data', function() {
                     state.stringAndNumbers = booleanList;
 
                     expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
-                    expect(state.relatedProducts).to.not.be.equal(booleanList);
                     expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
-                    expect(state.stringAndNumbers).to.not.be.equal(booleanList);
                 });
 
                 it('should set data that has equivalent options', function(){
@@ -141,14 +137,11 @@ describe('Custom data', function() {
                     var stringAndNumbersList = Typorama.Array.of([Typorama.String, Typorama.Number]).create([]);
                     var relatedProductsPrevRef = state.relatedProducts;
                     var stringAndNumbersPrevRef = state.stringAndNumbers;
-
                     state.relatedProducts = productList;
                     state.stringAndNumbers = stringAndNumbersList;
 
                     expect(state.relatedProducts).to.be.equal(productList);
-                    expect(state.relatedProducts).to.not.be.equal(relatedProductsPrevRef);
                     expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
-                    expect(state.stringAndNumbers).to.not.be.equal(stringAndNumbersPrevRef);
                 });
 
             });

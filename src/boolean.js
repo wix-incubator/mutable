@@ -6,6 +6,10 @@ export default class _Boolean {
 
     static test(v){ return typeof v === 'boolean'; }
 
+    static validateType(value) {
+        return this.test(value);
+    }
+
     constructor(value){
         return Boolean(value);
     }

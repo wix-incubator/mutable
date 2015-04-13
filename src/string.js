@@ -6,6 +6,10 @@ export default class _String {
 
     static test(v){ return typeof v === 'string'; }
 
+    static validateType(value) {
+        return this.test(value);
+    }
+
     constructor(value){
         return String(value);
     }

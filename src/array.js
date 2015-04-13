@@ -19,12 +19,12 @@ export default class _Array extends BaseType {
             if(typeof subTypes === 'function'){
                 isValid = subTypes === valueSubTypes;
             } else {
-                isValid = !_.isFunction(valueSubTypes) && _.any(valueSubTypes, (Type) => {
+                isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
                     return subTypes[Type.id || Type.name] === Type;
                 });
             }
         }
-        return isValid
+        return isValid;
     }
     
 	static wrapValue(value, spec, options) {
