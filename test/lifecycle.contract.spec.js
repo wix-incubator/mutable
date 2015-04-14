@@ -64,11 +64,13 @@ export function lifecycleContract(){
                         mutator(fixture.container, fixture.elementFactory);
                         expect(spy.called).to.be.true;
                     });
-                    it('does not affect elements\' lifecycle', function () {
-                        mutator(fixture.container, fixture.elementFactory);
-                        expect(fixture.elementIsDirty.called).to.be.false;
-                        expect(fixture.elementSetDirty.called).to.be.false;
-                    });
+                    if (fixture.mutableElements) {
+                        it('does not affect elements\' lifecycle', function () {
+                            mutator(fixture.container, fixture.elementFactory);
+                            expect(fixture.elementIsDirty.called).to.be.false;
+                            expect(fixture.elementSetDirty.called).to.be.false;
+                        });
+                    }
                 });
             });
             return this;
@@ -79,27 +81,31 @@ export function lifecycleContract(){
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
                     after('cleanup', fixture.cleanup);
-                    it('does not affect elements\' lifecycle', function () {
-                        var dirty = fixture.container.$setDirty();
-                        expect(fixture.elementIsDirty.called).to.be.false;
-                        expect(fixture.elementSetDirty.called).to.be.false;
-                    });
+                    if (fixture.mutableElements) {
+                        it('does not affect elements\' lifecycle', function () {
+                            var dirty = fixture.container.$setDirty();
+                            expect(fixture.elementIsDirty.called).to.be.false;
+                            expect(fixture.elementSetDirty.called).to.be.false;
+                        });
+                    }
                 });
                 describe('calling $isDirty on ' + fixture.description, function () {
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
                     after('cleanup', fixture.cleanup);
-                    it('does not affect elements\' lifecycle', function () {
-                        var dirty = fixture.container.$isDirty();
-                        expect(fixture.elementSetDirty.called).to.be.false;
-                    });
+                    if (fixture.mutableElements) {
+                        it('does not affect elements\' lifecycle', function () {
+                            var dirty = fixture.container.$isDirty();
+                            expect(fixture.elementSetDirty.called).to.be.false;
+                        });
+                    }
                     it('after calling $setDirty immediately returns true', function () {
                         fixture.container.$setDirty();
                         var dirty = fixture.container.$isDirty();
                         expect(fixture.elementIsDirty.called).to.be.false;
                         expect(dirty, 'container dirty flag').to.be.true;
                     });
-                    it('(when $setDirty not called) recourse through all elements and returns false if none is dirty', function () {
+                    it('(when $setDirty not called) recourse through all elements and returns false by default', function () {
                         fixture.elementIsDirty.returns(false);
                         var dirty = fixture.container.$isDirty();
                         if (fixture.mutableElements) {
