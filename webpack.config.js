@@ -1,6 +1,7 @@
 var webpack = require('webpack');
 module.exports = {
 	context: __dirname,
+	devtool: 'eval',
 	entry: {
 		typorama                : [	'./dist/src' ],
 		'test-kit'              : [ './test-kit' ],
@@ -11,9 +12,10 @@ module.exports = {
 		'examples/benchmark'    : [ './examples/benchmark' ],
 	},
 	output: {
-		path     : __dirname + '/dist',
-		filename : '[name].js',
-		libraryTarget: 'umd'
+		path: __dirname + '/dist',
+		filename: '[name].js',
+		libraryTarget: 'umd',
+		pathinfo: true
 	},
 	resolve: {
 		extensions: ['', '.js', '.json'],

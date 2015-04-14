@@ -25,10 +25,14 @@ export function generateFieldsOn(obj, fieldsDefinition){
                     console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
                 } else {
                     this.$setDirty();
-                    if(fieldDef.type.prototype instanceof BaseType) {
-                        this.__value__[fieldName].setValue(newValue);
+                    if(fieldDef.type.prototype instanceof BaseType){ // ToDO: test options validity
+                        if(fieldDef.validateType(newValue)){
+                            this.__value__[fieldName] = newValue;
+                        }
                     } else {
-                        this.__value__[fieldName] = newValue;
+                        if(fieldDef.test(newValue)){
+                            this.__value__[fieldName] = newValue;
+                        }
                     }
                 }
             },
@@ -49,6 +53,7 @@ export function generateWithDefault(){
 
         typeWithDefault.type = this.type || this;
         typeWithDefault.test = test || this.test;
+        typeWithDefault.validateType = this.validateType;
         typeWithDefault.withDefault = withDefault//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.options = options;
@@ -68,6 +73,7 @@ export function generateWithDefaultForSysImmutable(Type){
         }
         typeWithDefault.type = this.type;
         typeWithDefault.test = test || this.test;
+        typeWithDefault.validateType = this.validateType;
         typeWithDefault.withDefault = this.withDefault//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.wrapValue = Type;

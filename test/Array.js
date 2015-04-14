@@ -632,10 +632,10 @@ describe('Array data', function() {
             it('Should be modified from json ', function() {
                 var groupData = new GroupType();
 
-                groupData.users = [
+                groupData.users = Typorama.Array.of(UserType).create([
                     {'name':'tom', 'age':25},
                     {'name':'omri', 'age':35}
-                ];
+                ]);
 
                 expect(groupData.users.at(0).name).to.equal('tom');
                 expect(groupData.users.at(0).age).to.equal(25);
