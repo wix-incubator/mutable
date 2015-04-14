@@ -52,20 +52,17 @@ export default class BaseType {
         return this.__readOnlyInstance__;
     }
 
-
-    // called when a change has been made to this object directly #lifecycle
-    $setDirty(){
-        this.__dirty__ = dirty.yes;
+    // called when a change has been made to this object directly or after changes are paused #lifecycle
+    $setDirty(isDirty) {
+        if (!this.__isReadOnly__) {
+            this.__dirty__ = isDirty === undefined || isDirty ? dirty.yes : dirty.no;
+        }
     }
 
-    // may be called after changes are paused #lifecycle
+    // may be called at any time #lifecycle
     $isDirty(cache) {
-        var result = this.__dirty__.isKnown ? this.__dirty__.isDirty :
+        return this.__dirty__.isKnown ? this.__dirty__.isDirty :
             _.any(this.__value__, (val) => val instanceof BaseType && val.$isDirty());
-        if (cache && !this.__isReadOnly__) {
-            this.__dirty__ = result ? dirty.yes : dirty.no;
-        }
-        return result;
     }
 
     // resets the dirty state to unknown #lifecycle

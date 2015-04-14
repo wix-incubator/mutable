@@ -6,15 +6,29 @@ describe('assume',() => {
     it('spy works', () =>{
         var spy = sinon.spy();
         expect(spy.called).to.be.false;
+
         spy.reset();
 
-        spy();
+        expect(spy.neverCalledWith(sinon.match.truthy)).to.be.true;
+        expect(spy.neverCalledWith(sinon.match.falsy)).to.be.true;
+
+        expect(spy.alwaysCalledWithExactly(sinon.match.truthy), 'alwaysCalledWithExactly(sinon.match.truthy)').to.be.false;
+        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), 'alwaysCalledWithExactly(sinon.match.falsy)').to.be.false;
+        spy(true);
+        expect(spy.neverCalledWith(sinon.match.truthy)).to.be.false;
+        expect(spy.neverCalledWith(sinon.match.falsy)).to.be.true;
+
+        expect(spy.alwaysCalledWithExactly(sinon.match.truthy), 'alwaysCalledWithExactly(sinon.match.truthy)').to.be.true;
+        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), 'alwaysCalledWithExactly(sinon.match.falsy)').to.be.false;
+
         expect(spy.called).to.be.true;
 
         spy.reset();
 
         expect(spy.called).to.be.false;
         spy();
+
+        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), 'alwaysCalledWithExactly(sinon.match.falsy)').to.be.false;
         expect(spy.called).to.be.true;
     });
 });
@@ -63,6 +77,7 @@ export function lifecycleContract(){
                         var spy = sinon.spy(fixture.container, '$setDirty');
                         mutator(fixture.container, fixture.elementFactory);
                         expect(spy.called).to.be.true;
+                // TODOgit pullffff        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), '').to.be.false;
                     });
                     if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
@@ -92,6 +107,9 @@ export function lifecycleContract(){
                 describe('calling $isDirty on ' + fixture.description, function () {
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
+                    afterEach('assert no caching', () => {
+                        expect(fixture.elementIsDirty.neverCalledWith(sinon.match.truthy), 'element $isDirty never called with cache flag on').to.be.true;
+                    });
                     after('cleanup', fixture.cleanup);
                     if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
