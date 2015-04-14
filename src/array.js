@@ -263,8 +263,9 @@ class _Array extends BaseType {
     	return this.__lodashProxyWrap__('map', fn, ctx);
     }
 
-    reduce() {
-        throw 'reduce not implemented yet. Please do.';
+    reduce(fn, defulatAccumulator, ctx) {
+        var newValue = _.reduce(this.__value__, fn, defulatAccumulator, ctx || this);
+        return newValue;
     }
 
     reduceRight() {

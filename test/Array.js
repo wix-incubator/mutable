@@ -37,7 +37,6 @@ describe('Array data', function() {
             expect(arr.__value__).to.equal(readOnly.__value__);
         });
         xit('should fail', function(){
-            debugger
             var Type = Typorama.define('Type',{
                 spec: function(){
                     return {
@@ -68,7 +67,7 @@ describe('Array data', function() {
             expect(numberListReadOnly).to.equal(numberListReadOnly2);
         });
 
-        describe('setValue()', function() {
+        describe('setValue', function() {
 
             it('should replace the value of the array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
@@ -80,7 +79,7 @@ describe('Array data', function() {
 
         });
 
-        describe('at()', function() {
+        describe('at', function() {
 
             it('Should return a number for native immutable Typorama.Number', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
@@ -155,8 +154,8 @@ describe('Array data', function() {
 
         });
 
-		describe('pop()', () => {
-            it('should remove the last element from an array', () => {
+		describe('pop', function() {
+            it('should remove the last element from an array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var lengthBeforePop = numberList.length;
                 
@@ -166,15 +165,15 @@ describe('Array data', function() {
                 expect(valueRemoved).to.equal(4);
             });
 
-            it('should return undefined if called on an empty array', () => {
+            it('should return undefined if called on an empty array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([]);
                 expect(numberList.pop()).to.be.undefined;
 
             });
         });
 
-		describe('reverse()', () => {
-            it('should reverse the order of elements in an array', () => {
+		describe('reverse', function() {
+            it('should reverse the order of elements in an array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var newList = numberList.concat();
                 newList.reverse();
@@ -185,8 +184,8 @@ describe('Array data', function() {
             });
         });
 
-        describe('shift()', () => {
-            it('should remove the first element from an array, and returns that element', () => {
+        describe('shift', function() {
+            it('should remove the first element from an array, and returns that element', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var lengthBeforePop = numberList.length;
                 var arrayBeforeShift = numberList.concat();
@@ -197,8 +196,8 @@ describe('Array data', function() {
             });
         });
 
-        describe('sort()', () => {
-            it('should sort the elements of an anarray in place, and returns the array', () => {
+        describe('sort', function() {
+            it('should sort the elements of an anarray in place, and returns the array', function() {
                 var stringArray = Typorama.Array.of(Typorama.String).create(['Blue', 'Humpback', 'Beluga']);
                 var numberArray = Typorama.Array.of(Typorama.Number).create([40, 1, 5, 200]);
 
@@ -211,8 +210,8 @@ describe('Array data', function() {
             });
         });
 
-        describe('join()', () => {
-            it('should join all the elements of an array into a string', () => {
+        describe('join', function() {
+            it('should join all the elements of an array into a string', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
 
                 var result = arrA.join();
@@ -222,8 +221,8 @@ describe('Array data', function() {
             });
         });
 
-        describe('toString()', () => {
-        	it('should take an array, and return a string', () => {
+        describe('toString', function() {
+        	it('should take an array, and return a string', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
 
                 var result = arrA.toString();
@@ -232,14 +231,14 @@ describe('Array data', function() {
             });
         });
         describe('indexOf', function () {
-            it('should return the first index of an element within an array equal to the specified value', () => {
+            it('should return the first index of an element within an array equal to the specified value', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
 
                 var result = arrA.indexOf('a');
 
                 expect(result).to.eql(0);
             });
-            it('should return -1 if none is found', () => {
+            it('should return -1 if none is found', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
 
                 var result = arrA.indexOf('a', 1);
@@ -248,15 +247,14 @@ describe('Array data', function() {
             });
         });
         describe('lastIndexOf', function () {
-            it('should return the last index at which a given element can be found in the array', () => {
+            it('should return the last index at which a given element can be found in the array', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
-                debugger;
                 var result = arrA.lastIndexOf('a');
 
                 expect(result).to.eql(2);
             });
 
-            it('should take a 2nd argument, the index at which to start searching backwards', () => {
+            it('should take a 2nd argument, the index at which to start searching backwards', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
 
                 var result = arrA.lastIndexOf('b', 2);
@@ -264,7 +262,7 @@ describe('Array data', function() {
                 expect(result).to.eql(1);
             });
 
-            it('should return -1 if none is found', () => {
+            it('should return -1 if none is found', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
 
                 var result = arrA.lastIndexOf('c');
@@ -272,8 +270,8 @@ describe('Array data', function() {
                 expect(result).to.eql(-1);
             });
         });
-        describe('valueOf()', () => {
-            it('should return the primitive value of the specified object', () => {
+        describe('valueOf', function() {
+            it('should return the primitive value of the specified object', function() {
                 var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
 
                 var result = arrA.valueOf();
@@ -283,8 +281,8 @@ describe('Array data', function() {
 
         });
 
-        describe('map()', () => {
-            it('calls a callback function on every item in an array and constructs a new array from the results', () => {
+        describe('map', function() {
+            it('calls a callback function on every item in an array and constructs a new array from the results', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3]);
                 var doubles = function(num) {
                     return num * 2;
@@ -298,7 +296,7 @@ describe('Array data', function() {
                 expect(newList.__value__).to.eql([2, 4, 6]);
             });
 
-            it('passes the extra argument when callback is envoked', () => {
+            it('passes the extra argument when callback is envoked', function() {
                 function A() {
                     this.arr = [1, 2, 3];
                     this.factor = 2;
@@ -321,8 +319,96 @@ describe('Array data', function() {
                 // expect(b.doIt()).to.eql([NaN, NaN, NaN]);
             });
         });
-		
-        describe('push()',function() {
+
+		describe('reduce', function() {
+            // Run only as many times as it should
+            it('should run as many times as array.length if accum default value is NOT passed', function () {
+                debugger;
+                var numberList = Typorama.Array.of(Typorama.Number).create([23, 542, 233, 24]);
+                var counter = 0;
+
+                var reduceArry = numberList.reduce(function(accumulator, currentValue) {
+                    counter++;
+                    return accumulator+currentValue;
+                });
+
+                expect(counter).to.equal(3);
+            });
+
+            it('should run as many times as array.length+1 if accum default value is passed', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var counter = 0;
+
+                var reduceArry = numberList.reduce(function(accumulator, currentValue) {
+                    counter++;
+                });
+
+                expect(counter).to.equal(4);
+            });
+
+            // Make sure extra paramater is passed as the initial value of accum
+
+            it('should use the first item of the array as the def accumulator', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+
+                var result = numberList.reduce(function(accumulator, currentValue) {
+                    return accumulator;
+                });
+
+                expect(result).to.eql(numberList.at(0));
+            });
+
+            it('should take an extra paramater to be passed as the default accumulator', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var defAccum = 42;
+
+                var result = numberList.reduce(function(accumulator, currentValue) {
+                    return accumulator;
+                }, defAccum);
+
+                expect(result).to.eql(defAccum);
+            });
+
+            // Make sure what I return once, is passed as accum
+
+            it('should take an extra paramater to be passed as the default accumulator', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var newAccum=numberList.at(0);
+
+                var result = numberList.reduce(function(accumulator, currentValue, index) {
+                    // Expect the value of accumulator to equal the value the last cycle returned
+                    expect(accumulator).to.eql(newAccum);
+
+                    newAccum = accumulator+currentValue;
+                    return newAccum;
+                });
+            });
+
+            // Compare returned value to the expected result
+
+            it('should take an array, iteratae over it with a callback function and accumilate the results into a single value', function() {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+
+                var result = numberList.reduce(function(accumulator, currentValue) {
+                    return accumulator + currentValue;
+                });
+
+                expect(result).to.eql(10);
+            });
+
+            // Make sure n = current value
+
+            it('should match currentValue to the correct current item from the array', function () {
+                var mixedList = Typorama.Array.of([UserType, AddressType]).create([{_type: 'User'}, {_type: 'Address'}])
+                
+                mixedList.reduce(function(accumulator, currentValue, index) {
+                    expect(currentValue).to.eql(mixedList.at(index-1));
+                });
+            });
+        });
+
+
+        describe('push',function() {
             it('it should add a number to an array ', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var lengthBeforePush = numberList.length;
@@ -356,7 +442,7 @@ describe('Array data', function() {
             })
         });
 
-        describe('forEach()',function() {
+        describe('forEach',function() {
             it('should call the method passed with item, index, arr', function() {
                 var sourceArr = [1,2,3];
                 var numberList = Typorama.Array.of(Typorama.Number).create(sourceArr);
@@ -372,7 +458,7 @@ describe('Array data', function() {
             });
         });
 
-        describe('concat()',function() { // ToDo: make them work
+        describe('concat',function() { // ToDo: make them work
             it('should be able to concat N arrays of the same type', function() {
                 var firstNumberList = Typorama.Array.of(Typorama.Number).create([1, 2]);
                 var secondNumberList = Typorama.Array.of(Typorama.Number).create([3, 4]);
@@ -413,7 +499,7 @@ describe('Array data', function() {
             });
         });
 
-        describe('splice()',function() {
+        describe('splice',function() {
             it('changes the content of an array by removing existing elements and/or adding new elements', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var removedItems = numberList.splice(1, 2, 7, 10, 13);
@@ -577,7 +663,7 @@ describe('Array data', function() {
             expect(numberList.toJSON()).to.eql([5,6]);
         });
 
-        describe('at()', function() {
+        describe('at', function() {
 
             it('Should return a number for native immutable Typorama.Number', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]).$asReadOnly();
@@ -639,7 +725,7 @@ describe('Array data', function() {
 
         });
 
-        describe('push()',function() {
+        describe('push',function() {
             it('should not modify an array ', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]).$asReadOnly();
                 var lengthBeforePush = numberList.length;
@@ -651,7 +737,7 @@ describe('Array data', function() {
             })
         });
 
-        describe('splice()',function() {
+        describe('splice',function() {
             it('should not modify an array ', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]).$asReadOnly();
                 var lengthBeforeSplice = numberList.length;
