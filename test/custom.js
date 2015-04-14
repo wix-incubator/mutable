@@ -285,7 +285,14 @@ describe('Custom data', function() {
 			'object with mutable elements'
 		);
 
+		lifeCycleAsserter.addFixture(
+			(name, address) => UserType.create({name: name, address : address}),
+			() => 'foobar',
+			'object with primitive elements'
+		);
+
 		lifeCycleAsserter.assertIsDirtyContract();
+		lifeCycleAsserter.assertMutatorCallsSetDirty((obj) => obj.name = 'johnny', 'assignment on primitive field');
 		lifeCycleAsserter.assertMutatorCallsSetDirty((obj) => obj.name = 'johnny', 'assignment on primitive field');
 		// TODO
 		// lifeCycleAsserter.assertMutatorCallsSetDirty((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment on composite field');
