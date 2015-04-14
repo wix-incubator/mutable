@@ -280,7 +280,7 @@ class _Array extends BaseType {
     }
 
     reduce(fn, initialAccumilatorValue, ctx) {
-        var newValue = _.reduce(this.__value__, fn, initialAccumilatorValue || this.__value__.unshift(), ctx || this);
+        var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
         return newValue;
     }
 
