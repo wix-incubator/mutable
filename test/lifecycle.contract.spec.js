@@ -77,7 +77,7 @@ export function lifecycleContract(){
                         var spy = sinon.spy(fixture.container, '$setDirty');
                         mutator(fixture.container, fixture.elementFactory);
                         expect(spy.called).to.be.true;
-                // TODOgit pullffff        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), '').to.be.false;
+                        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), 'container $setDirty cache not triggered').to.be.false;
                     });
                     if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
@@ -96,9 +96,12 @@ export function lifecycleContract(){
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
                     after('cleanup', fixture.cleanup);
+                    it('does not crash', function () {
+                        fixture.container.$setDirty()
+                    });
                     if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
-                            var dirty = fixture.container.$setDirty();
+                            fixture.container.$setDirty();
                             expect(fixture.elementIsDirty.called).to.be.false;
                             expect(fixture.elementSetDirty.called).to.be.false;
                         });
@@ -107,16 +110,7 @@ export function lifecycleContract(){
                 describe('calling $isDirty on ' + fixture.description, function () {
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
-                    afterEach('assert no caching', () => {
-                        expect(fixture.elementIsDirty.neverCalledWith(sinon.match.truthy), 'element $isDirty never called with cache flag on').to.be.true;
-                    });
-                    after('cleanup', fixture.cleanup);
-                    if (fixture.dirtyableElements) {
-                        it('does not affect elements\' lifecycle', function () {
-                            var dirty = fixture.container.$isDirty();
-                            expect(fixture.elementSetDirty.called).to.be.false;
-                        });
-                    }
+                    after('cleanup', fixture.cleanup)
                     it('after calling $setDirty immediately returns true', function () {
                         fixture.container.$setDirty();
                         var dirty = fixture.container.$isDirty();
@@ -133,6 +127,10 @@ export function lifecycleContract(){
                     });
 
                     if (fixture.dirtyableElements) {
+                        it('does not affect elements\' lifecycle', function () {
+                            var dirty = fixture.container.$isDirty();
+                            expect(fixture.elementSetDirty.called).to.be.false;
+                        });
                         it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
                             fixture.elementIsDirty.onFirstCall().returns(true);
                             var dirty = fixture.container.$isDirty();
