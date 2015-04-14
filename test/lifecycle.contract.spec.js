@@ -24,17 +24,19 @@ export function lifecycleContract(){
                 dirtyableElements: !!elementFactory().$isDirty
             };
             fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, fixture.elementIsDirty, fixture.elementSetDirty, fixture.elementResetDirty) : elementFactory;
-            fixture.init = () => {
-                fixture.container = containerFactory(fixture.elementFactory(), fixture.elementFactory());
-            };
-            fixture.cleanup = () => {
-                delete fixture.container;
-            };
-            fixture.reset = () => {
-                fixture.elementIsDirty.reset();
-                fixture.elementSetDirty.reset();
-                fixture.elementResetDirty.reset();
-                fixture.container.$resetDirty();
+            fixture.setup = () => {
+                before('init', () => {
+                    fixture.container = containerFactory(fixture.elementFactory(), fixture.elementFactory());
+                });
+                beforeEach('reset', () => {
+                    fixture.elementIsDirty.reset();
+                    fixture.elementSetDirty.reset();
+                    fixture.elementResetDirty.reset();
+                    fixture.container.$resetDirty();
+                });
+                after('cleanup', () => {
+                    delete fixture.container;
+                });
             };
             fixtures.push(fixture);
             return this;
@@ -42,9 +44,7 @@ export function lifecycleContract(){
         assertMutatorCallsSetDirty: (mutator, description) => {
             fixtures.forEach((fixture) => {
                 describe('applying ' + description + ' on ' + fixture.description, function () {
-                    before('init', fixture.init);
-                    beforeEach('reset', fixture.reset);
-                    after('cleanup', fixture.cleanup);
+                    fixture.setup();
                     it('calls $setDirty', function () {
                         var spy = sinon.spy(fixture.container, '$setDirty');
                         mutator(fixture.container, fixture.elementFactory);
@@ -65,9 +65,7 @@ export function lifecycleContract(){
         assertDirtyContract: () => {
             fixtures.forEach((fixture) => {
                 describe('calling $setDirty on ' + fixture.description, function () {
-                    before('init', fixture.init);
-                    beforeEach('reset', fixture.reset);
-                    after('cleanup', fixture.cleanup);
+                    fixture.setup();
                     [true, false].forEach((flagVal) => {
                         describe('setting flag to ' + flagVal, () => {
                             it('makes $isDirty return ' + flagVal, function () {
@@ -85,12 +83,10 @@ export function lifecycleContract(){
                     });
                 });
                 describe('calling $resetDirty on ' + fixture.description, function () {
-                    before('init', fixture.init);
-                    beforeEach('reset', fixture.reset);
+                    fixture.setup();
                     beforeEach('dirty container', () => {
                         fixture.container.$setDirty(true);
                     });
-                    after('cleanup', fixture.cleanup);
                     it('makes $isDirty return false', function () {
                         expect(fixture.container.$isDirty()).to.be.true;
                         fixture.container.$resetDirty();
@@ -109,9 +105,7 @@ export function lifecycleContract(){
                     }
                 });
                 describe('calling $isDirty on ' + fixture.description, function () {
-                    before('init', fixture.init);
-                    beforeEach('reset', fixture.reset);
-                    after('cleanup', fixture.cleanup)
+                    fixture.setup();
                     it('after calling $setDirty immediately returns true', function () {
                         fixture.container.$setDirty();
                         var dirty = fixture.container.$isDirty();
