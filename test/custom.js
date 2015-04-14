@@ -278,15 +278,16 @@ describe('Custom data', function() {
 			child2: UserType
 		}, 'UserWith2ChildType');
 
-		var userwith2ChildrenAsserter = lifecycleContract(
+		var lifeCycleAsserter = lifecycleContract();
+		lifeCycleAsserter.addFixture(
 			(u1, u2) => UserWith2ChildType.create({child1:u1, child2:u2}),
 			() => UserType.create(),
 			'object with mutable elements'
 		);
 
-		userwith2ChildrenAsserter.assertIsDirtyContract();
-		userwith2ChildrenAsserter.assertMutatorCallsSetDirty((obj) => obj.name = 'johnny', 'assignment on primitive field');
+		lifeCycleAsserter.assertIsDirtyContract();
+		lifeCycleAsserter.assertMutatorCallsSetDirty((obj) => obj.name = 'johnny', 'assignment on primitive field');
 		// TODO
-		// userwith2ChildrenAsserter.assertMutatorCallsSetDirty((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment on composite field');
+		// lifeCycleAsserter.assertMutatorCallsSetDirty((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment on composite field');
 	});
 });

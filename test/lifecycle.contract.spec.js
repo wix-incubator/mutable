@@ -19,105 +19,112 @@ describe('assume',() => {
     });
 });
 
-function spyWrapper(isDirty, setDirty){
-    return (factory) =>
-        (...args) => {
-            var result = factory(...args);
-            result.$isDirty = isDirty;
-            result.$setDirty = setDirty;
-            return result;
-        };
+function spyWrapper(factory, isDirty, setDirty){
+    return (...args) => {
+        var result = factory(...args);
+        result.$isDirty = isDirty;
+        result.$setDirty = setDirty;
+        return result;
+    };
 }
 
-export function lifecycleContract(containerFactory, elementFactory, fixtureDescription){
-
-    var ctx = {
-        elementIsDirty : sinon.stub(),
-        elementSetDirty : sinon.spy(),
-        mutableElements : _.isObject(elementFactory())
-    };
-    var spyOn = spyWrapper(ctx.elementIsDirty, ctx.elementSetDirty);
-    var spiedElementFactory = ctx.mutableElements ? spyOn(elementFactory) : elementFactory;
-    function init() {
-        ctx.container = containerFactory(spiedElementFactory(), spiedElementFactory());
-    }
-    function cleanup() {
-        delete ctx.container;
-    }
-    function reset(){
-        ctx.elementIsDirty.reset();
-        ctx.elementSetDirty.reset();
-        ctx.container.$resetDirty();
-    }
+export function lifecycleContract(){
+    var fixtures = [];
     return {
+        addFixture :(containerFactory, elementFactory, description) => {
+            var fixture = {
+                description : description,
+                elementIsDirty: sinon.stub(),
+                elementSetDirty: sinon.spy(),
+                mutableElements: _.isObject(elementFactory())
+            };
+            fixture.elementFactory = fixture.mutableElements ? spyWrapper(elementFactory, fixture.elementIsDirty, fixture.elementSetDirty) : elementFactory;
+            fixture.init = () => {
+                fixture.container = containerFactory(fixture.elementFactory(), fixture.elementFactory());
+            };
+            fixture.cleanup = () => {
+                delete fixture.container;
+            };
+            fixture.reset = () => {
+                fixture.elementIsDirty.reset();
+                fixture.elementSetDirty.reset();
+                fixture.container.$resetDirty();
+            };
+            fixtures.push(fixture);
+            return this;
+        },
         assertMutatorCallsSetDirty: (mutator, description) => {
-            describe('applying ' + description + ' on ' + fixtureDescription, function () {
-                before('init', init);
-                beforeEach('reset', reset);
-                after('cleanup', cleanup);
-                it('calls $setDirty', function () {
-                    var spy = sinon.spy(ctx.container, '$setDirty');
-                    mutator(ctx.container, spiedElementFactory);
-                    expect(spy.called).to.be.true;
-                });
-                it('does not affect elements\' lifecycle', function () {
-                    mutator(ctx.container, spiedElementFactory);
-                    expect(ctx.elementIsDirty.called).to.be.false;
-                    expect(ctx.elementSetDirty.called).to.be.false;
+            fixtures.forEach((fixture) => {
+                describe('applying ' + description + ' on ' + fixture.description, function () {
+                    before('init', fixture.init);
+                    beforeEach('reset', fixture.reset);
+                    after('cleanup', fixture.cleanup);
+                    it('calls $setDirty', function () {
+                        var spy = sinon.spy(fixture.container, '$setDirty');
+                        mutator(fixture.container, fixture.elementFactory);
+                        expect(spy.called).to.be.true;
+                    });
+                    it('does not affect elements\' lifecycle', function () {
+                        mutator(fixture.container, fixture.elementFactory);
+                        expect(fixture.elementIsDirty.called).to.be.false;
+                        expect(fixture.elementSetDirty.called).to.be.false;
+                    });
                 });
             });
             return this;
         },
         assertIsDirtyContract: () => {
-            describe('calling $setDirty on ' + fixtureDescription, function () {
-                before('init', init);
-                beforeEach('reset', reset);
-                after('cleanup', cleanup);
-                it('does not affect elements\' lifecycle', function () {
-                    var dirty = ctx.container.$setDirty();
-                    expect(ctx.elementIsDirty.called).to.be.false;
-                    expect(ctx.elementSetDirty.called).to.be.false;
+            fixtures.forEach((fixture) => {
+                describe('calling $setDirty on ' + fixture.description, function () {
+                    before('init', fixture.init);
+                    beforeEach('reset', fixture.reset);
+                    after('cleanup', fixture.cleanup);
+                    it('does not affect elements\' lifecycle', function () {
+                        var dirty = fixture.container.$setDirty();
+                        expect(fixture.elementIsDirty.called).to.be.false;
+                        expect(fixture.elementSetDirty.called).to.be.false;
+                    });
                 });
-            });
-            describe('calling $isDirty on ' + fixtureDescription, function () {
-                before('init', init);
-                beforeEach('reset', reset);
-                after('cleanup', cleanup);
-                it('does not affect elements\' lifecycle', function () {
-                    var dirty = ctx.container.$isDirty();
-                    expect(ctx.elementSetDirty.called).to.be.false;
-                });
-                it('after calling $setDirty immediately returns true', function () {
-                    ctx.container.$setDirty();
-                    var dirty = ctx.container.$isDirty();
-                    expect(ctx.elementIsDirty.called).to.be.false;
-                    expect(dirty, 'container dirty flag').to.be.true;
-                });
-                it('(when $setDirty not called) recourse through all elements and returns false if none is dirty', function () {
-                    ctx.elementIsDirty.returns(false);
-                    var dirty = ctx.container.$isDirty();
-                    if (ctx.mutableElements) {
-                        expect(ctx.elementIsDirty.calledTwice).to.be.true;
-                    }
-                    expect(dirty, 'container dirty flag').to.be.false;
-                });
+                describe('calling $isDirty on ' + fixture.description, function () {
+                    before('init', fixture.init);
+                    beforeEach('reset', fixture.reset);
+                    after('cleanup', fixture.cleanup);
+                    it('does not affect elements\' lifecycle', function () {
+                        var dirty = fixture.container.$isDirty();
+                        expect(fixture.elementSetDirty.called).to.be.false;
+                    });
+                    it('after calling $setDirty immediately returns true', function () {
+                        fixture.container.$setDirty();
+                        var dirty = fixture.container.$isDirty();
+                        expect(fixture.elementIsDirty.called).to.be.false;
+                        expect(dirty, 'container dirty flag').to.be.true;
+                    });
+                    it('(when $setDirty not called) recourse through all elements and returns false if none is dirty', function () {
+                        fixture.elementIsDirty.returns(false);
+                        var dirty = fixture.container.$isDirty();
+                        if (fixture.mutableElements) {
+                            expect(fixture.elementIsDirty.calledTwice).to.be.true;
+                        }
+                        expect(dirty, 'container dirty flag').to.be.false;
+                    });
 
-                if (ctx.mutableElements) {
-                    it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
-                        ctx.elementIsDirty.onFirstCall().returns(true);
-                        var dirty = ctx.container.$isDirty();
-                        expect(ctx.elementIsDirty.calledOnce, 'checked one element for dirty').to.be.true;
-                        expect(dirty, 'container dirty flag').to.be.true;
-                    });
-                    it('(when $setDirty not called) returns true after checking the second element and finding that it\'s dirty', function () {
-                        ctx.elementIsDirty.onFirstCall().returns(false);
-                        ctx.elementIsDirty.onSecondCall().returns(true);
-                        var dirty = ctx.container.$isDirty();
-                        expect(ctx.elementIsDirty.calledTwice, 'checked two elements for dirty').to.be.true;
-                        expect(dirty, 'container dirty flag').to.be.true;
-                    });
-                }
-                // todo caching test
+                    if (fixture.mutableElements) {
+                        it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
+                            fixture.elementIsDirty.onFirstCall().returns(true);
+                            var dirty = fixture.container.$isDirty();
+                            expect(fixture.elementIsDirty.calledOnce, 'checked one element for dirty').to.be.true;
+                            expect(dirty, 'container dirty flag').to.be.true;
+                        });
+                        it('(when $setDirty not called) returns true after checking the second element and finding that it\'s dirty', function () {
+                            fixture.elementIsDirty.onFirstCall().returns(false);
+                            fixture.elementIsDirty.onSecondCall().returns(true);
+                            var dirty = fixture.container.$isDirty();
+                            expect(fixture.elementIsDirty.calledTwice, 'checked two elements for dirty').to.be.true;
+                            expect(dirty, 'container dirty flag').to.be.true;
+                        });
+                    }
+                    // todo caching test
+                });
             });
             return this;
         }

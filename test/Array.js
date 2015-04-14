@@ -503,27 +503,25 @@ describe('Array data', function() {
 
 
     describe('lifecycle:',function() {
-        var userArrayAsserter = lifecycleContract(
+        var lifeCycleAsserter = lifecycleContract();
+        lifeCycleAsserter.addFixture(
             (...elements) => Typorama.Array.of(UserType).create(elements),
             () => new UserType(),
             'array with mutable elements'
         );
-        userArrayAsserter.assertIsDirtyContract();
-        userArrayAsserter.assertMutatorCallsSetDirty((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
-        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.pop(), 'pop');
-        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.reverse(), 'reverse');
-        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.shift(), 'shift');
-        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
-        userArrayAsserter.assertMutatorCallsSetDirty((arr) => arr.unshift(), 'unshift');
-
-
-        var numberArrayAsserter = lifecycleContract(
+        lifeCycleAsserter.addFixture(
             (...elements) => Typorama.Array.of(Typorama.Number).create(elements),
             () => 3.14,
             'array with primitives'
         );
-        numberArrayAsserter.assertIsDirtyContract();
 
+        lifeCycleAsserter.assertIsDirtyContract();
+        lifeCycleAsserter.assertMutatorCallsSetDirty((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
+        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.pop(), 'pop');
+        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.reverse(), 'reverse');
+        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.shift(), 'shift');
+        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
+        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.unshift(), 'unshift');
     });
 });
 
