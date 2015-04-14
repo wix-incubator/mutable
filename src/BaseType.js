@@ -1,6 +1,7 @@
 import _ from "lodash"
 import {dirty} from "./lifecycle"
 
+
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
     readOnlyInstance.__isReadOnly__ = true;
@@ -8,12 +9,13 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
-
 export default class BaseType {
 
     static create(value, options){
         return new this(value, options);
     }
+
+    static validateType(value){ return value instanceof this.type; }
 
     static wrapValue(value, spec, options){
         Object.keys(spec).forEach((key) => {
@@ -83,6 +85,11 @@ export default class BaseType {
             json[key] = fieldValue.toJSON ? fieldValue.toJSON() : fieldValue;
             return json;
         }, {});
+    }
+
+    toPrettyPrint() {
+        var msg = "{" + this + "}";
+        return msg;         
     }
 
 }

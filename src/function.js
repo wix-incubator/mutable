@@ -7,6 +7,10 @@ export default class _Function {
 
     static test(v) { return typeof v === 'function'; }
 
+    static validateType(value) {
+        return this.test(value);
+    }
+
     constructor(value){
     	return _Function.test(value) ? value : noop;
     }
