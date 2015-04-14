@@ -13,7 +13,7 @@ class _Array extends BaseType {
 	static defaults() { return []; }
 
 	static test(value) { return Array.isArray(value); }
-    
+
     static validateType(value) {
         var isValid = BaseType.validateType.call(this, value);
         if(isValid){
@@ -29,7 +29,7 @@ class _Array extends BaseType {
         }
         return isValid;
     }
-    
+
 	static wrapValue(value, spec, options) {
 
 		if(value instanceof BaseType) {
@@ -82,8 +82,8 @@ class _Array extends BaseType {
 		});
 	}
 
-// To check with Nadav: Every, some, filter, toString,  
-    
+// To check with Nadav: Every, some, filter, toString,
+
     __lodashProxyWrap__(key, fn, ctx){
         var valueArray = _[key](this.__value__, fn, ctx || this);
         return new this.constructor(valueArray, this.__options__);
@@ -279,8 +279,8 @@ class _Array extends BaseType {
     	return this.__lodashProxyWrap__('map', fn, ctx);
     }
 
-    reduce(fn, defulatAccumulator, ctx) {
-        var newValue = _.reduce(this.__value__, fn, defulatAccumulator, ctx || this);
+    reduce(fn, initialAccumilatorValue, ctx) {
+        var newValue = _.reduce(this.__value__, fn, initialAccumilatorValue || this.__value__.unshift(), ctx || this);
         return newValue;
     }
 
