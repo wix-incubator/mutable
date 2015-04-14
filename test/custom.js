@@ -78,101 +78,101 @@ describe('Custom data', function() {
 
 		});
 
-        describe('set', function() {
+		describe('set', function() {
 
-            var ImageType = aDataTypeWithSpec({
-                src: Typorama.String.withDefault('default.jpg')
-            }, 'ImageType');
+			var ImageType = aDataTypeWithSpec({
+				src: Typorama.String.withDefault('default.jpg')
+			}, 'ImageType');
 
-            var ProductType = aDataTypeWithSpec({
-                image: ImageType,
-                title: Typorama.String.withDefault('default title')
-            }, 'ProductType');
+			var ProductType = aDataTypeWithSpec({
+				image: ImageType,
+				title: Typorama.String.withDefault('default title')
+			}, 'ProductType');
 
-            var StateType = aDataTypeWithSpec({
-                product: ProductType.withDefault({
-                    image:{ src:'original.jpg' },
-                    title:'original title'
-                }),
-                relatedProducts: Typorama.Array.of(ProductType),
-                stringAndNumbers: Typorama.Array.of([Typorama.String, Typorama.Number])
-            }, 'StateType');
+			var StateType = aDataTypeWithSpec({
+				product: ProductType.withDefault({
+					image:{ src:'original.jpg' },
+					title:'original title'
+				}),
+				relatedProducts: Typorama.Array.of(ProductType),
+				stringAndNumbers: Typorama.Array.of([Typorama.String, Typorama.Number])
+			}, 'StateType');
 
-            it('should not set data that does not fit the schema', function(){
-                var state = new StateType();
-                var image = new ImageType();
-                var productPrevRef = state.product;
+			it('should not set data that does not fit the schema', function(){
+				var state = new StateType();
+				var image = new ImageType();
+				var productPrevRef = state.product;
 
-                state.product = image;
+				state.product = image;
 
-                expect(state.product).to.be.equal(productPrevRef);
-                expect(state.product.title).to.be.equal('original title');
-                expect(state.product.image.src).to.be.equal('original.jpg');
-            });
+				expect(state.product).to.be.equal(productPrevRef);
+				expect(state.product.title).to.be.equal('original title');
+				expect(state.product.image.src).to.be.equal('original.jpg');
+			});
 
-            it('should set data that fit the schema', function(){
-                var state = new StateType();
-                var newProduct = new ProductType();
+			it('should set data that fit the schema', function(){
+				var state = new StateType();
+				var newProduct = new ProductType();
 
-                state.product = newProduct;
+				state.product = newProduct;
 
-                expect(state.product).to.be.equal(newProduct);
-            });
+				expect(state.product).to.be.equal(newProduct);
+			});
 
-            it('should not set data that has different options', function(){
-                var state = new StateType();
-                var booleanList = Typorama.Array.of(Typorama.Boolean).create([]);
-                var relatedProductsPrevRef = state.relatedProducts;
-                var stringAndNumbersPrevRef = state.stringAndNumbers;
+			it('should not set data that has different options', function(){
+				var state = new StateType();
+				var booleanList = Typorama.Array.of(Typorama.Boolean).create([]);
+				var relatedProductsPrevRef = state.relatedProducts;
+				var stringAndNumbersPrevRef = state.stringAndNumbers;
 
-                state.relatedProducts = booleanList;
-                state.stringAndNumbers = booleanList;
+				state.relatedProducts = booleanList;
+				state.stringAndNumbers = booleanList;
 
-                expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
-                expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
-            });
+				expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
+				expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
+			});
 
-            it('should set data that has equivalent options', function(){
-                var state = new StateType();
-                var productList = Typorama.Array.of(ProductType).create([]);
-                var stringAndNumbersList = Typorama.Array.of([Typorama.String, Typorama.Number]).create([]);
-                var relatedProductsPrevRef = state.relatedProducts;
-                var stringAndNumbersPrevRef = state.stringAndNumbers;
-                state.relatedProducts = productList;
-                state.stringAndNumbers = stringAndNumbersList;
+			it('should set data that has equivalent options', function(){
+				var state = new StateType();
+				var productList = Typorama.Array.of(ProductType).create([]);
+				var stringAndNumbersList = Typorama.Array.of([Typorama.String, Typorama.Number]).create([]);
+				var relatedProductsPrevRef = state.relatedProducts;
+				var stringAndNumbersPrevRef = state.stringAndNumbers;
+				state.relatedProducts = productList;
+				state.stringAndNumbers = stringAndNumbersList;
 
-                expect(state.relatedProducts).to.be.equal(productList);
-                expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
-            });
+				expect(state.relatedProducts).to.be.equal(productList);
+				expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
+			});
 
-            describe('primitive', function(){
+			describe('primitive', function(){
 
-                it('should not replace data that does not fit the schema', function(){
-                    var state = new StateType();
-                    var titlePrevVal = state.product.title;
+				it('should not replace data that does not fit the schema', function(){
+					var state = new StateType();
+					var titlePrevVal = state.product.title;
 
-                    state.product.title = {};
+					state.product.title = {};
 
-                    expect(state.product.title).to.be.equal(titlePrevVal);
-                });
+					expect(state.product.title).to.be.equal(titlePrevVal);
+				});
 
-                it('should replace data that fit the schema', function(){
-                    var state = new StateType();
+				it('should replace data that fit the schema', function(){
+					var state = new StateType();
 
-                    state.title = 'new title';
+					state.title = 'new title';
 
-                    expect(state.title).to.be.equal('new title');
-                });
+					expect(state.title).to.be.equal('new title');
+				});
 
-            });
+			});
 
-        });
+		});
 
 		describe('setValue', function() {
 			it('should set all values from an incoming JSON according to schema', function() {
 				var instance = new UserType({address: '21 jump street'});
 
-                instance.setValue({name: 'zaphod', age: 42});
+				instance.setValue({name: 'zaphod', age: 42});
 
 				expect(instance.name).to.equal('zaphod');
 				expect(instance.age).to.equal(42);
@@ -198,13 +198,13 @@ describe('Custom data', function() {
 			});
 		});
 
-        it('should chain with default calls', function() {
-            var typeWithDefaultBob = UserType.withDefault({name: 'joe'}).withDefault({name: 'bob'});
+		it('should chain with default calls', function() {
+			var typeWithDefaultBob = UserType.withDefault({name: 'joe'}).withDefault({name: 'bob'});
 
 			var a = typeWithDefaultBob.defaults();
 
-            expect(a.name).to.equal('bob');
-        });
+			expect(a.name).to.equal('bob');
+		});
 
 		it('should clone complex data objects on set', function() {
 
@@ -337,21 +337,28 @@ describe('Custom data', function() {
 
 	describe('lifecycle:',function() {
 
-		var UserWith2ChildType = aDataTypeWithSpec({
+		var CompositeContainer = aDataTypeWithSpec({
 			name: Typorama.String.withDefault('leon'),
 			child1: UserType,
 			child2: UserType
 		}, 'UserWith2ChildType');
 
+		var PrimitivesContainer = aDataTypeWithSpec({
+			name: Typorama.String.withDefault('leon'),
+			child1: Typorama.String,
+			child2: Typorama.String
+		}, 'User');
+
+
 		var lifeCycleAsserter = lifecycleContract();
 		lifeCycleAsserter.addFixture(
-			(u1, u2) => UserWith2ChildType.create({child1:u1, child2:u2}),
+			(u1, u2) => CompositeContainer.create({child1:u1, child2:u2}),
 			() => UserType.create(),
 			'object with mutable elements'
 		);
 
 		lifeCycleAsserter.addFixture(
-			(name, address) => UserType.create({name: name, address : address}),
+			(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),
 			() => 'foobar',
 			'object with primitive elements'
 		);
@@ -359,6 +366,6 @@ describe('Custom data', function() {
 		lifeCycleAsserter.assertIsDirtyContract();
 		lifeCycleAsserter.assertMutatorCallsSetDirty((obj) => obj.name = 'johnny', 'assignment on primitive field');
 		// TODO
-		// lifeCycleAsserter.assertMutatorCallsSetDirty((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment on composite field');
+		lifeCycleAsserter.assertMutatorCallsSetDirty((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 	});
 });
