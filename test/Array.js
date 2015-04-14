@@ -638,7 +638,7 @@ describe('Array data', function() {
             'array with primitives'
         );
 
-        lifeCycleAsserter.assertIsDirtyContract();
+        lifeCycleAsserter.assertDirtyContract();
         lifeCycleAsserter.assertMutatorCallsSetDirty((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
         lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.pop(), 'pop');
         lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.reverse(), 'reverse');

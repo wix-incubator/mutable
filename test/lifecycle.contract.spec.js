@@ -2,42 +2,12 @@ import {expect} from 'chai';
 import _ from 'lodash';
 import sinon from 'sinon';
 
-describe('assume',() => {
-    it('spy works', () =>{
-        var spy = sinon.spy();
-        expect(spy.called).to.be.false;
-
-        spy.reset();
-
-        expect(spy.neverCalledWith(sinon.match.truthy)).to.be.true;
-        expect(spy.neverCalledWith(sinon.match.falsy)).to.be.true;
-
-        expect(spy.alwaysCalledWithExactly(sinon.match.truthy), 'alwaysCalledWithExactly(sinon.match.truthy)').to.be.false;
-        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), 'alwaysCalledWithExactly(sinon.match.falsy)').to.be.false;
-        spy(true);
-        expect(spy.neverCalledWith(sinon.match.truthy)).to.be.false;
-        expect(spy.neverCalledWith(sinon.match.falsy)).to.be.true;
-
-        expect(spy.alwaysCalledWithExactly(sinon.match.truthy), 'alwaysCalledWithExactly(sinon.match.truthy)').to.be.true;
-        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), 'alwaysCalledWithExactly(sinon.match.falsy)').to.be.false;
-
-        expect(spy.called).to.be.true;
-
-        spy.reset();
-
-        expect(spy.called).to.be.false;
-        spy();
-
-        expect(spy.alwaysCalledWithExactly(sinon.match.falsy), 'alwaysCalledWithExactly(sinon.match.falsy)').to.be.false;
-        expect(spy.called).to.be.true;
-    });
-});
-
-function spyWrapper(factory, isDirty, setDirty){
+function spyWrapper(factory, isDirty, setDirty, resetDirty){
     return (...args) => {
         var result = factory(...args);
         result.$isDirty = isDirty;
         result.$setDirty = setDirty;
+        result.$resetDirty = resetDirty;
         return result;
     };
 }
@@ -50,9 +20,10 @@ export function lifecycleContract(){
                 description : description,
                 elementIsDirty: sinon.stub(),
                 elementSetDirty: sinon.spy(),
+                elementResetDirty: sinon.spy(),
                 dirtyableElements: !!elementFactory().$isDirty
             };
-            fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, fixture.elementIsDirty, fixture.elementSetDirty) : elementFactory;
+            fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, fixture.elementIsDirty, fixture.elementSetDirty, fixture.elementResetDirty) : elementFactory;
             fixture.init = () => {
                 fixture.container = containerFactory(fixture.elementFactory(), fixture.elementFactory());
             };
@@ -62,6 +33,7 @@ export function lifecycleContract(){
             fixture.reset = () => {
                 fixture.elementIsDirty.reset();
                 fixture.elementSetDirty.reset();
+                fixture.elementResetDirty.reset();
                 fixture.container.$resetDirty();
             };
             fixtures.push(fixture);
@@ -90,18 +62,47 @@ export function lifecycleContract(){
             });
             return this;
         },
-        assertIsDirtyContract: () => {
+        assertDirtyContract: () => {
             fixtures.forEach((fixture) => {
                 describe('calling $setDirty on ' + fixture.description, function () {
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
                     after('cleanup', fixture.cleanup);
-                    it('does not crash', function () {
-                        fixture.container.$setDirty()
+                    [true, false].forEach((flagVal) => {
+                        describe('setting flag to ' + flagVal, () => {
+                            it('makes $isDirty return ' + flagVal, function () {
+                                fixture.container.$setDirty(flagVal);
+                                expect(fixture.container.$isDirty()).to.equal(flagVal);
+                            });
+                            if (fixture.dirtyableElements) {
+                                it('does not affect elements\' lifecycle', function () {
+                                    fixture.container.$setDirty(flagVal);
+                                    expect(fixture.elementIsDirty.called).to.be.false;
+                                    expect(fixture.elementSetDirty.called).to.be.false;
+                                });
+                            }
+                        });
+                    });
+                });
+                describe('calling $resetDirty on ' + fixture.description, function () {
+                    before('init', fixture.init);
+                    beforeEach('reset', fixture.reset);
+                    beforeEach('dirty container', () => {
+                        fixture.container.$setDirty(true);
+                    });
+                    after('cleanup', fixture.cleanup);
+                    it('makes $isDirty return false', function () {
+                        expect(fixture.container.$isDirty()).to.be.true;
+                        fixture.container.$resetDirty();
+                        expect(fixture.container.$isDirty()).to.be.false;
                     });
                     if (fixture.dirtyableElements) {
+                        it('propagates to elements', function () {
+                            fixture.container.$resetDirty();
+                            expect(fixture.elementResetDirty.called).to.be.true;
+                        });
                         it('does not affect elements\' lifecycle', function () {
-                            fixture.container.$setDirty();
+                            fixture.container.$resetDirty();
                             expect(fixture.elementIsDirty.called).to.be.false;
                             expect(fixture.elementSetDirty.called).to.be.false;
                         });
@@ -125,7 +126,6 @@ export function lifecycleContract(){
                         }
                         expect(dirty, 'container dirty flag').to.be.false;
                     });
-
                     if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
                             var dirty = fixture.container.$isDirty();
@@ -145,7 +145,6 @@ export function lifecycleContract(){
                             expect(dirty, 'container dirty flag').to.be.true;
                         });
                     }
-                    // todo caching test
                 });
             });
             return this;
