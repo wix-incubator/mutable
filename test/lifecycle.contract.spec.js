@@ -36,9 +36,9 @@ export function lifecycleContract(){
                 description : description,
                 elementIsDirty: sinon.stub(),
                 elementSetDirty: sinon.spy(),
-                mutableElements: _.isObject(elementFactory())
+                dirtyableElements: !!elementFactory().$isDirty
             };
-            fixture.elementFactory = fixture.mutableElements ? spyWrapper(elementFactory, fixture.elementIsDirty, fixture.elementSetDirty) : elementFactory;
+            fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, fixture.elementIsDirty, fixture.elementSetDirty) : elementFactory;
             fixture.init = () => {
                 fixture.container = containerFactory(fixture.elementFactory(), fixture.elementFactory());
             };
@@ -64,7 +64,7 @@ export function lifecycleContract(){
                         mutator(fixture.container, fixture.elementFactory);
                         expect(spy.called).to.be.true;
                     });
-                    if (fixture.mutableElements) {
+                    if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
                             mutator(fixture.container, fixture.elementFactory);
                             expect(fixture.elementIsDirty.called).to.be.false;
@@ -81,7 +81,7 @@ export function lifecycleContract(){
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
                     after('cleanup', fixture.cleanup);
-                    if (fixture.mutableElements) {
+                    if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
                             var dirty = fixture.container.$setDirty();
                             expect(fixture.elementIsDirty.called).to.be.false;
@@ -93,7 +93,7 @@ export function lifecycleContract(){
                     before('init', fixture.init);
                     beforeEach('reset', fixture.reset);
                     after('cleanup', fixture.cleanup);
-                    if (fixture.mutableElements) {
+                    if (fixture.dirtyableElements) {
                         it('does not affect elements\' lifecycle', function () {
                             var dirty = fixture.container.$isDirty();
                             expect(fixture.elementSetDirty.called).to.be.false;
@@ -108,13 +108,13 @@ export function lifecycleContract(){
                     it('(when $setDirty not called) recourse through all elements and returns false by default', function () {
                         fixture.elementIsDirty.returns(false);
                         var dirty = fixture.container.$isDirty();
-                        if (fixture.mutableElements) {
+                        if (fixture.dirtyableElements) {
                             expect(fixture.elementIsDirty.calledTwice).to.be.true;
                         }
                         expect(dirty, 'container dirty flag').to.be.false;
                     });
 
-                    if (fixture.mutableElements) {
+                    if (fixture.dirtyableElements) {
                         it('(when $setDirty not called) returns true after checking the first element and finding that it\'s dirty', function () {
                             fixture.elementIsDirty.onFirstCall().returns(true);
                             var dirty = fixture.container.$isDirty();
