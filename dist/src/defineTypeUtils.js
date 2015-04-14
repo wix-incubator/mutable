@@ -49,9 +49,14 @@
                     } else {
                         this.$setDirty();
                         if (fieldDef.type.prototype instanceof BaseType) {
-                            this.__value__[fieldName].setValue(newValue);
+                            // ToDO: test options validity
+                            if (fieldDef.validateType(newValue)) {
+                                this.__value__[fieldName] = newValue;
+                            }
                         } else {
-                            this.__value__[fieldName] = newValue;
+                            if (fieldDef.test(newValue)) {
+                                this.__value__[fieldName] = newValue;
+                            }
                         }
                     }
                 },
@@ -74,6 +79,7 @@
 
             typeWithDefault.type = this.type || this;
             typeWithDefault.test = test || this.test;
+            typeWithDefault.validateType = this.validateType;
             typeWithDefault.withDefault = withDefault; //.bind(this);
             typeWithDefault.defaults = def;
             typeWithDefault.options = options;
@@ -95,6 +101,7 @@
             }
             typeWithDefault.type = this.type;
             typeWithDefault.test = test || this.test;
+            typeWithDefault.validateType = this.validateType;
             typeWithDefault.withDefault = this.withDefault; //.bind(this);
             typeWithDefault.defaults = def;
             typeWithDefault.wrapValue = Type;

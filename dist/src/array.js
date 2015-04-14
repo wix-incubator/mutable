@@ -63,17 +63,15 @@
 
                 // To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
 
-                // Add a Warn method to BaseType
-
                 // Mutator methods
 
                 value: function copyWithin() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "copyWithin not implemented yet. Please do.";
                 }
             },
             fill: {
                 value: function fill() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "fill not implemented yet. Please do.";
                 }
             },
             pop: {
@@ -202,14 +200,24 @@
                     return this.__value__.join(separator);
                 }
             },
+            slice: {
+                value: function slice() {
+                    throw "slice not implemented yet. Please do.";
+                }
+            },
             toSource: {
                 value: function toSource() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "toSource not implemented yet. Please do.";
                 }
             },
             toString: {
                 value: function toString() {
-                    throw "Slice not implemented yet. Please do.";
+                    return this.__value__.toString();
+                }
+            },
+            toPrettyPrint: {
+                value: function toPrettyPrint() {
+                    return "[" + this + "]";
                 }
             },
             valueOf: {
@@ -221,17 +229,17 @@
             },
             toLocaleString: {
                 value: function toLocaleString() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "toLocaleString not implemented yet. Please do.";
                 }
             },
             indexOf: {
                 value: function indexOf() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "indexOf not implemented yet. Please do.";
                 }
             },
             lastIndexOf: {
                 value: function lastIndexOf() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "lastIndexOf not implemented yet. Please do.";
                 }
             },
             forEach: {
@@ -246,7 +254,7 @@
             },
             entries: {
                 value: function entries() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "entries not implemented yet. Please do.";
                 }
             },
             find: {
@@ -268,22 +276,48 @@
             },
             keys: {
                 value: function keys() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "keys not implemented yet. Please do.";
+                }
+            },
+            map: {
+                value: function map(fn, ctx) {
+                    return this.__lodashProxy__("map", fn, ctx);
+                }
+            },
+            __lodashProxy__: {
+                value: function __lodashProxy__(key, fn, ctx) {
+                    var valueArray = _[key](this.__value__, fn, ctx || this);
+                    return new this.constructor(valueArray, this.__options__);
                 }
             },
             reduce: {
                 value: function reduce() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "reduce not implemented yet. Please do.";
                 }
             },
             reduceRight: {
                 value: function reduceRight() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "reduceRight not implemented yet. Please do.";
+                }
+            },
+            every: {
+                value: function every() {
+                    throw "every not implemented yet. Please do.";
+                }
+            },
+            some: {
+                value: function some() {
+                    throw "some not implemented yet. Please do.";
+                }
+            },
+            filter: {
+                value: function filter() {
+                    throw "filter not implemented yet. Please do.";
                 }
             },
             values: {
                 value: function values() {
-                    throw "Slice not implemented yet. Please do.";
+                    throw "values not implemented yet. Please do.";
                 }
             }
         }, {
@@ -295,6 +329,23 @@
             test: {
                 value: function test(value) {
                     return Array.isArray(value);
+                }
+            },
+            validateType: {
+                value: function validateType(value) {
+                    var isValid = BaseType.validateType.call(this, value);
+                    if (isValid) {
+                        var subTypes = this.options.subTypes;
+                        var valueSubTypes = value.__options__.subTypes;
+                        if (typeof subTypes === "function") {
+                            isValid = subTypes === valueSubTypes;
+                        } else {
+                            isValid = typeof valueSubTypes !== "function" && _.any(valueSubTypes, function (Type) {
+                                return subTypes[Type.id || Type.name] === Type;
+                            });
+                        }
+                    }
+                    return isValid;
                 }
             },
             wrapValue: {
@@ -337,32 +388,6 @@
     })(BaseType);
 
     _Array.withDefault = generateWithDefault();
-
-    ["map", "filter", "slice"].forEach(function (key) {
-
-        var loFn = _[key];
-        _Array.prototype[key] = function (fn, ctx) {
-
-            var valueArray = loFn(this.__value__, function () {
-                return fn.apply(this, arguments);
-            }, ctx || this);
-
-            return new this.constructor(valueArray, false, this.__options__);
-        };
-    });
-
-    ["every", "some"].forEach(function (key) {
-
-        var loFn = _[key];
-        _Array.prototype[key] = function (fn, ctx) {
-
-            var valueArray = loFn(this.__value__, function () {
-                return fn.apply(ctx || this, arguments);
-            });
-
-            return valueArray;
-        };
-    });
 
     module.exports = Typorama.define("Array", {
         spec: function spec() {
