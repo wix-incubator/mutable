@@ -43,7 +43,10 @@ export default class BaseType {
             newValue = newValue.toJSON();
         }
         _.forEach(newValue, (fieldValue, fieldName) => {
-            if (this.constructor._spec[fieldName]) {
+            var Type = this.constructor._spec[fieldName];
+            if (Type && Type.type.id === 'Array') {
+                this[fieldName].setValue(fieldValue);
+            } else if(Type){
                 this[fieldName] = fieldValue;
             }
         });
