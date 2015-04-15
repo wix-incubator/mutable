@@ -20,7 +20,44 @@ var UserWithAddressType = aDataTypeWithSpec({
 }, 'UserWithAddress');
 
 describe('Array data', function() {
+
+    describe("type defintion with default array values", function() {
+
+        var array, TestType, testType;
+
+        before("instantiate with create", function() {
+            array = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
+        });
+
+        before("define an array type with default", function() {
+            TestType = aDataTypeWithSpec({
+                names: Typorama.Array.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
+            }, "TestType");
+        });
+
+        before("instantiate a type with default array", function() {
+            testType = new TestType();
+        });
+
+        it("new Array should have correct initial values", function() {
+            expect(array.length).to.equal(4);
+            expect(array.at(0)).to.equal("Beyonce");
+            expect(array.at(1)).to.equal("Rihanna");
+            expect(array.at(2)).to.equal("Britney");
+            expect(array.at(3)).to.equal("Christina");
+        });
+
+        it("withDefault should have correct initial values", function() {
+            expect(testType.names.length).to.equal(4);
+            expect(testType.names.at(0)).to.equal("Beyonce");
+            expect(testType.names.at(1)).to.equal("Rihanna");
+            expect(testType.names.at(2)).to.equal("Britney");
+            expect(testType.names.at(3)).to.equal("Christina");
+        });
+    });
+
     describe('unsync __value__ array bug', function(){
+
         it('__value__ should be synced with the readonly', function(){
             var User = Typorama.define('user', {
                 spec: function(){
@@ -37,7 +74,6 @@ describe('Array data', function() {
             expect(arr.__value__).to.equal(readOnly.__value__);
         });
         xit('should fail', function(){
-            debugger
             var Type = Typorama.define('Type',{
                 spec: function(){
                     return {
@@ -55,6 +91,18 @@ describe('Array data', function() {
 
     describe('(Mutable) instance', function() {
 
+        var TestType, testType;
+
+        before("define an array type with default", function() {
+            TestType = aDataTypeWithSpec({
+                names: Typorama.Array.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
+            }, "TestType");
+        });
+
+        before("instantiate a type with default array", function() {
+            testType = new TestType();
+        });
+
         it('Should have default length', function() {
             var numberList = new Typorama.Array([1, 2, 3, 4], false, {subTypes: Typorama.Number});
             expect(numberList.length).to.equal(4);
@@ -68,17 +116,35 @@ describe('Array data', function() {
             expect(numberListReadOnly).to.equal(numberListReadOnly2);
         });
 
-        describe('setValue()', function() {
-
+        describe('setValue() with JSON array of number', function() {
             it('should replace the value of the array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-
                 numberList.setValue([5, 6, 7, 8]);
-
                 expect(numberList.toJSON()).to.eql([5, 6, 7, 8]);
             });
+        });        
 
+        it("setValue with JSON object containing Typorama array of string", function() {
+            testType = new TestType();
+            testType.setValue({
+                names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
+            });
+
+            expect(testType.names.at(0)).to.equal("John");
+            expect(testType.names.at(1)).to.equal("Paul");
+            expect(testType.names.at(2)).to.equal("George");
+            expect(testType.names.at(3)).to.equal("Ringo");
         });
+
+        it("setValue with JSON object containg native array of string", function() {
+            testType = new TestType();
+            testType.setValue({ names: ["John", "Paul", "George", "Ringo"] });
+
+            expect(testType.names.at(0)).to.equal("John");
+            expect(testType.names.at(1)).to.equal("Paul");
+            expect(testType.names.at(2)).to.equal("George");
+            expect(testType.names.at(3)).to.equal("Ringo");
+        });        
 
         describe('at()', function() {
 
