@@ -185,14 +185,22 @@ describe('Array data', function() {
         });
 
         describe('shift', function() {
-            it('should remove the first element from an array, and returns that element', function() {
+            it('should return the first element from the array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                var lengthBeforePop = numberList.length;
                 var arrayBeforeShift = numberList.concat();
+                
                 var valueRemoved = numberList.shift();
 
                 expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
-                expect(numberList.length).to.equal(lengthBeforePop - 1);
+            });
+
+            it('should remove an element from the array', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var lengthBeforeShift = numberList.length;
+
+                numberList.shift();
+
+                expect(numberList.length).to.equal(lengthBeforeShift - 1);
             });
         });
 
@@ -323,7 +331,6 @@ describe('Array data', function() {
 		describe('reduce', function() {
             // Run only as many times as it should
             it('should run as many times as array.length if accum default value is NOT passed', function () {
-                debugger;
                 var numberList = Typorama.Array.of(Typorama.Number).create([23, 542, 233, 24]);
                 var counter = 0;
 
@@ -334,14 +341,15 @@ describe('Array data', function() {
 
                 expect(counter).to.equal(3);
             });
-
-            it('should run as many times as array.length+1 if accum default value is passed', function () {
-                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+            it('should run as many times as array.length if accum default value is passed', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([23, 542, 233, 24]);
                 var counter = 0;
+                var defAccum = 42;
 
                 var reduceArry = numberList.reduce(function(accumulator, currentValue) {
                     counter++;
-                });
+                    return accumulator+currentValue;
+                }, defAccum);
 
                 expect(counter).to.equal(4);
             });
@@ -402,7 +410,8 @@ describe('Array data', function() {
                 var mixedList = Typorama.Array.of([UserType, AddressType]).create([{_type: 'User'}, {_type: 'Address'}])
                 
                 mixedList.reduce(function(accumulator, currentValue, index) {
-                    expect(currentValue).to.eql(mixedList.at(index-1));
+                    expect(currentValue).to.eql(mixedList.at(index));
+                    return currentValue;
                 });
             });
         });
@@ -522,7 +531,24 @@ describe('Array data', function() {
                 expect(arr.at(1).name).to.equal('dag');
             });
         });
+        describe('unshift', function () {
+            it('should return the length of the array', function() {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                
+                var valueRemoved = numberList.unshift();
 
+                expect(numberList.length).to.equal(valueRemoved, 'Did not return the proper array.length');
+            });
+            
+            it('should add an element to the array', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var lengthBeforeUnshift = numberList.length;
+                debugger
+                numberList.unshift(5);
+
+                expect(numberList.length).to.equal(lengthBeforeUnshift + 1);
+            });
+        });
         describe('every',function() {
             it('should return true if all elements pass the test provided by the callback', function() {
                 var arr = Typorama.Array.of(Typorama.String).create(['a', 'a']);

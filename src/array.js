@@ -174,12 +174,12 @@ class _Array extends BaseType {
         //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
 
-	unshift() {
+	unshift(el) {
         if (this.__isReadOnly__) {
             return null;
         }
         this.$setDirty();
-        return this.__value__.unshift();
+        return this.__value__.unshift(el);
     }
 
 	// Accessor methods
