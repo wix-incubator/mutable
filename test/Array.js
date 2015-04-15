@@ -136,8 +136,20 @@ describe('Array data', function() {
             expect(testType.names.at(3)).to.equal("Ringo");
         });
 
+        it("setValue on array with JSON array of string", function() {
+            var test = Typorama.Array.of(Typorama.String).create();
+            test.setValue(["John", "Paul", "George", "Ringo"]);
+
+            expect(test.at(0)).to.equal("John");
+            expect(test.at(1)).to.equal("Paul");
+            expect(test.at(2)).to.equal("George");
+            expect(test.at(3)).to.equal("Ringo");
+        });        
+
+
         it("setValue with JSON object containg native array of string", function() {
             testType = new TestType();
+
             testType.setValue({ names: ["John", "Paul", "George", "Ringo"] });
 
             expect(testType.names.at(0)).to.equal("John");
