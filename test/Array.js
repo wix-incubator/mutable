@@ -124,7 +124,7 @@ describe('Array data', function() {
             });
         });        
 
-        it("setValue with JSON object containing Typorama array of string", function() {
+        it("setValue with Typorama object containing Typorama array of string", function() {
             testType = new TestType();
             testType.setValue({
                 names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
