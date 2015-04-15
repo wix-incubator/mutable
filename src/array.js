@@ -102,7 +102,7 @@ class _Array extends BaseType {
 		if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.pop();
     }
 
@@ -111,7 +111,7 @@ class _Array extends BaseType {
 			return null;
 		}
 
-        this.$setDirty();
+        this.$setDirty(true);
         var options = this.__options__;
 
 		return Array.prototype.push.apply(
@@ -124,7 +124,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.reverse();
     }
 
@@ -132,7 +132,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.shift();
     }
 
@@ -140,7 +140,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.sort(cb);
     }
 
@@ -161,7 +161,7 @@ class _Array extends BaseType {
         if(this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         var spliceParams = [index,removeCount];
         addedItems.forEach(function(newItem) {
            spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
@@ -174,7 +174,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.unshift();
     }
 

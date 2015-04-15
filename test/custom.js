@@ -352,10 +352,14 @@ describe('Custom data', function() {
 
 		var lifeCycleAsserter = lifecycleContract();
 		lifeCycleAsserter.addFixture(
-			(u1, u2) => CompositeContainer.create({child1:u1, child2:u2}),
+			(u1, u2) => {
+				var result = CompositeContainer.create();
+				result.child1 = u1;
+				result.child2 = u2;
+				return result;
+			},
 			() => UserType.create(),
-			'object with mutable elements'
-		);
+			'object with mutable elements');
 
 		lifeCycleAsserter.addFixture(
 			(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),

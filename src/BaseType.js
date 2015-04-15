@@ -38,7 +38,7 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        this.$setDirty();
+        this.$setDirty(true);
         if(newValue instanceof BaseType){
             newValue = newValue.toJSON();
         }
@@ -49,6 +49,9 @@ export default class BaseType {
         });
     }
 
+    $type(){
+        return this.__proto__.constructor;
+    }
 
     $asReadOnly(){
         return this.__readOnlyInstance__;
@@ -56,15 +59,15 @@ export default class BaseType {
 
     // called when a change has been made to this object directly or after changes are paused #lifecycle
     $setDirty(isDirty) {
-        if (!this.__isReadOnly__) {
-            this.__dirty__ = isDirty === undefined || isDirty ? dirty.yes : dirty.no;
+        if (!this.__isReadOnly__ && isDirty !== undefined) {
+            this.__dirty__ = isDirty ? dirty.yes : dirty.no;
         }
     }
 
     // may be called at any time #lifecycle
-    $isDirty(cache) {
+    $isDirty() {
         return this.__dirty__.isKnown ? this.__dirty__.isDirty :
-            _.any(this.__value__, (val) => val instanceof BaseType && val.$isDirty());
+            _.any(this.__value__, (val) => val.$isDirty && val.$isDirty());
     }
 
     // resets the dirty state to unknown #lifecycle
@@ -72,10 +75,12 @@ export default class BaseType {
         if (!this.__isReadOnly__) {
             this.__dirty__ = dirty.unKnown;
             _.forEach(this.__value__, (val) => {
-                if (val instanceof BaseType) {
+                if (val.$resetDirty && _.isFunction(val.$resetDirty)) {
                     val.$resetDirty();
                 }
             });
+        } else {
+            console.warn('resetting dirty flag on read only!');
         }
     }
 
@@ -89,7 +94,7 @@ export default class BaseType {
 
     toPrettyPrint() {
         var msg = "{" + this + "}";
-        return msg;         
+        return msg;
     }
 
 }
