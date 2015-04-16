@@ -199,4 +199,4 @@ function contractSuite(fixture){
             });
         }
     });
-};
+}

@@ -49,10 +49,6 @@ export default class BaseType {
         });
     }
 
-    $type(){
-        return this.__proto__.constructor;
-    }
-
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }
