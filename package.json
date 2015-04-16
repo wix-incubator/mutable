@@ -11,6 +11,7 @@
   "scripts": {
     "watch": "babel -w ./src/ -d ./dist/src/ --modules umd --source-maps",
     "build": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "postinstall" : "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
     "buildtestkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
     "test": "mocha --compilers js:babel/register --reporter list",
     "start": "npm run webtest",
