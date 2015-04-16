@@ -144,6 +144,8 @@ describe('Custom data', function() {
                 expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
             });
 
+
+
             describe('primitive', function(){
 
                 it('should not replace data that does not fit the schema', function(){
@@ -163,6 +165,14 @@ describe('Custom data', function() {
                     expect(state.title).to.be.equal('new title');
                 });
 
+            });
+            it('should call onChange method if one is supplied',function(){
+                var called = false;
+                var state = new StateType({},()=>called = true);
+
+                state.title = 'new title';
+
+                expect(called).to.be.equal(true);
             });
 
         });
