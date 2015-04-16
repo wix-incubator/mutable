@@ -2,7 +2,8 @@ import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import _ from 'lodash';
-import lifecycleContractTest from './lifecycle';
+import {lifecycleContract} from './lifecycle.contract.spec.js';
+import sinon from 'sinon';
 
 var UserType = aDataTypeWithSpec({
     name: Typorama.String.withDefault(''),
@@ -700,26 +701,28 @@ describe('Array data', function() {
             })
         });
     });
-    describe('Lifecycle contract',function() {
 
-        lifecycleContractTest(
-            ()=> Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]),
-            (arr)=> arr.at(0).name = 'gaga',
-            'changing an element in an array',
-            (arr)=> !arr.at(1).$isDirty());
 
-        var intArrLifeCycle = _.curry(lifecycleContractTest)(()=> Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]));
+    describe('lifecycle:',function() {
+        var lifeCycleAsserter = lifecycleContract();
+        lifeCycleAsserter.addFixture(
+            (...elements) => Typorama.Array.of(UserType).create(elements),
+            () => new UserType(),
+            'array with mutable elements'
+        );
+        lifeCycleAsserter.addFixture(
+            (...elements) => Typorama.Array.of(Typorama.Number).create(elements),
+            () => 3.14,
+            'array with primitives'
+        );
 
-        intArrLifeCycle((arr) => arr.push(5), 'adding an element to an array');
-        intArrLifeCycle((arr) => arr.splice(1, 2, 7, 6, 5), 'splicing an array');
-        intArrLifeCycle((arr) => arr.pop(), 'popping an element from an array');
-        intArrLifeCycle((arr) => arr.reverse(), 'reversing an array');
-        intArrLifeCycle((arr) => arr.shift(), 'shifting an array');
-        intArrLifeCycle((arr) => arr.sort(function(a, b) {return a > b; }), 'sorting an array');
-        intArrLifeCycle((arr) => arr.unshift(), 'unshifting an array');
-
+        lifeCycleAsserter.assertDirtyContract();
+        lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.unshift(), 'unshift');
     });
-
-
 });
 
