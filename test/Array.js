@@ -148,11 +148,7 @@ describe('Array data', function() {
         it("setValue on array with JSON array of string", function() {
             var test = Typorama.Array.of(Typorama.String).create();
 
-            expect(testType.names.length).to.equal(4);
-            expect(testType.names.at(0)).to.equal("Beyonce");
-            expect(testType.names.at(1)).to.equal("Rihanna");
-            expect(testType.names.at(2)).to.equal("Britney");
-            expect(testType.names.at(3)).to.equal("Christina");
+            expect(test.length).to.equal(0);
 
             test.setValue(["John", "Paul", "George", "Ringo"]);
 
