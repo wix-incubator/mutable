@@ -88,7 +88,7 @@ export function lifecycleContract(){
 function contractSuite(fixture){
     describe('calling $setDirty on ' + fixture.description, function () {
         fixture.setup();
-        it('changes result from $isDirty', function () {
+        it('changes result of $isDirty', function () {
             fixture.container.$setDirty(true);
             expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(true)').to.be.true;
             fixture.container.$setDirty(false);
