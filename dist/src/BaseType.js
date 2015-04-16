@@ -105,11 +105,22 @@
                         return json;
                     }, {});
                 }
+            },
+            toPrettyPrint: {
+                value: function toPrettyPrint() {
+                    var msg = "{" + this + "}";
+                    return msg;
+                }
             }
         }, {
             create: {
                 value: function create(value, options) {
                     return new this(value, options);
+                }
+            },
+            validateType: {
+                value: function validateType(value) {
+                    return value instanceof this.type;
                 }
             },
             wrapValue: {

@@ -30,6 +30,11 @@
                 value: function test(v) {
                     return typeof v === "string";
                 }
+            },
+            validateType: {
+                value: function validateType(value) {
+                    return this.test(value);
+                }
             }
         });
 
