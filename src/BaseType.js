@@ -1,5 +1,5 @@
 import _ from "lodash"
-import {dirty, makeDirtyable} from "./lifecycle"
+import {makeDirtyable} from "./lifecycle"
 
 
 function createReadOnly(source){

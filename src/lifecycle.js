@@ -1,6 +1,6 @@
 
 // immutable enum type for fuzzy-logic dirty flag
-export const dirty = {
+const dirty = {
     yes : {
         isDirty : true,
         isKnown : true
