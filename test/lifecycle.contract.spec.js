@@ -51,7 +51,7 @@ export function lifecycleContract(){
             };
             fixtures.push(fixture);
         },
-        assertMutatorContract: (mutator, description, assertDirtyContractOnResult) => {
+        assertMutatorContract: (mutator, description, assertDirtyContractOnResult = true) => {
             fixtures.forEach((fixture) => {
                 describe('applying ' + description + ' on ' + fixture.description, function () {
                     fixture.setup();
