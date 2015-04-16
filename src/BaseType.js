@@ -79,6 +79,7 @@ export default class BaseType {
                 }
             });
         } else {
+            // todo:warn hook
             console.warn('resetting dirty flag on read only!');
         }
     }

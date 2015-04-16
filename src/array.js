@@ -31,9 +31,7 @@ class _Array extends BaseType {
     }
     
 	static wrapValue(value, spec, options) {
-
         if(value instanceof BaseType) {
-            throw new Error('illegal value type : ' + value.constructor.id);
             if (value.__value__.map) {
                 return value.__value__.map((itemValue) => {
                     return this._wrapSingleItem(itemValue, options);
