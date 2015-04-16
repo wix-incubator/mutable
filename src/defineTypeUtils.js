@@ -22,6 +22,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
             },
             set: function(newValue){
                 if(this.__isReadOnly__) {
+                    console.log('I am a teapot, short and stout!');
                     console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
                 } else {
                     this.$setDirty(true);
