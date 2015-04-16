@@ -79,7 +79,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.$setDirty();
+                    this.$setDirty(true);
                     return this.__value__.pop();
                 }
             },
@@ -95,7 +95,7 @@
                         return null;
                     }
 
-                    this.$setDirty();
+                    this.$setDirty(true);
                     var options = this.__options__;
 
                     return Array.prototype.push.apply(this.__value__, newItems.map(function (item) {
@@ -108,7 +108,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.$setDirty();
+                    this.$setDirty(true);
                     return this.__value__.reverse();
                 }
             },
@@ -117,7 +117,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.$setDirty();
+                    this.$setDirty(true);
                     return this.__value__.shift();
                 }
             },
@@ -126,7 +126,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.$setDirty();
+                    this.$setDirty(true);
                     return this.__value__.sort(cb);
                 }
             },
@@ -155,7 +155,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.$setDirty();
+                    this.$setDirty(true);
                     var spliceParams = [index, removeCount];
                     addedItems.forEach((function (newItem) {
                         spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__));
@@ -169,7 +169,7 @@
                     if (this.__isReadOnly__) {
                         return null;
                     }
-                    this.$setDirty();
+                    this.$setDirty(true);
                     return this.__value__.unshift();
                 }
             },
@@ -353,9 +353,13 @@
                     var _this = this;
 
                     if (value instanceof BaseType) {
-                        return value.__value__.map(function (itemValue) {
-                            return _this._wrapSingleItem(itemValue, options);
-                        }, this);
+                        if (value.__value__.map) {
+                            return value.__value__.map(function (itemValue) {
+                                return _this._wrapSingleItem(itemValue, options);
+                            }, this);
+                        } else {
+                            throw new Error("illegal value type : " + value.constructor.id);
+                        }
                     }
 
                     return value.map(function (itemValue) {

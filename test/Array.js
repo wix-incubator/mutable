@@ -169,6 +169,8 @@ describe('Array data', function() {
             expect(testType.names.at(2)).to.equal("Britney");
             expect(testType.names.at(3)).to.equal("Christina");
 
+            debugger;
+
             testType.setValue({ names: ["John", "Paul", "George", "Ringo"] });
 
             expect(testType.names.length).to.equal(4);

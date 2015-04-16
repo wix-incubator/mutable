@@ -47,7 +47,7 @@
                     if (this.__isReadOnly__) {
                         console.warn("try to set value to readonly field: ", this.constructor.id + "." + fieldName, "=", newValue);
                     } else {
-                        this.$setDirty();
+                        this.$setDirty(true);
                         if (fieldDef.type.prototype instanceof BaseType) {
                             // ToDO: test options validity
                             if (fieldDef.validateType(newValue)) {
