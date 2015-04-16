@@ -2,7 +2,8 @@ import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import _ from 'lodash';
-import lifecycleContractTest from './lifecycle';
+import {lifecycleContract} from './lifecycle.contract.spec.js';
+import sinon from 'sinon';
 
 var UserType = aDataTypeWithSpec({
     name: Typorama.String.withDefault(''),
@@ -20,7 +21,44 @@ var UserWithAddressType = aDataTypeWithSpec({
 }, 'UserWithAddress');
 
 describe('Array data', function() {
+
+    describe("type defintion with default array values", function() {
+
+        var array, TestType, testType;
+
+        before("instantiate with create", function() {
+            array = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
+        });
+
+        before("define an array type with default", function() {
+            TestType = aDataTypeWithSpec({
+                names: Typorama.Array.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
+            }, "TestType");
+        });
+
+        before("instantiate a type with default array", function() {
+            testType = new TestType();
+        });
+
+        it("new Array should have correct initial values", function() {
+            expect(array.length).to.equal(4);
+            expect(array.at(0)).to.equal("Beyonce");
+            expect(array.at(1)).to.equal("Rihanna");
+            expect(array.at(2)).to.equal("Britney");
+            expect(array.at(3)).to.equal("Christina");
+        });
+
+        it("withDefault should have correct initial values", function() {
+            expect(testType.names.length).to.equal(4);
+            expect(testType.names.at(0)).to.equal("Beyonce");
+            expect(testType.names.at(1)).to.equal("Rihanna");
+            expect(testType.names.at(2)).to.equal("Britney");
+            expect(testType.names.at(3)).to.equal("Christina");
+        });
+    });
+
     describe('unsync __value__ array bug', function(){
+
         it('__value__ should be synced with the readonly', function(){
             var User = Typorama.define('user', {
                 spec: function(){
@@ -37,7 +75,6 @@ describe('Array data', function() {
             expect(arr.__value__).to.equal(readOnly.__value__);
         });
         xit('should fail', function(){
-            debugger
             var Type = Typorama.define('Type',{
                 spec: function(){
                     return {
@@ -55,6 +92,18 @@ describe('Array data', function() {
 
     describe('(Mutable) instance', function() {
 
+        var TestType, testType;
+
+        before("define an array type with default", function() {
+            TestType = aDataTypeWithSpec({
+                names: Typorama.Array.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
+            }, "TestType");
+        });
+
+        before("instantiate a type with default array", function() {
+            testType = new TestType();
+        });
+
         it('Should have default length', function() {
             var numberList = new Typorama.Array([1, 2, 3, 4], false, {subTypes: Typorama.Number});
             expect(numberList.length).to.equal(4);
@@ -68,17 +117,47 @@ describe('Array data', function() {
             expect(numberListReadOnly).to.equal(numberListReadOnly2);
         });
 
-        describe('setValue()', function() {
-
+        describe('setValue() with JSON array of number', function() {
             it('should replace the value of the array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-
                 numberList.setValue([5, 6, 7, 8]);
-
                 expect(numberList.toJSON()).to.eql([5, 6, 7, 8]);
             });
+        });        
 
+        it("setValue with Typorama object containing Typorama array of string", function() {
+            testType = new TestType();
+            testType.setValue({
+                names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
+            });
+
+            expect(testType.names.at(0)).to.equal("John");
+            expect(testType.names.at(1)).to.equal("Paul");
+            expect(testType.names.at(2)).to.equal("George");
+            expect(testType.names.at(3)).to.equal("Ringo");
         });
+
+        it("setValue on array with JSON array of string", function() {
+            var test = Typorama.Array.of(Typorama.String).create();
+            test.setValue(["John", "Paul", "George", "Ringo"]);
+
+            expect(test.at(0)).to.equal("John");
+            expect(test.at(1)).to.equal("Paul");
+            expect(test.at(2)).to.equal("George");
+            expect(test.at(3)).to.equal("Ringo");
+        });        
+
+
+        it("setValue with JSON object containg native array of string", function() {
+            testType = new TestType();
+
+            testType.setValue({ names: ["John", "Paul", "George", "Ringo"] });
+
+            expect(testType.names.at(0)).to.equal("John");
+            expect(testType.names.at(1)).to.equal("Paul");
+            expect(testType.names.at(2)).to.equal("George");
+            expect(testType.names.at(3)).to.equal("Ringo");
+        });        
 
         describe('at()', function() {
 
@@ -622,26 +701,28 @@ describe('Array data', function() {
             })
         });
     });
-    describe('Lifecycle contract',function() {
 
-        lifecycleContractTest(
-            ()=> Typorama.Array.of(UserType).create([{name: 'avi', age: 12},{name: 'shlomo', age: 15}]),
-            (arr)=> arr.at(0).name = 'gaga',
-            'changing an element in an array',
-            (arr)=> !arr.at(1).$isDirty());
 
-        var intArrLifeCycle = _.curry(lifecycleContractTest)(()=> Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]));
+    describe('lifecycle:',function() {
+        var lifeCycleAsserter = lifecycleContract();
+        lifeCycleAsserter.addFixture(
+            (...elements) => Typorama.Array.of(UserType).create(elements),
+            () => new UserType(),
+            'array with mutable elements'
+        );
+        lifeCycleAsserter.addFixture(
+            (...elements) => Typorama.Array.of(Typorama.Number).create(elements),
+            () => 3.14,
+            'array with primitives'
+        );
 
-        intArrLifeCycle((arr) => arr.push(5), 'adding an element to an array');
-        intArrLifeCycle((arr) => arr.splice(1, 2, 7, 6, 5), 'splicing an array');
-        intArrLifeCycle((arr) => arr.pop(), 'popping an element from an array');
-        intArrLifeCycle((arr) => arr.reverse(), 'reversing an array');
-        intArrLifeCycle((arr) => arr.shift(), 'shifting an array');
-        intArrLifeCycle((arr) => arr.sort(function(a, b) {return a > b; }), 'sorting an array');
-        intArrLifeCycle((arr) => arr.unshift(), 'unshifting an array');
-
+        lifeCycleAsserter.assertDirtyContract();
+        lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.unshift(), 'unshift');
     });
-
-
 });
 

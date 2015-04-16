@@ -38,36 +38,35 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        this.$setDirty();
+        this.$setDirty(true);
         if(newValue instanceof BaseType){
             newValue = newValue.toJSON();
         }
         _.forEach(newValue, (fieldValue, fieldName) => {
-            if (this.constructor._spec[fieldName]) {
+            var Type = this.constructor._spec[fieldName];
+            if (Type && Type.type.id === 'Array') {
+                this[fieldName].setValue(fieldValue);
+            } else if(Type){
                 this[fieldName] = fieldValue;
             }
         });
     }
 
-
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }
 
-
-    // called when a change has been made to this object directly #lifecycle
-    $setDirty(){
-        this.__dirty__ = dirty.yes;
+    // called when a change has been made to this object directly or after changes are paused #lifecycle
+    $setDirty(isDirty) {
+        if (!this.__isReadOnly__ && isDirty !== undefined) {
+            this.__dirty__ = isDirty ? dirty.yes : dirty.no;
+        }
     }
 
-    // may be called after changes are paused #lifecycle
-    $isDirty(cache) {
-        var result = this.__dirty__.isKnown ? this.__dirty__.isDirty :
-            _.any(this.__value__, (val) => val instanceof BaseType && val.$isDirty());
-        if (cache && !this.__isReadOnly__) {
-            this.__dirty__ = result ? dirty.yes : dirty.no;
-        }
-        return result;
+    // may be called at any time #lifecycle
+    $isDirty() {
+        return this.__dirty__.isKnown ? this.__dirty__.isDirty :
+            _.any(this.__value__, (val) => val.$isDirty && val.$isDirty());
     }
 
     // resets the dirty state to unknown #lifecycle
@@ -75,10 +74,13 @@ export default class BaseType {
         if (!this.__isReadOnly__) {
             this.__dirty__ = dirty.unKnown;
             _.forEach(this.__value__, (val) => {
-                if (val instanceof BaseType) {
+                if (val.$resetDirty && _.isFunction(val.$resetDirty)) {
                     val.$resetDirty();
                 }
             });
+        } else {
+            // todo:warn hook
+            console.warn('resetting dirty flag on read only!');
         }
     }
 
@@ -92,7 +94,7 @@ export default class BaseType {
 
     toPrettyPrint() {
         var msg = "{" + this + "}";
-        return msg;         
+        return msg;
     }
 
 }

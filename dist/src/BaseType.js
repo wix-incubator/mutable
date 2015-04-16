@@ -42,12 +42,15 @@
                 value: function setValue(newValue) {
                     var _this = this;
 
-                    this.$setDirty();
+                    this.$setDirty(true);
                     if (newValue instanceof BaseType) {
                         newValue = newValue.toJSON();
                     }
                     _.forEach(newValue, function (fieldValue, fieldName) {
-                        if (_this.constructor._spec[fieldName]) {
+                        var Type = _this.constructor._spec[fieldName];
+                        if (Type && Type.type.id === "Array") {
+                            _this[fieldName].setValue(fieldValue);
+                        } else if (Type) {
                             _this[fieldName] = fieldValue;
                         }
                     });
@@ -60,24 +63,22 @@
             },
             $setDirty: {
 
-                // called when a change has been made to this object directly #lifecycle
+                // called when a change has been made to this object directly or after changes are paused #lifecycle
 
-                value: function $setDirty() {
-                    this.__dirty__ = dirty.yes;
+                value: function $setDirty(isDirty) {
+                    if (!this.__isReadOnly__ && isDirty !== undefined) {
+                        this.__dirty__ = isDirty ? dirty.yes : dirty.no;
+                    }
                 }
             },
             $isDirty: {
 
-                // may be called after changes are paused #lifecycle
+                // may be called at any time #lifecycle
 
-                value: function $isDirty(cache) {
-                    var result = this.__dirty__.isKnown ? this.__dirty__.isDirty : _.any(this.__value__, function (val) {
-                        return val instanceof BaseType && val.$isDirty();
+                value: function $isDirty() {
+                    return this.__dirty__.isKnown ? this.__dirty__.isDirty : _.any(this.__value__, function (val) {
+                        return val.$isDirty && val.$isDirty();
                     });
-                    if (cache && !this.__isReadOnly__) {
-                        this.__dirty__ = result ? dirty.yes : dirty.no;
-                    }
-                    return result;
                 }
             },
             $resetDirty: {
@@ -88,10 +89,13 @@
                     if (!this.__isReadOnly__) {
                         this.__dirty__ = dirty.unKnown;
                         _.forEach(this.__value__, function (val) {
-                            if (val instanceof BaseType) {
+                            if (val.$resetDirty && _.isFunction(val.$resetDirty)) {
                                 val.$resetDirty();
                             }
                         });
+                    } else {
+                        // todo:warn hook
+                        console.warn("resetting dirty flag on read only!");
                     }
                 }
             },
@@ -105,11 +109,22 @@
                         return json;
                     }, {});
                 }
+            },
+            toPrettyPrint: {
+                value: function toPrettyPrint() {
+                    var msg = "{" + this + "}";
+                    return msg;
+                }
             }
         }, {
             create: {
                 value: function create(value, options) {
                     return new this(value, options);
+                }
+            },
+            validateType: {
+                value: function validateType(value) {
+                    return value instanceof this.type;
                 }
             },
             wrapValue: {

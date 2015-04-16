@@ -31,11 +31,14 @@ class _Array extends BaseType {
     }
     
 	static wrapValue(value, spec, options) {
-
-		if(value instanceof BaseType) {
-			return value.__value__.map((itemValue) => {
-				return this._wrapSingleItem(itemValue, options);
-			}, this);
+        if(value instanceof BaseType) {
+            if (value.__value__.map) {
+                return value.__value__.map((itemValue) => {
+                    return this._wrapSingleItem(itemValue, options);
+                }, this);
+            } else {
+                throw new Error('illegal value type : ' + value.constructor.id);
+            }
 		}
 
 		return value.map((itemValue) => {
@@ -97,7 +100,7 @@ class _Array extends BaseType {
 		if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.pop();
     }
 
@@ -106,7 +109,7 @@ class _Array extends BaseType {
 			return null;
 		}
 
-        this.$setDirty();
+        this.$setDirty(true);
         var options = this.__options__;
 
 		return Array.prototype.push.apply(
@@ -119,7 +122,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.reverse();
     }
 
@@ -127,7 +130,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.shift();
     }
 
@@ -135,7 +138,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.sort(cb);
     }
 
@@ -156,7 +159,7 @@ class _Array extends BaseType {
         if(this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         var spliceParams = [index,removeCount];
         addedItems.forEach(function(newItem) {
            spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
@@ -169,7 +172,7 @@ class _Array extends BaseType {
         if (this.__isReadOnly__) {
             return null;
         }
-        this.$setDirty();
+        this.$setDirty(true);
         return this.__value__.unshift();
     }
 

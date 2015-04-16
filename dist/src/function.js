@@ -32,6 +32,11 @@
                 value: function test(v) {
                     return typeof v === "function";
                 }
+            },
+            validateType: {
+                value: function validateType(value) {
+                    return this.test(value);
+                }
             }
         });
 
