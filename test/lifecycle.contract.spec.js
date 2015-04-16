@@ -28,9 +28,10 @@ export function lifecycleContract(){
             var setDirtyWrapper = () => fixture.elementSetDirty();
             var resetDirtyWrapper = () => fixture.elementResetDirty();
             fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, isDirtyWrapper, setDirtyWrapper, resetDirtyWrapper) : elementFactory;
+            fixture.containerFactory = () => containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
             fixture.setup = () => {
                 before('init', () => {
-                    fixture.container = containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
+                    fixture.container = fixture.containerFactory();
                     if (fixture.dirtyableElements) {
                         expect(
                             _.all(fixture.container.__value__, (val) => !val.$isDirty || val.$isDirty === isDirtyWrapper),
@@ -50,7 +51,7 @@ export function lifecycleContract(){
             };
             fixtures.push(fixture);
         },
-        assertMutatorCallsSetDirty: (mutator, description) => {
+        assertMutatorContract: (mutator, description, assertDirtyContractOnResult) => {
             fixtures.forEach((fixture) => {
                 describe('applying ' + description + ' on ' + fixture.description, function () {
                     fixture.setup();
@@ -70,6 +71,12 @@ export function lifecycleContract(){
                         });
                     }
                 });
+                if (assertDirtyContractOnResult) {
+                    contractSuite(_.create(fixture, {
+                        containerFactory: () => mutator(fixture.containerFactory(), fixture.elementFactory),
+                        description: fixture.description + ' after ' + description
+                    }));
+                }
             });
         },
         assertDirtyContract: () => {
@@ -78,7 +85,7 @@ export function lifecycleContract(){
     };
 }
 
-var contractSuite = (fixture) => {
+function contractSuite(fixture){
     describe('calling $setDirty on ' + fixture.description, function () {
         fixture.setup();
         it('changes result from $isDirty', function () {

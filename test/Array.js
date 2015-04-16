@@ -639,12 +639,12 @@ describe('Array data', function() {
         );
 
         lifeCycleAsserter.assertDirtyContract();
-        lifeCycleAsserter.assertMutatorCallsSetDirty((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
-        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.pop(), 'pop');
-        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.reverse(), 'reverse');
-        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.shift(), 'shift');
-        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
-        lifeCycleAsserter.assertMutatorCallsSetDirty((arr) => arr.unshift(), 'unshift');
+        lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.unshift(), 'unshift');
     });
 });
 

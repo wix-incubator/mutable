@@ -368,7 +368,7 @@ describe('Custom data', function() {
 		);
 
 		lifeCycleAsserter.assertDirtyContract();
-		lifeCycleAsserter.assertMutatorCallsSetDirty((obj) => obj.name = 'johnny', 'assignment on primitive field');
-		lifeCycleAsserter.assertMutatorCallsSetDirty((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
+		lifeCycleAsserter.assertMutatorContract((obj) => obj.name = 'johnny', 'assignment on primitive field');
+		lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 	});
 });
