@@ -127,10 +127,18 @@ describe('Array data', function() {
 
         it("setValue with Typorama object containing Typorama array of string", function() {
             testType = new TestType();
+
+            expect(testType.names.length).to.equal(4);
+            expect(testType.names.at(0)).to.equal("Beyonce");
+            expect(testType.names.at(1)).to.equal("Rihanna");
+            expect(testType.names.at(2)).to.equal("Britney");
+            expect(testType.names.at(3)).to.equal("Christina");
+
             testType.setValue({
                 names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
             });
 
+            expect(testType.names.length).to.equal(4);
             expect(testType.names.at(0)).to.equal("John");
             expect(testType.names.at(1)).to.equal("Paul");
             expect(testType.names.at(2)).to.equal("George");
@@ -139,8 +147,16 @@ describe('Array data', function() {
 
         it("setValue on array with JSON array of string", function() {
             var test = Typorama.Array.of(Typorama.String).create();
+
+            expect(testType.names.length).to.equal(4);
+            expect(testType.names.at(0)).to.equal("Beyonce");
+            expect(testType.names.at(1)).to.equal("Rihanna");
+            expect(testType.names.at(2)).to.equal("Britney");
+            expect(testType.names.at(3)).to.equal("Christina");
+
             test.setValue(["John", "Paul", "George", "Ringo"]);
 
+            expect(testType.names.length).to.equal(4);
             expect(test.at(0)).to.equal("John");
             expect(test.at(1)).to.equal("Paul");
             expect(test.at(2)).to.equal("George");
@@ -148,11 +164,18 @@ describe('Array data', function() {
         });        
 
 
-        it("setValue with JSON object containg native array of string", function() {
+        it("setValue with JSON object containg JSON array of string", function() {
             testType = new TestType();
+
+            expect(testType.names.length).to.equal(4);
+            expect(testType.names.at(0)).to.equal("Beyonce");
+            expect(testType.names.at(1)).to.equal("Rihanna");
+            expect(testType.names.at(2)).to.equal("Britney");
+            expect(testType.names.at(3)).to.equal("Christina");
 
             testType.setValue({ names: ["John", "Paul", "George", "Ringo"] });
 
+            expect(testType.names.length).to.equal(4);
             expect(testType.names.at(0)).to.equal("John");
             expect(testType.names.at(1)).to.equal("Paul");
             expect(testType.names.at(2)).to.equal("George");
