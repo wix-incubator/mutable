@@ -20,8 +20,26 @@ var UserWithAddressType = aDataTypeWithSpec({
     address: AddressType
 }, 'UserWithAddress');
 
+var lifeCycleAsserter = lifecycleContract();
+lifeCycleAsserter.addFixture(
+    (...elements) => Typorama.Array.of(UserType).create(elements),
+    () => new UserType(),
+    'array with mutable elements'
+);
+lifeCycleAsserter.addFixture(
+    (...elements) => Typorama.Array.of(Typorama.Number).create(elements),
+    () => 3.14,
+    'array with primitives'
+);
+
+
 describe('Array data', function() {
 
+    describe('lifecycle:',function() {
+
+        lifeCycleAsserter.assertDirtyContract();
+        lifeCycleAsserter.assertMutatorContract((arr) => arr.unshift(), 'unshift');
+    });
     describe("type defintion with default array values", function() {
 
         var array, TestType, testType;
@@ -123,7 +141,7 @@ describe('Array data', function() {
                 numberList.setValue([5, 6, 7, 8]);
                 expect(numberList.toJSON()).to.eql([5, 6, 7, 8]);
             });
-        });        
+        });
 
         it("setValue with Typorama object containing Typorama array of string", function() {
             testType = new TestType();
@@ -157,7 +175,7 @@ describe('Array data', function() {
             expect(test.at(1)).to.equal("Paul");
             expect(test.at(2)).to.equal("George");
             expect(test.at(3)).to.equal("Ringo");
-        });        
+        });
 
 
         it("setValue with JSON object containg JSON array of string", function() {
@@ -169,8 +187,6 @@ describe('Array data', function() {
             expect(testType.names.at(2)).to.equal("Britney");
             expect(testType.names.at(3)).to.equal("Christina");
 
-            debugger;
-
             testType.setValue({ names: ["John", "Paul", "George", "Ringo"] });
 
             expect(testType.names.length).to.equal(4);
@@ -178,7 +194,7 @@ describe('Array data', function() {
             expect(testType.names.at(1)).to.equal("Paul");
             expect(testType.names.at(2)).to.equal("George");
             expect(testType.names.at(3)).to.equal("Ringo");
-        });        
+        });
 
         describe('at()', function() {
 
@@ -259,7 +275,7 @@ describe('Array data', function() {
             it('should remove the last element from an array', () => {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var lengthBeforePop = numberList.length;
-                
+
                 var valueRemoved = numberList.pop();
 
                 expect(numberList.length).to.equal(lengthBeforePop - 1);
@@ -271,6 +287,8 @@ describe('Array data', function() {
                 expect(numberList.pop()).to.be.undefined;
 
             });
+
+            lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
         });
 
 		describe('reverse()', () => {
@@ -283,6 +301,8 @@ describe('Array data', function() {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
                 };
             });
+
+            lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
         });
 
         describe('shift()', () => {
@@ -295,6 +315,8 @@ describe('Array data', function() {
                 expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
                 expect(numberList.length).to.equal(lengthBeforePop - 1);
             });
+
+            lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
         });
 
         describe('sort()', () => {
@@ -309,6 +331,8 @@ describe('Array data', function() {
                 expect(numberArray.sort()).to.eql([1, 200, 40, 5]);
                 expect(numberArray.sort(compareNumbers)).to.eql([1, 5, 40, 200]);
             });
+
+            lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
         });
 
         describe('join()', () => {
@@ -323,10 +347,10 @@ describe('Array data', function() {
         });
 
         describe('toString()', () => {
-        	xit();
+            xit();
         });
         describe('prettyPrint()', () => {
-        	xit();
+            xit();
         });
         describe('valueOf()', () => {
             it('should return the primitive value of the specified object', () => {
@@ -377,7 +401,7 @@ describe('Array data', function() {
                 // expect(b.doIt()).to.eql([NaN, NaN, NaN]);
             });
         });
-		
+
         describe('push()',function() {
             it('it should add a number to an array ', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
@@ -491,6 +515,8 @@ describe('Array data', function() {
                 expect(arr.at(0).name).to.equal('zag');
                 expect(arr.at(1).name).to.equal('dag');
             });
+
+            lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
         });
 
         describe('every',function() {
@@ -723,27 +749,5 @@ describe('Array data', function() {
         });
     });
 
-
-    describe('lifecycle:',function() {
-        var lifeCycleAsserter = lifecycleContract();
-        lifeCycleAsserter.addFixture(
-            (...elements) => Typorama.Array.of(UserType).create(elements),
-            () => new UserType(),
-            'array with mutable elements'
-        );
-        lifeCycleAsserter.addFixture(
-            (...elements) => Typorama.Array.of(Typorama.Number).create(elements),
-            () => 3.14,
-            'array with primitives'
-        );
-
-        lifeCycleAsserter.assertDirtyContract();
-        lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
-        lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
-        lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
-        lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
-        lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
-        lifeCycleAsserter.assertMutatorContract((arr) => arr.unshift(), 'unshift');
-    });
 });
 

@@ -12,43 +12,57 @@ function spyWrapper(factory, isDirty, setDirty, resetDirty){
     };
 }
 
+function lifecycleManagerStub(){
+    return sinon.stub({});
+}
+
+function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
+// since spy.reset() sucks, we use indirection as a method of resetting spies state
+    var isDirtyWrapper = () => fixture.elementIsDirty();
+    var setDirtyWrapper = () => fixture.elementSetDirty();
+    var resetDirtyWrapper = () => fixture.elementResetDirty();
+    fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, isDirtyWrapper, setDirtyWrapper, resetDirtyWrapper) : elementFactory;
+    fixture.containerFactory = () => {
+        var result = containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
+        if (fixture.dirtyableElements) {
+            expect(
+                _.all(result.__value__, (val) => !val.$isDirty || val.$isDirty === isDirtyWrapper),
+                "all dirtyable elements' $isDirty methods are stubbed").to.be.true;
+        }
+        return result;
+    };
+}
+
+function addFixtureSetup(fixture) {
+    fixture.setup = () => {
+        before('init', () => {
+            fixture.lifecycleManager = lifecycleManagerStub();
+        });
+        beforeEach('reset', () => {
+            fixture.container = fixture.containerFactory();
+            fixture.elementResetDirty = _.noop;
+            fixture.container.$resetDirty();
+            // reset spies / stubs state
+            fixture.elementIsDirty = sinon.stub();
+            fixture.elementSetDirty = sinon.spy();
+            fixture.elementResetDirty = sinon.spy();
+        });
+        afterEach('cleanup', () => {
+            delete fixture.container;
+        });
+    };
+}
+
 export function lifecycleContract(){
     var fixtures = [];
     return {
         addFixture :(containerFactory, elementFactory, description) => {
             var fixture = {
                 description : description,
-                elementIsDirty: sinon.stub(),
-                elementSetDirty: sinon.spy(),
-                elementResetDirty: sinon.spy(),
                 dirtyableElements: !!elementFactory().$isDirty
             };
-            // since spy.reset() sucks, we use indirection as a method of resetting spies state
-            var isDirtyWrapper = () => fixture.elementIsDirty();
-            var setDirtyWrapper = () => fixture.elementSetDirty();
-            var resetDirtyWrapper = () => fixture.elementResetDirty();
-            fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, isDirtyWrapper, setDirtyWrapper, resetDirtyWrapper) : elementFactory;
-            fixture.containerFactory = () => containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
-            fixture.setup = () => {
-                before('init', () => {
-                    fixture.container = fixture.containerFactory();
-                    if (fixture.dirtyableElements) {
-                        expect(
-                            _.all(fixture.container.__value__, (val) => !val.$isDirty || val.$isDirty === isDirtyWrapper),
-                            "all dirtyable elements' $isDirty methods are stubbed").to.be.true;
-                    }
-                });
-                beforeEach('reset', () => {
-                    fixture.container.$resetDirty();
-                    // reset spies / stubs state
-                    fixture.elementIsDirty = sinon.stub();
-                    fixture.elementSetDirty = sinon.spy();
-                    fixture.elementResetDirty = sinon.spy();
-                });
-                after('cleanup', () => {
-                    delete fixture.container;
-                });
-            };
+            setFactoriesInFixture(fixture, containerFactory, elementFactory);
+            addFixtureSetup(fixture);
             fixtures.push(fixture);
         },
         assertMutatorContract: (mutator, description, assertDirtyContractOnResult = true) => {
@@ -73,8 +87,12 @@ export function lifecycleContract(){
                 });
                 if (assertDirtyContractOnResult) {
                     contractSuite(_.create(fixture, {
-                        containerFactory: () => mutator(fixture.containerFactory(), fixture.elementFactory),
-                        description: fixture.description + ' after ' + description
+                        containerFactory: () => {
+                            var result = fixture.containerFactory();
+                            mutator(result, fixture.elementFactory);
+                            return result;
+                        },
+                        description : fixture.description + ' after ' + description
                     }));
                 }
             });
@@ -128,17 +146,16 @@ function contractSuite(fixture){
     });
     describe('calling $resetDirty on ' + fixture.description, function () {
         fixture.setup();
-        beforeEach('dirty container', () => {
+        it('makes $isDirty return false', function () {
             fixture.container.$setDirty(true);
             fixture.elementIsDirty.returns(false);
-        });
-        it('makes $isDirty return false', function () {
             expect(fixture.container.$isDirty(), 'container dirty before calling $resetDirty').to.be.true;
             fixture.container.$resetDirty();
             expect(fixture.container.$isDirty(), 'container dirty after calling $resetDirty').to.be.false;
         });
         if (fixture.dirtyableElements) {
             it('propagates to elements', function () {
+                expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
                 fixture.container.$resetDirty();
                 expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.true; // todo assert called once per element?
             });
@@ -152,6 +169,9 @@ function contractSuite(fixture){
     describe('calling $isDirty on ' + fixture.description, function () {
         fixture.setup();
         describe('twice returns same result', () => {
+            beforeEach('reset container dirty flag', () => {
+                fixture.container.$resetDirty();
+            });
             [true, false].forEach((flagVal) => {
                 it(': ' + flagVal, function () {
                     if (flagVal) {
@@ -159,8 +179,8 @@ function contractSuite(fixture){
                     }
                     var dirty1 = fixture.container.$isDirty();
                     var dirty2 = fixture.container.$isDirty();
-                    expect(dirty1, 'container dirty flag on first call').to.to.equal(flagVal);
-                    expect(dirty2, 'container dirty flag on second call').to.to.equal(flagVal);
+                    expect(dirty1, 'container dirty flag on first call').to.equal(flagVal);
+                    expect(dirty2, 'container dirty flag on second call').to.equal(flagVal);
                 });
             });
         });

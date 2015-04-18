@@ -1,3 +1,4 @@
+import _ from "lodash"
 
 // immutable enum type for fuzzy-logic dirty flag
 const dirty = {
@@ -33,16 +34,16 @@ export function makeDirtyable(Type){
 
 // resets the dirty state to unknown
     Type.prototype.$resetDirty = function $resetDirty() {
-        if (!this.__isReadOnly__) {
+        if (this.__isReadOnly__) {
+            // todo:warn hook
+            console.warn('resetting dirty flag on read only!');
+        } else {
             this.__dirty__ = dirty.unKnown;
             _.forEach(this.__value__, (val) => {
                 if (val.$resetDirty && _.isFunction(val.$resetDirty)) {
                     val.$resetDirty();
                 }
             });
-        } else {
-            // todo:warn hook
-            console.warn('resetting dirty flag on read only!');
         }
     };
 }
