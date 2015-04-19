@@ -82,8 +82,6 @@ class _Array extends BaseType {
 		});
 	}
 
-// To check with Nadav: Every, some, filter, toString,
-
     __lodashProxyWrap__(key, fn, ctx){
         var valueArray = _[key](this.__value__, fn, ctx || this);
         return new this.constructor(valueArray, this.__options__);
@@ -94,13 +92,20 @@ class _Array extends BaseType {
     }
 
 	// Mutator methods
-    
+
 	pop() {
 		if (this.__isReadOnly__) {
             return null;
         }
+        
+        if(this.__value__.length === 0){
+            return undefined;
+        }
+
         this.$setDirty();
-        return this.__value__.pop();
+        var itemValue = this.__value__.pop();
+
+        return this.constructor._wrapSingleItem(itemValue, this.__options__);
     }
 
     push(...newItems) {
@@ -122,7 +127,9 @@ class _Array extends BaseType {
             return null;
         }
         this.$setDirty();
-        return this.__value__.reverse();
+        
+        var valueArray = this.__value__.reverse();
+        return new this.constructor(valueArray, this.__options__);
     }
 
     shift() {
@@ -281,9 +288,8 @@ class _Array extends BaseType {
     filter(fn, ctx) {
         return this.__lodashProxy__('filter', fn, ctx);
     }
-
-
 }
+
 _Array.withDefault = generateWithDefault();
 
 export default Typorama.define('Array',{

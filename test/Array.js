@@ -156,6 +156,7 @@ describe('Array data', function() {
 
 		describe('pop', function() {
             it('should remove the last element from an array', function() {
+                debugger
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var lengthBeforePop = numberList.length;
                 
@@ -167,7 +168,10 @@ describe('Array data', function() {
 
             it('should return undefined if called on an empty array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([]);
-                expect(numberList.pop()).to.be.undefined;
+                
+                var valueRemoved = numberList.pop();
+                
+                expect(valueRemoved).to.be.undefined;
 
             });
         });
@@ -176,11 +180,21 @@ describe('Array data', function() {
             it('should reverse the order of elements in an array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var newList = numberList.concat();
+
                 newList.reverse();
-                expect(numberList.length).to.equal(newList.length);
+
                 for (var i = 0; i < numberList.length; i++) {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
                 };
+            });
+
+            it('should return a typed array', function () {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                var newList = numberList.concat();
+                
+                newList.reverse();
+
+                expect(newList instanceof Typorama.Array).to.be.true;
             });
         });
 
@@ -543,7 +557,7 @@ describe('Array data', function() {
             it('should add an element to the array', function () {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
                 var lengthBeforeUnshift = numberList.length;
-                debugger
+
                 numberList.unshift(5);
 
                 expect(numberList.length).to.equal(lengthBeforeUnshift + 1);
