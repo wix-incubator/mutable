@@ -270,6 +270,21 @@ function testSetManager(fixture) {
                 expect(fixture.elementSetManager.alwaysCalledWithExactly(manager), "elements $setManager called with manager").to.be.true;
             }
         });
+        it('in readonly form does not change the manager field', function () {
+            var manager = new LifeCycleManager();
+            fixture.container.$asReadOnly().$setManager(manager);
+            expect(fixture.container.__lifecycleManager__, 'container manager').to.be.undefined;
+            if (fixture.dirtyableElements) {
+                expect(fixture.elementSetManager.called, 'container manager').to.be.false;
+            }
+        });
+        it('with invalid type does not change the manager field', function () {
+            fixture.container.$setManager({});
+            expect(fixture.container.__lifecycleManager__, 'container manager').to.be.undefined;
+            if (fixture.dirtyableElements) {
+                expect(fixture.elementSetManager.called, 'container manager').to.be.false;
+            }
+        });
     });
 }
 
