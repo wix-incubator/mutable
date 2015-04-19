@@ -31,15 +31,15 @@ describe('LifecycleManager :', function() {
 			lifecycleManager.$change();
 			expect(lifecycleManager.onChange.called).to.be.false;
 		});
-		describe('after forbidChange()', () => {
+		describe('allowChange() makes', () => {
 			beforeEach('init', ()=>{
 				lifecycleManager.allowChange();
 			});
-			it('allowChange() makes $change() return true again', ()=>{
+			it('$change() return true again', ()=>{
 				var result = lifecycleManager.$change();
 				expect(result, 'result of call to $change()').to.be.true;
 			});
-			it('allowChange() makes $change() call onChange() again', ()=>{
+			it('$change() call onChange() again', ()=>{
 				lifecycleManager.$change();
 				expect(lifecycleManager.onChange.calledOnce).to.be.true;
 			});
