@@ -94,14 +94,7 @@ class _Array extends BaseType {
     }
 
 	// Mutator methods
-	copyWithin() {
-        throw 'copyWithin not implemented yet. Please do.';
-    }
-
-    fill() {
-        throw 'fill not implemented yet. Please do.';
-    }
-
+    
 	pop() {
 		if (this.__isReadOnly__) {
             return null;
@@ -239,10 +232,6 @@ class _Array extends BaseType {
 		});
 	}
 
-	entries() {
-        throw 'entries not implemented yet. Please do.';
-    }
-
     find(cb) {
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
@@ -258,9 +247,6 @@ class _Array extends BaseType {
         });
     }
 
-	keys() {
-        throw 'keys not implemented yet. Please do.';
-    }
 
 	setValue(newValue) {
 		if(newValue instanceof _Array) {
@@ -284,10 +270,6 @@ class _Array extends BaseType {
         return newValue;
     }
 
-    reduceRight() {
-        throw 'reduceRight not implemented yet. Please do.';
-    }
-
     every(fn, ctx) {
         return this.__lodashProxy__('every', fn, ctx);
     }
@@ -300,9 +282,6 @@ class _Array extends BaseType {
         return this.__lodashProxy__('filter', fn, ctx);
     }
 
-    values() {
-        throw 'values not implemented yet. Please do.';
-    }
 
 }
 _Array.withDefault = generateWithDefault();
