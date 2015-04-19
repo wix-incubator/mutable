@@ -74,7 +74,6 @@ function addFixtureSetup(fixture) {
             fixture.lifecycleManager = new LifeCycleManager();
             sinon.stub(fixture.lifecycleManager, '$change');
             fixture.container = fixture.containerFactory();
-            fixture.setManager = sinon.spy();
             // reset dirty flag of container
             fixture.elementResetDirty = _.noop;
             fixture.container.$resetDirty();
