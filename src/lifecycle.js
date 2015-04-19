@@ -59,9 +59,15 @@ export function makeDirtyable(Type){
 
 // called when a change has been made to this object directly or after changes are paused
     Type.prototype.$setDirty = function $setDirty(isDirty) {
-        if (!this.__isReadOnly__ && isDirty !== undefined && (!this.__lifecycleManager__ || isDirty == this.__lifecycleManager__.$change())){
-            this.__dirty__ = isDirty ? dirty.yes : dirty.no;
-            return true;
+        if (!this.__isReadOnly__ && isDirty !== undefined){
+            // instance & arg validated
+            if (!this.__lifecycleManager__ || isDirty == this.__lifecycleManager__.$change()) {
+                // no manager or manager's state fits desired dirty state
+                // dirtify only when manager allows changes
+                // cache not-dirty only when there is no chance that children will get dirty.
+                this.__dirty__ = isDirty ? dirty.yes : dirty.no;
+                return true;
+            }
         }
         return false;
     };
