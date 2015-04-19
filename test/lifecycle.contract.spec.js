@@ -156,6 +156,12 @@ function contractSuite(fixture){
                 fixture.container.$asReadOnly().$setDirty(true);
                 expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(true)').to.be.false;
             });
+            it('setting flag to false in read only form makes no changes', function () {
+                fixture.container.$setDirty(true);
+                expect(fixture.container.$isDirty(), 'container dirty before calling $setDirty(false)').to.be.true;
+                fixture.container.$asReadOnly().$setDirty(false);
+                expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(false)').to.be.true;
+            });
         }
     });
     describe('calling $resetDirty on ' + fixture.description, function () {
