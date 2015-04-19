@@ -97,49 +97,48 @@ class _Array extends BaseType {
     }
 
 	pop() {
-		if (this.__isReadOnly__) {
+		if(this.$setDirty(true)){
+            return this.__value__.pop();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.pop();
     }
 
     push(...newItems) {
-		if(this.__isReadOnly__) {
-			return null;
-		}
+        if(this.$setDirty(true)){
+            var options = this.__options__;
 
-        this.$setDirty(true);
-        var options = this.__options__;
-
-		return Array.prototype.push.apply(
-			this.__value__,
-			newItems.map((item) => this.constructor._wrapSingleItem(item, options))
-		);
+            return Array.prototype.push.apply(
+                this.__value__,
+                newItems.map((item) => this.constructor._wrapSingleItem(item, options))
+            );
+        } else {
+            return null;
+        }
 	}
 
 	reverse() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.reverse();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.reverse();
     }
 
     shift() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.shift();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.shift();
     }
 
     sort(cb) {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.sort(cb);
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.sort(cb);
     }
 
     setValue(newValue) {
@@ -156,24 +155,24 @@ class _Array extends BaseType {
 	}
 
     splice(index, removeCount, ...addedItems) {
-        if(this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            var spliceParams = [index, removeCount];
+            addedItems.forEach(function (newItem) {
+                spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+            }.bind(this));
+            return this.__value__.splice.apply(this.__value__, spliceParams);
+            //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        var spliceParams = [index,removeCount];
-        addedItems.forEach(function(newItem) {
-           spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
-        }.bind(this));
-        return this.__value__.splice.apply(this.__value__, spliceParams);
-        //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
 
 	unshift() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.unshift();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.unshift();
     }
 
 	// Accessor methods
