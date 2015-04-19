@@ -218,9 +218,6 @@ function testIsDirty(fixture){
     describe('calling $isDirty on ' + fixture.description, function () {
         fixture.setup();
         describe('twice returns same result', () => {
-            beforeEach('reset container dirty flag', () => {
-                fixture.container.$resetDirty();
-            });
             [true, false].forEach((flagVal) => {
                 it(': ' + flagVal, function () {
                     if (flagVal) {
