@@ -135,18 +135,21 @@ function testSetDirty(fixture) {
             expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(false)').to.be.false;
         });
         describe('with lifecycle manager', () => {
-            [true, false].forEach((flagVal) => {
-                it('returns false when manager.$change returns ' + flagVal, function () {
-                    fixture.lifecycleManager.$change.returns(flagVal);
-                    fixture.container.$setManager(fixture.lifecycleManager);
-                    var result = fixture.container.$setDirty(false);
-                    expect(result, 'result of $setDirty').to.equal(flagVal);
-                });
-                it(flagVal ? 'does nothing when manager does not allow it' : 'works when manager allows it', function () {
-                    fixture.lifecycleManager.$change.returns(flagVal);
-                    fixture.container.$setManager(fixture.lifecycleManager);
-                    fixture.container.$setDirty(true);
-                    expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty').to.equal(flagVal);
+            [true, false].forEach((dirtyState) => {
+                describe('to set dirty flag to ' + dirtyState , () =>{
+                    [true, false].forEach((managerState) => {
+                        describe('when .$change() returns' + managerState , () => {
+                            var expectedResult = dirtyState == managerState;
+                            it('will return ' +expectedResult, function () {
+                                fixture.container.$setDirty(!dirtyState);
+                                fixture.lifecycleManager.$change.returns(managerState);
+                                fixture.container.$setManager(fixture.lifecycleManager);
+                                var result = fixture.container.$setDirty(dirtyState);
+                                expect(result, 'result of $setDirty').to.equal(expectedResult);
+                                expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty').to.equal(expectedResult == dirtyState);
+                            });
+                        });
+                    });
                 });
             });
         });
