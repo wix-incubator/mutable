@@ -61,7 +61,6 @@ describe('Custom data', function() {
 		'object with primitive elements'
 	);
 
-
 	describe('lifecycle:',function() {
 		lifeCycleAsserter.assertDirtyContract();
 	});

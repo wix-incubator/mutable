@@ -38,12 +38,13 @@ export function lifecycleContract(){
     };
 }
 
-function spyWrapper(factory, isDirty, setDirty, resetDirty){
+function spyWrapper(factory, isDirty, setDirty, resetDirty, setManager){
     return (...args) => {
         var result = factory(...args);
         result.$isDirty = isDirty;
         result.$setDirty = setDirty;
         result.$resetDirty = resetDirty;
+        result.$setManager = setManager;
         return result;
     };
 }
@@ -53,7 +54,8 @@ function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
     var isDirtyWrapper = () => fixture.elementIsDirty();
     var setDirtyWrapper = () => fixture.elementSetDirty();
     var resetDirtyWrapper = () => fixture.elementResetDirty();
-    fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, isDirtyWrapper, setDirtyWrapper, resetDirtyWrapper) : elementFactory;
+    var setManagerWrapper = () => fixture.setManager();
+    fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, isDirtyWrapper, setDirtyWrapper, resetDirtyWrapper, setManagerWrapper) : elementFactory;
     fixture.containerFactory = () => {
         var result = containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
         if (fixture.dirtyableElements) {
@@ -68,7 +70,10 @@ function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
 function addFixtureSetup(fixture) {
     fixture.setup = () => {
         beforeEach('reset', () => {
+            fixture.lifecycleManager = {$change : sinon.stub()};
             fixture.container = fixture.containerFactory();
+            fixture.setManager = sinon.spy();
+            // reset dirty flag of container
             fixture.elementResetDirty = _.noop;
             fixture.container.$resetDirty();
             // reset spies / stubs state
@@ -110,6 +115,14 @@ function mutatorContract(description, fixture, mutator) {
  * check the dirty contract
  */
 function contractSuite(fixture){
+    testSetDirty(fixture);
+    testResetDirty(fixture);
+    testIsDirty(fixture);
+    testSetManager(fixture);
+    testMakeChange(fixture);
+}
+
+function testSetDirty(fixture) {
     describe('calling $setDirty on ' + fixture.description, function () {
         fixture.setup();
         it('changes result of $isDirty', function () {
@@ -117,6 +130,13 @@ function contractSuite(fixture){
             expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(true)').to.be.true;
             fixture.container.$setDirty(false);
             expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(false)').to.be.false;
+        });
+        it('returns the result of manager.$change', function () {
+            var value = {};
+            fixture.lifecycleManager.$change.returns(value)
+            expect(fixture.lifecycleManager.$change(), 'fixture.lifecycleManager.$change()').to.equal(value);
+            var result = fixture.container.$setDirty(false);
+            expect(result, 'result of $setDirty').to.equal(value);
         });
         if (fixture.dirtyableElements) {
             [true, false].forEach((flagVal) => {
@@ -139,7 +159,6 @@ function contractSuite(fixture){
                         expect(fixture.elementSetDirty.called, '$setDirty called on element(s)').to.be.false;
                         expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
                     });
-
                 });
             });
         } else {
@@ -156,6 +175,8 @@ function contractSuite(fixture){
             });
         }
     });
+}
+function testResetDirty(fixture) {
     describe('calling $resetDirty on ' + fixture.description, function () {
         fixture.setup();
         it('makes $isDirty return false', function () {
@@ -178,6 +199,8 @@ function contractSuite(fixture){
             });
         }
     });
+}
+function testIsDirty(fixture){
     describe('calling $isDirty on ' + fixture.description, function () {
         fixture.setup();
         describe('twice returns same result', () => {
@@ -231,4 +254,13 @@ function contractSuite(fixture){
             });
         }
     });
+}
+
+function testSetManager(fixture) {
+
+}
+
+
+function testMakeChange(fixture) {
+
 }
