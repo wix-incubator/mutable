@@ -20,14 +20,7 @@ export default class BaseType {
     static wrapValue(value, spec, options){
         Object.keys(spec).forEach((key) => {
             var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
-            if(value[key] instanceof Array) {
-                console.log("before: ", value[key]);
-                console.log("value: ", fieldValue);
-                value[key] = spec[key].type.create(fieldValue, spec[key].options);
-                console.log("after:", value[key]);
-            } else {
-                value[key] = spec[key].type.create(fieldValue, spec[key].options);
-            }
+            value[key] = spec[key].type.create(fieldValue, spec[key].options);
         });
         return value;
     }
@@ -44,18 +37,19 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        this.$setDirty(true);
-        if(newValue instanceof BaseType){
-            newValue = newValue.toJSON();
-        }
-        _.forEach(newValue, (fieldValue, fieldName) => {
-            var Type = this.constructor._spec[fieldName];
-            if (Type && Type.type.id === 'Array') {
-                this[fieldName].setValue(fieldValue);
-            } else if(Type){
-                this[fieldName] = fieldValue;
+        if (this.$setDirty(true)) {
+            if (newValue instanceof BaseType) {
+                newValue = newValue.toJSON();
             }
-        });
+            _.forEach(newValue, (fieldValue, fieldName) => {
+                var Type = this.constructor._spec[fieldName];
+                if (Type && Type.type.id === 'Array') {
+                    this[fieldName].setValue(fieldValue);
+                } else if (Type) {
+                    this[fieldName] = fieldValue;
+                }
+            });
+        }
     }
 
     $asReadOnly(){
