@@ -71,7 +71,8 @@ function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
 function addFixtureSetup(fixture) {
     fixture.setup = () => {
         beforeEach('reset', () => {
-            fixture.lifecycleManager = {$change : sinon.stub()};
+            fixture.lifecycleManager = new LifeCycleManager();
+            sinon.stub(fixture.lifecycleManager, '$change');
             fixture.container = fixture.containerFactory();
             fixture.setManager = sinon.spy();
             // reset dirty flag of container
@@ -133,12 +134,13 @@ function testSetDirty(fixture) {
             fixture.container.$setDirty(false);
             expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(false)').to.be.false;
         });
-        xit('returns the result of manager.$change', function () {
-            var value = {};
-            fixture.lifecycleManager.$change.returns(value)
-            expect(fixture.lifecycleManager.$change(), 'fixture.lifecycleManager.$change()').to.equal(value);
-            var result = fixture.container.$setDirty(false);
-            expect(result, 'result of $setDirty').to.equal(value);
+        [true, false].forEach((flagVal) => {
+            it('returns false when manager.$change returns '+flagVal, function () {
+                fixture.lifecycleManager.$change.returns(flagVal);
+                fixture.container.$setManager(fixture.lifecycleManager);
+                var result = fixture.container.$setDirty(false);
+                expect(result, 'result of $setDirty').to.equal(flagVal);
+            });
         });
         if (fixture.dirtyableElements) {
             [true, false].forEach((flagVal) => {
