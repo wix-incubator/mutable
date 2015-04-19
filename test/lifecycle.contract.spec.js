@@ -3,9 +3,8 @@ import _ from 'lodash';
 import sinon from 'sinon';
 
 /**
- * Ma culpa
  * this is a parameterised test suite specifically designed to test the dirtyable contract.
- * the setup is messy. the tests themselves can be found in methods contractSuite and mutatorContract
+ * the setup is messy. the tests themselves can be found in methods contractSuite and mutatorContract.
  **/
 
 export function lifecycleContract(){

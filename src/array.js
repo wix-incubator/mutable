@@ -189,52 +189,52 @@ class _Array extends BaseType {
 	join(separator ? = ',') {
         return this.__value__.join(separator);
     }
-    slice() {
+    slice(){
         throw 'slice not implemented yet. Please do.';
     }
-    toSource() {
+    toSource(){
         throw 'toSource not implemented yet. Please do.';
     }
 
-    toString() {
+    toString(){
         return this.__value__.toString();
     }
 
-    toPrettyPrint() {
+    toPrettyPrint(){
 		return `[${this}]`;
     }
 
-    valueOf() {
+    valueOf(){
         return this.__value__.map(function(item) {
             return item.valueOf();
         });
     }
 
-    toLocaleString() {
+    toLocaleString(){
         throw 'toLocaleString not implemented yet. Please do.';
     }
 
-    indexOf() {
+    indexOf(){
         throw 'indexOf not implemented yet. Please do.';
     }
 
-    lastIndexOf() {
+    lastIndexOf(){
         throw 'lastIndexOf not implemented yet. Please do.';
     }
 	// Iteration methods
 
-	forEach(cb) {
+	forEach(cb){
 		var that = this;
 		this.__value__.forEach(function(item, index, arr) {
 			cb(item, index, that);
 		});
 	}
 
-	entries() {
+	entries(){
         throw 'entries not implemented yet. Please do.';
     }
 
-    find(cb) {
+    find(cb){
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
 			return cb(element, index, self);
@@ -242,31 +242,18 @@ class _Array extends BaseType {
 		return _.find(this.__value__, cb);
 	}
 
-    findIndex(cb) {
+    findIndex(cb){
         var self = this;
         return _.findIndex(this.__value__, function (element, index, array) {
             return cb(element, index, self)
         });
     }
 
-	keys() {
+	keys(){
         throw 'keys not implemented yet. Please do.';
     }
 
-	setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-            this.__value__.length = 0;
-            _.forEach(newValue, (itemValue) => {
-                this.push(itemValue);
-            });
-        }
-    }
-
-    map(fn, ctx) {
+    map(fn, ctx){
     	return this.__lodashProxy__('map', fn, ctx);
     }
 
@@ -275,27 +262,27 @@ class _Array extends BaseType {
         return new this.constructor(valueArray, this.__options__);
     }
 
-    reduce() {
+    reduce(){
         throw 'reduce not implemented yet. Please do.';
     }
 
-    reduceRight() {
+    reduceRight(){
         throw 'reduceRight not implemented yet. Please do.';
     }
 
-    every() {
+    every(){
         throw 'every not implemented yet. Please do.';
     }
 
-    some() {
+    some(){
         throw 'some not implemented yet. Please do.';
     }
 
-    filter() {
+    filter(){
         throw 'filter not implemented yet. Please do.';
     }
 
-    values() {
+    values(){
         throw 'values not implemented yet. Please do.';
     }
 
