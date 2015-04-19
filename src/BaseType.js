@@ -20,14 +20,7 @@ export default class BaseType {
     static wrapValue(value, spec, options){
         Object.keys(spec).forEach((key) => {
             var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
-            if(value[key] instanceof Array) {
-                console.log("before: ", value[key]);
-                console.log("value: ", fieldValue);
-                value[key] = spec[key].type.create(fieldValue, spec[key].options);
-                console.log("after:", value[key]);
-            } else {
-                value[key] = spec[key].type.create(fieldValue, spec[key].options);
-            }
+            value[key] = spec[key].type.create(fieldValue, spec[key].options);
         });
         return value;
     }
