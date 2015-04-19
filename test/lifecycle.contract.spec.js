@@ -2,6 +2,43 @@ import {expect} from 'chai';
 import _ from 'lodash';
 import sinon from 'sinon';
 
+/**
+ * Ma culpa
+ * this is a parameterised test suite specifically designed to test the dirtyable contract.
+ * the setup is messy. the tests themselves can be found in methods contractSuite and mutatorContract
+ **/
+
+export function lifecycleContract(){
+    var fixtures = [];
+    return {
+        addFixture :(containerFactory, elementFactory, description) => {
+            var fixture = {
+                description : description,
+                dirtyableElements: !!elementFactory().$isDirty
+            };
+            setFactoriesInFixture(fixture, containerFactory, elementFactory);
+            addFixtureSetup(fixture);
+            fixtures.push(fixture);
+        },
+        assertMutatorContract: (mutator, description) => {
+            fixtures.forEach((fixture) => {
+                mutatorContract(description, fixture, mutator);
+                contractSuite(_.create(fixture, {
+                    containerFactory: () => {
+                        var result = fixture.containerFactory();
+                        mutator(result, fixture.elementFactory);
+                        return result;
+                    },
+                    description : fixture.description + ' after ' + description
+                }));
+            });
+        },
+        assertDirtyContract: () => {
+            fixtures.forEach(contractSuite);
+        }
+    };
+}
+
 function spyWrapper(factory, isDirty, setDirty, resetDirty){
     return (...args) => {
         var result = factory(...args);
@@ -53,56 +90,33 @@ function addFixtureSetup(fixture) {
     };
 }
 
-export function lifecycleContract(){
-    var fixtures = [];
-    return {
-        addFixture :(containerFactory, elementFactory, description) => {
-            var fixture = {
-                description : description,
-                dirtyableElements: !!elementFactory().$isDirty
-            };
-            setFactoriesInFixture(fixture, containerFactory, elementFactory);
-            addFixtureSetup(fixture);
-            fixtures.push(fixture);
-        },
-        assertMutatorContract: (mutator, description, assertDirtyContractOnResult = true) => {
-            fixtures.forEach((fixture) => {
-                describe('applying ' + description + ' on ' + fixture.description, function () {
-                    fixture.setup();
-                    it('calls $setDirty', function () {
-                        var spy = sinon.spy(fixture.container, '$setDirty');
-                        mutator(fixture.container, fixture.elementFactory);
-                        expect(spy.called).to.be.true;
-                        expect(spy.alwaysCalledOn(fixture.container), '$setDirty called only on container').to.be.true;
-                        expect(spy.alwaysCalledWithExactly(sinon.match.truthy), "container $setDirty only called with truthy argument").to.be.true;
-                    });
-                    if (fixture.dirtyableElements) {
-                        it('does not affect elements\' lifecycle', function () {
-                            mutator(fixture.container, fixture.elementFactory);
-                            expect(fixture.elementIsDirty.called, '$isDirty called on element(s)').to.be.false;
-                            expect(fixture.elementSetDirty.called, '$setDirty called on element(s)').to.be.false;
-                            expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
-                        });
-                    }
-                });
-                if (assertDirtyContractOnResult) {
-                    contractSuite(_.create(fixture, {
-                        containerFactory: () => {
-                            var result = fixture.containerFactory();
-                            mutator(result, fixture.elementFactory);
-                            return result;
-                        },
-                        description : fixture.description + ' after ' + description
-                    }));
-                }
+/**
+ * the contract of a mutator
+ */
+function mutatorContract(description, fixture, mutator) {
+    describe('applying ' + description + ' on ' + fixture.description, function () {
+        fixture.setup();
+        it('calls $setDirty', function () {
+            var spy = sinon.spy(fixture.container, '$setDirty');
+            mutator(fixture.container, fixture.elementFactory);
+            expect(spy.called).to.be.true;
+            expect(spy.alwaysCalledOn(fixture.container), '$setDirty called only on container').to.be.true;
+            expect(spy.alwaysCalledWithExactly(sinon.match.truthy), "container $setDirty only called with truthy argument").to.be.true;
+        });
+        if (fixture.dirtyableElements) {
+            it('does not affect elements\' lifecycle', function () {
+                mutator(fixture.container, fixture.elementFactory);
+                expect(fixture.elementIsDirty.called, '$isDirty called on element(s)').to.be.false;
+                expect(fixture.elementSetDirty.called, '$setDirty called on element(s)').to.be.false;
+                expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
             });
-        },
-        assertDirtyContract: () => {
-            fixtures.forEach(contractSuite);
         }
-    };
+    });
 }
 
+/**
+ * check the dirty contract
+ */
 function contractSuite(fixture){
     describe('calling $setDirty on ' + fixture.description, function () {
         fixture.setup();
