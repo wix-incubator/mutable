@@ -15,9 +15,26 @@ const dirty = {
     }
 };
 
+export class LifeCycleManager{
+
+}
+
 export function makeDirtyable(Type){
 // add a default dirty state for all objects
     Type.prototype.__dirty__ = dirty.unKnown;
+
+
+// called when a change has been made to this object directly or after changes are paused
+    Type.prototype.$setManager = function $setManager(lifecycleManager) {
+        if (!this.__isReadOnly__ && lifecycleManager instanceof LifeCycleManager) {
+            this.__lifecycleManager__ = lifecycleManager;
+            _.forEach(this.__value__, (val) => {
+                if (val.$setManager && _.isFunction(val.$setManager)) {
+                    val.$setManager(lifecycleManager);
+                }
+            });
+        }
+    };
 
 // called when a change has been made to this object directly or after changes are paused
     Type.prototype.$setDirty = function $setDirty(isDirty) {

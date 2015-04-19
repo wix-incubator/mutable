@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import _ from 'lodash';
 import sinon from 'sinon';
+import {LifeCycleManager} from '../src/lifecycle';
 
 /**
  * this is a parameterised test suite specifically designed to test the dirtyable contract.
@@ -52,9 +53,9 @@ function spyWrapper(factory, isDirty, setDirty, resetDirty, setManager){
 function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
 // since spy.reset() sucks, we use indirection as a method of resetting spies state
     var isDirtyWrapper = () => fixture.elementIsDirty();
-    var setDirtyWrapper = () => fixture.elementSetDirty();
+    var setDirtyWrapper = (v) => fixture.elementSetDirty(v);
     var resetDirtyWrapper = () => fixture.elementResetDirty();
-    var setManagerWrapper = () => fixture.setManager();
+    var setManagerWrapper = (v) => fixture.elementSetManager(v);
     fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, isDirtyWrapper, setDirtyWrapper, resetDirtyWrapper, setManagerWrapper) : elementFactory;
     fixture.containerFactory = () => {
         var result = containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
@@ -77,6 +78,7 @@ function addFixtureSetup(fixture) {
             fixture.elementResetDirty = _.noop;
             fixture.container.$resetDirty();
             // reset spies / stubs state
+            fixture.elementSetManager = sinon.spy();
             fixture.elementIsDirty = sinon.stub();
             fixture.elementSetDirty = sinon.spy();
             fixture.elementResetDirty = sinon.spy();
@@ -131,7 +133,7 @@ function testSetDirty(fixture) {
             fixture.container.$setDirty(false);
             expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(false)').to.be.false;
         });
-        it('returns the result of manager.$change', function () {
+        xit('returns the result of manager.$change', function () {
             var value = {};
             fixture.lifecycleManager.$change.returns(value)
             expect(fixture.lifecycleManager.$change(), 'fixture.lifecycleManager.$change()').to.equal(value);
@@ -257,10 +259,22 @@ function testIsDirty(fixture){
 }
 
 function testSetManager(fixture) {
-
+    describe('calling $setManager on ' + fixture.description, function () {
+        fixture.setup();
+        it('changes the manager field', function () {
+            var manager = new LifeCycleManager();
+            fixture.container.$setManager(manager);
+            expect(fixture.container.__lifecycleManager__, 'container manager').to.equal(manager);
+            if (fixture.dirtyableElements) {
+                expect(fixture.elementSetManager.calledTwice, 'container manager').to.be.true;
+                expect(fixture.elementSetManager.alwaysCalledWithExactly(manager), "elements $setManager called with manager").to.be.true;
+            }
+        });
+    });
 }
 
 
 function testMakeChange(fixture) {
+
 
 }
