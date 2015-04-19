@@ -37,18 +37,19 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        this.$setDirty(true);
-        if(newValue instanceof BaseType){
-            newValue = newValue.toJSON();
-        }
-        _.forEach(newValue, (fieldValue, fieldName) => {
-            var Type = this.constructor._spec[fieldName];
-            if (Type && Type.type.id === 'Array') {
-                this[fieldName].setValue(fieldValue);
-            } else if(Type){
-                this[fieldName] = fieldValue;
+        if (this.$setDirty(true)) {
+            if (newValue instanceof BaseType) {
+                newValue = newValue.toJSON();
             }
-        });
+            _.forEach(newValue, (fieldValue, fieldName) => {
+                var Type = this.constructor._spec[fieldName];
+                if (Type && Type.type.id === 'Array') {
+                    this[fieldName].setValue(fieldValue);
+                } else if (Type) {
+                    this[fieldName] = fieldValue;
+                }
+            });
+        }
     }
 
     $asReadOnly(){
