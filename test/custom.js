@@ -31,6 +31,41 @@ describe('Custom data', function() {
 		});
 	});
 
+	var CompositeContainer = aDataTypeWithSpec({
+		name: Typorama.String.withDefault('leon'),
+		child1: UserType,
+		child2: UserType
+	}, 'UserWith2ChildType');
+
+	var PrimitivesContainer = aDataTypeWithSpec({
+		name: Typorama.String.withDefault('leon'),
+		child1: Typorama.String,
+		child2: Typorama.String
+	}, 'User');
+
+
+	var lifeCycleAsserter = lifecycleContract();
+	lifeCycleAsserter.addFixture(
+		(u1, u2) => {
+			var result = CompositeContainer.create();
+			result.child1 = u1;
+			result.child2 = u2;
+			return result;
+		},
+		() => UserType.create(),
+		'object with mutable elements');
+
+	lifeCycleAsserter.addFixture(
+		(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),
+		() => 'foobar',
+		'object with primitive elements'
+	);
+
+
+	describe('lifecycle:',function() {
+		lifeCycleAsserter.assertDirtyContract();
+	});
+
 	describe('mutable instance', function() {
 
 		describe('instantiation', function() {
@@ -163,9 +198,9 @@ describe('Custom data', function() {
 
 					expect(state.title).to.be.equal('new title');
 				});
-
+				lifeCycleAsserter.assertMutatorContract((obj) => obj.name = 'johnny', 'assignment on primitive field');
 			});
-
+			lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 		});
 
 		describe('setValue', function() {
@@ -333,42 +368,5 @@ describe('Custom data', function() {
 			expect(readOnlyChild instanceof UserType).to.equal(true);
 			expect(readOnlyChild.name).to.equal('bobi');
 		});
-	});
-
-	describe('lifecycle:',function() {
-
-		var CompositeContainer = aDataTypeWithSpec({
-			name: Typorama.String.withDefault('leon'),
-			child1: UserType,
-			child2: UserType
-		}, 'UserWith2ChildType');
-
-		var PrimitivesContainer = aDataTypeWithSpec({
-			name: Typorama.String.withDefault('leon'),
-			child1: Typorama.String,
-			child2: Typorama.String
-		}, 'User');
-
-
-		var lifeCycleAsserter = lifecycleContract();
-		lifeCycleAsserter.addFixture(
-			(u1, u2) => {
-				var result = CompositeContainer.create();
-				result.child1 = u1;
-				result.child2 = u2;
-				return result;
-			},
-			() => UserType.create(),
-			'object with mutable elements');
-
-		lifeCycleAsserter.addFixture(
-			(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),
-			() => 'foobar',
-			'object with primitive elements'
-		);
-
-		lifeCycleAsserter.assertDirtyContract();
-		lifeCycleAsserter.assertMutatorContract((obj) => obj.name = 'johnny', 'assignment on primitive field');
-		lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 	});
 });
