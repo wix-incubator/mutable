@@ -17,8 +17,26 @@ const dirty = {
 
 export class LifeCycleManager{
 
+    constructor(){
+        this.__change__ = true;
+    }
+
+    onChange(){}
+
+    allowChange(){
+        this.__change__ = true;
+    }
+
+    forbidChange(){
+        this.__change__ = false;
+    }
+
     $change(){
-        return true;
+        if (this.__change__){
+            this.onChange();
+            return true;
+        }
+        return false;
     }
 }
 
