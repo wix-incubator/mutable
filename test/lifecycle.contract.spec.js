@@ -72,7 +72,7 @@ function addFixtureSetup(fixture) {
     fixture.setup = () => {
         beforeEach('reset', () => {
             fixture.lifecycleManager = new LifeCycleManager();
-            sinon.stub(fixture.lifecycleManager, '$change');
+            sinon.stub(fixture.lifecycleManager, 'change');
             fixture.container = fixture.containerFactory();
             fixture.setManager = sinon.spy();
             // reset dirty flag of container
@@ -136,14 +136,14 @@ function testSetDirty(fixture) {
         });
         describe('with lifecycle manager', () => {
             [true, false].forEach((flagVal) => {
-                it('returns false when manager.$change returns ' + flagVal, function () {
-                    fixture.lifecycleManager.$change.returns(flagVal);
+                it('returns false when manager.change returns ' + flagVal, function () {
+                    fixture.lifecycleManager.change.returns(flagVal);
                     fixture.container.$setManager(fixture.lifecycleManager);
                     var result = fixture.container.$setDirty(false);
                     expect(result, 'result of $setDirty').to.equal(flagVal);
                 });
                 it(flagVal ? 'does nothing when manager does not allow it' : 'works when manager allows it', function () {
-                    fixture.lifecycleManager.$change.returns(flagVal);
+                    fixture.lifecycleManager.change.returns(flagVal);
                     fixture.container.$setManager(fixture.lifecycleManager);
                     fixture.container.$setDirty(true);
                     expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty').to.equal(flagVal);

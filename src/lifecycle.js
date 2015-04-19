@@ -16,9 +16,8 @@ const dirty = {
 };
 
 export class LifeCycleManager{
-
-    $change(){
-        return false;
+    change(){
+        return true;
     }
 }
 
@@ -41,7 +40,7 @@ export function makeDirtyable(Type){
 
 // called when a change has been made to this object directly or after changes are paused
     Type.prototype.$setDirty = function $setDirty(isDirty) {
-        if (!this.__isReadOnly__ && isDirty !== undefined && (!this.__lifecycleManager__ || this.__lifecycleManager__.$change())){
+        if (!this.__isReadOnly__ && isDirty !== undefined && (!this.__lifecycleManager__ || this.__lifecycleManager__.change())){
             this.__dirty__ = isDirty ? dirty.yes : dirty.no;
             return true;
         }
