@@ -48,10 +48,6 @@ function spyWrapper(factory, isDirty, setDirty, resetDirty){
     };
 }
 
-function lifecycleManagerStub(){
-    return sinon.stub({});
-}
-
 function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
 // since spy.reset() sucks, we use indirection as a method of resetting spies state
     var isDirtyWrapper = () => fixture.elementIsDirty();
@@ -71,9 +67,6 @@ function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
 
 function addFixtureSetup(fixture) {
     fixture.setup = () => {
-        before('init', () => {
-            fixture.lifecycleManager = lifecycleManagerStub();
-        });
         beforeEach('reset', () => {
             fixture.container = fixture.containerFactory();
             fixture.elementResetDirty = _.noop;
