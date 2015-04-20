@@ -8,7 +8,7 @@ export default class _Function {
     static validate(v) { return typeof v === 'function'; }
 
     static validateType(value) {
-        return this.test(value);
+        return this.validate(value);
     }
 
     constructor(value){

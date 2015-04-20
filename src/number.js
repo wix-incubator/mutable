@@ -7,7 +7,7 @@ export default class _Number {
     static validate(v){ return typeof v === 'number'; }
 
     static validateType(value) {
-        return this.test(value);
+        return this.validate(value);
     }
 
     constructor(value){

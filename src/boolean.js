@@ -7,7 +7,7 @@ export default class _Boolean {
     static validate(v){ return typeof v === 'boolean'; }
 
     static validateType(value) {
-        return this.test(value);
+        return this.validate(value);
     }
 
     constructor(value){

@@ -27,7 +27,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
                             this.__value__[fieldName] = newValue;
                         }
                     } else {
-                        if (fieldDef.test(newValue)) {
+                        if (fieldDef.validate(newValue)) {
                             this.__value__[fieldName] = newValue;
                         }
                     }
