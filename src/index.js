@@ -5,6 +5,7 @@ import booleanType from './boolean'
 import numberType from './number'
 import arrayType from './array'
 import functionType from './function'
+import defineEnum from "./defineEnum";
 
 export default {
     define: defineType,
@@ -13,5 +14,6 @@ export default {
     Boolean: booleanType,
     Number: numberType,
     Array: arrayType,
-    Function: functionType
+    Function: functionType,
+    defineEnum
 };
