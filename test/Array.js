@@ -210,7 +210,7 @@ describe('Array data', function() {
 
             it('Should return wrapped item that passes the test() of their type', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                expect(numberList.__options__.subTypes.test(numberList.at(0))).to.equal(true);
+                expect(numberList.__options__.subTypes.validate(numberList.at(0))).to.equal(true);
             });
 
             it('Should return a typed item for none immutable data (like custom types)', function() {
@@ -843,7 +843,7 @@ describe('Array data', function() {
 
             it('Should return wrapped item that passes the test() of their type', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]).$asReadOnly();
-                expect(numberList.__options__.subTypes.test(numberList.at(0))).to.equal(true);
+                expect(numberList.__options__.subTypes.validate(numberList.at(0))).to.equal(true);
             });
 
             it('Should return a typed item for none immutable data (like custom types)', function() {
