@@ -31,11 +31,14 @@ class _Array extends BaseType {
     }
 
 	static wrapValue(value, spec, options) {
-
-		if(value instanceof BaseType) {
-			return value.__value__.map((itemValue) => {
-				return this._wrapSingleItem(itemValue, options);
-			}, this);
+        if(value instanceof BaseType) {
+            if (value.__value__.map) {
+                return value.__value__.map((itemValue) => {
+                    return this._wrapSingleItem(itemValue, options);
+                }, this);
+            } else {
+                throw new Error('illegal value type : ' + value.constructor.id);
+            }
 		}
 
 		return value.map((itemValue) => {
@@ -94,7 +97,9 @@ class _Array extends BaseType {
 	// Mutator methods
 
 	pop() {
-		if (this.__isReadOnly__) {
+		if(this.$setDirty(true)){
+            return this.__value__.pop();
+        } else {
             return null;
         }
         
@@ -109,21 +114,22 @@ class _Array extends BaseType {
     }
 
     push(...newItems) {
-		if(this.__isReadOnly__) {
-			return null;
-		}
+        if(this.$setDirty(true)){
+            var options = this.__options__;
 
-        this.$setDirty();
-        var options = this.__options__;
-
-		return Array.prototype.push.apply(
-			this.__value__,
-			newItems.map((item) => this.constructor._wrapSingleItem(item, options))
-		);
+            return Array.prototype.push.apply(
+                this.__value__,
+                newItems.map((item) => this.constructor._wrapSingleItem(item, options))
+            );
+        } else {
+            return null;
+        }
 	}
 
 	reverse() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.reverse();
+        } else {
             return null;
         }
         this.$setDirty();
@@ -133,19 +139,21 @@ class _Array extends BaseType {
     }
 
     shift() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            var newValue = this.__value__.shift();
+
+            return this.constructor._wrapSingleItem(newValue, this.__options__);
+        } else {
             return null;
         }
-        this.$setDirty();
-        return this.__value__.shift();
     }
 
     sort(cb) {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.sort(cb);
+        } else {
             return null;
         }
-        this.$setDirty();
-        return this.__value__.sort(cb);
     }
 
     setValue(newValue) {
@@ -162,24 +170,24 @@ class _Array extends BaseType {
 	}
 
     splice(index, removeCount, ...addedItems) {
-        if(this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            var spliceParams = [index, removeCount];
+            addedItems.forEach(function (newItem) {
+                spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+            }.bind(this));
+            return this.__value__.splice.apply(this.__value__, spliceParams);
+            //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+        } else {
             return null;
         }
-        this.$setDirty();
-        var spliceParams = [index,removeCount];
-        addedItems.forEach(function(newItem) {
-           spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
-        }.bind(this));
-        return this.__value__.splice.apply(this.__value__, spliceParams);
-        //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
 
 	unshift(el) {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.unshift(el);
+        } else {
             return null;
         }
-        this.$setDirty();
-        return this.__value__.unshift(el);
     }
 
 	// Accessor methods
@@ -209,17 +217,17 @@ class _Array extends BaseType {
         }
     }
 
-    toString() {
+    toString(){
         return this.__value__.toString();
     }
 
-    valueOf() {
+    valueOf(){
         return this.__value__.map(function(item) {
             return item.valueOf();
         });
     }
 
-    toLocaleString() {
+    toLocaleString(){
         throw 'toLocaleString not implemented yet. Please do.';
     }
 
@@ -230,16 +238,17 @@ class _Array extends BaseType {
     lastIndexOf(searchElement, fromIndex) {
         return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
     }
+
 	// Iteration methods
 
-	forEach(cb) {
+	forEach(cb){
 		var that = this;
 		this.__value__.forEach(function(item, index, arr) {
 			cb(item, index, that);
 		});
 	}
 
-    find(cb) {
+    find(cb){
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
 			return cb(element, index, self);
@@ -247,13 +256,12 @@ class _Array extends BaseType {
 		return _.find(this.__value__, cb);
 	}
 
-    findIndex(cb) {
+    findIndex(cb){
         var self = this;
         return _.findIndex(this.__value__, function (element, index, array) {
             return cb(element, index, self)
         });
     }
-
 
 	setValue(newValue) {
 		if(newValue instanceof _Array) {

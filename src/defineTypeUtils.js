@@ -21,19 +21,18 @@ export function generateFieldsOn(obj, fieldsDefinition){
                 }
             },
             set: function(newValue){
-                if(this.__isReadOnly__) {
-                    console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
-                } else {
-                    this.$setDirty();
-                    if(fieldDef.type.prototype instanceof BaseType){ // ToDO: test options validity
-                        if(fieldDef.validateType(newValue)){
+                if (this.$setDirty(true)) {
+                    if (fieldDef.type.prototype instanceof BaseType) { // ToDO: test options validity
+                        if (fieldDef.validateType(newValue)) {
                             this.__value__[fieldName] = newValue;
                         }
                     } else {
-                        if(fieldDef.test(newValue)){
+                        if (fieldDef.test(newValue)) {
                             this.__value__[fieldName] = newValue;
                         }
                     }
+                } else {
+                    console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
                 }
             },
             enumerable:true,
@@ -44,7 +43,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
 
 export function generateWithDefault(){
     return function withDefault(defaults, test, options){
-		options = options || this.options;
+        options = options || this.options;
         var def = defaults ? function(){ return _.clone(defaults, true); } : this.defaults;
 
         function typeWithDefault(value, options){
@@ -65,8 +64,8 @@ export function generateWithDefault(){
 
 export function generateWithDefaultForSysImmutable(Type){
     return function withDefault(defaults, test){
-	
-		var def = defaults ? function(){ return defaults; } : this.defaults;
+
+        var def = defaults ? function(){ return defaults; } : this.defaults;
 
         function typeWithDefault(value){
             return Type(value);

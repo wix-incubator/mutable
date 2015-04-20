@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "typorama",
-  "version": "0.0.9",
+  "version": "0.0.12",
   "description": "",
   "main": "dist/src",
   "repository": {
@@ -10,14 +10,16 @@
   },
   "scripts": {
     "watch": "babel -w ./src/ -d ./dist/src/ --modules umd --source-maps",
-    "build": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
-    "buildtestkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
+    "build:test": "babel ./test/ -d ./dist/test/ --modules umd --source-maps",
+    "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
+    "build:src": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "build": "npm run build:src && npm run build:test && npm run build:testkit",
+    "postinstall": "npm run build:src",
     "test": "mocha --compilers js:babel/register --reporter list",
     "start": "npm run webtest",
     "webtest": "webpack-dev-server --progress --hot --inline --no-colors",
     "webbuild": "webpack --progress -p --colors",
-    "prepublish": "npm run build",
-    "prebuild": "npm run test"
+    "prepublish": "npm run test && npm run build:src"
   },
   "author": "core3",
   "license": "c",
@@ -33,7 +35,7 @@
     "mocha-loader": "^0.7.1",
     "react": "^0.13.1",
     "webpack": "^1.7.3",
-    "webpack-dev-server": "^1.7.0"
+    "sinon": "git://github.com/cjohansen/Sinon.JS#b672042043517b9f84e14ed0fb8265126168778a"
   },
   "engines": {
     "node": ">=0.12"
