@@ -7,7 +7,6 @@ import {LifeCycleManager} from '../src/lifecycle';
  * this is a parameterised test suite specifically designed to test the dirtyable contract.
  * the setup is messy. the tests themselves can be found in methods contractSuite and mutatorContract.
  **/
-
 export function lifecycleContract(){
     var fixtures = [];
     return {
@@ -39,31 +38,27 @@ export function lifecycleContract(){
     };
 }
 
-function spyWrapper(factory, isDirty, setDirty, resetDirty, setManager){
-    return (...args) => {
-        var result = factory(...args);
-        result.$isDirty = isDirty;
-        result.$setDirty = setDirty;
-        result.$resetDirty = resetDirty;
-        result.$setManager = setManager;
-        return result;
-    };
-}
-
 function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
-// since spy.reset() sucks, we use indirection as a method of resetting spies state
-    var isDirtyWrapper = () => fixture.elementIsDirty();
-    var setDirtyWrapper = (v) => fixture.elementSetDirty(v);
-    var resetDirtyWrapper = () => fixture.elementResetDirty();
-    var setManagerWrapper = (v) => fixture.elementSetManager(v);
-    fixture.elementFactory = fixture.dirtyableElements ? spyWrapper(elementFactory, isDirtyWrapper, setDirtyWrapper, resetDirtyWrapper, setManagerWrapper) : elementFactory;
     fixture.containerFactory = () => {
+        fixture.allElements = [];
         var result = containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
         if (fixture.dirtyableElements) {
-            expect(
-                _.all(result.__value__, (val) => !val.$isDirty || val.$isDirty === isDirtyWrapper),
-                "all dirtyable elements' $isDirty methods are stubbed").to.be.true;
+            fixture.containedElements = _.intersection(fixture.allElements, _.values(result.__value__));
+            expect(fixture.containedElements.length).to.be.at.least(2);
+        } else {
+            fixture.containedElements = [];
         }
+        return result;
+    };
+    fixture.elementFactory = (...args) => {
+        var result = elementFactory(...args);
+        if (fixture.dirtyableElements) {
+            sinon.stub(result, '$isDirty');
+            sinon.spy(result, '$setDirty');
+            sinon.spy(result, '$resetDirty');
+            sinon.spy(result, '$setManager');
+        }
+        fixture.allElements.push(result);
         return result;
     };
 }
@@ -75,13 +70,10 @@ function addFixtureSetup(fixture) {
             sinon.stub(fixture.lifecycleManager, '$change');
             fixture.container = fixture.containerFactory();
             // reset dirty flag of container
-            fixture.elementResetDirty = _.noop;
             fixture.container.$resetDirty();
-            // reset spies / stubs state
-            fixture.elementSetManager = sinon.spy();
-            fixture.elementIsDirty = sinon.stub();
-            fixture.elementSetDirty = sinon.spy();
-            fixture.elementResetDirty = sinon.spy();
+            if (fixture.dirtyableElements) {
+                _.forEach(fixture.containedElements, (elem) => elem.$resetDirty.reset());
+            }
         });
         afterEach('cleanup', () => {
             delete fixture.container;
@@ -105,9 +97,9 @@ function mutatorContract(description, fixture, mutator) {
         if (fixture.dirtyableElements) {
             it('does not affect elements\' lifecycle', function () {
                 mutator(fixture.container, fixture.elementFactory);
-                expect(fixture.elementIsDirty.called, '$isDirty called on element(s)').to.be.false;
-                expect(fixture.elementSetDirty.called, '$setDirty called on element(s)').to.be.false;
-                expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$isDirty.called'), '$isDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$setDirty.called'), '$setDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$resetDirty.called'), '$resetDirty called on element(s)').to.be.false;
             });
         }
     });
@@ -156,22 +148,22 @@ function testSetDirty(fixture) {
             [true, false].forEach((flagVal) => {
                 describe('setting flag to ' + flagVal + ' when elements $isDirty returns ' + !flagVal, () => {
                     it('makes $isDirty return ' + flagVal, function () {
-                        fixture.elementIsDirty.returns(!flagVal); // always two elements in the fixture
+                        fixture.containedElements.forEach((e) => e.$isDirty.returns(!flagVal));
                         expect(fixture.container.$isDirty(), 'container dirty before calling $setDirty(' + flagVal + ')').to.equal(!flagVal);
                         fixture.container.$setDirty(flagVal);
                         expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(' + flagVal + ')').to.equal(flagVal);
                     });
                     it('in read only form makes no changes', function () {
-                        fixture.elementIsDirty.returns(!flagVal); // always two elements in the fixture !
+                        fixture.containedElements.forEach((e) => e.$isDirty.returns(!flagVal));
                         expect(fixture.container.$isDirty(), 'container dirty before calling $setDirty(' + flagVal + ')').to.equal(!flagVal);
                         fixture.container.$asReadOnly().$setDirty(flagVal);
                         expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(' + flagVal + ')').to.equal(!flagVal);
                     });
                     it('does not affect elements\' lifecycle', function () {
                         fixture.container.$setDirty(flagVal);
-                        expect(fixture.elementIsDirty.called, '$isDirty called on element(s)').to.be.false;
-                        expect(fixture.elementSetDirty.called, '$setDirty called on element(s)').to.be.false;
-                        expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
+                        expect(_.any(fixture.containedElements, '$isDirty.called'), '$isDirty called on element(s)').to.be.false;
+                        expect(_.any(fixture.containedElements, '$setDirty.called'), '$resetDirty called on element(s)').to.be.false;
+                        expect(_.any(fixture.containedElements, '$resetDirty.called'), '$resetDirty called on element(s)').to.be.false;
                     });
                 });
             });
@@ -195,21 +187,21 @@ function testResetDirty(fixture) {
         fixture.setup();
         it('makes $isDirty return false', function () {
             fixture.container.$setDirty(true);
-            fixture.elementIsDirty.returns(false);
+            fixture.containedElements.forEach((e) => e.$isDirty.returns(false));
             expect(fixture.container.$isDirty(), 'container dirty before calling $resetDirty').to.be.true;
             fixture.container.$resetDirty();
             expect(fixture.container.$isDirty(), 'container dirty after calling $resetDirty').to.be.false;
         });
         if (fixture.dirtyableElements) {
             it('propagates to elements', function () {
-                expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$resetDirty.called'), '$resetDirty called on any element(s)').to.be.false;
                 fixture.container.$resetDirty();
-                expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.true; // todo assert called once per element?
+                expect(_.every(fixture.containedElements, '$resetDirty.called'), '$resetDirty called on all element(s)').to.be.true;
             });
             it('does not affect elements\' lifecycle', function () {
                 fixture.container.$resetDirty();
-                expect(fixture.elementIsDirty.called, '$isDirty called on element(s)').to.be.false;
-                expect(fixture.elementSetDirty.called, '$setDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$isDirty.called'), '$isDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$setDirty.called'), '$setDirty called on element(s)').to.be.false;
             });
         }
     });
@@ -233,34 +225,34 @@ function testIsDirty(fixture){
         it('after calling $setDirty returns true without checking elements', function () {
             fixture.container.$setDirty(true);
             var dirty = fixture.container.$isDirty();
-            expect(fixture.elementIsDirty.called, '$isDirty called on element(s)').to.be.false;
+            expect(_.any(fixture.containedElements, '$isDirty.called'), '$isDirty called on element(s)').to.be.false;
             expect(dirty, 'container dirty flag').to.be.true;
         });
         it('(when $setDirty not called) recourse through all elements and returns false by default', function () {
-            fixture.elementIsDirty.returns(false);
+            fixture.containedElements.forEach((e) => e.$isDirty.returns(false));
             var dirty = fixture.container.$isDirty();
             if (fixture.dirtyableElements) {
-                expect(fixture.elementIsDirty.calledTwice, '$isDirty called on element(s) twice').to.be.true; // always two elements in the fixture
+                expect(_.filter(fixture.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql(fixture.containedElements);
             }
             expect(dirty, 'container dirty flag').to.be.false;
         });
         if (fixture.dirtyableElements) {
             it('does not affect elements\' lifecycle', function () {
                 fixture.container.$isDirty();
-                expect(fixture.elementSetDirty.called, '$setDirty called on element(s)').to.be.false;
-                expect(fixture.elementResetDirty.called, '$resetDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$setDirty.called'), '$setDirty called on element(s)').to.be.false;
+                expect(_.any(fixture.containedElements, '$resetDirty.called'), '$resetDirty called on element(s)').to.be.false;
             });
             it("(when $setDirty not called) returns true after checking the first element and finding that it's dirty", function () {
-                fixture.elementIsDirty.onFirstCall().returns(true); // always two elements in the fixture
+                fixture.containedElements[0].$isDirty.returns(true);
                 var dirty = fixture.container.$isDirty();
-                expect(fixture.elementIsDirty.calledOnce, '$isDirty called on element(s) once').to.be.true;
+                expect(_.filter(fixture.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql([fixture.containedElements[0]]);
                 expect(dirty, 'container dirty flag').to.be.true;
             });
             it("(when $setDirty not called) returns true after checking the second element and finding that it's dirty", function () {
-                fixture.elementIsDirty.onFirstCall().returns(false);
-                fixture.elementIsDirty.onSecondCall().returns(true); // always two elements in the fixture
+                fixture.containedElements.forEach((e) => e.$isDirty.returns(false));
+                fixture.containedElements[fixture.containedElements.length - 1].$isDirty.returns(true);
                 var dirty = fixture.container.$isDirty();
-                expect(fixture.elementIsDirty.calledTwice, '$isDirty called on element(s) twice').to.be.true;
+                expect(_.filter(fixture.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql(fixture.containedElements);
                 expect(dirty, 'container dirty flag').to.be.true;
             });
         }
@@ -275,8 +267,8 @@ function testSetManager(fixture) {
             fixture.container.$setManager(manager);
             expect(fixture.container.__lifecycleManager__, 'container manager').to.equal(manager);
             if (fixture.dirtyableElements) {
-                expect(fixture.elementSetManager.calledTwice, 'container manager').to.be.true;
-                expect(fixture.elementSetManager.alwaysCalledWithExactly(manager), "elements $setManager called with manager").to.be.true;
+                expect(_.every(fixture.containedElements, '$setManager.called'), 'elements $setManager called').to.be.true;
+                expect(_.every(fixture.containedElements, (e) => e.$setManager.alwaysCalledWithExactly(manager)), "elements $setManager called with manager").to.be.true;
             }
         });
         it('in readonly form does not change the manager field', function () {
@@ -284,20 +276,20 @@ function testSetManager(fixture) {
             fixture.container.$asReadOnly().$setManager(manager);
             expect(fixture.container.__lifecycleManager__, 'container manager').to.be.undefined;
             if (fixture.dirtyableElements) {
-                expect(fixture.elementSetManager.called, 'container manager').to.be.false;
+                expect(_.any(fixture.containedElements, '$setManager.called'), 'elements $setManager called').to.be.false;
             }
         });
         it('with invalid type does not change the manager field', function () {
             fixture.container.$setManager({});
             expect(fixture.container.__lifecycleManager__, 'container manager').to.be.undefined;
             if (fixture.dirtyableElements) {
-                expect(fixture.elementSetManager.called, 'container manager').to.be.false;
+                expect(_.any(fixture.containedElements, '$setManager.called'), 'elements $setManager called').to.be.false;
             }
         });
     });
 }
 
-
+//TODO test that elements get the manager upon assignment
 function testMakeChange(fixture) {
 
 
