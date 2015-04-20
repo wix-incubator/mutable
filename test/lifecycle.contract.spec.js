@@ -38,16 +38,19 @@ export function lifecycleContract(){
     };
 }
 
+function setContainedElements(fixture) {
+    if (fixture.dirtyableElements) {
+        fixture.containedElements = _.intersection(fixture.allElements, _.values(fixture.container.__value__));
+        expect(fixture.containedElements.length).to.be.at.least(2);
+    } else {
+        fixture.containedElements = [];
+    }
+}
+
 function setFactoriesInFixture(fixture, containerFactory, elementFactory) {
     fixture.containerFactory = () => {
         fixture.allElements = [];
         var result = containerFactory(fixture.elementFactory(), fixture.elementFactory()); // always two elements in the fixture
-        if (fixture.dirtyableElements) {
-            fixture.containedElements = _.intersection(fixture.allElements, _.values(result.__value__));
-            expect(fixture.containedElements.length).to.be.at.least(2);
-        } else {
-            fixture.containedElements = [];
-        }
         return result;
     };
     fixture.elementFactory = (...args) => {
@@ -69,6 +72,7 @@ function addFixtureSetup(fixture) {
             fixture.lifecycleManager = new LifeCycleManager();
             sinon.stub(fixture.lifecycleManager, '$change');
             fixture.container = fixture.containerFactory();
+            setContainedElements(fixture);
             // reset dirty flag of container
             fixture.container.$resetDirty();
             if (fixture.dirtyableElements) {
