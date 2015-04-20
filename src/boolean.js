@@ -4,7 +4,7 @@ export default class _Boolean {
 
     static defaults(){ return false; }
 
-    static test(v){ return typeof v === 'boolean'; }
+    static validate(v){ return typeof v === 'boolean'; }
 
     static validateType(value) {
         return this.test(value);

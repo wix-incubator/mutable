@@ -4,7 +4,7 @@ export default class _Number {
 
     static defaults(){ return 0; }
 
-    static test(v){ return typeof v === 'number'; }
+    static validate(v){ return typeof v === 'number'; }
 
     static validateType(value) {
         return this.test(value);
