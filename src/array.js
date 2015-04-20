@@ -13,7 +13,7 @@ class _Array extends BaseType {
 	static defaults() { return []; }
 
 	static test(value) { return Array.isArray(value); }
-    
+
     static validateType(value) {
         var isValid = BaseType.validateType.call(this, value);
         if(isValid){
@@ -29,7 +29,7 @@ class _Array extends BaseType {
         }
         return isValid;
     }
-    
+
 	static wrapValue(value, spec, options) {
         if(value instanceof BaseType) {
             if (value.__value__.map) {
@@ -85,16 +85,16 @@ class _Array extends BaseType {
 		});
 	}
 
-	// To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
+    __lodashProxyWrap__(key, fn, ctx){
+        var valueArray = _[key](this.__value__, fn, ctx || this);
+        return new this.constructor(valueArray, this.__options__);
+    }
+    __lodashProxy__(key, fn, ctx){
+        var valueArray = _[key](this.__value__, fn, ctx || this);
+        return valueArray;
+    }
 
 	// Mutator methods
-	copyWithin() {
-        throw 'copyWithin not implemented yet. Please do.';
-    }
-
-    fill() {
-        throw 'fill not implemented yet. Please do.';
-    }
 
 	pop() {
 		if(this.$setDirty(true)){
@@ -102,6 +102,15 @@ class _Array extends BaseType {
         } else {
             return null;
         }
+        
+        if(this.__value__.length === 0){
+            return undefined;
+        }
+
+        this.$setDirty();
+        var itemValue = this.__value__.pop();
+
+        return this.constructor._wrapSingleItem(itemValue, this.__options__);
     }
 
     push(...newItems) {
@@ -123,11 +132,17 @@ class _Array extends BaseType {
         } else {
             return null;
         }
+        this.$setDirty();
+        
+        var valueArray = this.__value__.reverse();
+        return new this.constructor(valueArray, this.__options__);
     }
 
     shift() {
         if(this.$setDirty(true)){
-            return this.__value__.shift();
+            var newValue = this.__value__.shift();
+
+            return this.constructor._wrapSingleItem(newValue, this.__options__);
         } else {
             return null;
         }
@@ -167,9 +182,9 @@ class _Array extends BaseType {
         }
     }
 
-	unshift() {
+	unshift(el) {
         if(this.$setDirty(true)){
-            return this.__value__.unshift();
+            return this.__value__.unshift(el);
         } else {
             return null;
         }
@@ -188,19 +203,22 @@ class _Array extends BaseType {
 	join(separator ? = ',') {
         return this.__value__.join(separator);
     }
-    slice(){
-        throw 'slice not implemented yet. Please do.';
-    }
-    toSource(){
-        throw 'toSource not implemented yet. Please do.';
+    slice(begin, end) {
+        if (this.__isReadOnly__) {
+            return null;
+        }
+        this.$setDirty();
+        if(end) {
+            var newValue = this.__value__.slice(begin, end);
+            return new constructor(newValue, false, this.options);
+        } else {
+            var newValue = this.__value__.slice(b);
+            return new constructor(newValue, false, this.options);
+        }
     }
 
     toString(){
         return this.__value__.toString();
-    }
-
-    toPrettyPrint(){
-		return `[${this}]`;
     }
 
     valueOf(){
@@ -213,13 +231,14 @@ class _Array extends BaseType {
         throw 'toLocaleString not implemented yet. Please do.';
     }
 
-    indexOf(){
-        throw 'indexOf not implemented yet. Please do.';
+    indexOf(searchElement, fromIndex) {
+        return this.__value__.indexOf(searchElement, fromIndex || 0);
     }
 
-    lastIndexOf(){
-        throw 'lastIndexOf not implemented yet. Please do.';
+    lastIndexOf(searchElement, fromIndex) {
+        return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
     }
+
 	// Iteration methods
 
 	forEach(cb){
@@ -228,10 +247,6 @@ class _Array extends BaseType {
 			cb(item, index, that);
 		});
 	}
-
-	entries(){
-        throw 'entries not implemented yet. Please do.';
-    }
 
     find(cb){
 		var self = this;
@@ -248,44 +263,41 @@ class _Array extends BaseType {
         });
     }
 
-	keys(){
-        throw 'keys not implemented yet. Please do.';
+	setValue(newValue) {
+		if(newValue instanceof _Array) {
+			newValue = newValue.toJSON();
+		}
+		if(_.isArray(newValue)) {
+			//fix bug #33. reset the current array instead of replacing it;
+            this.__value__.length = 0;
+            _.forEach(newValue, (itemValue) => {
+                this.push(itemValue);
+            });
+        }
     }
 
-    map(fn, ctx){
-    	return this.__lodashProxy__('map', fn, ctx);
+    map(fn, ctx) {
+    	return this.__lodashProxyWrap__('map', fn, ctx);
     }
 
-    __lodashProxy__(key, fn, ctx){
-        var valueArray = _[key](this.__value__, fn, ctx || this);
-        return new this.constructor(valueArray, this.__options__);
+    reduce(fn, initialAccumilatorValue, ctx) {
+        var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
+        return newValue;
     }
 
-    reduce(){
-        throw 'reduce not implemented yet. Please do.';
+    every(fn, ctx) {
+        return this.__lodashProxy__('every', fn, ctx);
     }
 
-    reduceRight(){
-        throw 'reduceRight not implemented yet. Please do.';
+    some(fn, ctx) {
+        return this.__lodashProxy__('some', fn, ctx);
     }
 
-    every(){
-        throw 'every not implemented yet. Please do.';
+    filter(fn, ctx) {
+        return this.__lodashProxy__('filter', fn, ctx);
     }
-
-    some(){
-        throw 'some not implemented yet. Please do.';
-    }
-
-    filter(){
-        throw 'filter not implemented yet. Please do.';
-    }
-
-    values(){
-        throw 'values not implemented yet. Please do.';
-    }
-
 }
+
 _Array.withDefault = generateWithDefault();
 
 export default Typorama.define('Array',{

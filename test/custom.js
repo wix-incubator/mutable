@@ -288,7 +288,6 @@ describe('Custom data', function() {
 
 			expect(userData.child instanceof UserType).to.equal(true);
 		})
-
 	});
 
 	describe('(Read Only) instance', function() {
