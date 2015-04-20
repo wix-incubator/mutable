@@ -5,7 +5,6 @@ import {makeDirtyable} from "./lifecycle"
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
     readOnlyInstance.__isReadOnly__ = true;
-    readOnlyInstance.constructor = source.constructor;
     return readOnlyInstance;
 }
 
