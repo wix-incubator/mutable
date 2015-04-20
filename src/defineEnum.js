@@ -15,21 +15,25 @@ function createEnumMember(key, value, proto) {
 	return Object.freeze(member);
 }
 
+function convertToObject(def){
+	var tdef = {};
+	def.forEach(function(key) {
+		tdef[key] = key;
+	});
+	return tdef;
+}
+
 function defineEnum(def) {
 
 	var EnumType = function() {
 		throw TypeError("Enum cannot be instantiated");
 	}
-;
+
 	if(Array.isArray(def)) {
-		var tdef = {};
-		def.forEach(function(key) {
-			tdef[key] = key;
-		});
-		def = tdef;
+	    def = convertToObject(def);
 	}
 
-	Object.keys(def).forEach(function(key) {
+	Object.keys(def).forEach(function(key) { 
 		EnumType[key] = EnumType[key] = createEnumMember(key, def[key], EnumType.prototype);
 	});
 
