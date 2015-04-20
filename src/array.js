@@ -97,49 +97,48 @@ class _Array extends BaseType {
     }
 
 	pop() {
-		if (this.__isReadOnly__) {
+		if(this.$setDirty(true)){
+            return this.__value__.pop();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.pop();
     }
 
     push(...newItems) {
-		if(this.__isReadOnly__) {
-			return null;
-		}
+        if(this.$setDirty(true)){
+            var options = this.__options__;
 
-        this.$setDirty(true);
-        var options = this.__options__;
-
-		return Array.prototype.push.apply(
-			this.__value__,
-			newItems.map((item) => this.constructor._wrapSingleItem(item, options))
-		);
+            return Array.prototype.push.apply(
+                this.__value__,
+                newItems.map((item) => this.constructor._wrapSingleItem(item, options))
+            );
+        } else {
+            return null;
+        }
 	}
 
 	reverse() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.reverse();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.reverse();
     }
 
     shift() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.shift();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.shift();
     }
 
     sort(cb) {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.sort(cb);
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.sort(cb);
     }
 
     setValue(newValue) {
@@ -156,24 +155,24 @@ class _Array extends BaseType {
 	}
 
     splice(index, removeCount, ...addedItems) {
-        if(this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            var spliceParams = [index, removeCount];
+            addedItems.forEach(function (newItem) {
+                spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+            }.bind(this));
+            return this.__value__.splice.apply(this.__value__, spliceParams);
+            //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        var spliceParams = [index,removeCount];
-        addedItems.forEach(function(newItem) {
-           spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
-        }.bind(this));
-        return this.__value__.splice.apply(this.__value__, spliceParams);
-        //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
     }
 
 	unshift() {
-        if (this.__isReadOnly__) {
+        if(this.$setDirty(true)){
+            return this.__value__.unshift();
+        } else {
             return null;
         }
-        this.$setDirty(true);
-        return this.__value__.unshift();
     }
 
 	// Accessor methods
@@ -189,52 +188,52 @@ class _Array extends BaseType {
 	join(separator ? = ',') {
         return this.__value__.join(separator);
     }
-    slice() {
+    slice(){
         throw 'slice not implemented yet. Please do.';
     }
-    toSource() {
+    toSource(){
         throw 'toSource not implemented yet. Please do.';
     }
 
-    toString() {
+    toString(){
         return this.__value__.toString();
     }
 
-    toPrettyPrint() {
+    toPrettyPrint(){
 		return `[${this}]`;
     }
 
-    valueOf() {
+    valueOf(){
         return this.__value__.map(function(item) {
             return item.valueOf();
         });
     }
 
-    toLocaleString() {
+    toLocaleString(){
         throw 'toLocaleString not implemented yet. Please do.';
     }
 
-    indexOf() {
+    indexOf(){
         throw 'indexOf not implemented yet. Please do.';
     }
 
-    lastIndexOf() {
+    lastIndexOf(){
         throw 'lastIndexOf not implemented yet. Please do.';
     }
 	// Iteration methods
 
-	forEach(cb) {
+	forEach(cb){
 		var that = this;
 		this.__value__.forEach(function(item, index, arr) {
 			cb(item, index, that);
 		});
 	}
 
-	entries() {
+	entries(){
         throw 'entries not implemented yet. Please do.';
     }
 
-    find(cb) {
+    find(cb){
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
 			return cb(element, index, self);
@@ -242,31 +241,18 @@ class _Array extends BaseType {
 		return _.find(this.__value__, cb);
 	}
 
-    findIndex(cb) {
+    findIndex(cb){
         var self = this;
         return _.findIndex(this.__value__, function (element, index, array) {
             return cb(element, index, self)
         });
     }
 
-	keys() {
+	keys(){
         throw 'keys not implemented yet. Please do.';
     }
 
-	setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-            this.__value__.length = 0;
-            _.forEach(newValue, (itemValue) => {
-                this.push(itemValue);
-            });
-        }
-    }
-
-    map(fn, ctx) {
+    map(fn, ctx){
     	return this.__lodashProxy__('map', fn, ctx);
     }
 
@@ -275,27 +261,27 @@ class _Array extends BaseType {
         return new this.constructor(valueArray, this.__options__);
     }
 
-    reduce() {
+    reduce(){
         throw 'reduce not implemented yet. Please do.';
     }
 
-    reduceRight() {
+    reduceRight(){
         throw 'reduceRight not implemented yet. Please do.';
     }
 
-    every() {
+    every(){
         throw 'every not implemented yet. Please do.';
     }
 
-    some() {
+    some(){
         throw 'some not implemented yet. Please do.';
     }
 
-    filter() {
+    filter(){
         throw 'filter not implemented yet. Please do.';
     }
 
-    values() {
+    values(){
         throw 'values not implemented yet. Please do.';
     }
 

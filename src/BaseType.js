@@ -1,5 +1,5 @@
 import _ from "lodash"
-import {dirty} from "./lifecycle"
+import {makeDirtyable} from "./lifecycle"
 
 
 function createReadOnly(source){
@@ -28,7 +28,6 @@ export default class BaseType {
     constructor(value, options = {}){
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
-        this.__dirty__ = dirty.unKnown;
         this.__options__ = options;
         this.__value__ = this.constructor.wrapValue(
             (value === undefined) ? this.constructor.defaults() : value,
@@ -38,50 +37,23 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        this.$setDirty(true);
-        if(newValue instanceof BaseType){
-            newValue = newValue.toJSON();
-        }
-        _.forEach(newValue, (fieldValue, fieldName) => {
-            var Type = this.constructor._spec[fieldName];
-            if (Type && Type.type.id === 'Array') {
-                this[fieldName].setValue(fieldValue);
-            } else if(Type){
-                this[fieldName] = fieldValue;
+        if (this.$setDirty(true)) {
+            if (newValue instanceof BaseType) {
+                newValue = newValue.toJSON();
             }
-        });
+            _.forEach(newValue, (fieldValue, fieldName) => {
+                var Type = this.constructor._spec[fieldName];
+                if (Type && Type.type.id === 'Array') {
+                    this[fieldName].setValue(fieldValue);
+                } else if (Type) {
+                    this[fieldName] = fieldValue;
+                }
+            });
+        }
     }
 
     $asReadOnly(){
         return this.__readOnlyInstance__;
-    }
-
-    // called when a change has been made to this object directly or after changes are paused #lifecycle
-    $setDirty(isDirty) {
-        if (!this.__isReadOnly__ && isDirty !== undefined) {
-            this.__dirty__ = isDirty ? dirty.yes : dirty.no;
-        }
-    }
-
-    // may be called at any time #lifecycle
-    $isDirty() {
-        return this.__dirty__.isKnown ? this.__dirty__.isDirty :
-            _.any(this.__value__, (val) => val.$isDirty && val.$isDirty());
-    }
-
-    // resets the dirty state to unknown #lifecycle
-    $resetDirty(){
-        if (!this.__isReadOnly__) {
-            this.__dirty__ = dirty.unKnown;
-            _.forEach(this.__value__, (val) => {
-                if (val.$resetDirty && _.isFunction(val.$resetDirty)) {
-                    val.$resetDirty();
-                }
-            });
-        } else {
-            // todo:warn hook
-            console.warn('resetting dirty flag on read only!');
-        }
     }
 
     toJSON(){
@@ -98,3 +70,5 @@ export default class BaseType {
     }
 
 }
+
+makeDirtyable(BaseType);
