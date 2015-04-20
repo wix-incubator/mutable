@@ -29,28 +29,31 @@ describe('Enum Type', function() {
             expect(ape).to.be.equal(Ape.chimp);
         });
 
-        it("each member is a string", function() {
+        it("each member can have a string value", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            expect(Ape.chimp.valueOf()).to.be.equal("chimp");
-            expect(Ape.gorilla.valueOf()).to.be.equal("gorilla");
+            expect(Ape.chimp.value).to.be.equal("chimp");
+            expect(Ape.gorilla.value).to.be.equal("gorilla");
         });
 
         it("members can have a custom string value", function() {
             var Ape = Typorama.defineEnum({ chimp: "_chimp_", gorilla: "_gorilla_" });
-            expect(Ape.chimp.valueOf()).to.be.equal("_chimp_");
-            expect(Ape.gorilla.valueOf()).to.be.equal("_gorilla_");
+            expect("" + Ape.chimp).to.be.equal("_chimp_");
+            expect("" + Ape.gorilla).to.be.equal("_gorilla_");
         });
 
-        it("members can be numbers", function() {
+        it("members can have number value", function() {
             var Ape = Typorama.defineEnum({ chimp: 0, gorilla: 1 });
-            expect(Ape.chimp.valueOf()).to.be.equal(0);
-            expect(Ape.gorilla.valueOf()).to.be.equal(1);
+            expect(0 + Ape.chimp).to.be.equal(0);
+            expect(0 + Ape.gorilla).to.be.equal(1);
         });
 
         it("members can have object values", function() {
-            var Ape = Typorama.defineEnum({ chimp: { i: 1 }, gorilla: { i: 2 } });
-            expect(Ape.chimp.i).to.be.equal(1);
-            expect(Ape.gorilla.i).to.be.equal(2);
+            var Ape = Typorama.defineEnum({ 
+                chimp: { dateOfBirth: "11/11/1980" }, 
+                gorilla: { dateOfBirth: "12/12/1995" } 
+            });
+            expect(Ape.chimp.value.dateOfBirth).to.be.equal("11/11/1980");
+            expect(Ape.gorilla.value.dateOfBirth).to.be.equal("12/12/1995");
         });
 
         it("member is immutable", function() {
@@ -63,6 +66,11 @@ describe('Enum Type', function() {
         it("instanceOf works", function() {
             var Ape = Typorama.defineEnum({ chimp: 1, gorilla: 2 });
             expect(Ape.chimp).to.be.instanceof(Ape);
+        });
+
+        it("members have a key which is the originl key in the def", function() {
+            var Ape = Typorama.defineEnum({ chimp: 1, gorilla: 2 });
+            expect(Ape.chimp.key).to.be.equal("chimp");
         });
     });
 });
