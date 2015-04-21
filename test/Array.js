@@ -274,12 +274,12 @@ describe('Array data', function() {
 		describe('pop', function() {
             it('should remove the last element from an array', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                var lengthBeforePop = numberList.length;
+                var oldArr = numberList.concat();
 
                 var valueRemoved = numberList.pop();
 
-                expect(numberList.length).to.equal(lengthBeforePop - 1);
-                expect(valueRemoved).to.equal(4);
+                expect(numberList.length).to.equal(oldArr.length - 1);
+                expect(valueRemoved).to.equal(oldArr.at(oldArr.length - 1));
             });
 
             it('should return undefined if called on an empty array', function() {
@@ -324,7 +324,7 @@ describe('Array data', function() {
                 var arrayBeforeShift = numberList.concat();
                 
                 var valueRemoved = numberList.shift();
-                debugger
+
                 expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
             });
 
@@ -341,16 +341,22 @@ describe('Array data', function() {
         });
 
         describe('sort', function() {
-            it('should sort the elements of an anarray in place, and returns the array', function() {
+            it('should sort the elements of an array in place', function() {
                 var stringArray = Typorama.Array.of(Typorama.String).create(['Blue', 'Humpback', 'Beluga']);
                 var numberArray = Typorama.Array.of(Typorama.Number).create([40, 1, 5, 200]);
 
                 function compareNumbers(a, b) {
                     return a - b;
                 }
-                expect(stringArray.sort()).to.eql(['Beluga', 'Blue', 'Humpback']);
-                expect(numberArray.sort()).to.eql([1, 200, 40, 5]);
-                expect(numberArray.sort(compareNumbers)).to.eql([1, 5, 40, 200]);
+
+                var sortedStringArray = stringArray.sort().toJSON();
+                var sortedNumberArray = numberArray.sort().toJSON();
+                var funkySortNumberArray = numberArray.sort(compareNumbers).toJSON();
+
+
+                expect(sortedStringArray).to.eql(sortedStringArray.sort());
+                expect(sortedNumberArray).to.eql(sortedNumberArray.sort());
+                expect(funkySortNumberArray).to.eql(funkySortNumberArray.sort(compareNumbers));
             });
 
             lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');

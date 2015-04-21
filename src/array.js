@@ -97,20 +97,14 @@ class _Array extends BaseType {
 	// Mutator methods
 
 	pop() {
-		if(this.$setDirty(true)){
+		if(this.$setDirty(true)) {
+            if(this.__value__.length === 0) {
+                return undefined;
+            }
             return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
         } else {
             return null;
         }
-        
-        if(this.__value__.length === 0){
-            return undefined;
-        }
-
-        this.$setDirty();
-        var itemValue = this.__value__.pop();
-
-        return this.constructor._wrapSingleItem(itemValue, this.__options__);
     }
 
     push(...newItems) {
@@ -134,7 +128,7 @@ class _Array extends BaseType {
 
     shift() {
         if(this.$setDirty(true)){
-            return this.constructor._wrapSingleItem(newValue, this.__options__);
+            return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
         } else {
             return null;
         }
@@ -176,7 +170,7 @@ class _Array extends BaseType {
 
 	unshift(el) {
         if(this.$setDirty(true)){
-            return new this.constructor(this.__value__.unshift(el), this.__options__);
+            return this.__value__.unshift(el);
         } else {
             return null;
         }
