@@ -98,7 +98,7 @@ class _Array extends BaseType {
 
 	pop() {
 		if(this.$setDirty(true)){
-            return this.__value__.pop();
+            return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
         } else {
             return null;
         }
@@ -115,11 +115,9 @@ class _Array extends BaseType {
 
     push(...newItems) {
         if(this.$setDirty(true)){
-            var options = this.__options__;
-
             return Array.prototype.push.apply(
                 this.__value__,
-                newItems.map((item) => this.constructor._wrapSingleItem(item, options))
+                newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__))
             );
         } else {
             return null;
@@ -128,20 +126,14 @@ class _Array extends BaseType {
 
 	reverse() {
         if(this.$setDirty(true)){
-            return this.__value__.reverse();
+            return new this.constructor(this.__value__.reverse(), this.__options__);
         } else {
             return null;
         }
-        this.$setDirty();
-        
-        var valueArray = this.__value__.reverse();
-        return new this.constructor(valueArray, this.__options__);
     }
 
     shift() {
         if(this.$setDirty(true)){
-            var newValue = this.__value__.shift();
-
             return this.constructor._wrapSingleItem(newValue, this.__options__);
         } else {
             return null;
@@ -150,7 +142,7 @@ class _Array extends BaseType {
 
     sort(cb) {
         if(this.$setDirty(true)){
-            return this.__value__.sort(cb);
+            return new this.constructor(this.__value__.sort(cb), this.__options__);
         } else {
             return null;
         }
@@ -184,7 +176,7 @@ class _Array extends BaseType {
 
 	unshift(el) {
         if(this.$setDirty(true)){
-            return this.__value__.unshift(el);
+            return new this.constructor(this.__value__.unshift(el), this.__options__);
         } else {
             return null;
         }
