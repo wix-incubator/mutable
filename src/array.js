@@ -12,8 +12,8 @@ class _Array extends BaseType {
 
 	static defaults() { return []; }
 
-	static test(value) { return Array.isArray(value); }
-
+	static validate(value) { return Array.isArray(value); }
+    
     static validateType(value) {
         var isValid = BaseType.validateType.call(this, value);
         if(isValid){
@@ -55,8 +55,8 @@ class _Array extends BaseType {
 
 			var subType = options.subTypes[
 				itemValue._type ? itemValue._type  :
-				Number.test(itemValue) ? Number.name :
-				String.test(itemValue) ? String.name :
+				Number.validate(itemValue) ? Number.name :
+				String.validate(itemValue) ? String.name :
 				Object.keys(options.subTypes)[0]
 			];
 
