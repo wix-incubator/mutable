@@ -263,19 +263,6 @@ class _Array extends BaseType {
         });
     }
 
-	setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-            this.__value__.length = 0;
-            _.forEach(newValue, (itemValue) => {
-                this.push(itemValue);
-            });
-        }
-    }
-
     map(fn, ctx) {
     	return this.__lodashProxyWrap__('map', fn, ctx);
     }
