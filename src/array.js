@@ -12,33 +12,33 @@ class _Array extends BaseType {
 
 	static defaults() { return []; }
 
-	static test(value) { return Array.isArray(value); }
-    
-    static validateType(value) {
-        var isValid = BaseType.validateType.call(this, value);
-        if(isValid){
-            var subTypes = this.options.subTypes;
-            var valueSubTypes = value.__options__.subTypes;
-            if(typeof subTypes === 'function'){
-                isValid = subTypes === valueSubTypes;
-            } else {
-                isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
-                    return subTypes[Type.id || Type.name] === Type;
-                });
-            }
-        }
-        return isValid;
-    }
-    
+	static validate(value) { return Array.isArray(value); }
+	
+	static validateType(value) {
+		var isValid = BaseType.validateType.call(this, value);
+		if(isValid){
+			var subTypes = this.options.subTypes;
+			var valueSubTypes = value.__options__.subTypes;
+			if(typeof subTypes === 'function'){
+				isValid = subTypes === valueSubTypes;
+			} else {
+				isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
+					return subTypes[Type.id || Type.name] === Type;
+				});
+			}
+		}
+		return isValid;
+	}
+
 	static wrapValue(value, spec, options) {
-        if(value instanceof BaseType) {
-            if (value.__value__.map) {
-                return value.__value__.map((itemValue) => {
-                    return this._wrapSingleItem(itemValue, options);
-                }, this);
-            } else {
-                throw new Error('illegal value type : ' + value.constructor.id);
-            }
+		if(value instanceof BaseType) {
+			if (value.__value__.map) {
+				return value.__value__.map((itemValue) => {
+					return this._wrapSingleItem(itemValue, options);
+				}, this);
+			} else {
+				throw new Error('illegal value type : ' + value.constructor.id);
+			}
 		}
 
 		return value.map((itemValue) => {
@@ -55,8 +55,8 @@ class _Array extends BaseType {
 
 			var subType = options.subTypes[
 				itemValue._type ? itemValue._type  :
-				Number.test(itemValue) ? Number.name :
-				String.test(itemValue) ? String.name :
+				Number.validate(itemValue) ? Number.name :
+				String.validate(itemValue) ? String.name :
 				Object.keys(options.subTypes)[0]
 			];
 
@@ -85,96 +85,84 @@ class _Array extends BaseType {
 		});
 	}
 
-	// To check with Nadav: map, pop, push, reverse, shift, sort, concat, slice, some, unshift, join, valueOf
+	__lodashProxyWrap__(key, fn, ctx){
+		var valueArray = _[key](this.__value__, fn, ctx || this);
+		return new this.constructor(valueArray, this.__options__);
+	}
+	__lodashProxy__(key, fn, ctx){
+		var valueArray = _[key](this.__value__, fn, ctx || this);
+		return valueArray;
+	}
 
 	// Mutator methods
-	copyWithin() {
-        throw 'copyWithin not implemented yet. Please do.';
-    }
-
-    fill() {
-        throw 'fill not implemented yet. Please do.';
-    }
 
 	pop() {
-		if (this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty(true);
-        return this.__value__.pop();
-    }
-
-    push(...newItems) {
-		if(this.__isReadOnly__) {
+		if(this.$setDirty(true)) {
+			if(this.__value__.length === 0) {
+				return undefined;
+			}
+			return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
+		} else {
 			return null;
 		}
+	}
 
-        this.$setDirty(true);
-        var options = this.__options__;
-
-		return Array.prototype.push.apply(
-			this.__value__,
-			newItems.map((item) => this.constructor._wrapSingleItem(item, options))
-		);
+	push(...newItems) {
+		if(this.$setDirty(true)){
+			return Array.prototype.push.apply(
+				this.__value__,
+				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__))
+			);
+		} else {
+			return null;
+		}
 	}
 
 	reverse() {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty(true);
-        return this.__value__.reverse();
-    }
-
-    shift() {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty(true);
-        return this.__value__.shift();
-    }
-
-    sort(cb) {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty(true);
-        return this.__value__.sort(cb);
-    }
-
-    setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-			this.__value__.length = 0;
-			_.forEach(newValue, (itemValue) => {
-				this.push(itemValue);
-			});
+		if(this.$setDirty(true)){
+			this.__value__.reverse();
+			return this;
+		} else {
+			return null;
 		}
 	}
 
-    splice(index, removeCount, ...addedItems) {
-        if(this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty(true);
-        var spliceParams = [index,removeCount];
-        addedItems.forEach(function(newItem) {
-           spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
-        }.bind(this));
-        return this.__value__.splice.apply(this.__value__, spliceParams);
-        //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
-    }
+	shift() {
+		if(this.$setDirty(true)){
+			return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
+		} else {
+			return null;
+		}
+	}
 
-	unshift() {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty(true);
-        return this.__value__.unshift();
-    }
+	sort(cb) {
+		if(this.$setDirty(true)){
+			return new this.constructor(this.__value__.sort(cb), this.__options__);
+		} else {
+			return null;
+		}
+	}
+	
+	splice(index, removeCount, ...addedItems) {
+		if(this.$setDirty(true)){
+			var spliceParams = [index, removeCount];
+			addedItems.forEach(function (newItem) {
+				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+			}.bind(this));
+			return this.__value__.splice.apply(this.__value__, spliceParams);
+			//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+		} else {
+			return null;
+		}
+	}
+
+	unshift(el) {
+		if(this.$setDirty(true)){
+			return this.__value__.unshift(el);
+		} else {
+			return null;
+		}
+	}
 
 	// Accessor methods
 	at(index) {
@@ -187,54 +175,49 @@ class _Array extends BaseType {
 	}
 
 	join(separator ? = ',') {
-        return this.__value__.join(separator);
-    }
-    slice() {
-        throw 'slice not implemented yet. Please do.';
-    }
-    toSource() {
-        throw 'toSource not implemented yet. Please do.';
-    }
+		return this.__value__.join(separator);
+	}
 
-    toString() {
-        return this.__value__.toString();
-    }
+	slice(begin, end) {
+		if(end) {
+			return new this.constructor(this.__value__.slice(begin, end), this.__options__);
+		} else {
+			return new this.constructor(this.__value__.slice(begin), this.__options__);
+		}
+	}
 
-    toPrettyPrint() {
-		return `[${this}]`;
-    }
+	toString(){
+		return this.__value__.toString();
+	}
 
-    valueOf() {
-        return this.__value__.map(function(item) {
-            return item.valueOf();
-        });
-    }
+	valueOf(){
+		return this.__value__.map(function(item) {
+			return item.valueOf();
+		});
+	}
 
-    toLocaleString() {
-        throw 'toLocaleString not implemented yet. Please do.';
-    }
+	toLocaleString(){
+		throw 'toLocaleString not implemented yet. Please do.';
+	}
 
-    indexOf() {
-        throw 'indexOf not implemented yet. Please do.';
-    }
+	indexOf(searchElement, fromIndex) {
+		return this.__value__.indexOf(searchElement, fromIndex || 0);
+	}
 
-    lastIndexOf() {
-        throw 'lastIndexOf not implemented yet. Please do.';
-    }
+	lastIndexOf(searchElement, fromIndex) {
+		return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
+	}
+
 	// Iteration methods
 
-	forEach(cb) {
+	forEach(cb){
 		var that = this;
 		this.__value__.forEach(function(item, index, arr) {
 			cb(item, index, that);
 		});
 	}
 
-	entries() {
-        throw 'entries not implemented yet. Please do.';
-    }
-
-    find(cb) {
+	find(cb){
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
 			return cb(element, index, self);
@@ -242,64 +225,64 @@ class _Array extends BaseType {
 		return _.find(this.__value__, cb);
 	}
 
-    findIndex(cb) {
-        var self = this;
-        return _.findIndex(this.__value__, function (element, index, array) {
-            return cb(element, index, self)
-        });
+	findIndex(cb){
+		var self = this;
+		return _.findIndex(this.__value__, function (element, index, array) {
+			return cb(element, index, self)
+		});
+	}
+
+    map(fn, ctx) {
+    	return this.__lodashProxyWrap__('map', fn, ctx);
     }
 
-	keys() {
-        throw 'keys not implemented yet. Please do.';
+    reduce(fn, initialAccumilatorValue, ctx) {
+        var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
+        return newValue;
     }
 
+    every(fn, ctx) {
+        return this.__lodashProxy__('every', fn, ctx);
+    }
+
+    some(fn, ctx) {
+        return this.__lodashProxy__('some', fn, ctx);
+    }
+
+    filter(fn, ctx) {
+        return this.__lodashProxy__('filter', fn, ctx);
+    }
 	setValue(newValue) {
+        var changed = false;
 		if(newValue instanceof _Array) {
 			newValue = newValue.toJSON();
 		}
 		if(_.isArray(newValue)) {
 			//fix bug #33. reset the current array instead of replacing it;
-            this.__value__.length = 0;
-            _.forEach(newValue, (itemValue) => {
-                this.push(itemValue);
-            });
-        }
-    }
 
-    map(fn, ctx) {
-    	return this.__lodashProxy__('map', fn, ctx);
-    }
 
-    __lodashProxy__(key, fn, ctx){
-        var valueArray = _[key](this.__value__, fn, ctx || this);
-        return new this.constructor(valueArray, this.__options__);
-    }
-
-    reduce() {
-        throw 'reduce not implemented yet. Please do.';
-    }
-
-    reduceRight() {
-        throw 'reduceRight not implemented yet. Please do.';
-    }
-
-    every() {
-        throw 'every not implemented yet. Please do.';
-    }
-
-    some() {
-        throw 'some not implemented yet. Please do.';
-    }
-
-    filter() {
-        throw 'filter not implemented yet. Please do.';
-    }
-
-    values() {
-        throw 'values not implemented yet. Please do.';
-    }
+			_.forEach(newValue, (itemValue,idx) => {
+                if(itemValue instanceof BaseType || !this.at(idx) || !this.at(idx).setValue)
+                {
+                    changed = changed || (this.at(idx) !== itemValue);
+                    this.__value__[idx] = itemValue;
+                }else{
+                    var childChange = this.__value__[idx].setValue(itemValue);
+                    changed = changed || childChange;
+                }
+			});
+            changed = changed || (this.__value__.length != newValue.length);
+            if(changed)
+            {
+                this.$setDirty(true);
+            }
+            this.__value__.length = newValue.length;
+		}
+        return changed;
+	}
 
 }
+
 _Array.withDefault = generateWithDefault();
 
 export default Typorama.define('Array',{

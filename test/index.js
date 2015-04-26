@@ -9,3 +9,5 @@ import "./custom";
 import "./Array";
 import "./Function";
 import "./boolean";
+import "./enum";
+

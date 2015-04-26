@@ -31,6 +31,40 @@ describe('Custom data', function() {
 		});
 	});
 
+	var CompositeContainer = aDataTypeWithSpec({
+		name: Typorama.String.withDefault('leon'),
+		child1: UserType,
+		child2: UserType
+	}, 'UserWith2ChildType');
+
+	var PrimitivesContainer = aDataTypeWithSpec({
+		name: Typorama.String.withDefault('leon'),
+		child1: Typorama.String,
+		child2: Typorama.String
+	}, 'User');
+
+
+	var lifeCycleAsserter = lifecycleContract();
+	lifeCycleAsserter.addFixture(
+		(u1, u2) => {
+			var result = CompositeContainer.create();
+			result.child1 = u1;
+			result.child2 = u2;
+			return result;
+		},
+		() => UserType.create(),
+		'object with mutable elements');
+
+	lifeCycleAsserter.addFixture(
+		(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),
+		() => 'foobar',
+		'object with primitive elements'
+	);
+
+	describe('lifecycle:',function() {
+		lifeCycleAsserter.assertDirtyContract();
+	});
+
 	describe('mutable instance', function() {
 
 		describe('instantiation', function() {
@@ -163,39 +197,65 @@ describe('Custom data', function() {
 
 					expect(state.title).to.be.equal('new title');
 				});
-
+				lifeCycleAsserter.assertMutatorContract((obj) => obj.name = 'johnny', 'assignment on primitive field');
 			});
-
+			lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 		});
 
 		describe('setValue', function() {
-			it('should set all values from an incoming JSON according to schema', function() {
-				var instance = new UserType({address: '21 jump street'});
+            describe('with json input',function(){
+                it('should set all values from an incoming JSON according to schema', function() {
+                    var instance = new UserType({address: '21 jump street'});
+                    instance.setValue({name: 'zaphod', age: 42});
 
-				instance.setValue({name: 'zaphod', age: 42});
+                    expect(instance.name).to.equal('zaphod');
+                    expect(instance.age).to.equal(42);
+                    expect(instance.address).to.equal('21 jump street');
+                });
 
-				expect(instance.name).to.equal('zaphod');
-				expect(instance.age).to.equal(42);
-				expect(instance.address).to.equal('21 jump street');
-			});
+                it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
+                    var instance = new UserType();
+                    var wrapped = {name: 'zaphod'};
+                    instance.setValue(wrapped);
 
-			it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
-				var instance = new UserType();
-				var wrapped = {name: 'zaphod'};
-				instance.setValue(wrapped);
+                    wrapped.name = 'ford';
 
-				wrapped.name = 'ford';
+                    expect(instance.name).to.equal('zaphod');
+                });
 
-				expect(instance.name).to.equal('zaphod');
-			});
+                it('should ignore fields that appear in the passed object but not in the type schema', function() {
+                    var instance = new UserType();
 
-			it('should ignore fields that appear in the passed object but not in the type schema', function() {
-				var instance = new UserType();
+                    instance.setValue({numOfHeads: 2});
 
-				instance.setValue({numOfHeads: 2});
+                    expect(instance.numOfHeads).to.be.undefined;
+                });
 
-				expect(instance.numOfHeads).to.be.undefined;
-			});
+                it('should not invalidate if fields havnt changed', function() {
+                    var instance = new UserWithChildType();
+                    instance.setValue({child:{name: 'gaga'}});
+                    instance.$resetDirty();
+                    instance.setValue({child:{name: 'gaga'}});
+                    expect(instance.$isDirty()).to.be.equal(false);
+                });
+            })
+            describe('with typorama input',function(){
+                it('should set replace all values from an incoming object with typorama fields according to schema', function() {
+                    var instance = new UserWithChildType();
+                    var childInstance = new UserType({name: 'zaphod', age: 42});
+                    instance.setValue({child: childInstance});
+
+                    expect(instance.child).to.equal(childInstance);
+                });
+                it('should not invalidate if child instance hasnt is the same one', function() {
+                    var instance = new UserWithChildType();
+                    var childInstance = new UserType({name: 'zaphod', age: 42});
+                    instance.setValue({child: childInstance});
+                    instance.$resetDirty();
+                    instance.setValue({child: childInstance});
+                    expect(instance.$isDirty()).to.equal(false);
+                });
+            })
 		});
 
 		it('should chain with default calls', function() {
@@ -254,7 +314,6 @@ describe('Custom data', function() {
 
 			expect(userData.child instanceof UserType).to.equal(true);
 		})
-
 	});
 
 	describe('(Read Only) instance', function() {
@@ -333,42 +392,5 @@ describe('Custom data', function() {
 			expect(readOnlyChild instanceof UserType).to.equal(true);
 			expect(readOnlyChild.name).to.equal('bobi');
 		});
-	});
-
-	describe('lifecycle:',function() {
-
-		var CompositeContainer = aDataTypeWithSpec({
-			name: Typorama.String.withDefault('leon'),
-			child1: UserType,
-			child2: UserType
-		}, 'UserWith2ChildType');
-
-		var PrimitivesContainer = aDataTypeWithSpec({
-			name: Typorama.String.withDefault('leon'),
-			child1: Typorama.String,
-			child2: Typorama.String
-		}, 'User');
-
-
-		var lifeCycleAsserter = lifecycleContract();
-		lifeCycleAsserter.addFixture(
-			(u1, u2) => {
-				var result = CompositeContainer.create();
-				result.child1 = u1;
-				result.child2 = u2;
-				return result;
-			},
-			() => UserType.create(),
-			'object with mutable elements');
-
-		lifeCycleAsserter.addFixture(
-			(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),
-			() => 'foobar',
-			'object with primitive elements'
-		);
-
-		lifeCycleAsserter.assertDirtyContract();
-		lifeCycleAsserter.assertMutatorContract((obj) => obj.name = 'johnny', 'assignment on primitive field');
-		lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 	});
 });

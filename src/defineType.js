@@ -25,7 +25,7 @@ export default function(id, typeDefinition, TypeConstructor){
     };
     TypeConstructor.id                    = id;
     TypeConstructor.type                  = TypeConstructor;
-    TypeConstructor.test                  = TypeConstructor.test || defineTypeUtils.generateTest();
+    TypeConstructor.validate              = TypeConstructor.validate || defineTypeUtils.generateValidate();
     TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
     TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.generateWithDefault();
     TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
