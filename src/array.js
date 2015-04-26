@@ -13,32 +13,32 @@ class _Array extends BaseType {
 	static defaults() { return []; }
 
 	static validate(value) { return Array.isArray(value); }
-    
-    static validateType(value) {
-        var isValid = BaseType.validateType.call(this, value);
-        if(isValid){
-            var subTypes = this.options.subTypes;
-            var valueSubTypes = value.__options__.subTypes;
-            if(typeof subTypes === 'function'){
-                isValid = subTypes === valueSubTypes;
-            } else {
-                isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
-                    return subTypes[Type.id || Type.name] === Type;
-                });
-            }
-        }
-        return isValid;
-    }
+	
+	static validateType(value) {
+		var isValid = BaseType.validateType.call(this, value);
+		if(isValid){
+			var subTypes = this.options.subTypes;
+			var valueSubTypes = value.__options__.subTypes;
+			if(typeof subTypes === 'function'){
+				isValid = subTypes === valueSubTypes;
+			} else {
+				isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
+					return subTypes[Type.id || Type.name] === Type;
+				});
+			}
+		}
+		return isValid;
+	}
 
 	static wrapValue(value, spec, options) {
-        if(value instanceof BaseType) {
-            if (value.__value__.map) {
-                return value.__value__.map((itemValue) => {
-                    return this._wrapSingleItem(itemValue, options);
-                }, this);
-            } else {
-                throw new Error('illegal value type : ' + value.constructor.id);
-            }
+		if(value instanceof BaseType) {
+			if (value.__value__.map) {
+				return value.__value__.map((itemValue) => {
+					return this._wrapSingleItem(itemValue, options);
+				}, this);
+			} else {
+				throw new Error('illegal value type : ' + value.constructor.id);
+			}
 		}
 
 		return value.map((itemValue) => {
@@ -85,84 +85,84 @@ class _Array extends BaseType {
 		});
 	}
 
-    __lodashProxyWrap__(key, fn, ctx){
-        var valueArray = _[key](this.__value__, fn, ctx || this);
-        return new this.constructor(valueArray, this.__options__);
-    }
-    __lodashProxy__(key, fn, ctx){
-        var valueArray = _[key](this.__value__, fn, ctx || this);
-        return valueArray;
-    }
+	__lodashProxyWrap__(key, fn, ctx){
+		var valueArray = _[key](this.__value__, fn, ctx || this);
+		return new this.constructor(valueArray, this.__options__);
+	}
+	__lodashProxy__(key, fn, ctx){
+		var valueArray = _[key](this.__value__, fn, ctx || this);
+		return valueArray;
+	}
 
 	// Mutator methods
 
 	pop() {
 		if(this.$setDirty(true)) {
-            if(this.__value__.length === 0) {
-                return undefined;
-            }
-            return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
-        } else {
-            return null;
-        }
-    }
+			if(this.__value__.length === 0) {
+				return undefined;
+			}
+			return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
+		} else {
+			return null;
+		}
+	}
 
-    push(...newItems) {
-        if(this.$setDirty(true)){
-            return Array.prototype.push.apply(
-                this.__value__,
-                newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__))
-            );
-        } else {
-            return null;
-        }
+	push(...newItems) {
+		if(this.$setDirty(true)){
+			return Array.prototype.push.apply(
+				this.__value__,
+				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__))
+			);
+		} else {
+			return null;
+		}
 	}
 
 	reverse() {
-        if(this.$setDirty(true)){
-            this.__value__.reverse();
-            return this;
-        } else {
-            return null;
-        }
-    }
+		if(this.$setDirty(true)){
+			this.__value__.reverse();
+			return this;
+		} else {
+			return null;
+		}
+	}
 
-    shift() {
-        if(this.$setDirty(true)){
-            return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
-        } else {
-            return null;
-        }
-    }
+	shift() {
+		if(this.$setDirty(true)){
+			return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
+		} else {
+			return null;
+		}
+	}
 
-    sort(cb) {
-        if(this.$setDirty(true)){
-            return new this.constructor(this.__value__.sort(cb), this.__options__);
-        } else {
-            return null;
-        }
-    }
-    
-    splice(index, removeCount, ...addedItems) {
-        if(this.$setDirty(true)){
-            var spliceParams = [index, removeCount];
-            addedItems.forEach(function (newItem) {
-                spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
-            }.bind(this));
-            return this.__value__.splice.apply(this.__value__, spliceParams);
-            //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
-        } else {
-            return null;
-        }
-    }
+	sort(cb) {
+		if(this.$setDirty(true)){
+			return new this.constructor(this.__value__.sort(cb), this.__options__);
+		} else {
+			return null;
+		}
+	}
+	
+	splice(index, removeCount, ...addedItems) {
+		if(this.$setDirty(true)){
+			var spliceParams = [index, removeCount];
+			addedItems.forEach(function (newItem) {
+				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+			}.bind(this));
+			return this.__value__.splice.apply(this.__value__, spliceParams);
+			//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+		} else {
+			return null;
+		}
+	}
 
 	unshift(el) {
-        if(this.$setDirty(true)){
-            return this.__value__.unshift(el);
-        } else {
-            return null;
-        }
-    }
+		if(this.$setDirty(true)){
+			return this.__value__.unshift(el);
+		} else {
+			return null;
+		}
+	}
 
 	// Accessor methods
 	at(index) {
@@ -175,43 +175,43 @@ class _Array extends BaseType {
 	}
 
 	join(separator ? = ',') {
-        return this.__value__.join(separator);
-    }
-    slice(begin, end) {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty();
-        if(end) {
-            var newValue = this.__value__.slice(begin, end);
-            return new constructor(newValue, false, this.options);
-        } else {
-            var newValue = this.__value__.slice(b);
-            return new constructor(newValue, false, this.options);
-        }
-    }
+		return this.__value__.join(separator);
+	}
+	slice(begin, end) {
+		if (this.__isReadOnly__) {
+			return null;
+		}
+		this.$setDirty();
+		if(end) {
+			var newValue = this.__value__.slice(begin, end);
+			return new constructor(newValue, false, this.options);
+		} else {
+			var newValue = this.__value__.slice(b);
+			return new constructor(newValue, false, this.options);
+		}
+	}
 
-    toString(){
-        return this.__value__.toString();
-    }
+	toString(){
+		return this.__value__.toString();
+	}
 
-    valueOf(){
-        return this.__value__.map(function(item) {
-            return item.valueOf();
-        });
-    }
+	valueOf(){
+		return this.__value__.map(function(item) {
+			return item.valueOf();
+		});
+	}
 
-    toLocaleString(){
-        throw 'toLocaleString not implemented yet. Please do.';
-    }
+	toLocaleString(){
+		throw 'toLocaleString not implemented yet. Please do.';
+	}
 
-    indexOf(searchElement, fromIndex) {
-        return this.__value__.indexOf(searchElement, fromIndex || 0);
-    }
+	indexOf(searchElement, fromIndex) {
+		return this.__value__.indexOf(searchElement, fromIndex || 0);
+	}
 
-    lastIndexOf(searchElement, fromIndex) {
-        return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
-    }
+	lastIndexOf(searchElement, fromIndex) {
+		return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
+	}
 
 	// Iteration methods
 
@@ -222,7 +222,7 @@ class _Array extends BaseType {
 		});
 	}
 
-    find(cb){
+	find(cb){
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
 			return cb(element, index, self);
@@ -230,12 +230,12 @@ class _Array extends BaseType {
 		return _.find(this.__value__, cb);
 	}
 
-    findIndex(cb){
-        var self = this;
-        return _.findIndex(this.__value__, function (element, index, array) {
-            return cb(element, index, self)
-        });
-    }
+	findIndex(cb){
+		var self = this;
+		return _.findIndex(this.__value__, function (element, index, array) {
+			return cb(element, index, self)
+		});
+	}
 
 	setValue(newValue) {
 		if(newValue instanceof _Array) {
@@ -243,33 +243,33 @@ class _Array extends BaseType {
 		}
 		if(_.isArray(newValue)) {
 			//fix bug #33. reset the current array instead of replacing it;
-            this.__value__.length = 0;
-            _.forEach(newValue, (itemValue) => {
-                this.push(itemValue);
-            });
-        }
-    }
+			this.__value__.length = 0;
+			_.forEach(newValue, (itemValue) => {
+				this.push(itemValue);
+			});
+		}
+	}
 
-    map(fn, ctx) {
-    	return this.__lodashProxyWrap__('map', fn, ctx);
-    }
+	map(fn, ctx) {
+		return this.__lodashProxyWrap__('map', fn, ctx);
+	}
 
-    reduce(fn, initialAccumilatorValue, ctx) {
-        var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
-        return newValue;
-    }
+	reduce(fn, initialAccumilatorValue, ctx) {
+		var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
+		return newValue;
+	}
 
-    every(fn, ctx) {
-        return this.__lodashProxy__('every', fn, ctx);
-    }
+	every(fn, ctx) {
+		return this.__lodashProxy__('every', fn, ctx);
+	}
 
-    some(fn, ctx) {
-        return this.__lodashProxy__('some', fn, ctx);
-    }
+	some(fn, ctx) {
+		return this.__lodashProxy__('some', fn, ctx);
+	}
 
-    filter(fn, ctx) {
-        return this.__lodashProxy__('filter', fn, ctx);
-    }
+	filter(fn, ctx) {
+		return this.__lodashProxy__('filter', fn, ctx);
+	}
 }
 
 _Array.withDefault = generateWithDefault();
