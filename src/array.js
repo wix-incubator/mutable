@@ -120,7 +120,8 @@ class _Array extends BaseType {
 
 	reverse() {
         if(this.$setDirty(true)){
-            return new this.constructor(this.__value__.reverse(), this.__options__);
+            this.__value__.reverse();
+            return this;
         } else {
             return null;
         }
@@ -141,20 +142,7 @@ class _Array extends BaseType {
             return null;
         }
     }
-
-    setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-			this.__value__.length = 0;
-			_.forEach(newValue, (itemValue) => {
-				this.push(itemValue);
-			});
-		}
-	}
-
+    
     splice(index, removeCount, ...addedItems) {
         if(this.$setDirty(true)){
             var spliceParams = [index, removeCount];
