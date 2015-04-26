@@ -177,17 +177,12 @@ class _Array extends BaseType {
 	join(separator ? = ',') {
 		return this.__value__.join(separator);
 	}
+
 	slice(begin, end) {
-		if (this.__isReadOnly__) {
-			return null;
-		}
-		this.$setDirty();
 		if(end) {
-			var newValue = this.__value__.slice(begin, end);
-			return new constructor(newValue, false, this.options);
+			return new this.constructor(this.__value__.slice(begin, end), this.__options__);
 		} else {
-			var newValue = this.__value__.slice(b);
-			return new constructor(newValue, false, this.options);
+			return new this.constructor(this.__value__.slice(begin), this.__options__);
 		}
 	}
 

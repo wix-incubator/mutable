@@ -20,6 +20,14 @@ var UserWithAddressType = aDataTypeWithSpec({
 	address: AddressType
 }, 'UserWithAddress');
 
+function aStringArray() {
+	return Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"]);
+}
+
+function aNumberArray() {
+	return Typorama.Array.of(Typorama.Number).create([1,2]);
+}
+
 var lifeCycleAsserter = lifecycleContract();
 lifeCycleAsserter.addFixture(
 	(...elements) => Typorama.Array.of(UserType).create(elements),
@@ -373,6 +381,52 @@ describe('Array data', function() {
 			});
 		});
 
+		describe('slice', function () {
+			it('creates a slice of array from start up to, but not including, end. ', function () {
+				var numberArray = aNumberArray();
+
+				var slicedArray = numberArray.slice(1);
+
+				expect(slicedArray.at(0)).to.eql(numberArray.at(1));
+			});
+			it('should start from 0 if begin is omitted', function () {
+				var numberArray = aNumberArray();
+
+				var slicedArray = numberArray.slice();
+				
+				expect(slicedArray.at(0)).to.eql(numberArray.at(0));				
+			});
+			it('should offset from the end, if passed a negative begin value', function () {
+				var numberArray = aNumberArray();
+
+				var slicedArray = numberArray.slice(-(numberArray.length-1));
+
+				expect(slicedArray.at(0)).to.eql(numberArray.at(numberArray.length-1));
+			});
+			it('should offset from the end, if passed a negative end value', function () {
+				var numberArray = aNumberArray();
+
+				var slicedArray = numberArray.slice(0,-(numberArray.length-1));
+
+				expect(slicedArray.at(0)).to.eql(numberArray.at(0));
+			});
+			it('should not alter the original array', function () {
+				var numberArray = aNumberArray();
+				var oldArray = numberArray.concat();
+
+				var slicedArray = numberArray.concat(1,1);
+
+				expect(numberArray).to.eql(oldArray);
+			});
+			it('should return a typed object', function () {
+				var numberArray = aNumberArray();
+
+				var slicedArray = numberArray.concat(1,1);
+				
+				expect(slicedArray instanceof Typorama.Array).to.be.true;				
+			});
+		});
+
 		describe('toString', function() {
 			it('should take an array, and return a string', function() {
 				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
@@ -439,7 +493,6 @@ describe('Array data', function() {
 				var doubles = function(num) {
 					return num * 2;
 				};
-
 				var newList = numberList.map(doubles);
 
 				// Take a callback function and return an array
@@ -559,7 +612,6 @@ describe('Array data', function() {
 				});
 			});
 		});
-
 
 		describe('push',function() {
 			it('it should add a number to an array ', function() {
