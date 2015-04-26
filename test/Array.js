@@ -24,8 +24,8 @@ function aStringArray() {
 	return Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"]);
 }
 
-function aNumberArray() {
-	return Typorama.Array.of(Typorama.Number).create([1,2]);
+function aNumberArray(optionalArr) {
+	return Typorama.Array.of(Typorama.Number).create(optionalArr || [1,2]);
 }
 
 var lifeCycleAsserter = lifecycleContract();
@@ -382,10 +382,10 @@ describe('Array data', function() {
 		});
 
 		describe('slice', function () {
-			it('creates a slice of array from start up to, but not including, end. ', function () {
-				var numberArray = aNumberArray();
+			it('creates a slice of array from start up to the end of the array. ', function () {
+				var numberArray = aNumberArray([1,2,3]);
 
-				var slicedArray = numberArray.slice(1);
+				var slicedArray = numberArray.slice(1,3);
 
 				expect(slicedArray.at(0)).to.eql(numberArray.at(1));
 			});
@@ -394,21 +394,22 @@ describe('Array data', function() {
 
 				var slicedArray = numberArray.slice();
 				
-				expect(slicedArray.at(0)).to.eql(numberArray.at(0));				
+				expect(slicedArray).to.eql(numberArray);				
 			});
-			it('should offset from the end, if passed a negative begin value', function () {
-				var numberArray = aNumberArray();
+			it('should offset from the end, if passed a negative BEGIN value', function () {
+				var numberArray = aNumberArray([1,2,3]);
 
 				var slicedArray = numberArray.slice(-(numberArray.length-1));
-
-				expect(slicedArray.at(0)).to.eql(numberArray.at(numberArray.length-1));
+				
+				expect(slicedArray).to.eql(aNumberArray([2,3]));
 			});
-			it('should offset from the end, if passed a negative end value', function () {
-				var numberArray = aNumberArray();
+			it('should offset from the end, if passed a negative END value', function () {
+				var numberArray = aNumberArray([1,2,3]);
+				debugger;
 
-				var slicedArray = numberArray.slice(0,-(numberArray.length-1));
-
-				expect(slicedArray.at(0)).to.eql(numberArray.at(0));
+				var slicedArray = numberArray.slice(0, -1);
+				
+				expect(slicedArray).to.eql(aNumberArray([1,2]));
 			});
 			it('should not alter the original array', function () {
 				var numberArray = aNumberArray();
