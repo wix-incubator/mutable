@@ -203,33 +203,59 @@ describe('Custom data', function() {
 		});
 
 		describe('setValue', function() {
-			it('should set all values from an incoming JSON according to schema', function() {
-				var instance = new UserType({address: '21 jump street'});
+            describe('with json input',function(){
+                it('should set all values from an incoming JSON according to schema', function() {
+                    var instance = new UserType({address: '21 jump street'});
+                    instance.setValue({name: 'zaphod', age: 42});
 
-				instance.setValue({name: 'zaphod', age: 42});
+                    expect(instance.name).to.equal('zaphod');
+                    expect(instance.age).to.equal(42);
+                    expect(instance.address).to.equal('21 jump street');
+                });
 
-				expect(instance.name).to.equal('zaphod');
-				expect(instance.age).to.equal(42);
-				expect(instance.address).to.equal('21 jump street');
-			});
+                it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
+                    var instance = new UserType();
+                    var wrapped = {name: 'zaphod'};
+                    instance.setValue(wrapped);
 
-			it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
-				var instance = new UserType();
-				var wrapped = {name: 'zaphod'};
-				instance.setValue(wrapped);
+                    wrapped.name = 'ford';
 
-				wrapped.name = 'ford';
+                    expect(instance.name).to.equal('zaphod');
+                });
 
-				expect(instance.name).to.equal('zaphod');
-			});
+                it('should ignore fields that appear in the passed object but not in the type schema', function() {
+                    var instance = new UserType();
 
-			it('should ignore fields that appear in the passed object but not in the type schema', function() {
-				var instance = new UserType();
+                    instance.setValue({numOfHeads: 2});
 
-				instance.setValue({numOfHeads: 2});
+                    expect(instance.numOfHeads).to.be.undefined;
+                });
 
-				expect(instance.numOfHeads).to.be.undefined;
-			});
+                it('should not invalidate if fields havnt changed', function() {
+                    var instance = new UserWithChildType();
+                    instance.setValue({child:{name: 'gaga'}});
+                    instance.$resetDirty();
+                    instance.setValue({child:{name: 'gaga'}});
+                    expect(instance.$isDirty()).to.be.equal(false);
+                });
+            })
+            describe('with typorama input',function(){
+                it('should set replace all values from an incoming object with typorama fields according to schema', function() {
+                    var instance = new UserWithChildType();
+                    var childInstance = new UserType({name: 'zaphod', age: 42});
+                    instance.setValue({child: childInstance});
+
+                    expect(instance.child).to.equal(childInstance);
+                });
+                it('should not invalidate if child instance hasnt is the same one', function() {
+                    var instance = new UserWithChildType();
+                    var childInstance = new UserType({name: 'zaphod', age: 42});
+                    instance.setValue({child: childInstance});
+                    instance.$resetDirty();
+                    instance.setValue({child: childInstance});
+                    expect(instance.$isDirty()).to.equal(false);
+                });
+            })
 		});
 
 		it('should chain with default calls', function() {

@@ -13,32 +13,32 @@ class _Array extends BaseType {
 	static defaults() { return []; }
 
 	static validate(value) { return Array.isArray(value); }
-    
-    static validateType(value) {
-        var isValid = BaseType.validateType.call(this, value);
-        if(isValid){
-            var subTypes = this.options.subTypes;
-            var valueSubTypes = value.__options__.subTypes;
-            if(typeof subTypes === 'function'){
-                isValid = subTypes === valueSubTypes;
-            } else {
-                isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
-                    return subTypes[Type.id || Type.name] === Type;
-                });
-            }
-        }
-        return isValid;
-    }
+	
+	static validateType(value) {
+		var isValid = BaseType.validateType.call(this, value);
+		if(isValid){
+			var subTypes = this.options.subTypes;
+			var valueSubTypes = value.__options__.subTypes;
+			if(typeof subTypes === 'function'){
+				isValid = subTypes === valueSubTypes;
+			} else {
+				isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
+					return subTypes[Type.id || Type.name] === Type;
+				});
+			}
+		}
+		return isValid;
+	}
 
 	static wrapValue(value, spec, options) {
-        if(value instanceof BaseType) {
-            if (value.__value__.map) {
-                return value.__value__.map((itemValue) => {
-                    return this._wrapSingleItem(itemValue, options);
-                }, this);
-            } else {
-                throw new Error('illegal value type : ' + value.constructor.id);
-            }
+		if(value instanceof BaseType) {
+			if (value.__value__.map) {
+				return value.__value__.map((itemValue) => {
+					return this._wrapSingleItem(itemValue, options);
+				}, this);
+			} else {
+				throw new Error('illegal value type : ' + value.constructor.id);
+			}
 		}
 
 		return value.map((itemValue) => {
@@ -85,110 +85,84 @@ class _Array extends BaseType {
 		});
 	}
 
-    __lodashProxyWrap__(key, fn, ctx){
-        var valueArray = _[key](this.__value__, fn, ctx || this);
-        return new this.constructor(valueArray, this.__options__);
-    }
-    __lodashProxy__(key, fn, ctx){
-        var valueArray = _[key](this.__value__, fn, ctx || this);
-        return valueArray;
-    }
+	__lodashProxyWrap__(key, fn, ctx){
+		var valueArray = _[key](this.__value__, fn, ctx || this);
+		return new this.constructor(valueArray, this.__options__);
+	}
+	__lodashProxy__(key, fn, ctx){
+		var valueArray = _[key](this.__value__, fn, ctx || this);
+		return valueArray;
+	}
 
 	// Mutator methods
 
 	pop() {
+		if(this.$setDirty(true)) {
+			if(this.__value__.length === 0) {
+				return undefined;
+			}
+			return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
+		} else {
+			return null;
+		}
+	}
+
+	push(...newItems) {
 		if(this.$setDirty(true)){
-            return this.__value__.pop();
-        } else {
-            return null;
-        }
-        
-        if(this.__value__.length === 0){
-            return undefined;
-        }
-
-        this.$setDirty();
-        var itemValue = this.__value__.pop();
-
-        return this.constructor._wrapSingleItem(itemValue, this.__options__);
-    }
-
-    push(...newItems) {
-        if(this.$setDirty(true)){
-            var options = this.__options__;
-
-            return Array.prototype.push.apply(
-                this.__value__,
-                newItems.map((item) => this.constructor._wrapSingleItem(item, options))
-            );
-        } else {
-            return null;
-        }
+			return Array.prototype.push.apply(
+				this.__value__,
+				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__))
+			);
+		} else {
+			return null;
+		}
 	}
 
 	reverse() {
-        if(this.$setDirty(true)){
-            return this.__value__.reverse();
-        } else {
-            return null;
-        }
-        this.$setDirty();
-        
-        var valueArray = this.__value__.reverse();
-        return new this.constructor(valueArray, this.__options__);
-    }
-
-    shift() {
-        if(this.$setDirty(true)){
-            var newValue = this.__value__.shift();
-
-            return this.constructor._wrapSingleItem(newValue, this.__options__);
-        } else {
-            return null;
-        }
-    }
-
-    sort(cb) {
-        if(this.$setDirty(true)){
-            return this.__value__.sort(cb);
-        } else {
-            return null;
-        }
-    }
-
-    setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-			this.__value__.length = 0;
-			_.forEach(newValue, (itemValue) => {
-				this.push(itemValue);
-			});
+		if(this.$setDirty(true)){
+			this.__value__.reverse();
+			return this;
+		} else {
+			return null;
 		}
 	}
 
-    splice(index, removeCount, ...addedItems) {
-        if(this.$setDirty(true)){
-            var spliceParams = [index, removeCount];
-            addedItems.forEach(function (newItem) {
-                spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
-            }.bind(this));
-            return this.__value__.splice.apply(this.__value__, spliceParams);
-            //return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
-        } else {
-            return null;
-        }
-    }
+	shift() {
+		if(this.$setDirty(true)){
+			return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
+		} else {
+			return null;
+		}
+	}
+
+	sort(cb) {
+		if(this.$setDirty(true)){
+			return new this.constructor(this.__value__.sort(cb), this.__options__);
+		} else {
+			return null;
+		}
+	}
+	
+	splice(index, removeCount, ...addedItems) {
+		if(this.$setDirty(true)){
+			var spliceParams = [index, removeCount];
+			addedItems.forEach(function (newItem) {
+				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+			}.bind(this));
+			return this.__value__.splice.apply(this.__value__, spliceParams);
+			//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
+		} else {
+			return null;
+		}
+	}
 
 	unshift(el) {
-        if(this.$setDirty(true)){
-            return this.__value__.unshift(el);
-        } else {
-            return null;
-        }
-    }
+		if(this.$setDirty(true)){
+			return this.__value__.unshift(el);
+		} else {
+			return null;
+		}
+	}
 
 	// Accessor methods
 	at(index) {
@@ -201,43 +175,38 @@ class _Array extends BaseType {
 	}
 
 	join(separator ? = ',') {
-        return this.__value__.join(separator);
-    }
-    slice(begin, end) {
-        if (this.__isReadOnly__) {
-            return null;
-        }
-        this.$setDirty();
-        if(end) {
-            var newValue = this.__value__.slice(begin, end);
-            return new constructor(newValue, false, this.options);
-        } else {
-            var newValue = this.__value__.slice(b);
-            return new constructor(newValue, false, this.options);
-        }
-    }
+		return this.__value__.join(separator);
+	}
 
-    toString(){
-        return this.__value__.toString();
-    }
+	slice(begin, end) {
+		if(end) {
+			return new this.constructor(this.__value__.slice(begin, end), this.__options__);
+		} else {
+			return new this.constructor(this.__value__.slice(begin), this.__options__);
+		}
+	}
 
-    valueOf(){
-        return this.__value__.map(function(item) {
-            return item.valueOf();
-        });
-    }
+	toString(){
+		return this.__value__.toString();
+	}
 
-    toLocaleString(){
-        throw 'toLocaleString not implemented yet. Please do.';
-    }
+	valueOf(){
+		return this.__value__.map(function(item) {
+			return item.valueOf();
+		});
+	}
 
-    indexOf(searchElement, fromIndex) {
-        return this.__value__.indexOf(searchElement, fromIndex || 0);
-    }
+	toLocaleString(){
+		throw 'toLocaleString not implemented yet. Please do.';
+	}
 
-    lastIndexOf(searchElement, fromIndex) {
-        return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
-    }
+	indexOf(searchElement, fromIndex) {
+		return this.__value__.indexOf(searchElement, fromIndex || 0);
+	}
+
+	lastIndexOf(searchElement, fromIndex) {
+		return this.__value__.lastIndexOf(searchElement, fromIndex || this.__value__.length);
+	}
 
 	// Iteration methods
 
@@ -248,7 +217,7 @@ class _Array extends BaseType {
 		});
 	}
 
-    find(cb){
+	find(cb){
 		var self = this;
 		return _.find(this.__value__, function(element, index, array) {
 			return cb(element, index, self);
@@ -256,25 +225,12 @@ class _Array extends BaseType {
 		return _.find(this.__value__, cb);
 	}
 
-    findIndex(cb){
-        var self = this;
-        return _.findIndex(this.__value__, function (element, index, array) {
-            return cb(element, index, self)
-        });
-    }
-
-	setValue(newValue) {
-		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
-		}
-		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
-            this.__value__.length = 0;
-            _.forEach(newValue, (itemValue) => {
-                this.push(itemValue);
-            });
-        }
-    }
+	findIndex(cb){
+		var self = this;
+		return _.findIndex(this.__value__, function (element, index, array) {
+			return cb(element, index, self)
+		});
+	}
 
     map(fn, ctx) {
     	return this.__lodashProxyWrap__('map', fn, ctx);
@@ -296,6 +252,35 @@ class _Array extends BaseType {
     filter(fn, ctx) {
         return this.__lodashProxy__('filter', fn, ctx);
     }
+	setValue(newValue) {
+        var changed = false;
+		if(newValue instanceof _Array) {
+			newValue = newValue.toJSON();
+		}
+		if(_.isArray(newValue)) {
+			//fix bug #33. reset the current array instead of replacing it;
+
+
+			_.forEach(newValue, (itemValue,idx) => {
+                if(itemValue instanceof BaseType || !this.at(idx) || !this.at(idx).setValue)
+                {
+                    changed = changed || (this.at(idx) !== itemValue);
+                    this.__value__[idx] = itemValue;
+                }else{
+                    var childChange = this.__value__[idx].setValue(itemValue);
+                    changed = changed || childChange;
+                }
+			});
+            changed = changed || (this.__value__.length != newValue.length);
+            if(changed)
+            {
+                this.$setDirty(true);
+            }
+            this.__value__.length = newValue.length;
+		}
+        return changed;
+	}
+
 }
 
 _Array.withDefault = generateWithDefault();

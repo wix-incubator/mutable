@@ -36,20 +36,30 @@ export default class BaseType {
     }
 
     setValue(newValue){
-        if (this.$setDirty(true)) {
-            if (newValue instanceof BaseType) {
-                newValue = newValue.toJSON();
-            }
+        if (!this.__isReadOnly__) {
+            var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var Type = this.constructor._spec[fieldName];
-                if (Type && Type.type.id === 'Array') {
-                    this[fieldName].setValue(fieldValue);
-                } else if (Type) {
-                    this[fieldName] = fieldValue;
+                if(Type)
+                {
+                    if(fieldValue instanceof BaseType || !this[fieldName].setValue)
+                    {
+                        changed = changed || (this[fieldName] !== fieldValue);
+                        this.__value__[fieldName] = fieldValue;
+                    }else{
+                        var childChange = this.__value__[fieldName].setValue(fieldValue);
+                        changed = changed || childChange;
+                    }
                 }
             });
+            if(changed)
+            {
+                this.$setDirty(true);
+            }
+            return changed;
         }
     }
+
 
     $asReadOnly(){
         return this.__readOnlyInstance__;
