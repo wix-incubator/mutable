@@ -76,6 +76,27 @@ describe('Custom data', function() {
 				expect(userData.age).to.equal(50);
 			});
 
+			it("original is not modified", function() {
+				var CustomType = aDataTypeWithSpec({
+					name: Typorama.String.withDefault("Gordon Shumway"),
+					planet: Typorama.String.withDefault("Melmac")
+				}, "CustomType");
+				var original = { name: "Lilo" };
+				var inst = CustomType.create(original);
+				expect(original).to.deep.equal({ name: "Lilo" });
+			});
+
+			it("modifying original after create should not modify the instance", function() {
+				var CustomType = aDataTypeWithSpec({
+					name: Typorama.String.withDefault("Gordon Shumway"),
+					planet: Typorama.String.withDefault("Melmac")
+				}, "CustomType");
+				var original = { name: "Lilo" };
+				var inst = CustomType.create(original);
+				original.name = "Alf";
+				expect(inst.name).to.be.equal("Lilo");
+			});
+
 			it('should provide default values when no initial data is provided', function() {
 				var userData = new UserType();
 
