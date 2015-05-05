@@ -22,15 +22,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
             },
             set: function(newValue){
                 if (this.$setDirty(true)) {
-                    if (fieldDef.type.prototype instanceof BaseType) { // ToDO: test options validity
-                        if (fieldDef.validateType(newValue)) {
-                            this.__value__[fieldName] = newValue;
-                        }
-                    } else {
-                        if (fieldDef.validate(newValue)) {
-                            this.__value__[fieldName] = newValue;
-                        }
-                    }
+                    this.$validateAndAssignField(fieldName, newValue);
                 } else {
                     console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
                 }
