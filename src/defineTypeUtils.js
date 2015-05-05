@@ -14,10 +14,10 @@ export function generateFieldsOn(obj, fieldsDefinition){
         if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.id + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
             get: function(){
-                if(this.__isReadOnly__) {
-                    return (fieldDef.type.prototype instanceof BaseType) ? this.__value__[fieldName].$asReadOnly() : this.__value__[fieldName];
-                } else {
+                if (!(fieldDef.type.prototype instanceof BaseType) || this.$isDirtyable(true)) {
                     return this.__value__[fieldName];
+                } else {
+                    return this.__value__[fieldName].$asReadOnly();
                 }
             },
             set: function(newValue){
