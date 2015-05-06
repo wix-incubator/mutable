@@ -71,6 +71,7 @@ function addFixtureSetup(fixture) {
         beforeEach('reset', () => {
             fixture.lifecycleManager = new LifeCycleManager();
             sinon.stub(fixture.lifecycleManager, '$change');
+            sinon.spy(fixture.lifecycleManager, 'onChange');
             fixture.container = fixture.containerFactory();
             setContainedElements(fixture);
             _.forEach(fixture.containedElements, (elem) => elem.$setManager.reset());
@@ -98,13 +99,22 @@ function mutatorContract(description, fixture, mutator) {
             expect(spy.called).to.be.true;
             expect(spy.alwaysCalledOn(fixture.container), '$setDirty called only on container').to.be.true;
             expect(spy.alwaysCalledWithExactly(sinon.match.truthy), "container $setDirty only called with truthy argument").to.be.true;
-        });
+        })
         if (fixture.dirtyableElements) {
             it('does not affect elements\' lifecycle', function () {
                 mutator(fixture.container, fixture.elementFactory);
                 expect(_.any(fixture.containedElements, '$isDirty.called'), '$isDirty called on element(s)').to.be.false;
                 expect(_.any(fixture.containedElements, '$setDirty.called'), '$setDirty called on element(s)').to.be.false;
                 expect(_.any(fixture.containedElements, '$resetDirty.called'), '$resetDirty called on element(s)').to.be.false;
+            });
+            it('sets lifecycle manager in newly added elements', function () {
+                fixture.container.$setManager(fixture.lifecycleManager);
+                var oldElements = fixture.containedElements;
+                mutator(fixture.container, fixture.elementFactory);
+                setContainedElements(fixture);
+                var addedElements = _(oldElements).intersection(fixture.containedElements);
+                expect(addedElements.any('$setManager.called'), '$setManager called on element(s)').to.be.true;
+                expect(addedElements.any((element) => element.$setManager.calledWithExactly(fixture.lifecycleManager)), '$setManager called on element(s)').to.be.true;
             });
         }
     });
@@ -118,7 +128,6 @@ function contractSuite(fixture){
     testResetDirty(fixture);
     testIsDirty(fixture);
     testSetManager(fixture);
-    testMakeChange(fixture);
 }
 
 function testSetDirty(fixture) {
@@ -131,6 +140,14 @@ function testSetDirty(fixture) {
             expect(fixture.container.$isDirty(), 'container dirty after calling $setDirty(false)').to.be.false;
         });
         describe('with lifecycle manager', () => {
+            describe('to set dirty flag to true' , () => {
+                it('triggers onChange in lifecycle manager', () =>{
+                    fixture.lifecycleManager.$change.returns(true);
+                    fixture.container.$setManager(fixture.lifecycleManager);
+                    fixture.container.$setDirty(true);
+                    expect(fixture.lifecycleManager.onChange.calledOnce).to.be.true;
+                });
+            });
             [true, false].forEach((dirtyState) => {
                 describe('to set dirty flag to ' + dirtyState , () =>{
                     [true, false].forEach((managerState) => {
@@ -292,10 +309,4 @@ function testSetManager(fixture) {
             }
         });
     });
-}
-
-//TODO test that elements get the manager upon assignment
-function testMakeChange(fixture) {
-
-
 }

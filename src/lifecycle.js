@@ -69,7 +69,9 @@ export function makeDirtyable(Type){
     Type.prototype.$setDirty = function $setDirty(isDirty) {
         if (this.$isDirtyable(isDirty)){
             this.__dirty__ = isDirty ? dirty.yes : dirty.no;
-            this.__lifecycleManager__ && this.__lifecycleManager__.onChange();
+            if (isDirty && this.__lifecycleManager__) {
+                this.__lifecycleManager__.onChange();
+            }
             return true;
         }
         return false;
