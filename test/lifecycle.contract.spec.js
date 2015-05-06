@@ -73,6 +73,7 @@ function addFixtureSetup(fixture) {
             sinon.stub(fixture.lifecycleManager, '$change');
             fixture.container = fixture.containerFactory();
             setContainedElements(fixture);
+            _.forEach(fixture.containedElements, (elem) => elem.$setManager.reset());
             // reset dirty flag of container
             fixture.container.$resetDirty();
             if (fixture.dirtyableElements) {

@@ -32,11 +32,7 @@ export class LifeCycleManager{
     }
 
     $change(){
-        if (this.__change__){
-            this.onChange();
-            return true;
-        }
-        return false;
+        return this.__change__;
     }
 }
 
@@ -45,7 +41,7 @@ export function makeDirtyable(Type){
     Type.prototype.__dirty__ = dirty.unKnown;
 
 
-// called when a change has been made to this object directly or after changes are paused
+// called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (!this.__isReadOnly__ && lifecycleManager instanceof LifeCycleManager) {
             this.__lifecycleManager__ = lifecycleManager;
@@ -73,6 +69,7 @@ export function makeDirtyable(Type){
     Type.prototype.$setDirty = function $setDirty(isDirty) {
         if (this.$isDirtyable(isDirty)){
             this.__dirty__ = isDirty ? dirty.yes : dirty.no;
+            this.__lifecycleManager__ && this.__lifecycleManager__.onChange();
             return true;
         }
         return false;

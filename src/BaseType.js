@@ -75,11 +75,18 @@ export default class BaseType {
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
             if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))){
                 // validation passed
-                this.__value__[fieldName] = newValue;
+                this.$assignField(fieldName, newValue);
                 return true;
             }
         }
         return false;
+    }
+
+    $assignField(fieldName, newValue) {
+        this.__value__[fieldName] = newValue;
+        if (newValue.$setManager && _.isFunction(newValue.$setManager)) {
+            newValue.$setManager(this.__lifecycleManager__);
+        }
     }
 
     $asReadOnly(){
