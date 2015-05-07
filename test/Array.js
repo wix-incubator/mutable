@@ -151,7 +151,6 @@ describe('Array data', function() {
 			});
             it('should get dirty if values are changed', function() {
                 var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                debugger;
                 numberList.setValue([1, 2, 3, 5]);
                 expect(numberList.$isDirty()).to.equal(true);
             });
@@ -282,7 +281,6 @@ describe('Array data', function() {
 
 				var readOnlyItemData = arrComplexType.at(0);
 
-                debugger;
 				readOnlyItemData.user.name = 'you got a new name';
 
 				expect(readOnlyItemData.user.name).to.equal(userDefaultName);
@@ -417,7 +415,6 @@ describe('Array data', function() {
 			});
 			it('should offset from the end, if passed a negative END value', function () {
 				var numberArray = aNumberArray([1,2,3]);
-				debugger;
 
 				var slicedArray = numberArray.slice(0, -1);
 				

@@ -64,8 +64,6 @@ export default class BaseType {
         }
     }
 
-
-
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }

@@ -4,14 +4,14 @@
 
 import _ from 'lodash';
 import Typorama from '../src';
-import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
-import {expect, err} from 'chai';
+import { aDataTypeWithSpec } from '../test-kit/testDrivers/index';
+import { expect, err } from 'chai';
 
 describe('Enum Type', function() {
 
     describe("instantiation", function() {
 
-        it("defining an enum returns a class", function() {
+        it("should return a class", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
             expect(Ape).to.be.a("function");
         });
@@ -27,6 +27,33 @@ describe('Enum Type', function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
             var ape = Ape.chimp;
             expect(ape).to.be.equal(Ape.chimp);
+        });
+
+        it("enum can be initialized as member in a custom type", function() {
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var TestType = aDataTypeWithSpec({ 
+                ape: Ape
+            });
+            var tt = TestType.create(Ape.chimp);
+            expect(tt.ape).to.be.equal(Ape.chimp);
+        });
+
+        it("enum can be initialized using withDefault", function() {
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var TestType = aDataTypeWithSpec({ 
+                ape: Ape.withDefault(Ape.gorilla)
+            });
+            var tt = TestType.create();
+            expect(tt.ape).to.be.equal(Ape.gorilla);
+        });
+
+        it("enum can receive value from create of parent type", function() {
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var TestType = aDataTypeWithSpec({ 
+                ape: Ape.withDefault(Ape.gorilla)
+            });
+            var tt = TestType.create({ ape: Ape.chimp });
+            expect(tt.ape).to.be.equal(Ape.chimp);
         });
 
         it("each member can have a string value", function() {
