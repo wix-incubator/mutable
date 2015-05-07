@@ -15,14 +15,14 @@ export function generateFieldsOn(obj, fieldsDefinition){
         Object.defineProperty(obj, fieldName, {
             get: function(){
                 if(this.__isReadOnly__) {
-                    return (fieldDef.type.prototype instanceof BaseType) ? this.__value__[fieldName].$asReadOnly() : this.__value__[fieldName];
+                    return (fieldDef.type.isComplexType && fieldDef.type.isComplexType()) ? this.__value__[fieldName].$asReadOnly() : this.__value__[fieldName];
                 } else {
                     return this.__value__[fieldName];
                 }
             },
             set: function(newValue){
                 if (this.$setDirty(true)) {
-                    if (fieldDef.type.prototype instanceof BaseType) { // ToDO: test options validity
+                    if (fieldDef.type.isComplexType && fieldDef.type.isComplexType()) { // ToDO: test options validity
                         if (fieldDef.validateType(newValue)) {
                             this.__value__[fieldName] = newValue;
                         }

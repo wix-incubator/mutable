@@ -23,8 +23,11 @@ export default class BaseType {
         });
         return value;
     }
-
+    static isComplexType(){
+        return true;
+    }
     constructor(value, options = {}){
+
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
         this.__options__ = options;
@@ -59,6 +62,7 @@ export default class BaseType {
             return changed;
         }
     }
+
 
 
     $asReadOnly(){
