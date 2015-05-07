@@ -54,10 +54,10 @@ describe('Custom data', function() {
 		},
 		() => UserType.create(),
 		'object with mutable elements');
-
+	var counter = 0;
 	lifeCycleAsserter.addFixture(
 		(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),
-		() => 'foobar',
+		() => 'foobar' + (counter++),
 		'object with primitive elements'
 	);
 

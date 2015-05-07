@@ -381,13 +381,15 @@ describe('Array data', function() {
 		});
 
 		describe('join', function() {
-			it('should join all the elements of an array into a string', function() {
+			it('should join all the elements of an array into a string with default separator', function() {
 				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
-
 				var result = arrA.join();
-
 				expect(result).to.equal("a,b");
-
+			});
+			it('should join all the elements of an array into a string with custom separator', function() {
+				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
+				var result = arrA.join('|');
+				expect(result).to.equal("a|b");
 			});
 		});
 

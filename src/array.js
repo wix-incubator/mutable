@@ -13,7 +13,7 @@ class _Array extends BaseType {
 	static defaults() { return []; }
 
 	static validate(value) { return Array.isArray(value); }
-	
+
 	static validateType(value) {
 		var isValid = BaseType.validateType.call(this, value);
 		if(isValid){
@@ -142,7 +142,7 @@ class _Array extends BaseType {
 			return null;
 		}
 	}
-	
+
 	splice(index, removeCount, ...addedItems) {
 		if(this.$setDirty(true)){
 			var spliceParams = [index, removeCount];
@@ -174,7 +174,7 @@ class _Array extends BaseType {
 		return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__options__);
 	}
 
-	join(separator ? = ',') {
+	join(separator = ',') {
 		return this.__value__.join(separator);
 	}
 

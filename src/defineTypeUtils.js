@@ -21,8 +21,10 @@ export function generateFieldsOn(obj, fieldsDefinition){
                 }
             },
             set: function(newValue){
-                if (this.$setDirty(true)) {
-                    this.$validateAndAssignField(fieldName, newValue);
+                if (this.$isDirtyable(true)){
+                    if(this.$validateAndAssignField(fieldName, newValue)) {
+                        this.$setDirty(true);
+                    }
                 } else {
                     // todo:warn hook
                     console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
