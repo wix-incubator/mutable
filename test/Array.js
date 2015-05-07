@@ -281,7 +281,6 @@ describe('Array data', function() {
 
 				var readOnlyItemData = arrComplexType.at(0);
 
-                debugger;
 				readOnlyItemData.user.name = 'you got a new name';
 
 				expect(readOnlyItemData.user.name).to.equal(userDefaultName);

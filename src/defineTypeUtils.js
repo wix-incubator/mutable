@@ -14,7 +14,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
         if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.id + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
             get: function(){
-                if (!(fieldDef.type.prototype instanceof BaseType) || this.$isDirtyable(true)) {
+                if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable(true)) {
                     return this.__value__[fieldName];
                 } else {
                     return this.__value__[fieldName].$asReadOnly();

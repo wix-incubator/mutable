@@ -31,7 +31,7 @@ class _Array extends BaseType {
 	}
 
 	static wrapValue(value, spec, options) {
-		if(value instanceof BaseType) {
+		if(BaseType.validateType(value)) {
 			if (value.__value__.map) {
 				return value.__value__.map((itemValue) => {
 					return this._wrapSingleItem(itemValue, options);
@@ -47,7 +47,7 @@ class _Array extends BaseType {
 	}
 
 	static _wrapSingleItem(itemValue, options) {
-		if(itemValue instanceof BaseType) {
+		if(BaseType.validateType(itemValue)) {
 			return itemValue;
 		} else if(typeof options.subTypes === 'function') {
 			return options.subTypes.create(itemValue, options.subTypes.options);
@@ -81,7 +81,7 @@ class _Array extends BaseType {
 
 	toJSON() {
 		return this.__value__.map(item => {
-			return (item instanceof BaseType) ? item.toJSON() : item;
+			return (BaseType.validateType(item)) ? item.toJSON() : item;
 		});
 	}
 
@@ -167,7 +167,7 @@ class _Array extends BaseType {
 	// Accessor methods
 	at(index) {
 		var item = this.__value__[index];
-		return (this.__isReadOnly__ && item instanceof BaseType) ? item.$asReadOnly() : item;
+		return (BaseType.validateType(item) && !this.$isDirtyable(true)) ? item.$asReadOnly() : item;
 	}
 
 	concat(...addedArrays) {
@@ -261,8 +261,8 @@ class _Array extends BaseType {
 			//fix bug #33. reset the current array instead of replacing it;
 
 
-			_.forEach(newValue, (itemValue,idx) => {
-                if(itemValue instanceof BaseType || !this.at(idx) || !this.at(idx).setValue)
+			_.forEach(newValue, (itemValue, idx) => {
+                if(BaseType.validateType(itemValue) || !this.at(idx) || !this.at(idx).setValue)
                 {
                     changed = changed || (this.at(idx) !== itemValue);
                     this.__value__[idx] = itemValue;

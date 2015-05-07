@@ -14,7 +14,11 @@ export default class BaseType {
         return new this(value, options);
     }
 
-    static validateType(value){ return value instanceof this.type; }
+    static isAssignableFrom(type){
+        return type && (type.id === this.type.id || (type.ancestors &&_.contains(type.ancestors, this.type.id)));
+    }
+
+    static validateType(value){ return value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type); }
 
      static wrapValue(value, spec, options){
         var root = {};
@@ -24,11 +28,8 @@ export default class BaseType {
         });
         return root;
     }
-    static isComplexType(){
-        return true;
-    }
-    constructor(value, options = {}){
 
+    constructor(value, options = {}){
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
         this.__options__ = options;
@@ -47,7 +48,7 @@ export default class BaseType {
             var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
                 if (this.$getFieldDef(fieldName)) {
-                    if (this.__value__[fieldName].setValue && !(fieldValue instanceof BaseType)) {
+                    if (this.__value__[fieldName].setValue && !BaseType.validateType(fieldValue)) {
                         // recursion call
                         changed = this.__value__[fieldName].setValue(fieldValue) || changed;
                     } else {
@@ -75,7 +76,7 @@ export default class BaseType {
         // don't assign if input is the same as existing value
         if (this.__value__[fieldName] !== newValue){
             var fieldDef = this.$getFieldDef(fieldName);
-            var typedField = fieldDef.type.prototype instanceof BaseType;
+            var typedField = BaseType.isAssignableFrom(fieldDef.type);
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
             if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))){
                 // validation passed
@@ -93,7 +94,6 @@ export default class BaseType {
         }
     }
 
-
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }
@@ -106,5 +106,9 @@ export default class BaseType {
         }, {});
     }
 }
+
+BaseType.ancestors = [];
+BaseType.id                    = 'BaseType';
+BaseType.type                  = BaseType;
 
 makeDirtyable(BaseType);
