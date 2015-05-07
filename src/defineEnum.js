@@ -1,4 +1,4 @@
-import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
+import _ from "lodash";
 
 function createEnumMember(key, value, proto) {
 
@@ -46,8 +46,8 @@ function defineEnum(def) {
 	}
 
 	EnumType.validate = function(v) {
-		if(v instanceof Object && v.key) {
-			return def[v.key] == v;
+		if(v && typeof v === "object" && v.key) {
+			return EnumType[v.key] === v;
 		}
 		return false;
 	}
@@ -64,7 +64,7 @@ function defineEnum(def) {
 
 	EnumType.withDefault = function(value) {
 		if(EnumType.validate(value)) {
-			var t = defineEnum(def);
+			var t = _.clone(EnumType);
 			t.defaults = () => { return value; };
 			return t;
 		}
