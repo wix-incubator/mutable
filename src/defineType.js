@@ -29,6 +29,7 @@ export default function(id, typeDefinition, TypeConstructor){
     TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
     TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.generateWithDefault();
     TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
+    TypeConstructor.isComplexType         = BaseType.isComplexType;
     TypeConstructor.create                = BaseType.create;
 
     if(!BaseType.prototype.isPrototypeOf(TypeConstructor.prototype)){

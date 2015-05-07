@@ -16,15 +16,19 @@ export default class BaseType {
 
     static validateType(value){ return value instanceof this.type; }
 
-    static wrapValue(value, spec, options){
+     static wrapValue(value, spec, options){
+        var root = {};
         Object.keys(spec).forEach((key) => {
             var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
-            value[key] = spec[key].type.create(fieldValue, spec[key].options);
+            root[key] = spec[key].type.create(fieldValue, spec[key].options);
         });
-        return value;
+        return root;
     }
-
+    static isComplexType(){
+        return true;
+    }
     constructor(value, options = {}){
+
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
         this.__options__ = options;
@@ -88,6 +92,7 @@ export default class BaseType {
             newValue.$setManager(this.__lifecycleManager__);
         }
     }
+
 
     $asReadOnly(){
         return this.__readOnlyInstance__;

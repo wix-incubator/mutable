@@ -76,6 +76,61 @@ describe('Custom data', function() {
 				expect(userData.age).to.equal(50);
 			});
 
+			it("should not modify original json object", function() {
+				var CustomType = aDataTypeWithSpec({
+					name: Typorama.String.withDefault("Gordon Shumway"),
+					planet: Typorama.String.withDefault("Melmac")
+				}, "CustomType");
+				var original = { name: "Lilo" };
+				var inst = CustomType.create(original);
+				expect(original).to.deep.equal({ name: "Lilo" });
+			});
+
+			it("should not keep references to original json objects", function() {
+				var CustomType = aDataTypeWithSpec({
+					name: Typorama.String.withDefault("Gordon Shumway"),
+					planet: Typorama.String.withDefault("Melmac")
+				}, "CustomType");
+				var original = { name: "Lilo" };
+				var inst = CustomType.create(original);
+				original.name = "Alf";
+				expect(inst.name).to.be.equal("Lilo");
+			});
+
+			it("should not keep references to original json objects, even deep ones", function() {
+
+				var InnerType = aDataTypeWithSpec({
+							name: Typorama.String.withDefault("Gordon Shumway")		
+				}, "InnerType");
+				var OuterType = aDataTypeWithSpec({
+							name: InnerType
+				}, "OuterType");
+
+				var original = { name: { name: "Lilo" } };
+				var inst = OuterType.create(original);
+				original.name.name = "Alf";
+				expect(inst.name.name).to.be.equal("Lilo");
+			});
+
+			it("should not modify original array", function() {
+				var CustomType = aDataTypeWithSpec({
+					names: Typorama.Array.of(Typorama.String)
+				}, "CustomType");
+				var original = { names: [ "Lilo", "Stitch" ] };
+				var inst = CustomType.create(original);
+				expect(original).to.deep.equal({ names: [ "Lilo", "Stitch" ] });
+			});
+
+			it("should not keep references to original array", function() {
+				var CustomType = aDataTypeWithSpec({
+					names: Typorama.Array.of(Typorama.String)
+				}, "CustomType");
+				var original = { names: [ "Lilo", "Stitch" ] };
+				var inst = CustomType.create(original);
+				original.names[0] = "Wendell Pleakley";
+				expect(inst.names.at(0)).to.be.equal("Lilo");
+			});
+
 			it('should provide default values when no initial data is provided', function() {
 				var userData = new UserType();
 
