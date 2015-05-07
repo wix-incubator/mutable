@@ -32,11 +32,7 @@ export class LifeCycleManager{
     }
 
     $change(){
-        if (this.__change__){
-            this.onChange();
-            return true;
-        }
-        return false;
+        return this.__change__;
     }
 }
 
@@ -45,7 +41,7 @@ export function makeDirtyable(Type){
     Type.prototype.__dirty__ = dirty.unKnown;
 
 
-// called when a change has been made to this object directly or after changes are paused
+// called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (!this.__isReadOnly__ && lifecycleManager instanceof LifeCycleManager) {
             this.__lifecycleManager__ = lifecycleManager;
@@ -57,17 +53,26 @@ export function makeDirtyable(Type){
         }
     };
 
+// used by $setDirty to determine if changes are allowed to the dirty flag
+    Type.prototype.$isDirtyable = function $isDirtyable(isDirty) {
+        return (
+            // instance & arg validated
+        !this.__isReadOnly__ && isDirty !== undefined &&
+            // no manager or manager's state fits desired dirty state
+            // dirtify only when manager allows changes
+            // cache not-dirty only when there is no chance that children will get dirty.
+        (!this.__lifecycleManager__ || isDirty == this.__lifecycleManager__.$change())
+        );
+    };
+
 // called when a change has been made to this object directly or after changes are paused
     Type.prototype.$setDirty = function $setDirty(isDirty) {
-        if (!this.__isReadOnly__ && isDirty !== undefined){
-            // instance & arg validated
-            if (!this.__lifecycleManager__ || isDirty == this.__lifecycleManager__.$change()) {
-                // no manager or manager's state fits desired dirty state
-                // dirtify only when manager allows changes
-                // cache not-dirty only when there is no chance that children will get dirty.
-                this.__dirty__ = isDirty ? dirty.yes : dirty.no;
-                return true;
+        if (this.$isDirtyable(isDirty)){
+            this.__dirty__ = isDirty ? dirty.yes : dirty.no;
+            if (isDirty && this.__lifecycleManager__) {
+                this.__lifecycleManager__.onChange();
             }
+            return true;
         }
         return false;
     };

@@ -14,24 +14,19 @@ export function generateFieldsOn(obj, fieldsDefinition){
         if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.id + '.' + fieldName+'".')}
         Object.defineProperty(obj, fieldName, {
             get: function(){
-                if(this.__isReadOnly__) {
-                    return (fieldDef.type.isComplexType && fieldDef.type.isComplexType()) ? this.__value__[fieldName].$asReadOnly() : this.__value__[fieldName];
-                } else {
+                if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable(true)) {
                     return this.__value__[fieldName];
+                } else {
+                    return this.__value__[fieldName].$asReadOnly();
                 }
             },
             set: function(newValue){
-                if (this.$setDirty(true)) {
-                    if (fieldDef.type.isComplexType && fieldDef.type.isComplexType()) { // ToDO: test options validity
-                        if (fieldDef.validateType(newValue)) {
-                            this.__value__[fieldName] = newValue;
-                        }
-                    } else {
-                        if (fieldDef.validate(newValue)) {
-                            this.__value__[fieldName] = newValue;
-                        }
+                if (this.$isDirtyable(true)){
+                    if(this.$validateAndAssignField(fieldName, newValue)) {
+                        this.$setDirty(true);
                     }
                 } else {
+                    // todo:warn hook
                     console.warn('try to set value to readonly field: ', this.constructor.id +'.'+fieldName, '=', newValue);
                 }
             },
