@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import {LifeCycleManager} from '../src/lifecycle';
 import {expect, err} from 'chai';
 import sinon from 'sinon';
+import Typorama from "../src";
 
 describe('LifecycleManager :', function() {
 	var lifecycleManager;
 	beforeEach('init', ()=>{
-		lifecycleManager = new LifeCycleManager();
+		lifecycleManager = new Typorama.LifeCycleManager();
 		sinon.spy(lifecycleManager, 'onChange');
 	});
 	afterEach('$change() does not call onChange()', ()=>{
