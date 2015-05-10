@@ -3,7 +3,7 @@ function noop() {};
 
 export default class _Function {
 
-    static defaults() { return 0; }
+    static defaults() { return noop; }
 
     static validate(v) { return typeof v === 'function'; }
 

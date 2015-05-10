@@ -3,7 +3,7 @@ import React from 'react'
 import Immutable from 'immutable'
 import core3Data from './core3data'
 
-import Typorama from 'typorama'
+import Typorama from '../../../src'
 
 window.count = 0;
 window.renderEmpty = false;
@@ -237,9 +237,10 @@ var LeafCore3 = React.createClass({
 
 var LeafTyporama  = React.createClass({
     shouldComponentUpdate(nextProps, nextState){
-        return nextProps.data.$isInvalidated();
+        return nextProps.data.$isDirty();
     },
     render: function(){
+	
         window.count++;
         var data = this.props.data.$asReadOnly();
         if(renderEmpty){
@@ -260,7 +261,7 @@ var LeafTyporama  = React.createClass({
                 top: data.y
             }
                 }>
-                    {data.children.map((leaf) => <LeafTyporama key={leaf.key} data={leaf}/>)}
+                    {data.children.mapToArray((leaf) => <LeafTyporama key={leaf.key} data={leaf}/>)}
             </div>
         }
     }
@@ -313,7 +314,7 @@ export default React.createClass({
             console.log('count', count);
         }
         core3DataTree.__validate__();
-        typoramaData.$revalidate();
+        typoramaData.$resetDirty();
     },
 	renderTest: function(){
 

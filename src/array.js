@@ -236,6 +236,10 @@ class _Array extends BaseType {
     	return this.__lodashProxyWrap__('map', fn, ctx);
     }
 
+    mapToArray(fn, ctx) {
+    	return this.__lodashProxy__('map', fn, ctx);
+    }
+
     reduce(fn, initialAccumilatorValue, ctx) {
         var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
         return newValue;
