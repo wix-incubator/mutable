@@ -1,4 +1,5 @@
 import _ from "lodash";
+import BaseType from './BaseType';
 
 function createEnumMember(key, value, proto) {
 
@@ -28,6 +29,8 @@ function defineEnum(def) {
 	var EnumType = function() {
 		throw new TypeError("Enum cannot be instantiated");
 	}
+
+	EnumType.prototype.__proto__ = BaseType.prototype;
 
 	if(Array.isArray(def)) {
 	    def = convertToObject(def);

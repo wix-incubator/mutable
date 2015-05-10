@@ -23,6 +23,11 @@ describe('Enum Type', function() {
             }).to.throw();
         });
 
+        it("enum extends BaseType", function() {
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            expect(Ape.chimp).to.be.instanceof(Typorama.BaseType);
+        });
+
         it("enum can be initialized", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
             var ape = Ape.chimp;
