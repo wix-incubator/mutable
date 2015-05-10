@@ -6,7 +6,7 @@ import numberType from './number'
 import arrayType from './array'
 import functionType from './function'
 import defineEnum from "./defineEnum";
-import LifeCycleManager from "./lifecycle";
+import { LifeCycleManager } from "./lifecycle";
 
 export default {
     define: defineType,
