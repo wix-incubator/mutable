@@ -9,14 +9,14 @@ describe('LifecycleManager :', function() {
 		lifecycleManager = new LifeCycleManager();
 		sinon.spy(lifecycleManager, 'onChange');
 	});
+	afterEach('$change() does not call onChange()', ()=>{
+		lifecycleManager.$change();
+		expect(lifecycleManager.onChange.called).to.be.false;
+	});
 	describe('by default', () => {
 		it('$change() returns true', ()=>{
 			var result = lifecycleManager.$change();
 			expect(result, 'result of call to $change()').to.be.true;
-		});
-		it('$change() calls onChange()', ()=>{
-			lifecycleManager.$change();
-			expect(lifecycleManager.onChange.calledOnce).to.be.true;
 		});
 	});
 	describe('after forbidChange()', () => {
@@ -27,10 +27,6 @@ describe('LifecycleManager :', function() {
 			var result = lifecycleManager.$change();
 			expect(result, 'result of call to $change()').to.be.false;
 		});
-		it('$change() does not call onChange()', ()=>{
-			lifecycleManager.$change();
-			expect(lifecycleManager.onChange.called).to.be.false;
-		});
 		describe('allowChange() makes', () => {
 			beforeEach('init', ()=>{
 				lifecycleManager.allowChange();
@@ -38,10 +34,6 @@ describe('LifecycleManager :', function() {
 			it('$change() return true again', ()=>{
 				var result = lifecycleManager.$change();
 				expect(result, 'result of call to $change()').to.be.true;
-			});
-			it('$change() call onChange() again', ()=>{
-				lifecycleManager.$change();
-				expect(lifecycleManager.onChange.calledOnce).to.be.true;
 			});
 		});
 	});

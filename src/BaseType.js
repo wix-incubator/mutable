@@ -14,7 +14,11 @@ export default class BaseType {
         return new this(value, options);
     }
 
-    static validateType(value){ return value instanceof this.type; }
+    static isAssignableFrom(type){
+        return type && (type.id === this.type.id || (type.ancestors &&_.contains(type.ancestors, this.type.id)));
+    }
+
+    static validateType(value){ return value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type); }
 
      static wrapValue(value, spec, options){
         var root = {};
@@ -24,11 +28,8 @@ export default class BaseType {
         });
         return root;
     }
-    static isComplexType(){
-        return true;
-    }
-    constructor(value, options = {}){
 
+    constructor(value, options = {}){
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
         this.__options__ = options;
@@ -39,20 +40,20 @@ export default class BaseType {
         );
     }
 
+
+    // merge native javascript data into the object
+    // this method traverses the input recursively until it reaches typorama values (then it sets them)
     setValue(newValue){
-        if (!this.__isReadOnly__) {
+        if (this.$isDirtyable(true)) {
             var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
-                var Type = this.constructor._spec[fieldName];
-                if(Type)
-                {
-                    if(fieldValue instanceof BaseType || !this[fieldName].setValue)
-                    {
-                        changed = changed || (this[fieldName] !== fieldValue);
-                        this.__value__[fieldName] = fieldValue;
-                    }else{
-                        var childChange = this.__value__[fieldName].setValue(fieldValue);
-                        changed = changed || childChange;
+                if (this.$getFieldDef(fieldName)) {
+                    if (this.__value__[fieldName].setValue && !BaseType.validateType(fieldValue)) {
+                        // recursion call
+                        changed = this.__value__[fieldName].setValue(fieldValue) || changed;
+                    } else {
+                        // end recursion, assign value (if applicable)
+                        changed = this.$validateAndAssignField(fieldName, fieldValue) || changed;
                     }
                 }
             });
@@ -61,6 +62,35 @@ export default class BaseType {
                 this.$setDirty(true);
             }
             return changed;
+        }
+    }
+
+    $getFieldDef(fieldName){
+        return this.constructor._spec[fieldName];
+    }
+
+    // validates and assigns input to field.
+    // will throw for undefined fields
+    // returns whether the field value has changed
+    $validateAndAssignField(fieldName, newValue){
+        // don't assign if input is the same as existing value
+        if (this.__value__[fieldName] !== newValue){
+            var fieldDef = this.$getFieldDef(fieldName);
+            var typedField = BaseType.isAssignableFrom(fieldDef.type);
+            // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
+            if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))){
+                // validation passed
+                this.$assignField(fieldName, newValue);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $assignField(fieldName, newValue) {
+        this.__value__[fieldName] = newValue;
+        if (newValue.$setManager && _.isFunction(newValue.$setManager)) {
+            newValue.$setManager(this.__lifecycleManager__);
         }
     }
 
@@ -76,5 +106,9 @@ export default class BaseType {
         }, {});
     }
 }
+
+BaseType.ancestors = [];
+BaseType.id                    = 'BaseType';
+BaseType.type                  = BaseType;
 
 makeDirtyable(BaseType);

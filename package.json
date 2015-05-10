@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "typorama",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "",
   "main": "dist/src",
   "repository": {
@@ -41,6 +41,6 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "lodash": "^3.5.0"
+    "lodash": "^3.7.0"
   }
 }
