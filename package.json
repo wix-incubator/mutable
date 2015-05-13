@@ -15,7 +15,7 @@
     "build:src": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
     "build": "npm run build:src && npm run build:test && npm run build:testkit",
     "postinstall": "npm run build:src",
-    "test": "mocha --compilers js:babel/register --reporter list",
+    "test": "mocha --compilers js:babel/register --reporter mocha-teamcity-reporter",
     "start": "npm run webtest",
     "webtest": "webpack-dev-server --progress --hot --inline --no-colors",
     "webbuild": "webpack --progress -p --colors",
@@ -35,7 +35,8 @@
     "mocha-loader": "^0.7.1",
     "react": "^0.13.1",
     "webpack": "^1.7.3",
-    "sinon": "git://github.com/cjohansen/Sinon.JS#b672042043517b9f84e14ed0fb8265126168778a"
+    "sinon": "git://github.com/cjohansen/Sinon.JS#b672042043517b9f84e14ed0fb8265126168778a",
+    "mocha-teamcity-reporter": "0.0.4"
   },
   "engines": {
     "node": ">=0.12"
