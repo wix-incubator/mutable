@@ -6,7 +6,7 @@
   "main": "dist/src",
   "repository": {
     "type": "git",
-    "url": "wix/typorama"
+    "url": "git+ssh://git@github.com:wix/typorama"
   },
   "scripts": {
     "watch": "babel -w ./src/ -d ./dist/src/ --modules umd --source-maps",
