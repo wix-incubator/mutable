@@ -3,11 +3,9 @@ module.exports = {
 	context: __dirname,
 	devtool: 'eval',
 	entry: {
-		typorama                : [	'./dist/src' ],
+		'typorama'              : [	'./src' ],
 		'test-kit'              : [ './test-kit' ],
-		test                    : [
-			'mocha!./test'
-		],
+		'test'                  : ['mocha!./test'],
 		'examples/ReactGallery' : [ './examples/ReactGallery' ],
 		'examples/benchmark'    : [ './examples/benchmark' ],
 	},
@@ -18,9 +16,9 @@ module.exports = {
 		pathinfo: true
 	},
 	resolve: {
-		extensions: ['', '.js', '.json'],
+		//extensions: ['', '.js', '.json'],
 		alias: {
-			typorama: __dirname + '/dist/src',
+			typorama: __dirname + '/src',
 			'test-kit': __dirname + '/test-kit/'
 		}
 	},
@@ -34,7 +32,7 @@ module.exports = {
 			{
 				test    : /\.js$/,
 				exclude : /node_modules/,
-				loader  : 'babel-loader?optional=runtime'
+				loader  : 'babel-loader'
 			}
 		],
 		noParse: /\.min\.js$/
