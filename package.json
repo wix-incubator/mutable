@@ -6,7 +6,7 @@
   "main": "dist/src",
   "repository": {
     "type": "git",
-    "url": "wix/typorama"
+    "url": "git+ssh://git@github.com:wix/typorama"
   },
   "scripts": {
     "build:test"    : "babel ./test/ -d ./dist/test/ --modules umd --source-maps",
@@ -31,7 +31,8 @@
     "mocha-loader": "^0.7.1",
     "react": "^0.13.1",
     "webpack": "^1.7.3",
-    "sinon": "git://github.com/cjohansen/Sinon.JS#b672042043517b9f84e14ed0fb8265126168778a"
+    "sinon": "git://github.com/cjohansen/Sinon.JS#b672042043517b9f84e14ed0fb8265126168778a",
+    "mocha-teamcity-reporter": "0.0.4"
   },
   "engines": {
     "node": ">=0.12"

@@ -984,7 +984,6 @@ describe('Array data', function() {
 				expect(numberList.at(1)).to.equal(2);
 				expect(numberList.at(2)).to.equal(3);
 				expect(numberList.at(3)).to.equal(4);
-
 			})
 		});
 	});
