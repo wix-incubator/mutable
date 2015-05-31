@@ -508,33 +508,36 @@ describe('Array data', function() {
 				var newList = numberList.map(doubles);
 
 				// Take a callback function and return an array
-				expect(newList instanceof Typorama.Array).to.be.true;
+				expect(_.isArray(newList)).to.be.true;
 				// Make sure the values and length are correct
-				expect(newList.__value__).to.eql([2, 4, 6]);
+				expect(newList).to.eql([2, 4, 6]);
 			});
 
-			it('passes the extra argument when callback is envoked', function() {
-				function A() {
-					this.arr = [1, 2, 3];
-					this.factor = 2;
-					this.multi = function(n) {
-						return n * this.factor;
-					};
-				}
+			it('passes the index to the map func', function() {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3]);
+                var doubles = function(num,index) {
+                    return num * index;
+                };
+                var newList = numberList.map(doubles);
 
-				var a = new A(),
-					b = new A();
-				a.doIt = function() {
-					return this.arr.map(this.multi, this);
-				};
-				// This cannot run as this.multi actually runs on this.arr
-				// b.doIt = function(){
-				//   return this.arr.map(this.multi);
-				// };
-
-				expect(a.doIt()).to.eql([2, 4, 6]);
-				// expect(b.doIt()).to.eql([NaN, NaN, NaN]);
+                expect(_.isArray(newList)).to.be.true;
+                expect(newList).to.eql([0, 2, 6]);
 			});
+
+
+            it('provides readonly version if needsd', function() {
+                var numberList = Typorama.Array.of(UserType).create([new UserType({age:5}),new UserType({age:10}),new UserType({age:15})]);
+                numberList = numberList.$asReadOnly();
+                var doubles = function(user,index) {
+                    expect(user.$isReadOnly()).to.be.equal(true);
+                    return user.age * index;
+                };
+                var newList = numberList.map(doubles);
+
+                expect(_.isArray(newList)).to.be.true;
+                expect(newList).to.eql([0, 10, 30]);
+            });
+
 		});
 
 		describe('reduce', function() {

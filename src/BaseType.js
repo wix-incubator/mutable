@@ -103,6 +103,10 @@ export default class BaseType extends PrimitiveBase{
         }
     }
 
+    $isReadOnly(){
+        return this.__isReadOnly__;
+    }
+
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }
