@@ -1,5 +1,6 @@
 import _ from "lodash"
 import BaseType from "./BaseType"
+import PrimitiveBase from "./PrimitiveBase"
 
 export function generateValidate(){ // ToDo: check if its better jit-wise to move the spec to the closure: generateValidateForSpec(spec)
     return function(val){
@@ -11,7 +12,11 @@ export function generateValidate(){ // ToDo: check if its better jit-wise to mov
 
 export function generateFieldsOn(obj, fieldsDefinition){
     _.forEach(fieldsDefinition, (fieldDef, fieldName) => {
-        if(obj[fieldName]){throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.id + '.' + fieldName+'".')}
+        if(obj[fieldName]){
+            throw new Error('fields that starts with $ character are reserved "'+ obj.constructor.id + '.' + fieldName+'".')
+        }else if(!(fieldDef.type.prototype instanceof PrimitiveBase)){
+            throw new Error("data type for field "+fieldName+' is invalid');
+        }
         Object.defineProperty(obj, fieldName, {
             get: function(){
                 if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable(true)) {

@@ -1,7 +1,9 @@
 import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
+import PrimitiveBase from "./PrimitiveBase"
+
 function noop() {};
 
-export default class _Function {
+export default class _Function extends PrimitiveBase{
 
     static defaults() { return noop; }
 
@@ -12,6 +14,7 @@ export default class _Function {
     }
 
     constructor(value){
+        super(value);
     	return _Function.validate(value) ? value : noop;
     }
 
