@@ -1,6 +1,9 @@
 import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
+import PrimitiveBase from "./PrimitiveBase"
 
-export default class _Boolean {
+
+
+export default class _Boolean extends PrimitiveBase{
 
     static defaults(){ return false; }
 

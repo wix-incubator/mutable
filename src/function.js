@@ -1,7 +1,9 @@
 import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
+import PrimitiveBase from "./PrimitiveBase"
+
 function noop() {};
 
-export default class _Function {
+export default class _Function extends PrimitiveBase{
 
     static defaults() { return noop; }
 

@@ -1,6 +1,6 @@
 import _ from "lodash"
 import {makeDirtyable} from "./lifecycle"
-
+import PrimitiveBase from "./PrimitiveBase"
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -8,7 +8,7 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
-export default class BaseType {
+export default class BaseType extends PrimitiveBase{
 
     static create(value, options){
         return new this(value, options);

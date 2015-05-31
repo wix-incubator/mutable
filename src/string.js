@@ -1,6 +1,8 @@
 import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
+import PrimitiveBase from "./PrimitiveBase"
 
-export default class _String {
+
+export default class _String extends PrimitiveBase{
 
     static defaults(){ return ''; }
 

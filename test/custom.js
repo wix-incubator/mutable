@@ -64,8 +64,36 @@ describe('Custom data', function() {
 	describe('lifecycle:',function() {
 		lifeCycleAsserter.assertDirtyContract();
 	});
+    describe('type definition', function() {
+        it('should allow defining types with primitive fields',function(){
+            var primitives = aDataTypeWithSpec({
+                name: Typorama.String.withDefault('leon'),
+                child1: Typorama.String,
+                child2: Typorama.String
+            }, 'primitives');
+            expect(new primitives().name).to.equal('leon');
+        });
+        it('should allow defining types with custom fields',function(){
+            var primitives = aDataTypeWithSpec({
+                name: Typorama.String.withDefault('leon'),
+                child1: Typorama.String,
+                child2: Typorama.String
+            }, 'primitives');
+            var composite  = aDataTypeWithSpec({
+                child: primitives
+            }, 'composite');
+            expect(new composite().child.name).to.equal('leon');
+        });
+        it('should throw readable error if field type is not valid',function(){
+            expect(function(){
+                aDataTypeWithSpec({
+                    name: {}
+                }, 'invalid')
+            }).to.throw();
 
-    
+        });
+    });
+
 	describe('mutable instance', function() {
 
 		describe('instantiation', function() {
