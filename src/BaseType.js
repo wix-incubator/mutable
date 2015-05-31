@@ -23,8 +23,17 @@ export default class BaseType {
      static wrapValue(value, spec, options){
         var root = {};
         Object.keys(spec).forEach((key) => {
-            var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
-            root[key] = spec[key].type.create(fieldValue, spec[key].options);
+            var fieldSpec = spec[key];
+            var fieldVal = value[key];
+            if(fieldVal instanceof fieldSpec.type)
+            {
+                root[key] = fieldVal;
+            }else{
+                fieldVal = (fieldVal !== undefined) ? fieldVal : spec[key].defaults();
+                root[key] = fieldSpec.type.create(fieldVal, fieldSpec.options);
+            }
+
+
         });
         return root;
     }

@@ -65,6 +65,7 @@ describe('Custom data', function() {
 		lifeCycleAsserter.assertDirtyContract();
 	});
 
+    
 	describe('mutable instance', function() {
 
 		describe('instantiation', function() {
@@ -164,6 +165,13 @@ describe('Custom data', function() {
 
 				expect(instance.numOfHeads).to.be.undefined;
 			});
+
+            it('should reference matching typorama objects passed as value', function() {
+                var instance = new UserType({numOfHeads: 2});
+
+                var container = new CompositeContainer({child1:instance});
+                expect(container.child1).to.be.equal(instance);
+            });
 
 		});
 
