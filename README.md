@@ -1,7 +1,7 @@
 # Typorama
 
 
-
+NU version sause
 ### Develop
 - to install
 ```$
