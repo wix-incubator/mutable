@@ -86,13 +86,27 @@ class _Array extends BaseType {
 	}
 
 	__lodashProxyWrap__(key, fn, ctx){
-		var valueArray = _[key](this.__value__, fn, ctx || this);
+		var valueArray = _[key](this.__getValueArr__(), fn, ctx || this);
 		return new this.constructor(valueArray, this.__options__);
 	}
 	__lodashProxy__(key, fn, ctx){
-		var valueArray = _[key](this.__value__, fn, ctx || this);
+		var valueArray = _[key](this.__getValueArr__(), fn, ctx || this);
 		return valueArray;
 	}
+
+    __getValueArr__(){
+        if(this.__isReadOnly__)
+        {
+            return _.map(this.__value__,function(item){
+                if(item instanceof BaseType)
+                    return item.$asReadOnly();
+                else
+                    return item;
+            })
+        }else{
+            return this.__value__;
+        }
+    }
 
 	// Mutator methods
 
@@ -233,10 +247,6 @@ class _Array extends BaseType {
 	}
 
     map(fn, ctx) {
-    	return this.__lodashProxyWrap__('map', fn, ctx);
-    }
-
-    mapToArray(fn, ctx) {
     	return this.__lodashProxy__('map', fn, ctx);
     }
 

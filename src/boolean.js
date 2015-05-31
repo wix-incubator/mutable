@@ -1,6 +1,9 @@
 import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
+import PrimitiveBase from "./PrimitiveBase"
 
-export default class _Boolean {
+
+
+export default class _Boolean extends PrimitiveBase{
 
     static defaults(){ return false; }
 
@@ -11,6 +14,7 @@ export default class _Boolean {
     }
 
     constructor(value){
+        super(value);
         return Boolean(value);
     }
 

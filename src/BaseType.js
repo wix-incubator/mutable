@@ -1,6 +1,6 @@
 import _ from "lodash"
 import {makeDirtyable} from "./lifecycle"
-
+import PrimitiveBase from "./PrimitiveBase"
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -8,7 +8,7 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
-export default class BaseType {
+export default class BaseType extends PrimitiveBase{
 
     static create(value, options){
         return new this(value, options);
@@ -23,13 +23,23 @@ export default class BaseType {
      static wrapValue(value, spec, options){
         var root = {};
         Object.keys(spec).forEach((key) => {
-            var fieldValue = (value[key] !== undefined) ? value[key] : spec[key].defaults();
-            root[key] = spec[key].type.create(fieldValue, spec[key].options);
+            var fieldSpec = spec[key];
+            var fieldVal = value[key];
+            if(fieldVal instanceof fieldSpec.type)
+            {
+                root[key] = fieldVal;
+            }else{
+                fieldVal = (fieldVal !== undefined) ? fieldVal : spec[key].defaults();
+                root[key] = fieldSpec.type.create(fieldVal, fieldSpec.options);
+            }
+
+
         });
         return root;
     }
 
     constructor(value, options = {}){
+        super(value);
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
         this.__options__ = options;
@@ -92,6 +102,10 @@ export default class BaseType {
         if (newValue.$setManager && _.isFunction(newValue.$setManager)) {
             newValue.$setManager(this.__lifecycleManager__);
         }
+    }
+
+    $isReadOnly(){
+        return this.__isReadOnly__;
     }
 
     $asReadOnly(){
