@@ -14,7 +14,8 @@
   "scripts": {
     "build:src": "./node_modules/.bin/babel ./src/ -d ./dist/src/ --modules umd --source-maps",
     "build:test": "./node_modules/.bin/babel ./test/ -d ./dist/test/ --modules umd --source-maps",
-    "pretest": "npm run build:test",
+    "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
+    "pretest": "npm run build:test; npm run build:testkit",
     "publish:tc": "./node_modules/.bin/core3 code release",
     "test": "./node_modules/.bin/mocha --reporter $npm_config_reporter ./dist/test",
     "start": "./node_modules/.bin/webpack-dev-server --progress --hot --inline --no-colors"
