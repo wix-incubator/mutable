@@ -1,7 +1,10 @@
 {
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
+  },
   "name": "typorama",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "",
   "main": "dist/src",
   "repository": {
@@ -13,7 +16,6 @@
     "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
     "build:src": "babel ./src/ -d ./dist/src/ --modules umd --source-maps",
     "build": "npm run build:src && npm run build:test && npm run build:testkit",
-    "postinstall": "npm run build",
     "test": "mocha --compilers js:babel/register --reporter list",
     "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
