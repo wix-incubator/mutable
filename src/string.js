@@ -13,6 +13,7 @@ export default class _String extends PrimitiveBase{
     }
 
     constructor(value){
+        super(value);
         return String(value);
     }
 

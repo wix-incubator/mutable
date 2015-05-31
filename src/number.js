@@ -13,6 +13,7 @@ export default class _Number extends PrimitiveBase{
     }
 
     constructor(value){
+        super(value);
         return Number(value);
     }
 

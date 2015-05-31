@@ -14,6 +14,7 @@ export default class _Boolean extends PrimitiveBase{
     }
 
     constructor(value){
+        super(value);
         return Boolean(value);
     }
 

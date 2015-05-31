@@ -39,6 +39,7 @@ export default class BaseType extends PrimitiveBase{
     }
 
     constructor(value, options = {}){
+        super(value);
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
         this.__options__ = options;

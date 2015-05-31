@@ -14,6 +14,7 @@ export default class _Function extends PrimitiveBase{
     }
 
     constructor(value){
+        super(value);
     	return _Function.validate(value) ? value : noop;
     }
 
