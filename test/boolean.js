@@ -41,7 +41,7 @@ describe('Boolean Type', function() {
 
     });
 
-    describe('lenient input', function() {
+    xdescribe('lenient input', function() {
 
         var BooleanValues = aDataTypeWithSpec({
             yes: Typorama.Boolean.withDefault(1),

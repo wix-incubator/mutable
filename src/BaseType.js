@@ -24,20 +24,31 @@ export default class BaseType extends PrimitiveBase{
         return _.isPlainObject(val) && (!val._type || val._type===this.id)
     }
 
+    static _wrapOrNull(itemValue, type,  lifeCycle){
+        if(type.validateType(itemValue)){
+            return itemValue;
+        }else if(type.type.allowPlainVal(itemValue)){
+            var newItem = type.create(itemValue);
+            newItem.$setManager(lifeCycle);
+            return newItem;
+        }
+    }
+
     static wrapValue(value, spec, options){
         var root = {};
         Object.keys(spec).forEach((key) => {
             var fieldSpec = spec[key];
             var fieldVal = value[key];
-            if(fieldVal instanceof fieldSpec.type)
+            if(fieldVal===undefined)
             {
-                root[key] = fieldVal;
-            }else{
-                fieldVal = (fieldVal !== undefined) ? fieldVal : spec[key].defaults();
-                root[key] = fieldSpec.type.create(fieldVal, fieldSpec.options);
+                fieldVal = spec[key].defaults();
             }
-
-
+            var newField = this._wrapOrNull(fieldVal,fieldSpec);
+            if(newField===null)
+            {
+                throw new Error('field :'+key+' incompatible');
+            }
+            root[key] = newField;
         });
         return root;
     }
@@ -61,14 +72,21 @@ export default class BaseType extends PrimitiveBase{
         if (this.$isDirtyable(true)) {
             var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
-                if (this.$getFieldDef(fieldName)) {
-                    if (this.__value__[fieldName].setValue && !BaseType.validateType(fieldValue)) {
-                        // recursion call
-                        changed = this.__value__[fieldName].setValue(fieldValue) || changed;
-                    } else {
-                        // end recursion, assign value (if applicable)
-                        changed = this.$validateAndAssignField(fieldName, fieldValue) || changed;
+                var fieldSpec = this.$getFieldDef(fieldName);
+                if (fieldSpec) {
+                    var newVal = this.constructor._wrapOrNull(fieldValue,fieldSpec,this.__lifecycleManager__);
+                    if(this.__value__[fieldName]!==newVal)
+                    {
+                        changed = true;
+                        this.__value__[fieldName] = newVal;
                     }
+                    //if (this.__value__[fieldName].setValue && !BaseType.validateType(fieldValue)) {
+                    //    // recursion call
+                    //    changed = this.__value__[fieldName].setValue(fieldValue) || changed;
+                    //} else {
+                    //    // end recursion, assign value (if applicable)
+                    //    changed = this.$validateAndAssignField(fieldName, fieldValue) || changed;
+                    //}
                 }
             });
             if(changed)

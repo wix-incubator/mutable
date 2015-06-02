@@ -324,9 +324,11 @@ describe('Custom data', function() {
 
                 it('should not invalidate if fields havnt changed', function() {
                     var instance = new UserWithChildType();
-                    instance.setValue({child:{name: 'gaga'}});
+                    var instance2 = new UserType();
+
+                    instance.setValue({child:instance2});
                     instance.$resetDirty();
-                    instance.setValue({child:{name: 'gaga'}});
+                    instance.setValue({child:instance2});
                     expect(instance.$isDirty()).to.be.equal(false);
                 });
             })

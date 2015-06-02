@@ -1,4 +1,5 @@
 import Typorama from '../src';
+import {LifeCycleManager} from '../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import _ from 'lodash';
@@ -101,6 +102,7 @@ describe('Array data', function() {
                 expect(mixedList.at(0).address).to.be.eql('gaga');
 
             });
+
             it('a multi subtype array should default to first object based types for json', function() {
                 var mixedList = Typorama.Array.of([AddressType, UserType]).create([{}]);
 
@@ -228,7 +230,7 @@ describe('Array data', function() {
             });
             describe('setValue on an array with complex subtype',function(){
                 it('should keep typorama objects passed to it that fit its subtypes', function() {
-                    var mixedList = Typorama.Array.of(UserType,AddressType).create([]);
+                    var mixedList = Typorama.Array.of([UserType,AddressType]).create([]);
                     var newUser = new UserType();
                     var newAddress = new AddressType();
                     mixedList.setValue([newUser, newAddress]);
@@ -247,6 +249,17 @@ describe('Array data', function() {
                     expect(mixedList.at(0)).to.not.be.eql(address);
 
                 });
+                it('should set the new item lifecycle manager when creating new from JSON ', function() {
+
+                    var mockManager = new LifeCycleManager();
+                    var address = new AddressType({address:'gaga'});
+                    var mixedList = Typorama.Array.of(AddressType).create([]);
+                    mixedList.$setManager(mockManager);
+                    mixedList.setValue([{code:5}]);
+
+                    expect(mixedList.at(0).__lifecycleManager__).to.be.eql(mockManager);
+
+                });
             })
 
 		});
@@ -260,6 +273,7 @@ describe('Array data', function() {
 			expect(testType.names.at(2)).to.equal("Britney");
 			expect(testType.names.at(3)).to.equal("Christina");
 
+            debugger;
 			testType.setValue({
 				names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
 			});
