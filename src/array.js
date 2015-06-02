@@ -46,23 +46,40 @@ class _Array extends BaseType {
 		}, this);
 	}
 
+    static _wrapOrNull(itemValue, type){
+        if(type.validateType(itemValue)){
+            return itemValue;
+        }else if(_.isArray(itemValue) && _Array.isAssignableFrom(type.type)){
+            return type.create(itemValue,type.options);
+        }else if(_.isPlainObject(itemValue) && BaseType.isAssignableFrom(type.type)){
+            if(itemValue._type && itemValue._type!==type.id){
+                return null;
+            }
+            return type.create(itemValue,type.options);
+        }
+    }
+
 	static _wrapSingleItem(itemValue, options) {
-		if(BaseType.validateType(itemValue)) {
-			return itemValue;
-		} else if(typeof options.subTypes === 'function') {
-			return options.subTypes.create(itemValue, options.subTypes.options);
+        var insertedValue;
+		if(typeof options.subTypes === 'function') {
+            insertedValue = this._wrapOrNull(itemValue,options.subTypes);
 		} else if(typeof options.subTypes === 'object') {
 
-			var subType = options.subTypes[
-				itemValue._type ? itemValue._type  :
-				Number.validate(itemValue) ? Number.name :
-				String.validate(itemValue) ? String.name :
-				Object.keys(options.subTypes)[0]
-			];
-
-			return subType.create(itemValue, subType.options);
+            for(var name in options.subTypes){
+                insertedValue = this._wrapOrNull(itemValue,options.subTypes[name]);
+                if(insertedValue)
+                {
+                    break;
+                }
+            }
 		}
+        if(!insertedValue){
+            throw new Error('illegal item type : ' + itemValue);
+        }
+        return insertedValue;
 	}
+
+
 
 	static of(subTypes) {
 		return this.withDefault(undefined, undefined, { subTypes });
@@ -269,22 +286,22 @@ class _Array extends BaseType {
 	setValue(newValue) {
         var changed = false;
 		if(newValue instanceof _Array) {
-			newValue = newValue.toJSON();
+			newValue = newValue.__getValueArr__();
 		}
 		if(_.isArray(newValue)) {
 			//fix bug #33. reset the current array instead of replacing it;
 
-
 			_.forEach(newValue, (itemValue, idx) => {
-                if(BaseType.validateType(itemValue) || !this.at(idx) || !this.at(idx).setValue)
+                if(BaseType.validateType(itemValue))
                 {
                     changed = changed || (this.at(idx) !== itemValue);
                     this.__value__[idx] = itemValue;
                 }else{
-                    var childChange = this.__value__[idx].setValue(itemValue);
-                    changed = changed || childChange;
+                    var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__);
+                    changed = changed || newItemVal!= this.__value__[idx];
+                    this.__value__[idx] = newItemVal;
                 }
-			});
+			}.bind(this));
             changed = changed || (this.__value__.length != newValue.length);
             if(changed)
             {
