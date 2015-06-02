@@ -81,6 +81,66 @@ describe('Array data', function() {
 			expect(testType.names.at(2)).to.equal("Britney");
 			expect(testType.names.at(3)).to.equal("Christina");
 		});
+
+        describe("Array with complex subtype instansiation",function(){
+            it('should keep typorama objects passed to it that fit its subtypes', function() {
+                var newUser = new UserType();
+                var newAddress = new AddressType();
+
+                var mixedList = Typorama.Array.of([UserType,AddressType]).create([newUser,newAddress]);
+
+                expect(mixedList.at(0)).to.eql(newUser);
+                expect(mixedList.at(1)).to.eql(newAddress);
+            });
+            it('single subtype array should allow setting data with json, ', function() {
+
+                var mixedList = Typorama.Array.of(AddressType).create([{address:'gaga'}]);
+
+                expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+                expect(mixedList.at(0).code).to.be.eql(10);
+                expect(mixedList.at(0).address).to.be.eql('gaga');
+
+            });
+            it('a multi subtype array should default to first object based types for json', function() {
+                var mixedList = Typorama.Array.of([AddressType, UserType]).create([{}]);
+
+                expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+
+            });
+            it('a multi subtype array should detect primitives', function() {
+                var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create(['gaga']);
+
+                expect(mixedList.at(0)).to.be.eql('gaga');
+            });
+            it('a multi subtype array should use _type field to detect which subtype to use', function() {
+                var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create([{_type:'User'}]);
+
+                expect(mixedList.at(0)).to.be.instanceOf(UserType);
+            });
+            it('should throw readable error when unallowed primitive is added',function(){
+                var ListCls = Typorama.Array.of(AddressType);
+                expect(function(){ListCls.create(['gaga'])}).to.throw();
+
+                ListCls = Typorama.Array.of(Typorama.Number);
+                expect(function(){ListCls.create(['gaga'])}).to.throw();
+            });
+
+            it('should throw readable error when object is added an no object types allowed',function(){
+                var ListCls = Typorama.Array.of(Typorama.String);
+                expect(function(){ListCls.create([{}])}).to.throw();
+            });
+
+            it('should throw readable error when unallowed typorama is added',function(){
+                var ListCls = Typorama.Array.of(UserType);
+                expect(function(){ListCls.create([new AddressType()])}).to.throw();
+            });
+
+            it('should throw readable error when json with unallowed _type added',function(){
+                var ListCls = Typorama.Array.of(UserType);
+                expect(function(){ListCls.create([new AddressType()])}).to.throw();
+            });
+
+        })
 	});
 
 	describe('unsync __value__ array bug', function(){
@@ -131,12 +191,12 @@ describe('Array data', function() {
 		});
 
 		it('Should have default length', function() {
-			var numberList = new Typorama.Array([1, 2, 3, 4], false, {subTypes: Typorama.Number});
+			var numberList = new Typorama.Array([1, 2, 3, 4], {subTypes: Typorama.Number});
 			expect(numberList.length).to.equal(4);
 		});
 
 		it('Should be created once for each data instance', function() {
-			var numberList = new Typorama.Array([1, 2, 3, 4], false, {subTypes: Typorama.Number});
+			var numberList = new Typorama.Array([1, 2, 3, 4], {subTypes: Typorama.Number});
 			var numberListReadOnly = numberList.$asReadOnly();
 			var numberListReadOnly2 = numberList.$asReadOnly();
 
@@ -159,6 +219,36 @@ describe('Array data', function() {
                 numberList.setValue([1, 2, 3, 4]);
                 expect(numberList.$isDirty()).to.equal(false);
             });
+            it('should completely redefine array data', function() {
+                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+                numberList.setValue([1, 2]);
+
+                expect(numberList.toJSON()).to.eql([1,2]);
+                expect(numberList.$isDirty()).to.equal(true);
+            });
+            describe('setValue on an array with complex subtype',function(){
+                it('should keep typorama objects passed to it that fit its subtypes', function() {
+                    var mixedList = Typorama.Array.of(UserType,AddressType).create([]);
+                    var newUser = new UserType();
+                    var newAddress = new AddressType();
+                    mixedList.setValue([newUser, newAddress]);
+
+                    expect(mixedList.at(0)).to.eql(newUser);
+                    expect(mixedList.at(1)).to.eql(newAddress);
+                });
+                it('single subtype array should allow setting data with json, ', function() {
+                    var address = new AddressType({address:'gaga'});
+                    var mixedList = Typorama.Array.of(AddressType).create([address]);
+                    mixedList.setValue([{code:5}]);
+
+                    expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+                    expect(mixedList.at(0).code).to.be.eql(5);
+                    expect(mixedList.at(0).address).to.be.eql('');
+                    expect(mixedList.at(0)).to.not.be.eql(address);
+
+                });
+            })
+
 		});
 
 		it("setValue with Typorama object containing Typorama array of string", function() {
@@ -848,7 +938,7 @@ describe('Array data', function() {
 				expect(filterArray.valueOf()).to.eql([42, 15, 7]);
 			});
 			it('should return an empty array if no elements pass the callback test', function() {
-				var arr = Typorama.Array.of(Typorama.Numbers).create([42, 3, 15, 4, 7]);
+				var arr = Typorama.Array.of(Typorama.Number).create([42, 3, 15, 4, 7]);
 				var filterArray = arr.filter(function(element) {
 					return element > 50;
 				});
