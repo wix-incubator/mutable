@@ -50,22 +50,16 @@ class _Array extends BaseType {
 		}, this);
 	}
 
-    static _wrapOrNull(itemValue, type){
-        if(type.validateType(itemValue)){
-            return itemValue;
-        }else if(type.type.allowPlainVal(itemValue)){
-            return type.create(itemValue,type.options);
-        }
-    }
 
-	static _wrapSingleItem(itemValue, options) {
+
+	static _wrapSingleItem(itemValue, options, lifeCycle) {
         var insertedValue;
 		if(typeof options.subTypes === 'function') {
-            insertedValue = this._wrapOrNull(itemValue,options.subTypes);
+            insertedValue = this._wrapOrNull(itemValue,options.subTypes,  lifeCycle);
 		} else if(typeof options.subTypes === 'object') {
 
             for(var name in options.subTypes){
-                insertedValue = this._wrapOrNull(itemValue,options.subTypes[name]);
+                insertedValue = this._wrapOrNull(itemValue,options.subTypes[name], lifeCycle);
                 if(insertedValue)
                 {
                     break;
@@ -141,7 +135,7 @@ class _Array extends BaseType {
 		if(this.$setDirty(true)){
 			return Array.prototype.push.apply(
 				this.__value__,
-				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__))
+				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
 			);
 		} else {
 			return null;
@@ -177,7 +171,7 @@ class _Array extends BaseType {
 		if(this.$setDirty(true)){
 			var spliceParams = [index, removeCount];
 			addedItems.forEach(function (newItem) {
-				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__))
+				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__,this.__lifecycleManager__))
 			}.bind(this));
 			return this.__value__.splice.apply(this.__value__, spliceParams);
 			//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
@@ -291,15 +285,12 @@ class _Array extends BaseType {
 			//fix bug #33. reset the current array instead of replacing it;
 
 			_.forEach(newValue, (itemValue, idx) => {
-                if(BaseType.validateType(itemValue))
-                {
-                    changed = changed || (this.at(idx) !== itemValue);
-                    this.__value__[idx] = itemValue;
-                }else{
-                    var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__);
-                    changed = changed || newItemVal!= this.__value__[idx];
-                    this.__value__[idx] = newItemVal;
-                }
+
+                var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__);
+                changed = changed || newItemVal!= this.__value__[idx];
+
+                this.__value__[idx] = newItemVal;
+
 			}.bind(this));
             changed = changed || (this.__value__.length != newValue.length);
             if(changed)
