@@ -8,6 +8,8 @@ export default class _String extends PrimitiveBase{
 
     static validate(v){ return typeof v === 'string'; }
 
+    static allowPlainVal(v){ return this.validate(v)}
+
     static validateType(value) {
         return this.validate(value);
     }

@@ -20,7 +20,11 @@ export default class BaseType extends PrimitiveBase{
 
     static validateType(value){ return value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type); }
 
-     static wrapValue(value, spec, options){
+    static allowPlainVal(val){
+        return _.isPlainObject(val) && (!val._type || val._type===this.id)
+    }
+
+    static wrapValue(value, spec, options){
         var root = {};
         Object.keys(spec).forEach((key) => {
             var fieldSpec = spec[key];

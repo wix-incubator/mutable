@@ -7,6 +7,7 @@ export default class _Number extends PrimitiveBase{
     static defaults(){ return 0; }
 
     static validate(v){ return typeof v === 'number'; }
+    static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {
         return this.validate(value);

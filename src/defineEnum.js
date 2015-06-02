@@ -56,6 +56,7 @@ function defineEnum(def) {
 	}
 
 	EnumType.validateType = EnumType.validate;
+    EnumType.allowPlainVal = EnumType.validate;
 
 	EnumType.type = EnumType;
 	EnumType.create = function(value) {

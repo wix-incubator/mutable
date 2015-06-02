@@ -53,6 +53,7 @@ export function generateWithDefault(){
         typeWithDefault.type = this.type || this;
         typeWithDefault.validate = validate || this.validate;
         typeWithDefault.validateType = this.validateType;
+        typeWithDefault.allowPlainVal = this.allowPlainVal;
         typeWithDefault.withDefault = withDefault;//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.options = options;
@@ -73,6 +74,7 @@ export function generateWithDefaultForSysImmutable(Type){
         typeWithDefault.type = this.type;
         typeWithDefault.validate = validate || this.validate;
         typeWithDefault.validateType = this.validateType;
+        typeWithDefault.allowPlainVal = this.allowPlainVal;
         typeWithDefault.withDefault = this.withDefault;//.bind(this);
         typeWithDefault.defaults = def;
         typeWithDefault.wrapValue = Type;

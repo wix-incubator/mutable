@@ -30,6 +30,10 @@ class _Array extends BaseType {
 		return isValid;
 	}
 
+    static allowPlainVal(val){
+        return _.isArray(val);
+    }
+
 	static wrapValue(value, spec, options) {
 		if(BaseType.validateType(value)) {
 			if (value.__value__.map) {
@@ -49,12 +53,7 @@ class _Array extends BaseType {
     static _wrapOrNull(itemValue, type){
         if(type.validateType(itemValue)){
             return itemValue;
-        }else if(_.isArray(itemValue) && _Array.isAssignableFrom(type.type)){
-            return type.create(itemValue,type.options);
-        }else if(_.isPlainObject(itemValue) && BaseType.isAssignableFrom(type.type)){
-            if(itemValue._type && itemValue._type!==type.id){
-                return null;
-            }
+        }else if(type.type.allowPlainVal(itemValue)){
             return type.create(itemValue,type.options);
         }
     }

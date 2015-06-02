@@ -8,6 +8,7 @@ export default class _Function extends PrimitiveBase{
     static defaults() { return noop; }
 
     static validate(v) { return typeof v === 'function'; }
+    static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {
         return this.validate(value);
