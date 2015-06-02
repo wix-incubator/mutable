@@ -46,27 +46,27 @@ class _Array extends BaseType {
 		}, this);
 	}
 
-	static _wrapSingleItem(itemValue, options) {
-        function wrapOrNull(type){
-            if(type.validateType(itemValue)){
-                return itemValue;
-            }else if(_.isArray(itemValue) && _Array.isAssignableFrom(type.type)){
-                return type.create(itemValue,type.options);
-            }else if(_.isPlainObject(itemValue) && BaseType.isAssignableFrom(type.type)){
-                if(itemValue._type && itemValue._type!==type.id){
-                    return null;
-                }
-                return type.create(itemValue,type.options);
+    static _wrapOrNull(itemValue, type){
+        if(type.validateType(itemValue)){
+            return itemValue;
+        }else if(_.isArray(itemValue) && _Array.isAssignableFrom(type.type)){
+            return type.create(itemValue,type.options);
+        }else if(_.isPlainObject(itemValue) && BaseType.isAssignableFrom(type.type)){
+            if(itemValue._type && itemValue._type!==type.id){
+                return null;
             }
+            return type.create(itemValue,type.options);
         }
+    }
 
+	static _wrapSingleItem(itemValue, options) {
         var insertedValue;
 		if(typeof options.subTypes === 'function') {
-            insertedValue = wrapOrNull(options.subTypes);
+            insertedValue = this._wrapOrNull(itemValue,options.subTypes);
 		} else if(typeof options.subTypes === 'object') {
 
             for(var name in options.subTypes){
-                insertedValue = wrapOrNull(options.subTypes[name]);
+                insertedValue = this._wrapOrNull(itemValue,options.subTypes[name]);
                 if(insertedValue)
                 {
                     break;

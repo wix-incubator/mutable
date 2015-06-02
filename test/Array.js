@@ -137,7 +137,7 @@ describe('Array data', function() {
 
             it('should throw readable error when json with unallowed _type added',function(){
                 var ListCls = Typorama.Array.of(UserType);
-                expect(function(){ListCls.create([new AddressType()])}).to.throw();
+                expect(function(){ListCls.create({_type:'address'})}).to.throw();
             });
 
         })
