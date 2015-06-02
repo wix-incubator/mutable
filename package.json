@@ -3,8 +3,10 @@
   "publishConfig": {
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
+
   "name": "typorama",
   "version": "0.0.22",
+
   "description": "",
   "main": "dist/src",
   "repository": {
