@@ -54,7 +54,9 @@ class _Array extends BaseType {
         if(type.validateType(itemValue)){
             return itemValue;
         }else if(type.type.allowPlainVal(itemValue)){
-            return type.create(itemValue,type.options);
+            var newItem = type.create(itemValue,type.options);
+            newItem.$setManager(this.__lifecycleManager__);
+            return newItem;
         }
     }
 
