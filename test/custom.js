@@ -47,16 +47,16 @@ describe('Custom data', function() {
 	var lifeCycleAsserter = lifecycleContract();
 	lifeCycleAsserter.addFixture(
 		(u1, u2) => {
-			var result = CompositeContainer.create();
+			var result = new CompositeContainer();
 			result.child1 = u1;
 			result.child2 = u2;
 			return result;
 		},
-		() => UserType.create(),
+		() => new UserType(),
 		'object with mutable elements');
 	var counter = 0;
 	lifeCycleAsserter.addFixture(
-		(u1, u2) => PrimitivesContainer.create({child1:u1, child2:u2}),
+		(u1, u2) => new PrimitivesContainer({child1:u1, child2:u2}),
 		() => 'foobar' + (counter++),
 		'object with primitive elements'
 	);
@@ -111,7 +111,7 @@ describe('Custom data', function() {
 					planet: Typorama.String.withDefault("Melmac")
 				}, "CustomType");
 				var original = { name: "Lilo" };
-				var inst = CustomType.create(original);
+				var inst = new CustomType(original);
 				expect(original).to.deep.equal({ name: "Lilo" });
 			});
 
@@ -121,7 +121,7 @@ describe('Custom data', function() {
 					planet: Typorama.String.withDefault("Melmac")
 				}, "CustomType");
 				var original = { name: "Lilo" };
-				var inst = CustomType.create(original);
+				var inst = new CustomType(original);
 				original.name = "Alf";
 				expect(inst.name).to.be.equal("Lilo");
 			});
@@ -136,7 +136,7 @@ describe('Custom data', function() {
 				}, "OuterType");
 
 				var original = { name: { name: "Lilo" } };
-				var inst = OuterType.create(original);
+				var inst = new OuterType(original);
 				original.name.name = "Alf";
 				expect(inst.name.name).to.be.equal("Lilo");
 			});
@@ -146,7 +146,7 @@ describe('Custom data', function() {
 					names: Typorama.Array.of(Typorama.String)
 				}, "CustomType");
 				var original = { names: [ "Lilo", "Stitch" ] };
-				var inst = CustomType.create(original);
+				var inst = new CustomType(original);
 				expect(original).to.deep.equal({ names: [ "Lilo", "Stitch" ] });
 			});
 
@@ -155,7 +155,7 @@ describe('Custom data', function() {
 					names: Typorama.Array.of(Typorama.String)
 				}, "CustomType");
 				var original = { names: [ "Lilo", "Stitch" ] };
-				var inst = CustomType.create(original);
+				var inst = new CustomType(original);
 				original.names[0] = "Wendell Pleakley";
 				expect(inst.names.at(0)).to.be.equal("Lilo");
 			});
@@ -246,7 +246,7 @@ describe('Custom data', function() {
 
 			it('should not set data that has different options', function(){
 				var state = new StateType();
-				var booleanList = Typorama.Array.of(Typorama.Boolean).create([]);
+				var booleanList = new (Typorama.Array.of(Typorama.Boolean))([]);
 				var relatedProductsPrevRef = state.relatedProducts;
 				var stringAndNumbersPrevRef = state.stringAndNumbers;
 
@@ -259,8 +259,8 @@ describe('Custom data', function() {
 
 			it('should set data that has equivalent options', function(){
 				var state = new StateType();
-				var productList = Typorama.Array.of(ProductType).create([]);
-				var stringAndNumbersList = Typorama.Array.of([Typorama.String, Typorama.Number]).create([]);
+				var productList = new (Typorama.Array.of(ProductType))([]);
+				var stringAndNumbersList = new (Typorama.Array.of([Typorama.String, Typorama.Number]))([]);
 				var relatedProductsPrevRef = state.relatedProducts;
 				var stringAndNumbersPrevRef = state.stringAndNumbers;
 				state.relatedProducts = productList;

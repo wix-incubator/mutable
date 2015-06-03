@@ -283,7 +283,12 @@ class _Array extends BaseType {
 		}
 		if(_.isArray(newValue)) {
 			//fix bug #33. reset the current array instead of replacing it;
-
+			var lengthDiff = this.__value__.length - newValue.length;
+			if (lengthDiff > 0){
+				// current array is longer than newValue, fill the excess cells with undefined
+				changed = true;
+				this.__value__.splice(newValue.length, lengthDiff);
+			}
 			_.forEach(newValue, (itemValue, idx) => {
 
                 var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__);
@@ -292,7 +297,6 @@ class _Array extends BaseType {
                 this.__value__[idx] = newItemVal;
 
 			}.bind(this));
-            changed = changed || (this.__value__.length != newValue.length);
             if(changed)
             {
                 this.$setDirty(true);
@@ -301,7 +305,6 @@ class _Array extends BaseType {
 		}
         return changed;
 	}
-
 }
 
 _Array.withDefault = generateWithDefault();
