@@ -134,10 +134,10 @@ export default class BaseType extends PrimitiveBase{
         return this.__readOnlyInstance__;
     }
 
-    toJSON(){
+    toJSON(recursive = true){
         return Object.keys(this.constructor._spec).reduce((json, key) => {
             var fieldValue = this.__value__[key];
-            json[key] = fieldValue.toJSON ? fieldValue.toJSON() : fieldValue;
+            json[key] = recursive && fieldValue.toJSON ? fieldValue.toJSON(true) : fieldValue;
             return json;
         }, {});
     }
