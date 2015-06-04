@@ -26,12 +26,14 @@ export default class BaseType extends PrimitiveBase{
 
     static _wrapOrNull(itemValue, type,  lifeCycle){
         if(type.validateType(itemValue)){
+            itemValue.$setManager(lifeCycle);
             return itemValue;
         }else if(type.type.allowPlainVal(itemValue)){
             var newItem = type.create(itemValue);
             newItem.$setManager(lifeCycle);
             return newItem;
         }
+        return null;
     }
 
     static wrapValue(value, spec, options){
