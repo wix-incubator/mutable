@@ -1,3 +1,4 @@
+import config from './typoramaConfiguration'
 import defineType from './defineType'
 import BaseType from './BaseType'
 import stringType from './string'
@@ -9,6 +10,7 @@ import defineEnum from "./defineEnum";
 import { LifeCycleManager } from "./lifecycle";
 
 export default {
+	config: config,
     define: defineType,
     BaseType: BaseType,
     String: stringType,

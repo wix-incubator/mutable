@@ -192,6 +192,26 @@ describe('Array data', function() {
 			testType = new TestType();
 		});
 
+		describe("with global freeze config", function(){
+
+			before("set global freeze configuration", function(){
+				Typorama.config.freezeInstance = true;
+			});
+
+			after("clear global freeze configuration", function(){
+				Typorama.config.freezeInstance = false;
+			});
+
+			it("should throw error on unknown field setter", function(){
+				var names = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
+
+				expect(function(){
+					names[4] = "there is no 4 - only at()";
+				}).to.throw();
+			});
+
+		});
+
 		it('Should have default length', function() {
 			var numberList = new Typorama.Array([1, 2, 3, 4], {subTypes: Typorama.Number});
 			expect(numberList.length).to.equal(4);
@@ -273,7 +293,6 @@ describe('Array data', function() {
 			expect(testType.names.at(2)).to.equal("Britney");
 			expect(testType.names.at(3)).to.equal("Christina");
 
-            debugger;
 			testType.setValue({
 				names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
 			});
@@ -1004,6 +1023,26 @@ describe('Array data', function() {
 			numberList.setValue([5,6]);
 
 			expect(numberList.toJSON()).to.eql([5,6]);
+		});
+
+		describe("with global freeze config", function(){
+
+			before("set global freeze configuration", function(){
+				Typorama.config.freezeInstance = true;
+			});
+
+			after("clear global freeze configuration", function(){
+				Typorama.config.freezeInstance = false;
+			});
+
+			it("should throw error on unknown field setter", function(){
+				var names = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]).$asReadOnly();
+
+				expect(function(){
+					names[4] = "there is no 4 - only at()";
+				}).to.throw();
+			});
+
 		});
 
 		describe('at', function() {

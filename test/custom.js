@@ -351,6 +351,29 @@ describe('Custom data', function() {
             })
 		});
 
+		describe("with global freeze config", function(){
+
+			before("set global freeze configuration", function(){
+				Typorama.config.freezeInstance = true;
+			});
+
+			after("clear global freeze configuration", function(){
+				Typorama.config.freezeInstance = false;
+			});
+
+			it("should throw error on unknown field setter", function(){
+				var ImageType = aDataTypeWithSpec({
+					src: Typorama.String.withDefault('default.jpg')
+				}, 'ImageType');
+				var image = new ImageType();
+
+				expect(function(){
+					image.notAField = "there is no notAField";
+				}).to.throw();
+			});
+
+		});
+
 		it('should chain with default calls', function() {
 			var typeWithDefaultBob = UserType.withDefault({name: 'joe'}).withDefault({name: 'bob'});
 
@@ -484,6 +507,29 @@ describe('Custom data', function() {
 
 			expect(readOnlyChild instanceof UserType).to.equal(true);
 			expect(readOnlyChild.name).to.equal('bobi');
+		});
+
+		describe("with global freeze config", function(){
+
+			before("set global freeze configuration", function(){
+				Typorama.config.freezeInstance = true;
+			});
+
+			after("clear global freeze configuration", function(){
+				Typorama.config.freezeInstance = false;
+			});
+
+			it("should throw error on unknown field setter", function(){
+				var ImageType = aDataTypeWithSpec({
+					src: Typorama.String.withDefault('default.jpg')
+				}, 'ImageType');
+				var image = new ImageType().$asReadOnly();
+
+				expect(function(){
+					image.notAField = "there is no notAField";
+				}).to.throw();
+			});
+
 		});
 	});
 });
