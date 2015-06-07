@@ -26,8 +26,12 @@ function convertToObject(def){
 
 function defineEnum(def) {
 
-	var EnumType = function() {
-		throw new TypeError("Enum cannot be instantiated");
+	var EnumType = function(initValue) {
+		var key = _.findKey(def, value => value === initValue);
+		if(EnumType[key]){
+			return EnumType[key];
+		}
+		throw new TypeError(`Enum must be initialized with value`);
 	};
 
 	EnumType.prototype.__proto__ = BaseType.prototype;
@@ -53,22 +57,16 @@ function defineEnum(def) {
 	};
 
 	EnumType.validate = function(v) {
-		if(v && typeof v === "object" && v.key) {
-			return EnumType[v.key] === v;
-		}
-		return false;
+		return (v instanceof EnumType && EnumType[v.key] === v);
 	};
 
 	EnumType.validateType = EnumType.validate;
-    EnumType.allowPlainVal = EnumType.validate;
+    EnumType.allowPlainVal = function(plainVal){
+		return (_.find(def, plainVal) !== undefined);
+	};
 
 	EnumType.type = EnumType;
-	EnumType.create = function(value) {
-		if(EnumType.validate(value)) {
-			return value;
-		}
-		throw new TypeError("Invalid Enum member");
-	};
+	EnumType.create = BaseType.create;
 
 	EnumType.withDefault = function(value) {
 		if(EnumType.validate(value)) {
