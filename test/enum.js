@@ -23,9 +23,9 @@ describe('Enum Type', function() {
             }).to.throw();
         });
 
-        it("enum extends BaseType", function() {
+        it("enum extends PrimitiveType", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            expect(Ape.chimp).to.be.instanceof(Typorama.BaseType);
+            expect(Ape.chimp).to.be.instanceof(Typorama.PrimitiveBase);
         });
 
         it("enum can be initialized", function() {
@@ -158,6 +158,13 @@ describe('Enum Type', function() {
 			var complex = new Complex({ size:"contain" });
 
 			expect(complex.size).to.be.equal(ImageSizing.CONTAIN);
+		});
+
+		it("should not be dirtyable", function(){
+			var ImageSizing = Typorama.defineEnum(["A", "B"]);
+			expect(ImageSizing.$isDirtyable).to.not.be.defined;
+			expect(ImageSizing.A.$isDirtyable).to.not.be.defined;
+			expect(ImageSizing.B.$isDirtyable).to.not.be.defined;
 		});
     });
 });
