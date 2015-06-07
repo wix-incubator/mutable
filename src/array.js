@@ -89,9 +89,9 @@ class _Array extends BaseType {
 		super(value, options);
 	}
 
-	toJSON() {
+	toJSON(recursive = true) {
 		return this.__value__.map(item => {
-			return (BaseType.validateType(item)) ? item.toJSON() : item;
+			return (recursive && BaseType.validateType(item)) ? item.toJSON(true) : item;
 		});
 	}
 

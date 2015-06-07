@@ -23,7 +23,8 @@ describe('Boolean Type', function() {
             default: Typorama.Boolean
         }, 'BooleanValues');
 
-        var booleans = new BooleanValues();
+        var booleans;
+        before(() => booleans = new BooleanValues());
 
         it('should resolve to javascript boolean', function() {
             expect(booleans.yes).to.be.a('boolean');
@@ -48,8 +49,8 @@ describe('Boolean Type', function() {
             no: Typorama.Boolean.withDefault(0)
         }, 'BooleanValues');
 
-        var booleans = new BooleanValues();
-
+        var booleans;
+        before(() => booleans = new BooleanValues());
 
         it('should resolve to javascript boolean', function() {
             expect(booleans.yes).to.be.a('boolean');

@@ -126,6 +126,19 @@ function mutatorContract(description, context, mutator) {
                 expect(addedElements.every('$setManager.called'), '$setManager called on element(s)').to.be.true;
                 expect(addedElements.every((element) => element.$setManager.calledWithExactly(context.lifecycleManager)), '$setManager called on element(s)').to.be.true;
             });
+            it('sets lifecycle manager in newly added elements, even if previous manager is registered', function () {
+                context.container.$setManager(context.lifecycleManager);
+                var oldElements = context.containedElements;
+                mutator(context.container, (...args) => {
+                    var result = context.elementFactory(...args);
+                    result.$setManager(new LifeCycleManager());
+                    result.$setManager.reset();
+                    return result;
+                });
+                var addedElements = _(oldElements).intersection(context.containedElements);
+                expect(addedElements.every('$setManager.called'), '$setManager called on element(s)').to.be.true;
+                expect(addedElements.every((element) => element.$setManager.calledWithExactly(context.lifecycleManager)), '$setManager called on element(s)').to.be.true;
+            });
         }
     });
 }
@@ -294,7 +307,12 @@ function testIsDirty(context){
 function testSetManager(context) {
     describe('calling $setManager on ' + context.description, function () {
         context.setup();
-        it('changes the manager field', function () {
+        it('with existing different manager throws error', function () {
+            context.container.__lifecycleManager__ = new LifeCycleManager();
+            var manager = new LifeCycleManager();
+            expect(() => context.container.$setManager(manager)).to.throw(Error);
+        });
+        it('when no existing manager changes the manager field', function () {
             var manager = new LifeCycleManager();
             context.container.$setManager(manager);
             expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
@@ -302,6 +320,8 @@ function testSetManager(context) {
                 expect(_.every(context.containedElements, '$setManager.called'), 'elements $setManager called').to.be.true;
                 expect(_.every(context.containedElements, (e) => e.$setManager.alwaysCalledWithExactly(manager)), "elements $setManager called with manager").to.be.true;
             }
+            context.container.$setManager(manager);
+            expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
         });
         it('in readonly form does not change the manager field', function () {
             var manager = new LifeCycleManager();

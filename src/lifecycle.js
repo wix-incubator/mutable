@@ -44,6 +44,9 @@ export function makeDirtyable(Type){
 // called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (!this.__isReadOnly__ && lifecycleManager instanceof LifeCycleManager) {
+            if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager){
+                throw new Error('lifecycle management already exists');
+            }
             this.__lifecycleManager__ = lifecycleManager;
             _.forEach(this.__value__, (val) => {
                 if (val.$setManager && _.isFunction(val.$setManager)) {
