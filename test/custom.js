@@ -340,6 +340,8 @@ describe('Custom data', function() {
                     instance.setValue({child:instance2});
                     expect(instance.$isDirty()).to.be.equal(false);
                 });
+
+				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
             })
             describe('with typorama input',function(){
                 it('should set replace all values from an incoming object with typorama fields according to schema', function() {
