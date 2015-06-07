@@ -116,5 +116,17 @@ describe('Enum Type', function() {
 			expect(ImageSizing.COVER.toJSON()).to.be.equal("cover");
 			expect(ImageSizing.CONTAIN.toJSON()).to.be.equal("contain");
 		});
+
+		it("should initiate from value string", function() {
+			var ImageSizing = Typorama.defineEnum({
+				NONE: null,
+				COVER: "cover",
+				CONTAIN: "contain"
+			});
+
+			var enumIns = ImageSizing.create(ImageSizing.COVER.toJSON());
+
+			expect(enumIns).to.be.equal(ImageSizing.COVER);
+		});
     });
 });
