@@ -126,6 +126,19 @@ function mutatorContract(description, context, mutator) {
                 expect(addedElements.every('$setManager.called'), '$setManager called on element(s)').to.be.true;
                 expect(addedElements.every((element) => element.$setManager.calledWithExactly(context.lifecycleManager)), '$setManager called on element(s)').to.be.true;
             });
+            it('sets lifecycle manager in newly added elements Even if previous manager is registered', function () {
+                context.container.$setManager(context.lifecycleManager);
+                var oldElements = context.containedElements;
+                mutator(context.container, (...args) => {
+                    var result = context.elementFactory(...args);
+                    result.$setManager(new LifeCycleManager());
+                    result.$setManager.reset();
+                    return result;
+                });
+                var addedElements = _(oldElements).intersection(context.containedElements);
+                expect(addedElements.every('$setManager.called'), '$setManager called on element(s)').to.be.true;
+                expect(addedElements.every((element) => element.$setManager.calledWithExactly(context.lifecycleManager)), '$setManager called on element(s)').to.be.true;
+            });
         }
     });
 }

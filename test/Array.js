@@ -273,8 +273,7 @@ describe('Array data', function() {
 			expect(testType.names.at(2)).to.equal("Britney");
 			expect(testType.names.at(3)).to.equal("Christina");
 
-            debugger;
-			testType.setValue({
+            testType.setValue({
 				names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
 			});
 
@@ -552,6 +551,22 @@ describe('Array data', function() {
 				expect(result).to.eql("a,b");
 			});
 		});
+
+		describe('toJSON', function() {
+			it('should take a typorama array of primitives, and return a native js array of primitives', function() {
+				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
+
+				expect(arrA.toJSON(), 'toJSON() called').to.eql(['a', 'b']);
+				expect(arrA.toJSON(false), 'toJSON(false) called').to.eql(['a', 'b']);
+			});
+			it('should take a typorama array of custom types, and return a native js array of objects', function() {
+				var arrA = Typorama.Array.of(UserType).create([{age : 11}, {age : 12}]);
+
+				expect(arrA.toJSON(), 'toJSON() called').to.eql([{age : 11, name : new UserType().name}, {age : 12, name : new UserType().name}]);
+				expect(arrA.toJSON(false), 'toJSON(false) called').to.eql([new UserType({age : 11}), new UserType({age : 12})]);
+			});
+		});
+
 		describe('indexOf', function () {
 			it('should return the first index of an element within an array equal to the specified value', function() {
 				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
