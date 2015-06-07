@@ -28,9 +28,13 @@ function defineEnum(def) {
 
 	var EnumType = function() {
 		throw new TypeError("Enum cannot be instantiated");
-	}
+	};
 
 	EnumType.prototype.__proto__ = BaseType.prototype;
+
+	EnumType.prototype.toJSON = function(){
+		return this.value;
+	};
 
 	if(Array.isArray(def)) {
 	    def = convertToObject(def);
@@ -46,14 +50,14 @@ function defineEnum(def) {
 
 	EnumType.defaults = function() {
 		return defVal;
-	}
+	};
 
 	EnumType.validate = function(v) {
 		if(v && typeof v === "object" && v.key) {
 			return EnumType[v.key] === v;
 		}
 		return false;
-	}
+	};
 
 	EnumType.validateType = EnumType.validate;
     EnumType.allowPlainVal = EnumType.validate;
