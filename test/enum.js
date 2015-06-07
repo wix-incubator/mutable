@@ -144,5 +144,20 @@ describe('Enum Type', function() {
 
 			expect(complex.size).to.be.equal(ImageSizing.COVER);
 		});
+
+		it("should initiate from default value as part of complex data when no initial value is provided", function() {
+			var ImageSizing = Typorama.defineEnum({
+				NONE: null,
+				COVER: "cover",
+				CONTAIN: "contain"
+			});
+			var Complex = aDataTypeWithSpec({
+				size: ImageSizing.withDefault(ImageSizing.CONTAIN)
+			}, 'User');
+
+			var complex = new Complex({ size:"contain" });
+
+			expect(complex.size).to.be.equal(ImageSizing.CONTAIN);
+		});
     });
 });

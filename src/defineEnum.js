@@ -1,4 +1,5 @@
 import _ from "lodash";
+import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 import BaseType from './BaseType';
 
 function createEnumMember(key, value, proto) {
@@ -68,14 +69,7 @@ function defineEnum(def) {
 	EnumType.type = EnumType;
 	EnumType.create = BaseType.create;
 
-	EnumType.withDefault = function(value) {
-		if(EnumType.validate(value)) {
-			var t = _.clone(EnumType);
-			t.defaults = () => { return value; };
-			return t;
-		}
-		throw new TypeError("Invalid Enum member");
-	};
+	EnumType.withDefault = generateWithDefaultForSysImmutable(EnumType);
 
 	return EnumType;
 }
