@@ -129,7 +129,7 @@ describe('Enum Type', function() {
 			expect(enumIns).to.be.equal(ImageSizing.COVER);
 		});
 
-		it.only("should initiate from value string as part of complex data", function() {
+		it("should initiate from value string as part of complex data", function() {
 			var ImageSizing = Typorama.defineEnum({
 				NONE: null,
 				COVER: "cover",
