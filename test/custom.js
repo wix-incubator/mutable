@@ -98,7 +98,7 @@ describe('Custom data', function() {
 		it('should take a typorama object, and return a native object', function() {
 			var container = UserWithChildType.create({child : {age : 11}});
 
-			expect(container.toJSON(), 'toJSON() called').to.eql({name : new UserWithChildType().name, child : {age : 11, name : new UserType().name, address : new UserType().address}});
+			expect(container.toJSON(), 'toJSON() called').to.eql({name : new UserWithChildType().name, child : new UserType({age : 11}).toJSON()});
 			expect(container.toJSON(false), 'toJSON(false) called').to.eql({name : new UserWithChildType().name, child : new UserType({age : 11})});
 		});
 	});
