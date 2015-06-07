@@ -32,7 +32,9 @@ export default class BaseType extends PrimitiveBase{
             return itemValue;
         }else if(type.type.allowPlainVal(itemValue)){
             var newItem = type.create(itemValue);
-            newItem.$setManager(lifeCycle);
+			if (newItem.$setManager && _.isFunction(newItem.$setManager)) {
+            	newItem.$setManager(lifeCycle);
+			}
             return newItem;
         }
         return null;

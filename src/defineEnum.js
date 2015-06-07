@@ -1,6 +1,7 @@
 import _ from "lodash";
 import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 import BaseType from './BaseType';
+import PrimitiveBase from './PrimitiveBase';
 
 function createEnumMember(key, value, proto) {
 
@@ -35,7 +36,7 @@ function defineEnum(def) {
 		throw new TypeError(`Enum must be initialized with value`);
 	};
 
-	EnumType.prototype.__proto__ = BaseType.prototype;
+	EnumType.prototype.__proto__ = PrimitiveBase.prototype;
 
 	EnumType.prototype.toJSON = function(){
 		return this.value;
