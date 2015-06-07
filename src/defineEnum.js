@@ -62,7 +62,7 @@ function defineEnum(def) {
 
 	EnumType.validateType = EnumType.validate;
     EnumType.allowPlainVal = function(plainVal){
-		return (_.find(def, plainVal) !== undefined);
+		return _.includes(def, plainVal);
 	};
 
 	EnumType.type = EnumType;

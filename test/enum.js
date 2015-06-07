@@ -128,5 +128,21 @@ describe('Enum Type', function() {
 
 			expect(enumIns).to.be.equal(ImageSizing.COVER);
 		});
+
+		it("should initiate from value string as part of complex data", function() {
+			var ImageSizing = Typorama.defineEnum({
+				NONE: null,
+				COVER: "cover",
+				CONTAIN: "contain"
+			});
+
+			var Complex = aDataTypeWithSpec({
+				size: ImageSizing
+			}, 'User');
+
+			var complex = new Complex({ size:"cover" });
+
+			expect(complex.size).to.be.equal(ImageSizing.COVER);
+		});
     });
 });
