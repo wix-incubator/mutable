@@ -199,7 +199,7 @@ class _Array extends BaseType {
 	// Accessor methods
 	at(index) {
 		var item = this.__value__[index];
-		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+		return (BaseType.validateType(item) && !this.$isDirtyable(true)) ? item.$asReadOnly() : item;
 	}
 
 	concat(...addedArrays) {
