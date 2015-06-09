@@ -221,6 +221,17 @@ function testResetDirty(context) {
             context.container.$resetDirty();
             expect(context.container.$isDirty(), 'container dirty after calling $resetDirty').to.be.false;
         });
+        it('makes $isDirty check elements even after $setDirty is called', function () {
+            context.container.$setManager(context.lifecycleManager);
+            context.lifecycleManager.forbidChange();
+            context.container.$setDirty();
+            context.container.$resetDirty();
+            var dirty = context.container.$isDirty();
+            if (context.dirtyableElements) {
+                expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql(context.containedElements);
+            }
+            expect(dirty, 'container dirty flag').to.be.false;
+        });
         if (context.dirtyableElements) {
             it('propagates to elements', function () {
                 expect(_.any(context.containedElements, '$resetDirty.called'), '$resetDirty called on any element(s)').to.be.false;
