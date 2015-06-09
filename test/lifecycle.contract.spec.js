@@ -300,6 +300,17 @@ function testIsDirty(context){
                 expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql(context.containedElements);
                 expect(dirty, 'container dirty flag').to.be.true;
             });
+            it("(when $setDirty not called and manager forbids changes) for the second time returns true without checking elements", function () {
+                context.containedElements.forEach((e) => e.$isDirty.returns(false));
+                context.containedElements[context.containedElements.length - 1].$isDirty.returns(true);
+                context.container.$setManager(context.lifecycleManager);
+                context.lifecycleManager.forbidChange();
+                context.container.$isDirty();
+                context.containedElements.forEach((e) => e.$isDirty.reset());
+                var dirty = context.container.$isDirty();
+                expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.be.empty;
+                expect(dirty, 'container dirty flag').to.be.true;
+            });
         }
     });
 }
