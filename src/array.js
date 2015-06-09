@@ -56,20 +56,18 @@ class _Array extends BaseType {
         var insertedValue;
 		if(typeof options.subTypes === 'function') {
             insertedValue = this._wrapOrNull(itemValue,options.subTypes,  lifeCycle);
+			if(insertedValue != null){
+				return insertedValue;
+			}
 		} else if(typeof options.subTypes === 'object') {
-
             for(var name in options.subTypes){
                 insertedValue = this._wrapOrNull(itemValue,options.subTypes[name], lifeCycle);
-                if(insertedValue)
-                {
-                    break;
+                if(insertedValue != null){
+					return insertedValue;
                 }
             }
 		}
-        if(!insertedValue){
-            throw new Error('illegal item type : ' + itemValue);
-        }
-        return insertedValue;
+		throw new Error('illegal item type : ' + itemValue);
 	}
 
 

@@ -50,8 +50,7 @@ export default class BaseType extends PrimitiveBase{
                 fieldVal = spec[key].defaults();
             }
             var newField = this._wrapOrNull(fieldVal,fieldSpec);
-            if(newField===null)
-            {
+            if(newField===null){
                 throw new Error('field :'+key+' incompatible');
             }
             root[key] = newField;
@@ -81,8 +80,10 @@ export default class BaseType extends PrimitiveBase{
                 var fieldSpec = this.$getFieldDef(fieldName);
                 if (fieldSpec) {
                     var newVal = this.constructor._wrapOrNull(fieldValue,fieldSpec,this.__lifecycleManager__);
-                    if(this.__value__[fieldName]!==newVal)
-                    {
+                    if (newVal === null){
+                        throw new Error('field :'+fieldName+' incompatible');
+                    }
+                    if(this.__value__[fieldName]!==newVal){
                         changed = true;
                         this.__value__[fieldName] = newVal;
                     }
