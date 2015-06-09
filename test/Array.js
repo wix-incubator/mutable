@@ -1083,6 +1083,24 @@ describe('Array data', function() {
 
 		});
 
+		describe('set', () => {
+			it('should replace an existing element', ()  => {
+				var arr = Typorama.Array.of(Typorama.String).create(['a']);
+				arr.set(0, 'b');
+				expect(arr.toJSON()).to.eql(['b']);
+			});
+			it('should add an element if none exists', ()  => {
+				var arr = Typorama.Array.of(Typorama.String).create(['a']);
+				arr.set(1, 'b');
+				expect(arr.toJSON()).to.eql(['a', 'b']);
+			});
+			it ('should return the element', () => {
+				var arr = Typorama.Array.of(Typorama.String).create(['a']);
+				expect(arr.set(0, 'b')).to.eql('b');
+			});
+			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
+		});
+
 		describe('push',function() {
 			it('should not modify an array ', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]).$asReadOnly();
