@@ -121,7 +121,7 @@ class _Array extends BaseType {
 	// Mutator methods
 
 	pop() {
-		if(this.$setDirty(true)) {
+		if(this.$setDirty()) {
 			if(this.__value__.length === 0) {
 				return undefined;
 			}
@@ -132,7 +132,7 @@ class _Array extends BaseType {
 	}
 
 	push(...newItems) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return Array.prototype.push.apply(
 				this.__value__,
 				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
@@ -143,7 +143,7 @@ class _Array extends BaseType {
 	}
 
 	reverse() {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			this.__value__.reverse();
 			return this;
 		} else {
@@ -152,7 +152,7 @@ class _Array extends BaseType {
 	}
 
 	shift() {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
 		} else {
 			return null;
@@ -160,7 +160,7 @@ class _Array extends BaseType {
 	}
 
 	sort(cb) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return new this.constructor(this.__value__.sort(cb), this.__options__);
 		} else {
 			return null;
@@ -168,7 +168,7 @@ class _Array extends BaseType {
 	}
 
 	splice(index, removeCount, ...addedItems) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			var spliceParams = [index, removeCount];
 			addedItems.forEach(function (newItem) {
 				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__,this.__lifecycleManager__))
@@ -181,7 +181,7 @@ class _Array extends BaseType {
 	}
 
 	unshift(el) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return this.__value__.unshift(el);
 		} else {
 			return null;
@@ -189,7 +189,7 @@ class _Array extends BaseType {
 	}
 
 	set(index, element) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__,this.__lifecycleManager__);
 		} else {
 			return null;
@@ -307,7 +307,7 @@ class _Array extends BaseType {
 			}.bind(this));
             if(changed)
             {
-                this.$setDirty(true);
+                this.$setDirty();
             }
             this.__value__.length = newValue.length;
 		}

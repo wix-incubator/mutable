@@ -97,7 +97,7 @@ export default class BaseType extends PrimitiveBase{
             });
             if(changed)
             {
-                this.$setDirty(true);
+                this.$setDirty();
             }
             return changed;
         }

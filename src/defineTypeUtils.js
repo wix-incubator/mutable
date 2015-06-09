@@ -28,7 +28,7 @@ export function generateFieldsOn(obj, fieldsDefinition){
             set: function(newValue){
                 if (this.$isDirtyable(true)){
                     if(this.$validateAndAssignField(fieldName, newValue)) {
-                        this.$setDirty(true);
+                        this.$setDirty();
                     }
                 } else {
                     // todo:warn hook
