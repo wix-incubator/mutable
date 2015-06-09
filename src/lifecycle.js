@@ -57,7 +57,7 @@ export function makeDirtyable(Type){
     };
 
 // used by $setDirty to determine if changes are allowed to the dirty flag
-    Type.prototype.$isDirtyable = function $isDirtyable(isDirty) {
+    Type.prototype.$isDirtyable = function $isDirtyable(isDirty = true) {
         return (
             // instance & arg validated
         !this.__isReadOnly__ && isDirty !== undefined &&
@@ -69,7 +69,7 @@ export function makeDirtyable(Type){
     };
 
 // called when a change has been made to this object directly or after changes are paused
-    Type.prototype.$setDirty = function $setDirty(isDirty) {
+    Type.prototype.$setDirty = function $setDirty(isDirty = true) {
         if (this.$isDirtyable(isDirty)){
             this.__dirty__ = isDirty ? dirty.yes : dirty.no;
             if (isDirty && this.__lifecycleManager__) {
@@ -82,8 +82,15 @@ export function makeDirtyable(Type){
 
 // may be called at any time
     Type.prototype.$isDirty = function $isDirty() {
-        return this.__dirty__.isKnown ? this.__dirty__.isDirty :
-            _.any(this.__value__, (val) => val.$isDirty && val.$isDirty());
+        if (this.__dirty__.isKnown){
+            return this.__dirty__.isDirty;
+        }
+        var isDirty = _.any(this.__value__, (val) => val.$isDirty && val.$isDirty());
+        // optional caching
+        if (!this.__isReadOnly__ && this.__lifecycleManager__ && !this.__lifecycleManager__.$change()) {
+            this.__dirty__ = isDirty ? dirty.yes : dirty.no;
+        }
+        return isDirty;
     };
 
 // resets the dirty state to unknown

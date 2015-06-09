@@ -281,13 +281,19 @@ function testIsDirty(context){
             }
             expect(dirty, 'container dirty flag').to.be.false;
         });
-        it('(when $setDirty not called and manager forbids changes) for the second time returns true without checking elements', function () {
+        it('(when $setDirty not called and manager forbids changes) for the second time returns false without checking elements', function () {
+            context.container.$setManager(context.lifecycleManager);
+            context.lifecycleManager.forbidChange();
             if (context.dirtyableElements) {
                 context.containedElements.forEach((e) => e.$isDirty.returns(false));
             }
+            context.container.$isDirty();
+            if (context.dirtyableElements) {
+                context.containedElements.forEach((e) => e.$isDirty.reset());
+            }
             var dirty = context.container.$isDirty();
             if (context.dirtyableElements) {
-                expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql(context.containedElements);
+                expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.be.empty;
             }
             expect(dirty, 'container dirty flag').to.be.false;
         });
