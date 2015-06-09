@@ -341,6 +341,15 @@ describe('Custom data', function() {
                     expect(instance.$isDirty()).to.be.equal(false);
                 });
 
+                it("should not allow values of wrong type", function() {
+                	debugger;
+                	var user = new UserType();
+                	user.setValue({ age: 3 });
+                	user.setValue({ age: "666" });
+                	expect(user.age).to.equal(3);
+
+                });   
+
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
             })
             describe('with typorama input',function(){
