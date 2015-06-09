@@ -19,14 +19,14 @@ export function generateFieldsOn(obj, fieldsDefinition){
         }
         Object.defineProperty(obj, fieldName, {
             get: function(){
-                if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable(true)) {
+                if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable()) {
                     return this.__value__[fieldName];
                 } else {
                     return this.__value__[fieldName].$asReadOnly();
                 }
             },
             set: function(newValue){
-                if (this.$isDirtyable(true)){
+                if (this.$isDirtyable()){
                     if(this.$validateAndAssignField(fieldName, newValue)) {
                         this.$setDirty();
                     }

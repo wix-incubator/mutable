@@ -75,7 +75,7 @@ export default class BaseType extends PrimitiveBase{
     // merge native javascript data into the object
     // this method traverses the input recursively until it reaches typorama values (then it sets them)
     setValue(newValue){
-        if (this.$isDirtyable(true)) {
+        if (this.$isDirtyable()) {
             var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = this.$getFieldDef(fieldName);
