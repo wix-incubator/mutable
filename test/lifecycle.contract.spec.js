@@ -43,11 +43,7 @@ export function lifecycleContract(){
 }
 
 function setContainedElements(context) {
-    if (context.dirtyableElements) {
-        context.containedElements = _.intersection(context.allElements, _.values(context.container.__value__));
-    } else {
-        context.containedElements = [];
-    }
+    context.containedElements = _.intersection(context.allElements, _.values(context.container.__value__));
 }
 
 function setFactoriesInFixture(context, containerFactory, elementFactory) {
@@ -77,10 +73,10 @@ function addFixtureSetup(context) {
             sinon.spy(context.lifecycleManager, 'onChange');
             context.container = context.containerFactory();
             setContainedElements(context);
-            _.forEach(context.containedElements, (elem) => elem.$setManager.reset());
             // reset dirty flag of container
             context.container.$resetDirty();
             if (context.dirtyableElements) {
+                _.forEach(context.containedElements, (elem) => elem.$setManager.reset());
                 _.forEach(context.containedElements, (elem) => elem.$resetDirty.reset());
             }
         });
@@ -232,7 +228,9 @@ function testResetDirty(context) {
         context.setup();
         it('makes $isDirty return false', function () {
             context.container.$setDirty(true);
-            context.containedElements.forEach((e) => e.$isDirty.returns(false));
+            if (context.dirtyableElements) {
+                context.containedElements.forEach((e) => e.$isDirty.returns(false));
+            }
             expect(context.container.$isDirty(), 'container dirty before calling $resetDirty').to.be.true;
             context.container.$resetDirty();
             expect(context.container.$isDirty(), 'container dirty after calling $resetDirty').to.be.false;
@@ -274,7 +272,19 @@ function testIsDirty(context){
             expect(dirty, 'container dirty flag').to.be.true;
         });
         it('(when $setDirty not called) recourse through all elements and returns false by default', function () {
-            context.containedElements.forEach((e) => e.$isDirty.returns(false));
+            if (context.dirtyableElements) {
+                context.containedElements.forEach((e) => e.$isDirty.returns(false));
+            }
+            var dirty = context.container.$isDirty();
+            if (context.dirtyableElements) {
+                expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql(context.containedElements);
+            }
+            expect(dirty, 'container dirty flag').to.be.false;
+        });
+        it('(when $setDirty not called and manager forbids changes) for the second time returns true without checking elements', function () {
+            if (context.dirtyableElements) {
+                context.containedElements.forEach((e) => e.$isDirty.returns(false));
+            }
             var dirty = context.container.$isDirty();
             if (context.dirtyableElements) {
                 expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql(context.containedElements);
@@ -293,7 +303,7 @@ function testIsDirty(context){
                 expect(_.filter(context.containedElements, '$isDirty.called'), 'element(s) that $isDirty was called upon').to.eql([context.containedElements[0]]);
                 expect(dirty, 'container dirty flag').to.be.true;
             });
-            it("(when $setDirty not called) returns true after checking the second element and finding that it's dirty", function () {
+            it("(when $setDirty not called) returns true after checking all elements and finding that the last one is dirty", function () {
                 context.containedElements.forEach((e) => e.$isDirty.returns(false));
                 context.containedElements[context.containedElements.length - 1].$isDirty.returns(true);
                 var dirty = context.container.$isDirty();
