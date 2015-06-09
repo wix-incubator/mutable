@@ -1090,9 +1090,9 @@ describe('Array data', function() {
 				expect(arr.toJSON()).to.eql(['b']);
 			});
 			it('should add an element if none exists', ()  => {
-				var arr = Typorama.Array.of(Typorama.String).create(['a']);
-				arr.set(1, 'b');
-				expect(arr.toJSON()).to.eql(['a', 'b']);
+				var arr = Typorama.Array.of(Typorama.String).create([]);
+				arr.set(0, 'b');
+				expect(arr.toJSON()).to.eql(['b']);
 			});
 			it ('should return the element', () => {
 				var arr = Typorama.Array.of(Typorama.String).create(['a']);
