@@ -188,10 +188,18 @@ class _Array extends BaseType {
 		}
 	}
 
+	set(index, element) {
+		if(this.$setDirty(true)){
+			return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__,this.__lifecycleManager__);
+		} else {
+			return null;
+		}
+	}
+
 	// Accessor methods
 	at(index) {
 		var item = this.__value__[index];
-		return (BaseType.validateType(item) && !this.$isDirtyable(true)) ? item.$asReadOnly() : item;
+		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
 	}
 
 	concat(...addedArrays) {
