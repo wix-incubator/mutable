@@ -8,6 +8,7 @@ import arrayType from './array'
 import functionType from './function'
 import defineEnum from "./defineEnum";
 import { LifeCycleManager } from "./lifecycle";
+import {either} from './composite'
 
 export default {
     define: defineType,
@@ -19,5 +20,6 @@ export default {
     Array: arrayType,
     Function: functionType,
     defineEnum,
-    LifeCycleManager
+    LifeCycleManager,
+    either
 };

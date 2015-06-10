@@ -96,7 +96,7 @@ describe('Custom data', function() {
 
 	describe('toJSON', function() {
 		it('should take a typorama object, and return a native object', function() {
-			var container = UserWithChildType.create({child : {age : 11}});
+			var container = new UserWithChildType({child : {age : 11}});
 
 			expect(container.toJSON(), 'toJSON() called').to.eql({name : new UserWithChildType().name, child : new UserType({age : 11}).toJSON()});
 			expect(container.toJSON(false), 'toJSON(false) called').to.eql({name : new UserWithChildType().name, child : new UserType({age : 11})});
@@ -347,7 +347,7 @@ describe('Custom data', function() {
                 });
 
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
-            })
+            });
             describe('with typorama input',function(){
                 it('should set replace all values from an incoming object with typorama fields according to schema', function() {
                     var instance = new UserWithChildType();
