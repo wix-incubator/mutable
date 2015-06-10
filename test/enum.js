@@ -34,6 +34,12 @@ describe('Enum Type', function() {
             expect(ape).to.be.equal(Ape.chimp);
         });
 
+		it("should return value string for toString()", function() {
+			var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+			expect(Ape.chimp.toString()).to.be.equal("chimp");
+			expect(Ape.gorilla.toString()).to.be.equal("gorilla");
+		});
+
         it("enum can be initialized as member in a custom type", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({ 
