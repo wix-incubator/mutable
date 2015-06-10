@@ -155,6 +155,11 @@ function testSetDirty(context) {
             context.container.$setDirty();
             expect(context.container.$isDirty(), 'container dirty after calling $setDirty()').to.be.true;
         });
+        it('changes result of readonly version $isDirty', function () {
+            var ro = context.container.$asReadOnly();
+            context.container.$setDirty();
+            expect(ro.$isDirty(), 'readonly version dirty after calling $setDirty()').to.be.true;
+        });
         describe('with lifecycle manager', () => {
             describe('to set dirty flag to true' , () => {
                 it('triggers onChange in lifecycle manager', () =>{
@@ -190,8 +195,10 @@ function testSetDirty(context) {
                 it('in read only form makes no changes', function () {
                     context.containedElements.forEach((e) => e.$isDirty.returns(false));
                     expect(context.container.$isDirty(), 'container dirty before calling $setDirty').to.equal(false);
-                    context.container.$asReadOnly().$setDirty();
+                    var ro = context.container.$asReadOnly();
+                    ro.$setDirty();
                     expect(context.container.$isDirty(), 'container dirty after calling $setDirty').to.equal(false);
+                    expect(ro.$isDirty(), 'readonly dirty after calling $setDirty').to.equal(false);
                 });
                 it('does not affect elements\' lifecycle', function () {
                     context.container.$setDirty();
@@ -203,8 +210,10 @@ function testSetDirty(context) {
         } else {
             it('calling $setDirty in read only form makes no changes', function () {
                 expect(context.container.$isDirty(), 'container dirty before calling $setDirty').to.be.false;
-                context.container.$asReadOnly().$setDirty();
+                var ro = context.container.$asReadOnly();
+                ro.$setDirty();
                 expect(context.container.$isDirty(), 'container dirty after calling $setDirty').to.be.false;
+                expect(ro.$isDirty(), 'read only dirty after calling $setDirty').to.be.false;
             });
         }
     });
