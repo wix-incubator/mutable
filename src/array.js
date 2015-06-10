@@ -16,17 +16,17 @@ class _Array extends BaseType {
 
 	static validateType(value) {
 		var isValid = BaseType.validateType.call(this, value);
-		if(isValid){
-			var subTypes = this.options.subTypes;
-			var valueSubTypes = value.__options__.subTypes;
-			if(typeof subTypes === 'function'){
-				isValid = subTypes === valueSubTypes;
-			} else {
-				isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
-					return subTypes[Type.id || Type.name] === Type;
-				});
-			}
-		}
+		//if(isValid){
+		//	var subTypes = this.options.subTypes;
+		//	var valueSubTypes = value.__options__.subTypes;
+		//	if(typeof subTypes === 'function'){
+		//		isValid = subTypes === valueSubTypes;
+		//	} else {
+		//		isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
+		//			return subTypes[Type.id || Type.name] === Type;
+		//		});
+		//	}
+		//}
 		return isValid;
 	}
 
