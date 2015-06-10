@@ -8,7 +8,8 @@ function createEnumMember(key, value, proto) {
 	var member = Object.create(proto);
 	member.key = key;
 	member.value = value;
-	member.valueOf = () => { return value.valueOf(); };
+	member.toString = function(){ return value.toString(); };
+	member.valueOf = function(){ return value.valueOf(); };
 	if(value instanceof Object) {
 		Object.keys(value).forEach(function(tkey) {
 			member[tkey] = value[tkey];
