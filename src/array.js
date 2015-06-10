@@ -73,6 +73,9 @@ class _Array extends BaseType {
 
 
 	static of(subTypes) {
+        //TODO: remove this when transpiler shananigans are over
+        if(arguments.length>1)
+            subTypes = arguments;
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 

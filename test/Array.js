@@ -391,6 +391,25 @@ describe('Array data', function() {
 			expect(testType.names.at(3)).to.equal("Ringo");
 		});
 
+        it("setValue with JSON object containg empty array", function() {
+            var TestType1 = aDataTypeWithSpec({
+                gaga: Typorama.String
+            }, "TestType1");
+            var TestType2 = aDataTypeWithSpec({
+                baga: Typorama.String
+            }, "TestType2");
+            var TestType3 = aDataTypeWithSpec({
+                gagot: Typorama.Array.of(TestType1,TestType2).withDefault([{},{}])
+            }, "TestType3");
+            var testObj = new TestType3();
+
+
+            testObj.setValue({ gagot: [] });
+
+            expect(testObj.gagot.length).to.equal(0);
+            expect(testObj.gagot.at(0)).to.equal(undefined);
+        });
+
 		describe('at', function() {
 
 			it('Should return a number for native immutable Typorama.Number', function() {
