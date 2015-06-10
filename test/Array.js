@@ -2,6 +2,7 @@ import Typorama from '../src';
 import {LifeCycleManager} from '../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
+import {either} from '../src/composite'
 import _ from 'lodash';
 import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
@@ -49,6 +50,58 @@ describe('Array data', function() {
 		lifeCycleAsserter.assertDirtyContract();
 		lifeCycleAsserter.assertMutatorContract((arr) => arr.unshift(), 'unshift');
 	});
+
+	describe("type definition",() => {
+		describe('with one sub-type', () => {
+			describe('should be compatible', () => {
+				it('with itself', () => {
+					var arrType = Typorama.Array.of(UserType);
+					expect(arrType.type).to.satisfy(arrType.isAssignableFrom.bind(arrType));
+				});
+				it('with instances of itself', () => {
+					var arrType = Typorama.Array.of(UserType);
+					var arr = new arrType();
+					expect(arr).to.satisfy(arrType.validateType.bind(arrType));
+				});
+				xit('with instance of same schema', () => {
+					var arrType1 = Typorama.Array.of(UserType);
+					var arrType2 = Typorama.Array.of(UserType);
+					var arr1 = new arrType1();
+					expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
+				});
+				it('with types of same schema', () => {
+					var arrType1 = Typorama.Array.of(UserType);
+					var arrType2 = Typorama.Array.of(UserType);
+					expect(arrType1.type).to.satisfy(arrType2.isAssignableFrom.bind(arrType2));
+				});
+			});
+		});
+		describe('with more than one sub-type', () => {
+			describe('should be compatible', () => {
+				it('with itself', () => {
+					var arrType = Typorama.Array.of(either(UserType,AddressType));
+					expect(arrType.type).to.satisfy(arrType.isAssignableFrom.bind(arrType));
+				});
+				it('with instances of itself', () => {
+					var arrType = Typorama.Array.of(either(UserType,AddressType));
+					var arr = new arrType();
+					expect(arr).to.satisfy(arrType.validateType.bind(arrType));
+				});
+				xit('with instance of same schema', () => {
+					var arrType1 = Typorama.Array.of(either(UserType,AddressType));
+					var arrType2 = Typorama.Array.of(either(UserType,AddressType));
+					var arr1 = new arrType1();
+					expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
+				});
+				it('with types of same schema', () => {
+					var arrType1 = Typorama.Array.of(either(UserType,AddressType));
+					var arrType2 = Typorama.Array.of(either(UserType,AddressType));
+					expect(arrType1.type).to.satisfy(arrType2.isAssignableFrom.bind(arrType2));
+				});
+			});
+		});
+	});
+
 	describe("type defintion with default array values", function() {
 
 		var array, TestType, testType;
@@ -83,66 +136,67 @@ describe('Array data', function() {
 			expect(testType.names.at(3)).to.equal("Christina");
 		});
 
-        describe("Array with complex subtype instansiation",function(){
-            it('should keep typorama objects passed to it that fit its subtypes', function() {
-                var newUser = new UserType();
-                var newAddress = new AddressType();
 
-                var mixedList = Typorama.Array.of([UserType,AddressType]).create([newUser,newAddress]);
+		describe("Array with complex subtype instantiation",function(){
+			it('should keep typorama objects passed to it that fit its subtypes', function() {
+				var newUser = new UserType();
+				var newAddress = new AddressType();
 
-                expect(mixedList.at(0)).to.eql(newUser);
-                expect(mixedList.at(1)).to.eql(newAddress);
-            });
-            it('single subtype array should allow setting data with json, ', function() {
+				var mixedList = Typorama.Array.of(either(UserType,AddressType)).create([newUser,newAddress]);
 
-                var mixedList = Typorama.Array.of(AddressType).create([{address:'gaga'}]);
+				expect(mixedList.at(0)).to.eql(newUser);
+				expect(mixedList.at(1)).to.eql(newAddress);
+			});
+			it('single subtype array should allow setting data with json, ', function() {
 
-                expect(mixedList.at(0)).to.be.instanceOf(AddressType);
-                expect(mixedList.at(0).code).to.be.eql(10);
-                expect(mixedList.at(0).address).to.be.eql('gaga');
+				var mixedList = Typorama.Array.of(AddressType).create([{address:'gaga'}]);
 
-            });
+				expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+				expect(mixedList.at(0).code).to.be.eql(10);
+				expect(mixedList.at(0).address).to.be.eql('gaga');
 
-            it('a multi subtype array should default to first object based types for json', function() {
-                var mixedList = Typorama.Array.of([AddressType, UserType]).create([{}]);
+			});
 
-                expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+			it('a multi subtype array should default to first object based types for json', function() {
+				var mixedList = Typorama.Array.of(either(AddressType, UserType)).create([{}]);
 
-            });
-            it('a multi subtype array should detect primitives', function() {
-                var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create(['gaga']);
+				expect(mixedList.at(0)).to.be.instanceOf(AddressType);
 
-                expect(mixedList.at(0)).to.be.eql('gaga');
-            });
-            it('a multi subtype array should use _type field to detect which subtype to use', function() {
-                var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create([{_type:'User'}]);
+			});
+			it('a multi subtype array should detect primitives', function() {
+				var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create(['gaga']);
 
-                expect(mixedList.at(0)).to.be.instanceOf(UserType);
-            });
-            it('should throw readable error when unallowed primitive is added',function(){
-                var ListCls = Typorama.Array.of(AddressType);
-                expect(function(){ListCls.create(['gaga'])}).to.throw();
+				expect(mixedList.at(0)).to.be.eql('gaga');
+			});
+			it('a multi subtype array should use _type field to detect which subtype to use', function() {
+				var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create([{_type:'User'}]);
 
-                ListCls = Typorama.Array.of(Typorama.Number);
-                expect(function(){ListCls.create(['gaga'])}).to.throw();
-            });
+				expect(mixedList.at(0)).to.be.instanceOf(UserType);
+			});
+			it('should throw readable error when unallowed primitive is added',function(){
+				var ListCls = Typorama.Array.of(AddressType);
+				expect(function(){ListCls.create(['gaga'])}).to.throw();
 
-            it('should throw readable error when object is added an no object types allowed',function(){
-                var ListCls = Typorama.Array.of(Typorama.String);
-                expect(function(){ListCls.create([{}])}).to.throw();
-            });
+				ListCls = Typorama.Array.of(Typorama.Number);
+				expect(function(){ListCls.create(['gaga'])}).to.throw();
+			});
 
-            it('should throw readable error when unallowed typorama is added',function(){
-                var ListCls = Typorama.Array.of(UserType);
-                expect(function(){ListCls.create([new AddressType()])}).to.throw();
-            });
+			it('should throw readable error when object is added an no object types allowed',function(){
+				var ListCls = Typorama.Array.of(Typorama.String);
+				expect(function(){ListCls.create([{}])}).to.throw();
+			});
 
-            it('should throw readable error when json with unallowed _type added',function(){
-                var ListCls = Typorama.Array.of(UserType);
-                expect(function(){ListCls.create({_type:'address'})}).to.throw();
-            });
+			it('should throw readable error when unallowed typorama is added',function(){
+				var ListCls = Typorama.Array.of(UserType);
+				expect(function(){ListCls.create([new AddressType()])}).to.throw();
+			});
 
-        })
+			it('should throw readable error when json with unallowed _type added',function(){
+				var ListCls = Typorama.Array.of(UserType);
+				expect(function(){ListCls.create({_type:'address'})}).to.throw();
+			});
+
+		})
 	});
 
 	describe('unsync __value__ array bug', function(){
@@ -231,56 +285,56 @@ describe('Array data', function() {
 				numberList.setValue([5, 6, 7, 8]);
 				expect(numberList.toJSON()).to.eql([5, 6, 7, 8]);
 			});
-            it('should get dirty if values are changed', function() {
-                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                numberList.setValue([1, 2, 3, 5]);
-                expect(numberList.$isDirty()).to.equal(true);
-            });
-            it('should not get dirty if values are not changed', function() {
-                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                numberList.setValue([1, 2, 3, 4]);
-                expect(numberList.$isDirty()).to.equal(false);
-            });
-            it('should completely redefine array data', function() {
-                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-                numberList.setValue([1, 2]);
+			it('should get dirty if values are changed', function() {
+				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+				numberList.setValue([1, 2, 3, 5]);
+				expect(numberList.$isDirty()).to.equal(true);
+			});
+			it('should not get dirty if values are not changed', function() {
+				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+				numberList.setValue([1, 2, 3, 4]);
+				expect(numberList.$isDirty()).to.equal(false);
+			});
+			it('should completely redefine array data', function() {
+				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+				numberList.setValue([1, 2]);
 
-                expect(numberList.toJSON()).to.eql([1,2]);
-                expect(numberList.$isDirty()).to.equal(true);
-            });
-            describe('setValue on an array with complex subtype',function(){
-                it('should keep typorama objects passed to it that fit its subtypes', function() {
-                    var mixedList = Typorama.Array.of([UserType,AddressType]).create([]);
-                    var newUser = new UserType();
-                    var newAddress = new AddressType();
-                    mixedList.setValue([newUser, newAddress]);
+				expect(numberList.toJSON()).to.eql([1,2]);
+				expect(numberList.$isDirty()).to.equal(true);
+			});
+			describe('setValue on an array with complex subtype',function(){
+				it('should keep typorama objects passed to it that fit its subtypes', function() {
+					var mixedList = Typorama.Array.of(either(UserType,AddressType)).create([]);
+					var newUser = new UserType();
+					var newAddress = new AddressType();
+					mixedList.setValue([newUser, newAddress]);
 
-                    expect(mixedList.at(0)).to.eql(newUser);
-                    expect(mixedList.at(1)).to.eql(newAddress);
-                });
-                it('single subtype array should allow setting data with json, ', function() {
-                    var address = new AddressType({address:'gaga'});
-                    var mixedList = Typorama.Array.of(AddressType).create([address]);
-                    mixedList.setValue([{code:5}]);
+					expect(mixedList.at(0)).to.eql(newUser);
+					expect(mixedList.at(1)).to.eql(newAddress);
+				});
+				it('single subtype array should allow setting data with json, ', function() {
+					var address = new AddressType({address:'gaga'});
+					var mixedList = Typorama.Array.of(AddressType).create([address]);
+					mixedList.setValue([{code:5}]);
 
-                    expect(mixedList.at(0)).to.be.instanceOf(AddressType);
-                    expect(mixedList.at(0).code).to.be.eql(5);
-                    expect(mixedList.at(0).address).to.be.eql('');
-                    expect(mixedList.at(0)).to.not.be.eql(address);
+					expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+					expect(mixedList.at(0).code).to.be.eql(5);
+					expect(mixedList.at(0).address).to.be.eql('');
+					expect(mixedList.at(0)).to.not.be.eql(address);
 
-                });
-                it('should set the new item lifecycle manager when creating new from JSON ', function() {
+				});
+				it('should set the new item lifecycle manager when creating new from JSON ', function() {
 
-                    var mockManager = new LifeCycleManager();
-                    var address = new AddressType({address:'gaga'});
-                    var mixedList = Typorama.Array.of(AddressType).create([]);
-                    mixedList.$setManager(mockManager);
-                    mixedList.setValue([{code:5}]);
+					var mockManager = new LifeCycleManager();
+					var address = new AddressType({address:'gaga'});
+					var mixedList = Typorama.Array.of(AddressType).create([]);
+					mixedList.$setManager(mockManager);
+					mixedList.setValue([{code:5}]);
 
-                    expect(mixedList.at(0).__lifecycleManager__).to.be.eql(mockManager);
+					expect(mixedList.at(0).__lifecycleManager__).to.be.eql(mockManager);
 
-                });
-            })
+				});
+			})
 
 		});
 
@@ -293,7 +347,7 @@ describe('Array data', function() {
 			expect(testType.names.at(2)).to.equal("Britney");
 			expect(testType.names.at(3)).to.equal("Christina");
 
-            testType.setValue({
+			testType.setValue({
 				names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
 			});
 
@@ -369,7 +423,7 @@ describe('Array data', function() {
 					{_type:'User',  name: 'avi', age: 12},
 					{_type:'Address', name: 'avi', age: 12}
 				];
-				var arr = Typorama.Array.of([UserType,  AddressType]).create(data);
+				var arr = Typorama.Array.of(either(UserType,  AddressType)).create(data);
 				expect(arr.at(0) instanceof UserType).to.equal(true, 'first item');
 				expect(arr.at(1) instanceof AddressType).to.equal(true, 'second item');
 			});
@@ -425,9 +479,9 @@ describe('Array data', function() {
 
 			it('should return undefined if called on an empty array', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([]);
-				
+
 				var valueRemoved = numberList.pop();
-				
+
 				expect(valueRemoved).to.be.undefined;
 
 			});
@@ -450,7 +504,7 @@ describe('Array data', function() {
 			it('should return a typed array', function () {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
 				var newList = numberList.concat();
-				
+
 				newList.reverse();
 
 				expect(newList instanceof Typorama.Array).to.be.true;
@@ -463,7 +517,7 @@ describe('Array data', function() {
 			it('should return the first element from the array', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
 				var arrayBeforeShift = numberList.concat();
-				
+
 				var valueRemoved = numberList.shift();
 
 				expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
@@ -528,21 +582,21 @@ describe('Array data', function() {
 				var numberArray = aNumberArray();
 
 				var slicedArray = numberArray.slice();
-				
-				expect(slicedArray).to.eql(numberArray);				
+
+				expect(slicedArray).to.eql(numberArray);
 			});
 			it('should offset from the end, if passed a negative BEGIN value', function () {
 				var numberArray = aNumberArray([1,2,3]);
 
 				var slicedArray = numberArray.slice(-(numberArray.length-1));
-				
+
 				expect(slicedArray).to.eql(aNumberArray([2,3]));
 			});
 			it('should offset from the end, if passed a negative END value', function () {
 				var numberArray = aNumberArray([1,2,3]);
 
 				var slicedArray = numberArray.slice(0, -1);
-				
+
 				expect(slicedArray).to.eql(aNumberArray([1,2]));
 			});
 			it('should not alter the original array', function () {
@@ -557,8 +611,8 @@ describe('Array data', function() {
 				var numberArray = aNumberArray();
 
 				var slicedArray = numberArray.concat(1,1);
-				
-				expect(slicedArray instanceof Typorama.Array).to.be.true;				
+
+				expect(slicedArray instanceof Typorama.Array).to.be.true;
 			});
 		});
 
@@ -653,29 +707,29 @@ describe('Array data', function() {
 			});
 
 			it('passes the index to the map func', function() {
-                var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3]);
-                var doubles = function(num,index) {
-                    return num * index;
-                };
-                var newList = numberList.map(doubles);
+				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3]);
+				var doubles = function(num,index) {
+					return num * index;
+				};
+				var newList = numberList.map(doubles);
 
-                expect(_.isArray(newList)).to.be.true;
-                expect(newList).to.eql([0, 2, 6]);
+				expect(_.isArray(newList)).to.be.true;
+				expect(newList).to.eql([0, 2, 6]);
 			});
 
 
-            it('provides readonly version if needsd', function() {
-                var numberList = Typorama.Array.of(UserType).create([new UserType({age:5}),new UserType({age:10}),new UserType({age:15})]);
-                numberList = numberList.$asReadOnly();
-                var doubles = function(user,index) {
-                    expect(user.$isReadOnly()).to.be.equal(true);
-                    return user.age * index;
-                };
-                var newList = numberList.map(doubles);
+			it('provides readonly version if needsd', function() {
+				var numberList = Typorama.Array.of(UserType).create([new UserType({age:5}),new UserType({age:10}),new UserType({age:15})]);
+				numberList = numberList.$asReadOnly();
+				var doubles = function(user,index) {
+					expect(user.$isReadOnly()).to.be.equal(true);
+					return user.age * index;
+				};
+				var newList = numberList.map(doubles);
 
-                expect(_.isArray(newList)).to.be.true;
-                expect(newList).to.eql([0, 10, 30]);
-            });
+				expect(_.isArray(newList)).to.be.true;
+				expect(newList).to.eql([0, 10, 30]);
+			});
 
 		});
 
@@ -758,8 +812,8 @@ describe('Array data', function() {
 			// Make sure n = current value
 
 			it('should match currentValue to the correct current item from the array', function () {
-				var mixedList = Typorama.Array.of([UserType, AddressType]).create([{_type: 'User'}, {_type: 'Address'}])
-				
+				var mixedList = Typorama.Array.of(either(UserType, AddressType)).create([{_type: 'User'}, {_type: 'Address'}])
+
 				mixedList.reduce(function(accumulator, currentValue, index) {
 					expect(currentValue).to.eql(mixedList.at(index));
 					return currentValue;
@@ -784,7 +838,7 @@ describe('Array data', function() {
 			});
 
 			it('Should add a typed item form multiple types if there is _type field', function() {
-				var arr = Typorama.Array.of([UserType, AddressType]).create([]);
+				var arr = Typorama.Array.of(either(UserType, AddressType)).create([]);
 				arr.push({_type: 'User'});
 				arr.push({_type: 'Address'});
 				expect(arr.at(0) instanceof UserType).to.equal(true);
@@ -838,7 +892,7 @@ describe('Array data', function() {
 			});
 
 			it('should allow subtypes allowed by all the different arrays',function() {
-				var mixedInstance = Typorama.Array.of([UserType, AddressType]).create([
+				var mixedInstance = Typorama.Array.of(either(UserType, AddressType)).create([
 					{ _type: UserType.id },
 					{ _type: AddressType.id },
 					{}
@@ -886,12 +940,12 @@ describe('Array data', function() {
 		describe('unshift', function () {
 			it('should return the length of the array', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				
+
 				var valueRemoved = numberList.unshift();
 
 				expect(numberList.length).to.equal(valueRemoved, 'Did not return the proper array.length');
 			});
-			
+
 			it('should add an element to the array', function () {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
 				var lengthBeforeUnshift = numberList.length;
@@ -1088,7 +1142,7 @@ describe('Array data', function() {
 					{_type:'User',  name: 'avi', age: 12},
 					{_type:'Address', name: 'avi', age: 12}
 				];
-				var arr = Typorama.Array.of([UserType, AddressType]).create(data).$asReadOnly();
+				var arr = Typorama.Array.of(either(UserType, AddressType)).create(data).$asReadOnly();
 				expect(arr.at(0) instanceof UserType).to.equal(true);
 				expect(arr.at(1) instanceof AddressType).to.equal(true);
 			});
