@@ -1,3 +1,4 @@
+import config from './typoramaConfiguration'
 import _ from "lodash"
 import {makeDirtyable} from "./lifecycle"
 import PrimitiveBase from "./PrimitiveBase"
@@ -5,6 +6,9 @@ import PrimitiveBase from "./PrimitiveBase"
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
     readOnlyInstance.__isReadOnly__ = true;
+	if(config.freezeInstance) {
+		Object.freeze(readOnlyInstance);
+	}
     return readOnlyInstance;
 }
 
@@ -68,6 +72,10 @@ export default class BaseType extends PrimitiveBase{
             this.constructor._spec,
             options
         );
+
+		if(config.freezeInstance) {
+			Object.freeze(this);
+		}
     }
 
 

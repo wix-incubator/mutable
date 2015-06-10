@@ -1,3 +1,4 @@
+import config from './typoramaConfiguration'
 import defineType from './defineType'
 import BaseType from './BaseType'
 import PrimitiveBase from './PrimitiveBase'
@@ -11,6 +12,7 @@ import { LifeCycleManager } from "./lifecycle";
 import {either} from './composite'
 
 export default {
+	config: config,
     define: defineType,
     BaseType: BaseType,
 	PrimitiveBase: PrimitiveBase,
