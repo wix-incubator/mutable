@@ -30,12 +30,18 @@ export default class BaseType extends PrimitiveBase{
 
     static _wrapOrNull(itemValue, type,  lifeCycle){
         if(type.validateType(itemValue)){
+            if (itemValue.$setManager && _.isFunction(itemValue.$setManager)) {
+                itemValue.$setManager(lifeCycle);
+            }
             return itemValue;
         }else if(type.type.allowPlainVal(itemValue)){
             var newItem = type.create(itemValue);
-            newItem.$setManager(lifeCycle);
+			if (newItem.$setManager && _.isFunction(newItem.$setManager)) {
+            	newItem.$setManager(lifeCycle);
+			}
             return newItem;
         }
+        return null;
     }
 
     static wrapValue(value, spec, options){
@@ -48,8 +54,7 @@ export default class BaseType extends PrimitiveBase{
                 fieldVal = spec[key].defaults();
             }
             var newField = this._wrapOrNull(fieldVal,fieldSpec);
-            if(newField===null)
-            {
+            if(newField===null){
                 throw new Error('field :'+key+' incompatible');
             }
             root[key] = newField;
@@ -77,14 +82,16 @@ export default class BaseType extends PrimitiveBase{
     // merge native javascript data into the object
     // this method traverses the input recursively until it reaches typorama values (then it sets them)
     setValue(newValue){
-        if (this.$isDirtyable(true)) {
+        if (this.$isDirtyable()) {
             var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = this.$getFieldDef(fieldName);
                 if (fieldSpec) {
                     var newVal = this.constructor._wrapOrNull(fieldValue,fieldSpec,this.__lifecycleManager__);
-                    if(this.__value__[fieldName]!==newVal)
-                    {
+                    if (newVal === null){
+                        throw new Error('field :'+fieldName+' incompatible');
+                    }
+                    if(this.__value__[fieldName]!==newVal){
                         changed = true;
                         this.__value__[fieldName] = newVal;
                     }
@@ -99,7 +106,7 @@ export default class BaseType extends PrimitiveBase{
             });
             if(changed)
             {
-                this.$setDirty(true);
+                this.$setDirty();
             }
             return changed;
         }
@@ -142,10 +149,10 @@ export default class BaseType extends PrimitiveBase{
         return this.__readOnlyInstance__;
     }
 
-    toJSON(){
+    toJSON(recursive = true){
         return Object.keys(this.constructor._spec).reduce((json, key) => {
             var fieldValue = this.__value__[key];
-            json[key] = fieldValue.toJSON ? fieldValue.toJSON() : fieldValue;
+            json[key] = recursive && fieldValue.toJSON ? fieldValue.toJSON(true) : fieldValue;
             return json;
         }, {});
     }

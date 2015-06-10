@@ -56,20 +56,18 @@ class _Array extends BaseType {
         var insertedValue;
 		if(typeof options.subTypes === 'function') {
             insertedValue = this._wrapOrNull(itemValue,options.subTypes,  lifeCycle);
+			if(insertedValue != null){
+				return insertedValue;
+			}
 		} else if(typeof options.subTypes === 'object') {
-
             for(var name in options.subTypes){
                 insertedValue = this._wrapOrNull(itemValue,options.subTypes[name], lifeCycle);
-                if(insertedValue)
-                {
-                    break;
+                if(insertedValue != null){
+					return insertedValue;
                 }
             }
 		}
-        if(!insertedValue){
-            throw new Error('illegal item type : ' + itemValue);
-        }
-        return insertedValue;
+		throw new Error('illegal item type : ' + itemValue);
 	}
 
 
@@ -89,9 +87,9 @@ class _Array extends BaseType {
 		super(value, options);
 	}
 
-	toJSON() {
+	toJSON(recursive = true) {
 		return this.__value__.map(item => {
-			return (BaseType.validateType(item)) ? item.toJSON() : item;
+			return (recursive && BaseType.validateType(item)) ? item.toJSON(true) : item;
 		});
 	}
 
@@ -121,7 +119,7 @@ class _Array extends BaseType {
 	// Mutator methods
 
 	pop() {
-		if(this.$setDirty(true)) {
+		if(this.$setDirty()) {
 			if(this.__value__.length === 0) {
 				return undefined;
 			}
@@ -132,7 +130,7 @@ class _Array extends BaseType {
 	}
 
 	push(...newItems) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return Array.prototype.push.apply(
 				this.__value__,
 				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
@@ -143,7 +141,7 @@ class _Array extends BaseType {
 	}
 
 	reverse() {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			this.__value__.reverse();
 			return this;
 		} else {
@@ -152,7 +150,7 @@ class _Array extends BaseType {
 	}
 
 	shift() {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
 		} else {
 			return null;
@@ -160,7 +158,7 @@ class _Array extends BaseType {
 	}
 
 	sort(cb) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return new this.constructor(this.__value__.sort(cb), this.__options__);
 		} else {
 			return null;
@@ -168,7 +166,7 @@ class _Array extends BaseType {
 	}
 
 	splice(index, removeCount, ...addedItems) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			var spliceParams = [index, removeCount];
 			addedItems.forEach(function (newItem) {
 				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__,this.__lifecycleManager__))
@@ -181,8 +179,16 @@ class _Array extends BaseType {
 	}
 
 	unshift(el) {
-		if(this.$setDirty(true)){
+		if(this.$setDirty()){
 			return this.__value__.unshift(el);
+		} else {
+			return null;
+		}
+	}
+
+	set(index, element) {
+		if(this.$setDirty()){
+			return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__,this.__lifecycleManager__);
 		} else {
 			return null;
 		}
@@ -191,7 +197,7 @@ class _Array extends BaseType {
 	// Accessor methods
 	at(index) {
 		var item = this.__value__[index];
-		return (BaseType.validateType(item) && !this.$isDirtyable(true)) ? item.$asReadOnly() : item;
+		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
 	}
 
 	concat(...addedArrays) {
@@ -299,7 +305,7 @@ class _Array extends BaseType {
 			}.bind(this));
             if(changed)
             {
-                this.$setDirty(true);
+                this.$setDirty();
             }
             this.__value__.length = newValue.length;
 		}

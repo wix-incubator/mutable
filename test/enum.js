@@ -23,9 +23,9 @@ describe('Enum Type', function() {
             }).to.throw();
         });
 
-        it("enum extends BaseType", function() {
+        it("enum extends PrimitiveType", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            expect(Ape.chimp).to.be.instanceof(Typorama.BaseType);
+            expect(Ape.chimp).to.be.instanceof(Typorama.PrimitiveBase);
         });
 
         it("enum can be initialized", function() {
@@ -115,6 +115,56 @@ describe('Enum Type', function() {
 			expect(ImageSizing.NONE.toJSON()).to.be.equal(null);
 			expect(ImageSizing.COVER.toJSON()).to.be.equal("cover");
 			expect(ImageSizing.CONTAIN.toJSON()).to.be.equal("contain");
+		});
+
+		it("should initiate from value string", function() {
+			var ImageSizing = Typorama.defineEnum({
+				NONE: null,
+				COVER: "cover",
+				CONTAIN: "contain"
+			});
+
+			var enumIns = ImageSizing.create(ImageSizing.COVER.toJSON());
+
+			expect(enumIns).to.be.equal(ImageSizing.COVER);
+		});
+
+		it("should initiate from value string as part of complex data", function() {
+			var ImageSizing = Typorama.defineEnum({
+				NONE: null,
+				COVER: "cover",
+				CONTAIN: "contain"
+			});
+
+			var Complex = aDataTypeWithSpec({
+				size: ImageSizing
+			}, 'User');
+
+			var complex = new Complex({ size:"cover" });
+
+			expect(complex.size).to.be.equal(ImageSizing.COVER);
+		});
+
+		it("should initiate from default value as part of complex data when no initial value is provided", function() {
+			var ImageSizing = Typorama.defineEnum({
+				NONE: null,
+				COVER: "cover",
+				CONTAIN: "contain"
+			});
+			var Complex = aDataTypeWithSpec({
+				size: ImageSizing.withDefault(ImageSizing.CONTAIN)
+			}, 'User');
+
+			var complex = new Complex({ size:"contain" });
+
+			expect(complex.size).to.be.equal(ImageSizing.CONTAIN);
+		});
+
+		it("should not be dirtyable", function(){
+			var ImageSizing = Typorama.defineEnum(["A", "B"]);
+			expect(ImageSizing.$isDirtyable).to.not.be.defined;
+			expect(ImageSizing.A.$isDirtyable).to.not.be.defined;
+			expect(ImageSizing.B.$isDirtyable).to.not.be.defined;
 		});
     });
 });
