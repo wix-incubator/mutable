@@ -8,7 +8,7 @@ import numberType from './number'
 import arrayType from './array'
 import functionType from './function'
 import defineEnum from "./defineEnum";
-import { LifeCycleManager } from "./lifecycle";
+import { LifeCycleManager , revision} from "./lifecycle";
 import {either} from './composite'
 
 export default {
@@ -23,5 +23,6 @@ export default {
     Function: functionType,
     defineEnum,
     LifeCycleManager,
-    either
+    either,
+    revision
 };

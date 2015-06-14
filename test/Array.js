@@ -1,5 +1,5 @@
 import Typorama from '../src';
-import {LifeCycleManager} from '../src/lifecycle.js';
+import {LifeCycleManager, revision} from '../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect} from 'chai';
 import {either} from '../src/composite'
@@ -38,7 +38,7 @@ lifeCycleAsserter.addFixture(
 );
 lifeCycleAsserter.addFixture(
 	(...elements) => Typorama.Array.of(Typorama.Number).create(elements),
-	() => 3.14,
+	() => Math.random(),
 	'array with primitives'
 );
 
@@ -48,7 +48,6 @@ describe('Array data', function() {
 	describe('lifecycle:',function() {
 
 		lifeCycleAsserter.assertDirtyContract();
-		lifeCycleAsserter.assertMutatorContract((arr) => arr.unshift(), 'unshift');
 	});
 
 	describe("type definition",() => {
@@ -280,27 +279,25 @@ describe('Array data', function() {
 		});
 
 		describe('setValue', function() {
+			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.setValue([elemFactory(), elemFactory()]), 'setValue');
+
+			it('should not get dirty if values are not changed', function() {
+				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+				revision.advance();
+				var rev = revision.read();
+				numberList.setValue([1, 2, 3, 4]);
+				expect(numberList.$isDirty(rev)).to.equal(false);
+			});
 			it('should replace the value of the array', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
 				numberList.setValue([5, 6, 7, 8]);
 				expect(numberList.toJSON()).to.eql([5, 6, 7, 8]);
-			});
-			it('should get dirty if values are changed', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				numberList.setValue([1, 2, 3, 5]);
-				expect(numberList.$isDirty()).to.equal(true);
-			});
-			it('should not get dirty if values are not changed', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				numberList.setValue([1, 2, 3, 4]);
-				expect(numberList.$isDirty()).to.equal(false);
 			});
 			it('should completely redefine array data', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
 				numberList.setValue([1, 2]);
 
 				expect(numberList.toJSON()).to.eql([1,2]);
-				expect(numberList.$isDirty()).to.equal(true);
 			});
 			describe('setValue on an array with complex subtype',function(){
 				it('should keep typorama objects passed to it that fit its subtypes', function() {
@@ -993,6 +990,8 @@ describe('Array data', function() {
 
 				expect(numberList.length).to.equal(lengthBeforeUnshift + 1);
 			});
+			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.unshift(elemFactory(), elemFactory()), 'unshift');
+
 		});
 		describe('every',function() {
 			it('should return true if all elements pass the test provided by the callback', function() {

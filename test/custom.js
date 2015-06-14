@@ -2,9 +2,15 @@ import _ from 'lodash';
 import Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
+import {revision} from '../src/lifecycle';
 import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
+describe('assume', () =>{
+	it('max pluck', ()=>{
+		expect(Math.max(1, _.max([{val:3}, {v:5}, {val:4}], 'val').val)).to.equal(4);
+	});
+});
 describe('Custom data', function() {
 
 	var UserType = aDataTypeWithSpec({
@@ -336,11 +342,11 @@ describe('Custom data', function() {
                 it('should not invalidate if fields havnt changed', function() {
                     var instance = new UserWithChildType();
                     var instance2 = new UserType();
-
+					instance.setValue({child:instance2});
+					revision.advance();
+					var rev = revision.read();
                     instance.setValue({child:instance2});
-                    instance.$resetDirty();
-                    instance.setValue({child:instance2});
-                    expect(instance.$isDirty()).to.be.equal(false);
+                    expect(instance.$isDirty(rev)).to.be.equal(false);
                 });
 
                 it("should not allow values of wrong type", function() {
@@ -362,9 +368,10 @@ describe('Custom data', function() {
                     var instance = new UserWithChildType();
                     var childInstance = new UserType({name: 'zaphod', age: 42});
                     instance.setValue({child: childInstance});
-                    instance.$resetDirty();
-                    instance.setValue({child: childInstance});
-                    expect(instance.$isDirty()).to.equal(false);
+					revision.advance();
+					var rev = revision.read();
+					instance.setValue({child: childInstance});
+                    expect(instance.$isDirty(rev)).to.equal(false);
                 });
             })
 		});

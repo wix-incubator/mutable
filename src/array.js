@@ -30,9 +30,9 @@ class _Array extends BaseType {
 		return isValid;
 	}
 
-    static allowPlainVal(val){
-        return _.isArray(val);
-    }
+	static allowPlainVal(val){
+		return _.isArray(val);
+	}
 
 	static wrapValue(value, spec, options) {
 		if(BaseType.validateType(value)) {
@@ -53,19 +53,19 @@ class _Array extends BaseType {
 
 
 	static _wrapSingleItem(itemValue, options, lifeCycle) {
-        var insertedValue;
+		var insertedValue;
 		if(typeof options.subTypes === 'function') {
-            insertedValue = this._wrapOrNull(itemValue,options.subTypes,  lifeCycle);
+			insertedValue = this._wrapOrNull(itemValue,options.subTypes,  lifeCycle);
 			if(insertedValue != null){
 				return insertedValue;
 			}
 		} else if(typeof options.subTypes === 'object') {
-            for(var name in options.subTypes){
-                insertedValue = this._wrapOrNull(itemValue,options.subTypes[name], lifeCycle);
-                if(insertedValue != null){
+			for(var name in options.subTypes){
+				insertedValue = this._wrapOrNull(itemValue,options.subTypes[name], lifeCycle);
+				if(insertedValue != null){
 					return insertedValue;
-                }
-            }
+				}
+			}
 		}
 		throw new Error('illegal item type : ' + itemValue);
 	}
@@ -73,9 +73,9 @@ class _Array extends BaseType {
 
 
 	static of(subTypes) {
-        //TODO: remove this when transpiler shananigans are over
-        if(arguments.length>1)
-            subTypes = arguments;
+		//TODO: remove this when transpiler shananigans are over
+		if(arguments.length>1)
+			subTypes = arguments;
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
@@ -105,19 +105,19 @@ class _Array extends BaseType {
 		return valueArray;
 	}
 
-    __getValueArr__(){
-        if(this.__isReadOnly__)
-        {
-            return _.map(this.__value__,function(item){
-                if(item instanceof BaseType)
-                    return item.$asReadOnly();
-                else
-                    return item;
-            })
-        }else{
-            return this.__value__;
-        }
-    }
+	__getValueArr__(){
+		if(this.__isReadOnly__)
+		{
+			return _.map(this.__value__,function(item){
+				if(item instanceof BaseType)
+					return item.$asReadOnly();
+				else
+					return item;
+			})
+		}else{
+			return this.__value__;
+		}
+	}
 
 	// Mutator methods
 
@@ -181,9 +181,12 @@ class _Array extends BaseType {
 		}
 	}
 
-	unshift(el) {
+	unshift(...newItems) {
 		if(this.$setDirty()){
-			return this.__value__.unshift(el);
+			return Array.prototype.unshift.apply(
+				this.__value__,
+				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
+			);
 		} else {
 			return null;
 		}
@@ -265,28 +268,28 @@ class _Array extends BaseType {
 		});
 	}
 
-    map(fn, ctx) {
-    	return this.__lodashProxy__('map', fn, ctx);
-    }
+	map(fn, ctx) {
+		return this.__lodashProxy__('map', fn, ctx);
+	}
 
-    reduce(fn, initialAccumilatorValue, ctx) {
-        var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
-        return newValue;
-    }
+	reduce(fn, initialAccumilatorValue, ctx) {
+		var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
+		return newValue;
+	}
 
-    every(fn, ctx) {
-        return this.__lodashProxy__('every', fn, ctx);
-    }
+	every(fn, ctx) {
+		return this.__lodashProxy__('every', fn, ctx);
+	}
 
-    some(fn, ctx) {
-        return this.__lodashProxy__('some', fn, ctx);
-    }
+	some(fn, ctx) {
+		return this.__lodashProxy__('some', fn, ctx);
+	}
 
-    filter(fn, ctx) {
-        return this.__lodashProxy__('filter', fn, ctx);
-    }
+	filter(fn, ctx) {
+		return this.__lodashProxy__('filter', fn, ctx);
+	}
 	setValue(newValue) {
-        var changed = false;
+		var changed = false;
 		if(newValue instanceof _Array) {
 			newValue = newValue.__getValueArr__();
 		}
@@ -298,21 +301,21 @@ class _Array extends BaseType {
 				changed = true;
 				this.__value__.splice(newValue.length, lengthDiff);
 			}
-			_.forEach(newValue, (itemValue, idx) => {
+			_.forEach(newValue, ((itemValue, idx) => {
 
-                var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__);
-                changed = changed || newItemVal!= this.__value__[idx];
+				var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__);
+				changed = changed || newItemVal!= this.__value__[idx];
 
-                this.__value__[idx] = newItemVal;
+				this.__value__[idx] = newItemVal;
 
-			}.bind(this));
-            if(changed)
-            {
-                this.$setDirty();
-            }
-            this.__value__.length = newValue.length;
+			}).bind(this));
+			if(changed)
+			{
+				this.$setDirty();
+			}
+			this.__value__.length = newValue.length;
 		}
-        return changed;
+		return changed;
 	}
 }
 

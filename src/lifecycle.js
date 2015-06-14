@@ -1,44 +1,34 @@
 import _ from "lodash"
 
-// immutable enum type for fuzzy-logic dirty flag
-const dirty = {
-    yes : {
-        isDirty : true,
-        isKnown : true
-    },
-    no : {
-        isDirty : false,
-        isKnown : true
-    },
-    unKnown : {
-        isKnown : false
-    }
+export let revision = {
+    __count__ : 1,
+    read : function(){return this.__count__;},
+    advance : function(){ this.__count__++;},
 };
 
 export class LifeCycleManager{
 
-    constructor(){
-        this.__change__ = true;
-    }
-
     onChange(){}
 
     allowChange(){
-        this.__change__ = true;
+        delete this.__lockToken__;
     }
 
     forbidChange(){
-        this.__change__ = false;
+        this.__lockToken__ = Math.random() + 1;
     }
 
-    $change(){
-        return this.__change__;
+    $getLockToken(){
+        return this.__lockToken__;
     }
 }
 
+var unlockedToken = {};
+
 export function makeDirtyable(Type){
 // add a default dirty state for all objects
-    Type.prototype.__dirty__ = dirty.unKnown;
+    Type.prototype.__lastChange__ = 1;
+    Type.prototype.__cacheLockToken__ = unlockedToken;
 
 
 // called when a new lifecycle manager is introduced to this object
@@ -56,15 +46,19 @@ export function makeDirtyable(Type){
         }
     };
 
+    Type.prototype.$getManagerLockToken = function $getManagerLockToken() {
+        return this.__lifecycleManager__ && this.__lifecycleManager__.$getLockToken();
+    };
+
 // used by $setDirty to determine if changes are allowed to the dirty flag
     Type.prototype.$isDirtyable = function $isDirtyable() {
-        return (!this.__isReadOnly__  && (!this.__lifecycleManager__ || this.__lifecycleManager__.$change()));
+        return !this.__isReadOnly__  && !this.$getManagerLockToken();
     };
 
 // called when a change has been made to this object directly or after changes are paused
     Type.prototype.$setDirty = function $setDirty() {
         if (this.$isDirtyable()){
-            this.__dirty__ = dirty.yes;
+            this.__lastChange__ = revision.read();
             if (this.__lifecycleManager__) {
                 this.__lifecycleManager__.onChange();
             }
@@ -74,31 +68,20 @@ export function makeDirtyable(Type){
     };
 
 // may be called at any time
-    Type.prototype.$isDirty = function $isDirty() {
-        if (this.__dirty__.isKnown){
-            return this.__dirty__.isDirty;
+    Type.prototype.$calcLastChange = function $calcLastChange() {
+        if (this.$getManagerLockToken() !== this.__cacheLockToken__){
+            // no cache, go recursive
+            // TODO replace this filthy solution
+            var lastModifiedChild = _.max(this.__value__, (v) => v.$calcLastChange ? v.$calcLastChange() : -1);
+            if (lastModifiedChild && lastModifiedChild.__lastChange__){
+                this.__lastChange__ = Math.max(this.__lastChange__, lastModifiedChild.__lastChange__);
+            }
+            this.__cacheLockToken__ = this.$getManagerLockToken() || unlockedToken;
         }
-        var isDirty = _.any(this.__value__, (val) => val.$isDirty && val.$isDirty());
-        // optional caching
-        if (!this.__isReadOnly__ && this.__lifecycleManager__ && !this.__lifecycleManager__.$change()) {
-            // only cache in managed mutable instances which don't expect changes
-            this.__dirty__ = isDirty ? dirty.yes : dirty.no;
-        }
-        return isDirty;
+        return this.__lastChange__;
     };
 
-// resets the dirty state to unknown
-    Type.prototype.$resetDirty = function $resetDirty() {
-        if (this.__isReadOnly__) {
-            // todo:warn hook
-            console.warn('resetting dirty flag on read only!');
-        } else {
-            this.__dirty__ = dirty.unKnown;
-            _.forEach(this.__value__, (val) => {
-                if (val.$resetDirty && _.isFunction(val.$resetDirty)) {
-                    val.$resetDirty();
-                }
-            });
-        }
-    };
+    Type.prototype.$isDirty = function $isDirty(r) {
+        return this.$calcLastChange() >= r;
+    }
 }
