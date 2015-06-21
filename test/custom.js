@@ -144,7 +144,7 @@ describe('Custom data', function() {
 			it("should not keep references to original json objects, even deep ones", function() {
 
 				var InnerType = aDataTypeWithSpec({
-							name: Typorama.String.withDefault("Gordon Shumway")		
+							name: Typorama.String.withDefault("Gordon Shumway")
 				}, "InnerType");
 				var OuterType = aDataTypeWithSpec({
 							name: InnerType
@@ -160,6 +160,7 @@ describe('Custom data', function() {
 				var CustomType = aDataTypeWithSpec({
 					names: Typorama.Array.of(Typorama.String)
 				}, "CustomType");
+
 				var original = { names: [ "Lilo", "Stitch" ] };
 				var inst = new CustomType(original);
 				expect(original).to.deep.equal({ names: [ "Lilo", "Stitch" ] });

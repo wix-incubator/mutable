@@ -164,7 +164,6 @@ function testSetDirty(context) {
                 describe('when lifecycleManager allows changes' , () => {
                     it('will work', function () {
                         context.container.$setManager(context.lifecycleManager);
-                        debugger;
                         var result = context.container.$setDirty();
                         expect(result, 'result of $setDirty').to.be.true;
                         expect(context.container.$isDirty(context.beginRev), 'container dirty after calling $setDirty').to.be.true;
@@ -265,7 +264,6 @@ function testIsDirty(context){
                 context.lifecycleManager.forbidChange();
                 context.container.$isDirty(context.beginRev);
                 context.containedElements.forEach((e) => e.$calcLastChange.reset());
-                debugger;
                 var dirty = context.container.$isDirty(context.beginRev);
                 expect(_.filter(context.containedElements, '$calcLastChange.called'), 'element(s) that $calcLastChange was called upon').to.be.empty;
                 expect(dirty, 'container dirty flag').to.be.true;

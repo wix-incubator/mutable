@@ -35,7 +35,7 @@ export function makeDirtyable(Type){
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (!this.__isReadOnly__ && lifecycleManager instanceof LifeCycleManager) {
             if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager){
-                throw new Error('lifecycle management already exists');
+                throw new Error('Attempt to set lifecycle manager on a read-write instance with another manager already set');
             }
             this.__lifecycleManager__ = lifecycleManager;
             _.forEach(this.__value__, (val) => {

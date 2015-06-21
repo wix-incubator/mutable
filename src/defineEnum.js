@@ -34,7 +34,7 @@ function defineEnum(def) {
 		if(EnumType[key]){
 			return EnumType[key];
 		}
-		throw new TypeError(`Enum must be initialized with value`);
+		throw new TypeError(`Enum[${Object.keys(def)}] must be initialized with value.`);
 	};
 
 	EnumType.prototype.__proto__ = PrimitiveBase.prototype;
@@ -48,7 +48,7 @@ function defineEnum(def) {
 	}
 
 	var defVal = null;
-	Object.keys(def).forEach(function(key) { 
+	Object.keys(def).forEach(function(key) {
 		EnumType[key] = EnumType[key] = createEnumMember(key, def[key], EnumType.prototype);
 		if(defVal == null) {
 			defVal = EnumType[key];
