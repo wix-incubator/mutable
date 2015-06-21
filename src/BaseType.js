@@ -55,7 +55,7 @@ export default class BaseType extends PrimitiveBase{
             }
             var newField = this._wrapOrNull(fieldVal,fieldSpec);
             if(newField===null) {
-                throw new Error(`invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'`);
+                throw new Error(`Invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'.`);
             }
             root[key] = newField;
         });
@@ -87,9 +87,9 @@ export default class BaseType extends PrimitiveBase{
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = this.$getFieldDef(fieldName);
                 if (fieldSpec) {
-                    var newVal = this.constructor._wrapOrNull(fieldValue,fieldSpec,this.__lifecycleManager__);
+                    var newVal = this.constructor._wrapOrNull(fieldValue, fieldSpec, this.__lifecycleManager__);
                     if (newVal === null){
-                        throw new Error('field :'+fieldName+' incompatible');
+                        throw new Error(`Invalid value for type ${fieldSpec.name}: '${fieldValue.constructor.name}'.`);
                     }
                     if(this.__value__[fieldName]!==newVal){
                         changed = true;

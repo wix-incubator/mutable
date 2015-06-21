@@ -41,8 +41,10 @@ class _Array extends BaseType {
 					return this._wrapSingleItem(itemValue, options);
 				}, this);
 			} else {
-				throw new Error('illegal value type : ' + value.constructor.id);
+				throw new Error('Unmet typorama type requirement.');
 			}
+		} else if(!_.isArray(value)) {
+			throw new Error('Unmet array type requirement.');
 		}
 
 		return value.map((itemValue) => {
@@ -50,24 +52,20 @@ class _Array extends BaseType {
 		}, this);
 	}
 
+	static getSignature(options) {
+		return _.isFunction(options.subTypes) ? options.subTypes.type.name : `[${_(options.subTypes).map('type.name').join()}]`;
+	}
 
+	static _wrapSingleItem(value, options, lifeCycle) {
+		var result = _.isFunction(options.subTypes) ?
+			this._wrapOrNull(value, options.subTypes, lifeCycle) :
+			_(options.subTypes).map((type) => this._wrapOrNull(value, type, lifeCycle)).filter().first();
 
-	static _wrapSingleItem(itemValue, options, lifeCycle) {
-		var insertedValue;
-		if(typeof options.subTypes === 'function') {
-			insertedValue = this._wrapOrNull(itemValue,options.subTypes,  lifeCycle);
-			if(insertedValue != null){
-				return insertedValue;
-			}
-		} else if(typeof options.subTypes === 'object') {
-			for(var name in options.subTypes){
-				insertedValue = this._wrapOrNull(itemValue,options.subTypes[name], lifeCycle);
-				if(insertedValue != null){
-					return insertedValue;
-				}
-			}
+		if(null === result || undefined === result) {
+			throw new Error(`Illegal value for Array of type(s) ${_Array.getSignature(options)}: '${value}'`);
+		} else {
+			return result;
 		}
-		throw new Error('illegal item type : ' + itemValue);
 	}
 
 
