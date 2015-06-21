@@ -54,8 +54,8 @@ export default class BaseType extends PrimitiveBase{
                 fieldVal = spec[key].defaults();
             }
             var newField = this._wrapOrNull(fieldVal,fieldSpec);
-            if(newField===null){
-                throw new Error('field :'+key+' incompatible');
+            if(newField===null) {
+                throw new Error(`invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'`);
             }
             root[key] = newField;
         });
