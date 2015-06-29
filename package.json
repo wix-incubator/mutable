@@ -5,7 +5,7 @@
   },
   "name": "typorama",
   "version": "0.0.48",
-  "description": "",
+  "description": "data type system",
   "main": "dist/src",
   "repository": {
     "type": "git",
