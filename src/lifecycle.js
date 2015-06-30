@@ -69,7 +69,9 @@ export function makeDirtyable(Type){
 
 // may be called at any time
     Type.prototype.$calcLastChange = function $calcLastChange() {
-        if (this.$getManagerLockToken() !== this.__cacheLockToken__){
+	if (this.$isReadOnly()){
+		return this.$asReadWrite().$calcLastChange();
+	} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
             // no cache, go recursive
             // TODO replace this filthy solution
             var lastModifiedChild = _.max(this.__value__, (v) => v.$calcLastChange ? v.$calcLastChange() : -1);
