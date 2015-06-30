@@ -291,20 +291,12 @@ function testSetManager(context) {
             context.container.$setManager(manager);
             expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
         });
-        it('in readonly form does not change the manager field', function () {
+        it('in readonly form throws an error', function () {
             var manager = new LifeCycleManager();
-            context.container.$asReadOnly().$setManager(manager);
-            expect(context.container.__lifecycleManager__, 'container manager').to.be.undefined;
-            if (context.dirtyableElements) {
-                expect(_.any(context.containedElements, '$setManager.called'), 'elements $setManager called').to.be.false;
-            }
+            expect(() => context.container.$asReadOnly().$setManager(manager)).to.throw(Error);
         });
-        it('with invalid type does not change the manager field', function () {
-            context.container.$setManager({});
-            expect(context.container.__lifecycleManager__, 'container manager').to.be.undefined;
-            if (context.dirtyableElements) {
-                expect(_.any(context.containedElements, '$setManager.called'), 'elements $setManager called').to.be.false;
-            }
+        it('with invalid type throws an error', function () {
+            expect(() => context.container.$setManager({})).to.throw(Error);
         });
     });
 }

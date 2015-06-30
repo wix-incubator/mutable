@@ -33,20 +33,22 @@ export function makeDirtyable(Type){
 
 // called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
-        if (this.__isReadOnly__){
-            throw new Error('Attempt to set lifecycle manager on a read-only instance');
-        } else if(lifecycleManager instanceof LifeCycleManager){
-            if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager){
-                throw new Error('Attempt to set lifecycle manager on a read-write instance with another manager already set');
-            }
-            this.__lifecycleManager__ = lifecycleManager;
-            _.forEach(this.__value__, (val) => {
-                if (val.$setManager && _.isFunction(val.$setManager)) {
-                    val.$setManager(lifecycleManager);
+        if (lifecycleManager) {
+            if (this.__isReadOnly__) {
+                throw new Error('Attempt to set lifecycle manager on a read-only instance');
+            } else if (lifecycleManager instanceof LifeCycleManager) {
+                if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager) {
+                    throw new Error('Attempt to set lifecycle manager on a read-write instance with another manager already set');
                 }
-            });
-        } else {
-            throw new Error('Attempt to set wrong type of lifecycle manager');
+                this.__lifecycleManager__ = lifecycleManager;
+                _.forEach(this.__value__, (val) => {
+                    if (val.$setManager && _.isFunction(val.$setManager)) {
+                        val.$setManager(lifecycleManager);
+                    }
+                });
+            } else {
+                throw new Error('Attempt to set wrong type of lifecycle manager');
+            }
         }
     };
 
