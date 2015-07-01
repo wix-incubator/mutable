@@ -66,6 +66,7 @@ export default class BaseType extends PrimitiveBase{
         super(value);
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
+        this.__readWriteInstance__ = this;
         this.__options__ = options;
         this.__value__ = this.constructor.wrapValue(
             (value === undefined) ? this.constructor.defaults() : value,
@@ -148,6 +149,10 @@ export default class BaseType extends PrimitiveBase{
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }
+	
+	$asReadWrite(){
+		return this.__readWriteInstance__;
+	}
 
     toJSON(recursive = true){
         return Object.keys(this.constructor._spec).reduce((json, key) => {

@@ -129,6 +129,7 @@ function contractSuite(context){
     testSetDirty(context);
     testIsDirty(context);
     testSetManager(context);
+    testCalcLastChange(context);
 }
 
 function testSetDirty(context) {
@@ -270,6 +271,36 @@ function testIsDirty(context){
             });
         }
     });
+}
+
+function testCalcLastChange(context){
+	describe('$calcLastChange', function(){
+	
+		context.setup();
+			
+		if (context.dirtyableElements) {
+					
+			it('should update the cache on the readWrite container', function(){
+				var startRev = context.container.__lastChange__;
+				
+				var readOnly = context.container.$asReadOnly();
+			    
+				revision.advance();
+				expect(context.container.__lastChange__).to.equal(startRev);
+				
+				context.containedElements[0].$setDirty();
+				
+				readOnly.$calcLastChange();
+				
+				expect(context.container.__lastChange__).to.equal(revision.read());
+				expect(readOnly.__lastChange__).to.equal(revision.read())
+				
+			
+			});
+			
+		}
+		
+	})
 }
 
 function testSetManager(context) {
