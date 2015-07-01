@@ -20,7 +20,7 @@ export default class _String extends PrimitiveBase{
     }
 
 }
-
+_String.id = 'string';
 _String.type = _String;
 _String.create = String;
 _String.withDefault = generateWithDefaultForSysImmutable(String);

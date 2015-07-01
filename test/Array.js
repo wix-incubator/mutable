@@ -30,6 +30,9 @@ function aNumberArray(optionalArr) {
 	return Typorama.Array.of(Typorama.Number).create(optionalArr || [1,2]);
 }
 
+function typeErrorMessage(valueStr,typeStr,arraySubTypes){
+    return 'Illegal value '+valueStr+' of type '+typeStr+' for Array of type '+arraySubTypes;
+}
 var lifeCycleAsserter = lifecycleContract();
 lifeCycleAsserter.addFixture(
 	(...elements) => Typorama.Array.of(UserType).create(elements),
@@ -51,6 +54,12 @@ describe('Array data', function() {
 	});
 
 	describe("type definition",() => {
+        describe("with no sub-types",()=>{
+            it('should throw readable error when instantiating', () => {
+                var inValidArrType = Typorama.Array;
+                expect(()=>{new inValidArrType()}).to.throw('Untyped arrays are not supported');
+            });
+        });
 		describe('with one sub-type', () => {
 			describe('should be compatible', () => {
 				it('with itself', () => {
@@ -119,6 +128,8 @@ describe('Array data', function() {
 			testType = new TestType();
 		});
 
+
+
 		it("new Array should have correct initial values", function() {
 			expect(array.length).to.equal(4);
 			expect(array.at(0)).to.equal("Beyonce");
@@ -174,25 +185,25 @@ describe('Array data', function() {
 			});
 			it('should throw readable error when unallowed primitive is added',function(){
 				var ListCls = Typorama.Array.of(AddressType);
-				expect(function(){ListCls.create(['gaga'])}).to.throw();
+				expect(function(){ListCls.create(['gaga'])}).to.throw(typeErrorMessage('gaga','string','<Address>'));
 
 				ListCls = Typorama.Array.of(Typorama.Number);
-				expect(function(){ListCls.create(['gaga'])}).to.throw();
+				expect(function(){ListCls.create(['gaga'])}).to.throw(typeErrorMessage('gaga','string','<number>'));
 			});
 
 			it('should throw readable error when object is added an no object types allowed',function(){
 				var ListCls = Typorama.Array.of(Typorama.String);
-				expect(function(){ListCls.create([{}])}).to.throw();
+				expect(function(){ListCls.create([{}])}).to.throw(typeErrorMessage('[object Object]','object','<string>'));
 			});
 
 			it('should throw readable error when unallowed typorama is added',function(){
 				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create([new AddressType()])}).to.throw();
+				expect(function(){ListCls.create([new AddressType()])}).to.throw(typeErrorMessage('[object Object]','Address','<User>'));
 			});
 
 			it('should throw readable error when json with unallowed _type added',function(){
 				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create({_type:'address'})}).to.throw();
+				expect(function(){ListCls.create([{_type:'Address'}])}).to.throw(typeErrorMessage('[object Object]','Address','<User>'));
 			});
 
 		})

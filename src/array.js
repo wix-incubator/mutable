@@ -53,7 +53,14 @@ class _Array extends BaseType {
 	}
 
 	static getSignature(options) {
-		return _.isFunction(options.subTypes) ? options.subTypes.type.name : `[${_(options.subTypes).map('type.name').join()}]`;
+        if(_.isFunction(options.subTypes))
+        {
+            return '<'+options.subTypes.type.id+'>';
+        }else{
+            return '<'+options.subTypes.map(function(type,name){
+                return name;
+            }).join(',')+'>';
+        }
 	}
 
 	static _wrapSingleItem(value, options, lifeCycle) {
@@ -62,7 +69,7 @@ class _Array extends BaseType {
 			_(options.subTypes).map((type) => this._wrapOrNull(value, type, lifeCycle)).filter().first();
 
 		if(null === result || undefined === result) {
-			throw new Error(`Illegal value for Array of type(s) ${_Array.getSignature(options)}: '${value}'`);
+			throw new Error('Illegal value '+value+' of type '+BaseType.getValueTypeName(value)+' for Array of type '+_Array.getSignature(options));
 		} else {
 			return result;
 		}
@@ -78,7 +85,11 @@ class _Array extends BaseType {
 	};
 
 	constructor(value=[], options={}) {
-		if(options.subTypes && _.isArray(options.subTypes)) {
+        if(!options.subTypes)
+        {
+            throw new Error('Untyped arrays are not supported. Use Array<SomeType> instead.')
+        }
+		if(_.isArray(options.subTypes)) {
 			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
 				subTypes[type.id || type.name] = type;
 				return subTypes;

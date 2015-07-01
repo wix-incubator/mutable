@@ -28,6 +28,16 @@ export default class BaseType extends PrimitiveBase{
         return _.isPlainObject(val) && (!val._type || val._type===this.id)
     }
 
+    static getValueTypeName(value){
+        if(value.constructor && value.constructor.id){
+            return value.constructor.id
+        }
+        if(_.isPlainObject(value) && value._type){
+                return value._type
+        }
+        return typeof value;
+    }
+
     static _wrapOrNull(itemValue, type,  lifeCycle){
         if(type.validateType(itemValue)){
             if (itemValue.$setManager && _.isFunction(itemValue.$setManager)) {

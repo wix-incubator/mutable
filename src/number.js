@@ -21,5 +21,6 @@ export default class _Number extends PrimitiveBase{
 }
 
 _Number.type = _Number;
+_Number.id = 'number';
 _Number.create = Number;
 _Number.withDefault = generateWithDefaultForSysImmutable(Number);
