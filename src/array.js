@@ -114,6 +114,14 @@ class _Array extends BaseType {
 		return valueArray;
 	}
 
+    __getLodashFuncWrapper__(fn){
+        var typoramaArr = this;
+        return function(item,index){
+            return fn.call(this,item,index,typoramaArr);
+        }
+
+    }
+
 	__getValueArr__(){
 		if(this.__isReadOnly__)
 		{
@@ -260,19 +268,19 @@ class _Array extends BaseType {
 	// Iteration methods
 
 	forEach(fn){
-        this.__lodashProxy__('forEach',(item,index)=>{fn(item,index,this)});
+        this.__lodashProxy__('forEach',this.__getLodashFuncWrapper__(fn));
 	}
 
 	find(fn){
-        return this.__lodashProxy__('find',(item,index)=>{return fn(item,index,this)});
+        return this.__lodashProxy__('find',this.__getLodashFuncWrapper__(fn));
 	}
 
 	findIndex(fn){
-        return this.__lodashProxy__('findIndex',(item,index)=>{return fn(item,index,this)});
+        return this.__lodashProxy__('findIndex',this.__getLodashFuncWrapper__(fn));
     }
 
 	map(fn, ctx) {
-		return this.__lodashProxy__('map',(item,index)=>{return fn(item,index,this)},ctx);
+		return this.__lodashProxy__('map',this.__getLodashFuncWrapper__(fn),ctx);
 	}
 
 	reduce(fn, initialAccumilatorValue, ctx) {
@@ -281,15 +289,15 @@ class _Array extends BaseType {
 	}
 
 	every(fn, ctx) {
-		return this.__lodashProxy__('every', fn, ctx);
+		return this.__lodashProxy__('every',this.__getLodashFuncWrapper__(fn), ctx);
 	}
 
 	some(fn, ctx) {
-		return this.__lodashProxy__('some', fn, ctx);
+		return this.__lodashProxy__('some',this.__getLodashFuncWrapper__(fn), ctx);
 	}
 
 	filter(fn, ctx) {
-		return this.__lodashProxyWrap__('filter', fn, ctx);
+		return this.__lodashProxyWrap__('filter',this.__getLodashFuncWrapper__(fn), ctx);
 	}
 	setValue(newValue) {
 		var changed = false;
