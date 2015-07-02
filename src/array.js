@@ -107,7 +107,7 @@ class _Array extends BaseType {
 
 	__lodashProxyWrap__(key, fn, ctx){
 		var valueArray = _[key](this.__getValueArr__(), fn, ctx || this);
-		return new this.constructor(valueArray, this.__options__);
+		return this.__wrapArr__(valueArray);
 	}
 	__lodashProxy__(key, fn, ctx){
 		var valueArray = _[key](this.__getValueArr__(), fn, ctx || this);
@@ -127,6 +127,10 @@ class _Array extends BaseType {
 			return this.__value__;
 		}
 	}
+
+    __wrapArr__(val){
+        return new this.constructor(val, this.__options__);
+    }
 
 	// Mutator methods
 
@@ -171,7 +175,7 @@ class _Array extends BaseType {
 
 	sort(cb) {
 		if(this.$setDirty()){
-			return new this.constructor(this.__value__.sort(cb), this.__options__);
+			return this.__wrapArr__(this.__value__.sort(cb));
 		} else {
 			return null;
 		}
@@ -216,7 +220,7 @@ class _Array extends BaseType {
 	}
 
 	concat(...addedArrays) {
-		return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__options__);
+		return this.__wrapArr__(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)));
 	}
 
 	join(separator = ',') {
@@ -225,9 +229,9 @@ class _Array extends BaseType {
 
 	slice(begin, end) {
 		if(end) {
-			return new this.constructor(this.__value__.slice(begin, end), this.__options__);
+			return this.__wrapArr__(this.__value__.slice(begin, end));
 		} else {
-			return new this.constructor(this.__value__.slice(begin), this.__options__);
+			return this.__wrapArr__(this.__value__.slice(begin));
 		}
 	}
 
@@ -256,26 +260,16 @@ class _Array extends BaseType {
 	// Iteration methods
 
 	forEach(cb){
-		var that = this;
-		this.__value__.forEach(function(item, index, arr) {
-			cb(item, index, that);
-		});
+        this.__lodashProxy__('forEach',(item,index)=>{cb(item,index,this)});
 	}
 
 	find(cb){
-		var self = this;
-		return _.find(this.__value__, function(element, index, array) {
-			return cb(element, index, self);
-		});
-		return _.find(this.__value__, cb);
+        return this.__lodashProxy__('find',(item,index)=>{cb(item,index,this)});
 	}
 
 	findIndex(cb){
-		var self = this;
-		return _.findIndex(this.__value__, function (element, index, array) {
-			return cb(element, index, self)
-		});
-	}
+        return this.__lodashProxy__('findIndex',(item,index)=>{cb(item,index,this)});
+    }
 
 	map(fn, ctx) {
 		return this.__lodashProxy__('map', fn, ctx);
@@ -295,7 +289,7 @@ class _Array extends BaseType {
 	}
 
 	filter(fn, ctx) {
-		return this.__lodashProxy__('filter', fn, ctx);
+		return this.__lodashProxyWrap__('filter', fn, ctx);
 	}
 	setValue(newValue) {
 		var changed = false;

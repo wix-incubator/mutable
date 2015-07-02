@@ -909,6 +909,7 @@ describe('Array data', function() {
 				var count = 0;
 
 				numberList.forEach(function(item, index, arr) {
+                    debugger;
 					expect(item).to.equal(sourceArr[index]);
 					expect(index).to.equal(count);
 					expect(arr).to.equal(numberList);
@@ -1086,6 +1087,7 @@ describe('Array data', function() {
 				var filterArray = arr.filter(function(element) {
 					return element > 5;
 				});
+                expect(filterArray).to.be.instanceof(Typorama.Array);
 				expect(filterArray.length).to.equal(3);
 				expect(filterArray.valueOf()).to.eql([42, 15, 7]);
 			});
