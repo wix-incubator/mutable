@@ -899,7 +899,9 @@ describe('Array data', function() {
 				expect(numberList.length).to.equal(6);
 				expect(numberList.at(4)).to.equal(5);
 				expect(numberList.at(5)).to.equal(6);
-			})
+			});
+			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
+
 		});
 
 		describe('forEach',function() {
