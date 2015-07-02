@@ -740,6 +740,46 @@ describe('Array data', function() {
 		});
 
 		describe('map', function() {
+			describe('with property name iteratee', function() {
+				it('naively works', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map('age');
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([11, 12]);
+				});
+				it('matches property value to thisArg', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map('age', 11);
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([true, false]);
+				});
+			});
+			describe('with object iteratee', function() {
+				it('naively works', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map(UserType.create({age: 11}));
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([true, false]);
+				});
+				it('works with pojos of expected structure', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map(UserType.create({age: 11}).toJSON());
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([true, false]);
+				});
+			});
 			it('calls a callback function on every item in an array and constructs a new array from the results', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3]);
 				var doubles = function(num) {
