@@ -259,24 +259,24 @@ class _Array extends BaseType {
 
 	// Iteration methods
 
-	forEach(cb){
-        this.__lodashProxy__('forEach',(item,index)=>{cb(item,index,this)});
+	forEach(fn){
+        this.__lodashProxy__('forEach',(item,index)=>{fn(item,index,this)});
 	}
 
-	find(cb){
-        return this.__lodashProxy__('find',(item,index)=>{cb(item,index,this)});
+	find(fn){
+        return this.__lodashProxy__('find',(item,index)=>{return fn(item,index,this)});
 	}
 
-	findIndex(cb){
-        return this.__lodashProxy__('findIndex',(item,index)=>{cb(item,index,this)});
+	findIndex(fn){
+        return this.__lodashProxy__('findIndex',(item,index)=>{return fn(item,index,this)});
     }
 
 	map(fn, ctx) {
-		return this.__lodashProxy__('map', fn, ctx);
+		return this.__lodashProxy__('map',(item,index)=>{return fn(item,index,this)},ctx);
 	}
 
 	reduce(fn, initialAccumilatorValue, ctx) {
-		var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
+		var newValue = _.reduce.apply(_, _.compact([this.__getValueArr__(), fn, initialAccumilatorValue, ctx]));
 		return newValue;
 	}
 
