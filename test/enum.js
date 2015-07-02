@@ -6,6 +6,7 @@ import _ from 'lodash';
 import Typorama from '../src';
 import { aDataTypeWithSpec } from '../test-kit/testDrivers/index';
 import { expect, err } from 'chai';
+import {revision} from '../src/lifecycle';
 
 describe('Enum Type', function() {
 
@@ -172,5 +173,6 @@ describe('Enum Type', function() {
 			expect(ImageSizing.A.$isDirtyable).to.not.be.defined;
 			expect(ImageSizing.B.$isDirtyable).to.not.be.defined;
 		});
+
     });
 });

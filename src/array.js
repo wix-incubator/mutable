@@ -53,7 +53,12 @@ class _Array extends BaseType {
 	}
 
 	static getSignature(options) {
-		return _.isFunction(options.subTypes) ? options.subTypes.type.name : `[${_(options.subTypes).map('type.name').join()}]`;
+        if(_.isFunction(options.subTypes))
+        {
+            return '<'+options.subTypes.type.id+'>';
+        }else{
+            return '<'+options.subTypes.map('name').join(',')+'>';
+        }
 	}
 
 	static _wrapSingleItem(value, options, lifeCycle) {
@@ -62,7 +67,7 @@ class _Array extends BaseType {
 			_(options.subTypes).map((type) => this._wrapOrNull(value, type, lifeCycle)).filter().first();
 
 		if(null === result || undefined === result) {
-			throw new Error(`Illegal value for Array of type(s) ${_Array.getSignature(options)}: '${value}'`);
+			throw new Error('Illegal value '+value+' of type '+BaseType.getValueTypeName(value)+' for Array of type '+_Array.getSignature(options));
 		} else {
 			return result;
 		}
@@ -78,7 +83,11 @@ class _Array extends BaseType {
 	};
 
 	constructor(value=[], options={}) {
-		if(options.subTypes && _.isArray(options.subTypes)) {
+        if(!options.subTypes)
+        {
+            throw new Error('Untyped arrays are not supported. Use Array<SomeType> instead.')
+        }
+		if(_.isArray(options.subTypes)) {
 			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
 				subTypes[type.id || type.name] = type;
 				return subTypes;
@@ -95,13 +104,24 @@ class _Array extends BaseType {
 	}
 
 	__lodashProxyWrap__(key, fn, ctx){
-		var valueArray = _[key](this.__getValueArr__(), fn, ctx || this);
-		return new this.constructor(valueArray, this.__options__);
+		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
+		return this.__wrapArr__(valueArray);
 	}
 	__lodashProxy__(key, fn, ctx){
-		var valueArray = _[key](this.__getValueArr__(), fn, ctx || this);
+		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
 		return valueArray;
 	}
+
+    __getLodashIterateeWrapper__(iteratee){
+		if (_.isFunction(iteratee)) {
+			var typoramaArr = this;
+			return function (item, index) {
+				return iteratee.call(this, item, index, typoramaArr);
+			}
+		} else {
+			return iteratee;
+		}
+    }
 
 	__getValueArr__(){
 		if(this.__isReadOnly__)
@@ -116,6 +136,10 @@ class _Array extends BaseType {
 			return this.__value__;
 		}
 	}
+
+    __wrapArr__(val){
+        return new this.constructor(val, this.__options__);
+    }
 
 	// Mutator methods
 
@@ -160,7 +184,7 @@ class _Array extends BaseType {
 
 	sort(cb) {
 		if(this.$setDirty()){
-			return new this.constructor(this.__value__.sort(cb), this.__options__);
+			return this.__wrapArr__(this.__value__.sort(cb));
 		} else {
 			return null;
 		}
@@ -205,7 +229,7 @@ class _Array extends BaseType {
 	}
 
 	concat(...addedArrays) {
-		return new this.constructor(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)), this.__options__);
+		return this.__wrapArr__(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)));
 	}
 
 	join(separator = ',') {
@@ -214,9 +238,9 @@ class _Array extends BaseType {
 
 	slice(begin, end) {
 		if(end) {
-			return new this.constructor(this.__value__.slice(begin, end), this.__options__);
+			return this.__wrapArr__(this.__value__.slice(begin, end));
 		} else {
-			return new this.constructor(this.__value__.slice(begin), this.__options__);
+			return this.__wrapArr__(this.__value__.slice(begin));
 		}
 	}
 
@@ -244,47 +268,37 @@ class _Array extends BaseType {
 
 	// Iteration methods
 
-	forEach(cb){
-		var that = this;
-		this.__value__.forEach(function(item, index, arr) {
-			cb(item, index, that);
-		});
+	forEach(fn){
+        this.__lodashProxy__('forEach',this.__getLodashIterateeWrapper__(fn));
 	}
 
-	find(cb){
-		var self = this;
-		return _.find(this.__value__, function(element, index, array) {
-			return cb(element, index, self);
-		});
-		return _.find(this.__value__, cb);
+	find(fn){
+        return this.__lodashProxy__('find',this.__getLodashIterateeWrapper__(fn));
 	}
 
-	findIndex(cb){
-		var self = this;
-		return _.findIndex(this.__value__, function (element, index, array) {
-			return cb(element, index, self)
-		});
-	}
+	findIndex(fn){
+        return this.__lodashProxy__('findIndex',this.__getLodashIterateeWrapper__(fn));
+    }
 
 	map(fn, ctx) {
-		return this.__lodashProxy__('map', fn, ctx);
+		return this.__lodashProxy__('map',this.__getLodashIterateeWrapper__(fn),ctx);
 	}
 
 	reduce(fn, initialAccumilatorValue, ctx) {
-		var newValue = _.reduce.apply(_, _.compact([this.__value__, fn, initialAccumilatorValue, ctx]));
+		var newValue = _.reduce.apply(_, _.compact([this.__getValueArr__(), fn, initialAccumilatorValue, ctx]));
 		return newValue;
 	}
 
 	every(fn, ctx) {
-		return this.__lodashProxy__('every', fn, ctx);
+		return this.__lodashProxy__('every',this.__getLodashIterateeWrapper__(fn), ctx);
 	}
 
 	some(fn, ctx) {
-		return this.__lodashProxy__('some', fn, ctx);
+		return this.__lodashProxy__('some',this.__getLodashIterateeWrapper__(fn), ctx);
 	}
 
 	filter(fn, ctx) {
-		return this.__lodashProxy__('filter', fn, ctx);
+		return this.__lodashProxyWrap__('filter',this.__getLodashIterateeWrapper__(fn), ctx);
 	}
 	setValue(newValue) {
 		var changed = false;

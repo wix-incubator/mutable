@@ -30,6 +30,9 @@ function aNumberArray(optionalArr) {
 	return Typorama.Array.of(Typorama.Number).create(optionalArr || [1,2]);
 }
 
+function typeErrorMessage(valueStr,typeStr,arraySubTypes){
+    return 'Illegal value '+valueStr+' of type '+typeStr+' for Array of type '+arraySubTypes;
+}
 var lifeCycleAsserter = lifecycleContract();
 lifeCycleAsserter.addFixture(
 	(...elements) => Typorama.Array.of(UserType).create(elements),
@@ -51,6 +54,12 @@ describe('Array data', function() {
 	});
 
 	describe("type definition",() => {
+        describe("with no sub-types",()=>{
+            it('should throw readable error when instantiating', () => {
+                var inValidArrType = Typorama.Array;
+                expect(()=>{new inValidArrType()}).to.throw('Untyped arrays are not supported');
+            });
+        });
 		describe('with one sub-type', () => {
 			describe('should be compatible', () => {
 				it('with itself', () => {
@@ -119,6 +128,8 @@ describe('Array data', function() {
 			testType = new TestType();
 		});
 
+
+
 		it("new Array should have correct initial values", function() {
 			expect(array.length).to.equal(4);
 			expect(array.at(0)).to.equal("Beyonce");
@@ -174,25 +185,25 @@ describe('Array data', function() {
 			});
 			it('should throw readable error when unallowed primitive is added',function(){
 				var ListCls = Typorama.Array.of(AddressType);
-				expect(function(){ListCls.create(['gaga'])}).to.throw();
+				expect(function(){ListCls.create(['gaga'])}).to.throw(typeErrorMessage('gaga','string','<Address>'));
 
 				ListCls = Typorama.Array.of(Typorama.Number);
-				expect(function(){ListCls.create(['gaga'])}).to.throw();
+				expect(function(){ListCls.create(['gaga'])}).to.throw(typeErrorMessage('gaga','string','<number>'));
 			});
 
 			it('should throw readable error when object is added an no object types allowed',function(){
 				var ListCls = Typorama.Array.of(Typorama.String);
-				expect(function(){ListCls.create([{}])}).to.throw();
+				expect(function(){ListCls.create([{}])}).to.throw(typeErrorMessage('[object Object]','object','<string>'));
 			});
 
 			it('should throw readable error when unallowed typorama is added',function(){
 				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create([new AddressType()])}).to.throw();
+				expect(function(){ListCls.create([new AddressType()])}).to.throw(typeErrorMessage('[object Object]','Address','<User>'));
 			});
 
 			it('should throw readable error when json with unallowed _type added',function(){
 				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create({_type:'address'})}).to.throw();
+				expect(function(){ListCls.create([{_type:'Address'}])}).to.throw(typeErrorMessage('[object Object]','Address','<User>'));
 			});
 
 		})
@@ -729,6 +740,46 @@ describe('Array data', function() {
 		});
 
 		describe('map', function() {
+			describe('with property name iteratee', function() {
+				it('naively works', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map('age');
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([11, 12]);
+				});
+				it('matches property value to thisArg', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map('age', 11);
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([true, false]);
+				});
+			});
+			describe('with object iteratee', function() {
+				it('works with typorama instances', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map(UserType.create({age: 11}));
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([true, false]);
+				});
+				it('works with pojos', function() {
+					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+					var newList = usersList.map({age: 11});
+
+					// Take a property and return an array
+					expect(_.isArray(newList)).to.be.true;
+					// Make sure the values and length are correct
+					expect(newList).to.eql([true, false]);
+				});
+			});
 			it('calls a callback function on every item in an array and constructs a new array from the results', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3]);
 				var doubles = function(num) {
@@ -888,7 +939,9 @@ describe('Array data', function() {
 				expect(numberList.length).to.equal(6);
 				expect(numberList.at(4)).to.equal(5);
 				expect(numberList.at(5)).to.equal(6);
-			})
+			});
+			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
+
 		});
 
 		describe('forEach',function() {
@@ -898,6 +951,7 @@ describe('Array data', function() {
 				var count = 0;
 
 				numberList.forEach(function(item, index, arr) {
+                    debugger;
 					expect(item).to.equal(sourceArr[index]);
 					expect(index).to.equal(count);
 					expect(arr).to.equal(numberList);
@@ -1075,6 +1129,7 @@ describe('Array data', function() {
 				var filterArray = arr.filter(function(element) {
 					return element > 5;
 				});
+                expect(filterArray).to.be.instanceof(Typorama.Array);
 				expect(filterArray.length).to.equal(3);
 				expect(filterArray.valueOf()).to.eql([42, 15, 7]);
 			});
