@@ -761,7 +761,7 @@ describe('Array data', function() {
 				});
 			});
 			describe('with object iteratee', function() {
-				it('naively works', function() {
+				it('works with typorama instances', function() {
 					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
 					var newList = usersList.map(UserType.create({age: 11}));
 
@@ -770,9 +770,9 @@ describe('Array data', function() {
 					// Make sure the values and length are correct
 					expect(newList).to.eql([true, false]);
 				});
-				it('works with pojos of expected structure', function() {
+				it('works with pojos', function() {
 					var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
-					var newList = usersList.map(UserType.create({age: 11}).toJSON());
+					var newList = usersList.map({age: 11});
 
 					// Take a property and return an array
 					expect(_.isArray(newList)).to.be.true;
