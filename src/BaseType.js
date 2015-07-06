@@ -140,6 +140,8 @@ export default class BaseType extends PrimitiveBase{
                 // validation passed
                 this.$assignField(fieldName, newValue);
                 return true;
+            } else {
+                throw new Error(`Invalid value for key ${fieldName} of type ${fieldDef.type.id}: '${newValue.constructor.name}'.`);
             }
         }
         return false;
