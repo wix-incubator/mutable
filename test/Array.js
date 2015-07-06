@@ -536,6 +536,25 @@ describe('Array data', function() {
 			lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
 		});
 
+
+		describe('set', () => {
+			it('should replace an existing element', ()  => {
+				var arr = Typorama.Array.of(Typorama.String).create(['a']);
+				arr.set(0, 'b');
+				expect(arr.toJSON()).to.eql(['b']);
+			});
+			it('should add an element if none exists', ()  => {
+				var arr = Typorama.Array.of(Typorama.String).create([]);
+				arr.set(0, 'b');
+				expect(arr.toJSON()).to.eql(['b']);
+			});
+			it ('should return the element', () => {
+				var arr = Typorama.Array.of(Typorama.String).create(['a']);
+				expect(arr.set(0, 'b')).to.eql('b');
+			});
+			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
+		});
+
 		describe('reverse', function() {
 			it('should reverse the order of elements in an array', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
@@ -1268,24 +1287,6 @@ describe('Array data', function() {
 				expect(userWithAddress.user.name).to.equal('');
 			});
 
-		});
-
-		describe('set', () => {
-			it('should replace an existing element', ()  => {
-				var arr = Typorama.Array.of(Typorama.String).create(['a']);
-				arr.set(0, 'b');
-				expect(arr.toJSON()).to.eql(['b']);
-			});
-			it('should add an element if none exists', ()  => {
-				var arr = Typorama.Array.of(Typorama.String).create([]);
-				arr.set(0, 'b');
-				expect(arr.toJSON()).to.eql(['b']);
-			});
-			it ('should return the element', () => {
-				var arr = Typorama.Array.of(Typorama.String).create(['a']);
-				expect(arr.set(0, 'b')).to.eql('b');
-			});
-			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
 		});
 
 		describe('push',function() {
