@@ -12,6 +12,13 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
+
+function optionalSetManager(itemValue, lifeCycle) {
+    if (itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
+        itemValue.$setManager(lifeCycle);
+    }
+}
+
 export default class BaseType extends PrimitiveBase{
 
     static create(value, options){
@@ -40,9 +47,7 @@ export default class BaseType extends PrimitiveBase{
 
     static _wrapOrNull(itemValue, type,  lifeCycle){
         if(type.validateType(itemValue)){
-            if (itemValue.$setManager && _.isFunction(itemValue.$setManager)) {
-                itemValue.$setManager(lifeCycle);
-            }
+            optionalSetManager(itemValue, lifeCycle);
             return itemValue;
         }else if(type.type.allowPlainVal(itemValue)){
             var newItem = type.create(itemValue);
@@ -53,6 +58,7 @@ export default class BaseType extends PrimitiveBase{
         }
         return null;
     }
+
 
     static wrapValue(value, spec, options){
         var root = {};
@@ -147,9 +153,7 @@ export default class BaseType extends PrimitiveBase{
 
     $assignField(fieldName, newValue) {
         this.__value__[fieldName] = newValue;
-        if (newValue.$setManager && _.isFunction(newValue.$setManager)) {
-            newValue.$setManager(this.__lifecycleManager__);
-        }
+        optionalSetManager(newValue, this.__lifecycleManager__);
     }
 
     $isReadOnly(){
