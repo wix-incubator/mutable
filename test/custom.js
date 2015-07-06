@@ -244,7 +244,7 @@ describe('Custom data', function() {
 				var image = new ImageType();
 				var productPrevRef = state.product;
 
-				state.product = image;
+				expect(() => state.product = image).to.throw(Error);
 
 				expect(state.product).to.be.equal(productPrevRef);
 				expect(state.product.title).to.be.equal('original title');
@@ -268,8 +268,8 @@ describe('Custom data', function() {
 				var relatedProductsPrevRef = state.relatedProducts;
 				var stringAndNumbersPrevRef = state.stringAndNumbers;
 
-				state.relatedProducts = booleanList;
-				state.stringAndNumbers = booleanList;
+				expect(() => state.relatedProducts = booleanList).to.throw(Error);
+				expect(() => state.stringAndNumbers = booleanList).to.throw(Error);
 
 				expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
 				expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
@@ -294,7 +294,7 @@ describe('Custom data', function() {
 					var state = new StateType();
 					var titlePrevVal = state.product.title;
 
-					state.product.title = {};
+					expect(() => state.product.title = {}).to.throw(Error);
 
 					expect(state.product.title).to.be.equal(titlePrevVal);
 				});
