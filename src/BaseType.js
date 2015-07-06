@@ -12,13 +12,6 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
-
-function optionalSetManager(itemValue, lifeCycle) {
-    if (itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
-        itemValue.$setManager(lifeCycle);
-    }
-}
-
 export default class BaseType extends PrimitiveBase{
 
     static create(value, options){
@@ -35,6 +28,11 @@ export default class BaseType extends PrimitiveBase{
         return _.isPlainObject(val) && (!val._type || val._type===this.id)
     }
 
+    static optionalSetManager(itemValue, lifeCycle) {
+        if (itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
+            itemValue.$setManager(lifeCycle);
+        }
+    }
     static getValueTypeName(value){
         if(value.constructor && value.constructor.id){
             return value.constructor.id
@@ -47,7 +45,7 @@ export default class BaseType extends PrimitiveBase{
 
     static _wrapOrNull(itemValue, type,  lifeCycle){
         if(type.validateType(itemValue)){
-            optionalSetManager(itemValue, lifeCycle);
+            BaseType.optionalSetManager(itemValue, lifeCycle);
             return itemValue;
         }else if(type.type.allowPlainVal(itemValue)){
             var newItem = type.create(itemValue);
@@ -153,7 +151,7 @@ export default class BaseType extends PrimitiveBase{
 
     $assignField(fieldName, newValue) {
         this.__value__[fieldName] = newValue;
-        optionalSetManager(newValue, this.__lifecycleManager__);
+        BaseType.optionalSetManager(newValue, this.__lifecycleManager__);
     }
 
     $isReadOnly(){
