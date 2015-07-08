@@ -6,6 +6,7 @@ chai.use(testKit.chai);
 import "../test-kit/test";
 
 import "./custom";
+import "./custom-nullable";
 import "./Array";
 import "./Function";
 import "./boolean";

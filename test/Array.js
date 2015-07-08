@@ -970,7 +970,6 @@ describe('Array data', function() {
 				var count = 0;
 
 				numberList.forEach(function(item, index, arr) {
-                    debugger;
 					expect(item).to.equal(sourceArr[index]);
 					expect(index).to.equal(count);
 					expect(arr).to.equal(numberList);

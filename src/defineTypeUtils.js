@@ -45,7 +45,7 @@ export function generateFieldsOn(obj, fieldsDefinition) {
 export function generateWithDefault() {
     return function withDefault(defaults, validate, options) {
         options = options || this.options;
-        var def = defaults ? function() { return _.clone(defaults, true); } : this.defaults;
+        var def = defaults === undefined ? this.defaults : function() { return _.clone(defaults, true); };
 
         function typeWithDefault(value, options) {
             return new typeWithDefault.type(value, typeWithDefault.options || options);
