@@ -28,7 +28,7 @@ export default function(id, typeDefinition, TypeConstructor){
     TypeConstructor.validate              = TypeConstructor.validate || defineTypeUtils.generateValidate();
     TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
     TypeConstructor.allowPlainVal          = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
-    TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.generateWithDefault();
+    TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.withDefault;
     TypeConstructor.nullable              = function () { return this; }
     TypeConstructor._wrapOrNull           = BaseType._wrapOrNull;
     TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();

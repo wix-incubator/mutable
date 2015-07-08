@@ -42,51 +42,32 @@ export function generateFieldsOn(obj, fieldsDefinition) {
     });
 }
 
-export function generateWithDefault() {
-    return function withDefault(defaults, validate, options) {
-        options = options || this.options;
-        var def = defaults === undefined ? this.defaults : function() { return _.clone(defaults, true); };
+var clonedMembers = [
+    'validate', 'validateType', 'allowPlainVal', 'isAssignableFrom',
+    'withDefault', 'wrapValue', 'create', 'defaults', 'options'
+];
 
-        function typeWithDefault(value, options) {
-            return new typeWithDefault.type(value, typeWithDefault.options || options);
-        }
-
-        typeWithDefault.type             = this.type || this;
-        typeWithDefault.validate         = validate || this.validate;
-        typeWithDefault.validateType     = this.validateType;
-        typeWithDefault.allowPlainVal    = this.allowPlainVal;
-        typeWithDefault.isAssignableFrom = this.isAssignableFrom;
-        typeWithDefault.withDefault      = withDefault;//.bind(this);
-        typeWithDefault.defaults         = def;
-        typeWithDefault.options          = options;
-        typeWithDefault.wrapValue        = this.wrapValue;
-        typeWithDefault.create           = this.create;
-        return typeWithDefault;
+function cloneType(Type) {
+    function ClonedType(value, options) {
+        return new ClonedType.type(value, ClonedType.options || options);
     }
+    clonedMembers.forEach(member => ClonedType[member] = Type[member]);
+    ClonedType.type = Type;
+    return ClonedType;
 }
 
-export function generateWithDefaultForSysImmutable(Type){
-    return function withDefault(defaults, validate){
-
-        var def = defaults ? function(){ return defaults; } : this.defaults;
-
-        function typeWithDefault(value){
-            return Type(value);
-        }
-        typeWithDefault.type = this.type;
-        typeWithDefault.validate = validate || this.validate;
-        typeWithDefault.validateType = this.validateType;
-        typeWithDefault.isAssignableFrom = this.isAssignableFrom;
-        typeWithDefault.allowPlainVal = this.allowPlainVal;
-        typeWithDefault.withDefault = this.withDefault;//.bind(this);
-        typeWithDefault.defaults = def;
-        typeWithDefault.wrapValue = Type;
-        typeWithDefault.create = this.create;
-        return typeWithDefault;
+export function withDefault(defaults, validate, options) {
+    var NewType = cloneType(this.type || this);
+    if(validate) {
+        NewType.validate = validate;
     }
+    NewType.options = options || this.options;
+    if(defaults !== undefined) {
+        if(_.isFunction(defaults)) {
+            NewType.defaults = () => defaults;
+        } else {
+            NewType.defaults = () => _.cloneDeep(defaults);
+        }
+    }
+    return NewType;
 }
-
-
-
-
-

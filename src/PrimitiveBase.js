@@ -1,5 +1,7 @@
+import {withDefault} from "./defineTypeUtils"
 
-export default class _PrimitiveBase {
+class _PrimitiveBase {}
 
+_PrimitiveBase.withDefault = withDefault;
 
-}
+export default _PrimitiveBase;

@@ -1,4 +1,3 @@
-import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 import PrimitiveBase from "./PrimitiveBase"
 
 function noop() {};
@@ -25,4 +24,3 @@ _Function.type = _Function;
 
 _Function.create = Object;
 
-_Function.withDefault = generateWithDefaultForSysImmutable(_Function.create);

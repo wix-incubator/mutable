@@ -1,4 +1,3 @@
-import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 import PrimitiveBase from "./PrimitiveBase"
 
 
@@ -23,4 +22,3 @@ export default class _Boolean extends PrimitiveBase{
 
 _Boolean.type = _Boolean;
 _Boolean.create = Boolean;
-_Boolean.withDefault = generateWithDefaultForSysImmutable(Boolean);

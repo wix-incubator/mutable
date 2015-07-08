@@ -3,7 +3,6 @@ import defineType from './defineType'
 import BaseType from './BaseType'
 import Number from './number'
 import String from './string'
-import {generateWithDefault} from './defineTypeUtils'
 
 // to maintain consistency so that everything
 var Typorama = {define: defineType};
@@ -330,8 +329,6 @@ class _Array extends BaseType {
 		return changed;
 	}
 }
-
-_Array.withDefault = generateWithDefault();
 
 export default Typorama.define('Array',{
 	spec: function() {

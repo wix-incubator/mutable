@@ -1,5 +1,5 @@
 import _ from "lodash";
-import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
+import {withDefault} from "./defineTypeUtils"
 import BaseType from './BaseType';
 import PrimitiveBase from './PrimitiveBase';
 
@@ -71,7 +71,11 @@ function defineEnum(def) {
 	EnumType.type = EnumType;
 	EnumType.create = BaseType.create;
 
-	EnumType.withDefault = generateWithDefaultForSysImmutable(EnumType);
+	EnumType.withDefault = function(defaults, validate) {
+		var NewType = withDefault.call(this, defaults, validate);
+		NewType.defaults = () => defaults;
+		return NewType;
+	};
 
 	return EnumType;
 }
