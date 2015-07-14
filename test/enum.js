@@ -119,7 +119,7 @@ describe('Enum Type', function() {
 				CONTAIN: "contain"
 			});
 
-			expect(ImageSizing.NONE.toJSON()).to.be.equal(null);
+			expect(ImageSizing.NONE.toJSON()).to.be.null;
 			expect(ImageSizing.COVER.toJSON()).to.be.equal("cover");
 			expect(ImageSizing.CONTAIN.toJSON()).to.be.equal("contain");
 		});

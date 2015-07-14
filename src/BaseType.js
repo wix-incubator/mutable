@@ -12,24 +12,37 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
-export default class BaseType extends PrimitiveBase{
+export default class BaseType extends PrimitiveBase {
 
-    static create(value, options){
+    static create(value, options) {
         return new this(value, options);
     }
 
-    static isAssignableFrom(type){
-        return type && (type.id === this.type.id || (type.ancestors &&_.contains(type.ancestors, this.type.id)));
+    static isAssignableFrom(type) {
+        return type && (type.id === this.type.id || (type.ancestors && _.contains(type.ancestors, this.type.id)));
     }
 
-    static validateType(value){ return value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type); }
+    static validateType(value) {
+        if (value === null) {
+            if(this.options && this.options.nullable) {
+                return true;
+            } else {
+                // todo: warn mechanism
+                throw new Error('Cannot assign null value to a type which is not defined as nullable.');
+                return false;
+            }
+
+        } else {
+            return value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type);
+        }
+    }
 
     static allowPlainVal(val){
         return _.isPlainObject(val) && (!val._type || val._type===this.id)
     }
 
     static optionalSetManager(itemValue, lifeCycle) {
-        if (itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
+        if (itemValue && itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
             itemValue.$setManager(lifeCycle);
         }
     }
@@ -43,20 +56,28 @@ export default class BaseType extends PrimitiveBase{
         return typeof value;
     }
 
-    static _wrapOrNull(itemValue, type,  lifeCycle){
+    static _wrapOrNull(itemValue, type,  lifeCycle, defaultErr){
+        if(itemValue === null) {
+            var isNullable = type.options && type.options.nullable;
+            if(isNullable) {
+                return itemValue;
+            } else {
+                return new Error('Cannot assign null value to a type which is not defined as nullable.');
+            }
+
+        }
         if(type.validateType(itemValue)){
             BaseType.optionalSetManager(itemValue, lifeCycle);
             return itemValue;
-        }else if(type.type.allowPlainVal(itemValue)){
+        } else if(type.type.allowPlainVal(itemValue)){
             var newItem = type.create(itemValue);
 			if (newItem.$setManager && _.isFunction(newItem.$setManager)) {
             	newItem.$setManager(lifeCycle);
 			}
             return newItem;
         }
-        return null;
+        return defaultErr;
     }
-
 
     static wrapValue(value, spec, options){
         var root = {};
@@ -67,11 +88,13 @@ export default class BaseType extends PrimitiveBase{
             {
                 fieldVal = spec[key].defaults();
             }
-            var newField = this._wrapOrNull(fieldVal,fieldSpec);
-            if(newField===null) {
-                throw new Error(`Invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'.`);
+            var newField = this._wrapOrNull(fieldVal,fieldSpec, undefined, new Error(`Invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'.`));
+            if(newField instanceof  Error) {
+                throw newField;
+            } else {
+                root[key] = newField;
             }
-            root[key] = newField;
+
         });
         return root;
     }
@@ -102,10 +125,13 @@ export default class BaseType extends PrimitiveBase{
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = this.$getFieldDef(fieldName);
                 if (fieldSpec) {
-                    var newVal = this.constructor._wrapOrNull(fieldValue, fieldSpec, this.__lifecycleManager__);
-                    if (newVal === null){
-                        throw new Error(`Invalid value for type ${fieldSpec.name}: '${fieldValue.constructor.name}'.`);
+                    var valueType = fieldValue === null ? 'null' : fieldValue.constructor.name;
+                    var defaultErr = new Error(`Invalid value for type ${fieldSpec.name}: '${valueType}'.`);
+                    var newVal = this.constructor._wrapOrNull(fieldValue, fieldSpec, this.__lifecycleManager__, defaultErr);
+                    if(newVal instanceof Error) {
+                        throw newVal;
                     }
+
                     if(this.__value__[fieldName]!==newVal){
                         changed = true;
                         this.__value__[fieldName] = newVal;
@@ -169,7 +195,11 @@ export default class BaseType extends PrimitiveBase{
     toJSON(recursive = true){
         return Object.keys(this.constructor._spec).reduce((json, key) => {
             var fieldValue = this.__value__[key];
-            json[key] = recursive && fieldValue.toJSON ? fieldValue.toJSON(true) : fieldValue;
+            if(fieldValue === null) {
+                json[key] = null;
+            } else {
+                json[key] = recursive && fieldValue.toJSON ? fieldValue.toJSON(true) : fieldValue;
+            }
             return json;
         }, {});
     }

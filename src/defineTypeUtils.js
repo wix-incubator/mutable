@@ -44,7 +44,7 @@ export function generateFieldsOn(obj, fieldsDefinition) {
 
 var clonedMembers = [
     'validate', 'validateType', 'allowPlainVal', 'isAssignableFrom',
-    'withDefault', 'wrapValue', 'create', 'defaults', 'options'
+    'withDefault', 'wrapValue', 'create', 'defaults', 'options', '_spec'
 ];
 
 function cloneType(Type) {
@@ -63,11 +63,25 @@ export function withDefault(defaults, validate, options) {
     }
     NewType.options = options || this.options;
     if(defaults !== undefined) {
-        if(_.isFunction(defaults)) {
+        if(defaults === null) {
+            var isNullable = NewType.options && NewType.options.nullable;
+            if(isNullable) {
+                NewType.defaults = () => null;
+            } else {
+                throw 'Cannot assign null value to a type which is not defined as nullable.';
+            }
+        } else if(_.isFunction(defaults)) {
             NewType.defaults = () => defaults;
         } else {
             NewType.defaults = () => _.cloneDeep(defaults);
         }
     }
     return NewType;
+}
+
+export function nullable() {
+    var NullableType = cloneType(this.type || this);
+    NullableType.options = NullableType.options || {};
+    NullableType.options.nullable = true;
+    return NullableType;
 }
