@@ -130,7 +130,6 @@ describe('Custom data (nullable)', function() {
                 it('sets null value from a typorama object', function() {
 					var source = new (LoginType.withNullableUser({ user: null }))();
 					var login = new (LoginType.withNullableUser())();
-					debugger;
 					login.setValue(source);
 					expect(login.user).to.be.null;
 					exoect(login).to.be.dirty;

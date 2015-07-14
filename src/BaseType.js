@@ -56,7 +56,7 @@ export default class BaseType extends PrimitiveBase {
         return typeof value;
     }
 
-    static _wrapOrNull(itemValue, type,  lifeCycle, defaultErr){
+    static _validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
         if(itemValue === null) {
             var isNullable = type.options && type.options.nullable;
             if(isNullable) {
@@ -88,7 +88,7 @@ export default class BaseType extends PrimitiveBase {
             {
                 fieldVal = spec[key].defaults();
             }
-            var newField = this._wrapOrNull(fieldVal,fieldSpec, undefined, new Error(`Invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'.`));
+            var newField = this._validateAndWrap(fieldVal,fieldSpec, undefined, new Error(`Invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'.`));
             if(newField instanceof  Error) {
                 throw newField;
             } else {
@@ -127,7 +127,7 @@ export default class BaseType extends PrimitiveBase {
                 if (fieldSpec) {
                     var valueType = fieldValue === null ? 'null' : fieldValue.constructor.name;
                     var defaultErr = new Error(`Invalid value for type ${fieldSpec.name}: '${valueType}'.`);
-                    var newVal = this.constructor._wrapOrNull(fieldValue, fieldSpec, this.__lifecycleManager__, defaultErr);
+                    var newVal = this.constructor._validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, defaultErr);
                     if(newVal instanceof Error) {
                         throw newVal;
                     }

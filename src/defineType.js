@@ -30,7 +30,7 @@ export default function(id, typeDefinition, TypeConstructor){
     TypeConstructor.allowPlainVal          = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
     TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.withDefault;
     TypeConstructor.nullable              = defineTypeUtils.nullable;
-    TypeConstructor._wrapOrNull           = BaseType._wrapOrNull;
+    TypeConstructor._validateAndWrap      = BaseType._validateAndWrap;
     TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
     TypeConstructor.create                = BaseType.create;
 
