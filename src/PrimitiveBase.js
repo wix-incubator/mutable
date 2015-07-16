@@ -1,4 +1,4 @@
-import {withDefault} from "./defineTypeUtils"
+import {withDefault} from './typeBuilder'
 
 class _PrimitiveBase {}
 

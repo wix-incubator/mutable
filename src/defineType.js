@@ -1,5 +1,6 @@
 import _ from "lodash"
 import * as defineTypeUtils from "./defineTypeUtils"
+import * as typeBuilder from './typeBuilder'
 import BaseType from "./BaseType"
 
 /*
@@ -28,8 +29,8 @@ export default function(id, typeDefinition, TypeConstructor){
     TypeConstructor.validate              = TypeConstructor.validate || defineTypeUtils.generateValidate();
     TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
     TypeConstructor.allowPlainVal          = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
-    TypeConstructor.withDefault           = TypeConstructor.withDefault || defineTypeUtils.withDefault;
-    TypeConstructor.nullable              = defineTypeUtils.nullable;
+    TypeConstructor.withDefault           = TypeConstructor.withDefault || typeBuilder.withDefault;
+    TypeConstructor.nullable              = typeBuilder.nullable;
     TypeConstructor._validateAndWrap      = BaseType._validateAndWrap;
     TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
     TypeConstructor.create                = BaseType.create;

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import {withDefault} from "./defineTypeUtils"
+import {withDefault} from "./typeBuilder"
 import BaseType from './BaseType';
 import PrimitiveBase from './PrimitiveBase';
 
