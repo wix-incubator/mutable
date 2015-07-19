@@ -19,39 +19,46 @@ describe('Nullable custom type', function() {
 		address: Typorama.String.withDefault(defaultUser.address)
 	}, 'User');
 
-	var LoginType = {
-		withNullableUser: defaultValue =>
-			aDataTypeWithSpec({
-				user: defaultValue === undefined
-				? UserType.nullable()
-				: UserType.nullable().withDefault(defaultValue)
-			}),
+	var build = {
+		LoginType : {
+			withNullableUser: defaultValue =>
+				aDataTypeWithSpec({
+					user: defaultValue === undefined
+						? UserType.nullable()
+						: UserType.nullable().withDefault(defaultValue)
+				}),
 
-		withUser: defaultValue =>
-			aDataTypeWithSpec({
-				user: defaultValue === undefined
-					? UserType
-					: UserType.withDefault(defaultValue)
-			})
+			withUser: defaultValue =>
+				aDataTypeWithSpec({
+					user: defaultValue === undefined
+						? UserType
+						: UserType.withDefault(defaultValue)
+				})
+		},
+
+		login: {
+			withNullableUser: defaultValue => new (build.LoginType.withNullableUser(defaultValue)),
+			withUser: defaultValue => new (build.LoginType.withUser(defaultValue))
+		}
 	};
 
 
 
     describe('type definition', function() {
 		it('is able to describe itself (no defaults override)', function() {
-			expect(LoginType.withNullableUser()).to.have.field('user')
+			expect(build.LoginType.withNullableUser()).to.have.field('user')
 				//.with.defaults(defaultUser)
 				.of.type(UserType);
 		});
 
 		it('is able to describe itself (null defaults override)', function() {
-			expect(LoginType.withNullableUser(null)).to.have.field('user')
+			expect(build.LoginType.withNullableUser(null)).to.have.field('user')
 				.with.defaults(null)
 				.of.type(UserType);
 		});
 
 		it('throws error if trying to initialize non-nullable with a null', function () {
-			expect(() => LoginType.withUser(null))
+			expect(() => build.LoginType.withUser(null))
 			.to.throw('Cannot assign null value to a type which is not defined as nullable.');
 		});
 
@@ -61,7 +68,7 @@ describe('Nullable custom type', function() {
 
 	describe('toJSON', function() {
 		it('produces correct value for nullable field', function() {
-			var login = new (LoginType.withNullableUser(null));
+			var login = build.login.withNullableUser(null);
 			expect(login.toJSON()).to.deep.equal({ user: null });
 		});
 	});
@@ -71,23 +78,23 @@ describe('Nullable custom type', function() {
 		describe('instantiation', function() {
 
 			it('creates instance (no defaults override)',function(){
-				var login = new (LoginType.withNullableUser())();
+				var login = build.login.withNullableUser();
 				expect(login.user.toJSON()).to.deep.equal(defaultUser);
 			});
 
 
 			it('creates instance (null defaults override)',function(){
-				var login = new (LoginType.withNullableUser(null))();
+				var login = build.login.withNullableUser(null);
 				expect(login.user).to.be.null;
 			});
 
 			it('creates instance (null value from JSON)', function() {
-				var login = new (LoginType.withNullableUser(null))({ user: null });
+				var login = new (build.LoginType.withNullableUser(null))({ user: null });
 				expect(login.user).to.be.null;
 			});
 
 			it('throws error if trying to instantiate a non-nullable with a null value', function () {
-				expect(() => new (LoginType.withUser(null))({ user: null }))
+				expect(() => new build.login.withUser(null))
 				.to.throw('Cannot assign null value to a type which is not defined as nullable.');
 			})
 
@@ -95,14 +102,14 @@ describe('Nullable custom type', function() {
 
 		describe('set', function() {
 			it('nullable field to null', function(){
-				var login = new (LoginType.withNullableUser())();
+				var login = build.login.withNullableUser();
 				login.user = null;
 				expect(login.user).to.be.null;
 				expect(login).to.be.dirty;
 			});
 
 			it('throws error while setting non-nullable field to null', function () {
-				var login = new (LoginType.withUser())();
+				var login = build.login.withUser();
 				expect(() => { login.user = null })
 					.to.throw('Cannot assign null value to a type which is not defined as nullable.');
 				expect(login.user).not.to.be.null;
@@ -112,14 +119,14 @@ describe('Nullable custom type', function() {
 		describe('setValue', function() {
             describe('with json input',function(){
                 it('sets null value from an incoming JSON', function() {
-					var login = new (LoginType.withNullableUser())();
+					var login = build.login.withNullableUser();
 					login.setValue({ user: null });
 					expect(login.user).to.be.null;
 					expect(login).to.be.dirty;
                 });
 
 				it('fails to set null value from an incoming JSON to a non-nullable field', function() {
-					var login = new (LoginType.withUser())();
+					var login = build.login.withUser();
 					expect(() => login.setValue({ user: null }))
 						.to.throw('Cannot assign null value to a type which is not defined as nullable.');
 					expect(login.user).not.to.be.null;
@@ -130,15 +137,15 @@ describe('Nullable custom type', function() {
             describe.skip('with typorama input',function(){
 				// This is weird, the input is typorama objects in a plain object - wtf?
                 it('sets null value from a typorama object', function() {
-					var source = new (LoginType.withNullableUser({ user: null }))();
-					var login = new (LoginType.withNullableUser())();
+					var source = build.login.withNullableUser({ user: null });
+					var login = build.login.withNullableUser();
 					login.setValue(source);
 					expect(login.user).to.be.null;
 					exoect(login).to.be.dirty;
                 });
                 it('fails to set null value to non-nullable field from a (nullable) typorama object', function() {
-					var source = new (LoginType.withNullableUser())({ user: null });
-					var login = new (LoginType.withUser())();
+					var source = new (build.LoginType.withNullableUser())({ user: null });
+					var login = new (build.LoginType.withUser())();
 					expect(() => login.setValue(source))
 						.to.throw('Cannot assign null value to a type which is not defined as nullable.');
 					expect(login.user).not.to.be.null;
@@ -150,13 +157,6 @@ describe('Nullable custom type', function() {
 });
 
 describe('Nullable primitive type', function() {
-
-	function unfoldFieldType(Type, fieldName, defaultValues) {
-		return _.has(defaultValues, fieldName)
-			? Type.withDefault(defaultValues[fieldName])
-			: Type;
-	}
-
 	function pickDefValue() {
 		return _.find(arguments, arg => !_.isUndefined(arg));
 	}
