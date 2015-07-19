@@ -1,4 +1,5 @@
 import PrimitiveBase from "./PrimitiveBase"
+import {validateNullValue} from './defineTypeUtils'
 
 function noop() {};
 
@@ -6,7 +7,7 @@ export default class _Function extends PrimitiveBase{
 
     static defaults() { return noop; }
 
-    static validate(v) { return typeof v === 'function'; }
+    static validate(v) { return typeof v === 'function' || validateNullValue(this, v) }
     static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {

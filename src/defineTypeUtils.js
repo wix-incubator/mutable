@@ -42,3 +42,6 @@ export function generateFieldsOn(obj, fieldsDefinition) {
     });
 }
 
+export function validateNullValue(Type, value) {
+    return (value === null && Type.options && Type.options.nullable);
+}
