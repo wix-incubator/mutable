@@ -43,5 +43,13 @@ export function generateFieldsOn(obj, fieldsDefinition) {
 }
 
 export function validateNullValue(Type, value) {
-    return (value === null && Type.options && Type.options.nullable);
+    if(value === null) {
+        if(!(Type.options && Type.options.nullable)) {
+            throw new Error('Cannot assign null value to a type which is not defined as nullable.');
+        } else {
+            return true;
+        }
+    } else {
+        return false;
+    }
 }

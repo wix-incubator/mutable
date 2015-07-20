@@ -2,6 +2,7 @@ import config from './typoramaConfiguration'
 import _ from "lodash"
 import {makeDirtyable} from "./lifecycle"
 import PrimitiveBase from "./PrimitiveBase"
+import {validateNullValue} from './defineTypeUtils'
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -23,18 +24,8 @@ export default class BaseType extends PrimitiveBase {
     }
 
     static validateType(value) {
-        if (value === null) {
-            if(this.options && this.options.nullable) {
-                return true;
-            } else {
-                // todo: warn mechanism
-                throw new Error('Cannot assign null value to a type which is not defined as nullable.');
-                return false;
-            }
-
-        } else {
-            return value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type);
-        }
+        return validateNullValue(this, value) ||
+            ( value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type));
     }
 
     static allowPlainVal(val){
@@ -195,11 +186,7 @@ export default class BaseType extends PrimitiveBase {
     toJSON(recursive = true){
         return Object.keys(this.constructor._spec).reduce((json, key) => {
             var fieldValue = this.__value__[key];
-            if(fieldValue === null) {
-                json[key] = null;
-            } else {
-                json[key] = recursive && fieldValue.toJSON ? fieldValue.toJSON(true) : fieldValue;
-            }
+            json[key] = recursive && fieldValue && fieldValue.toJSON ? fieldValue.toJSON(true) : fieldValue;
             return json;
         }, {});
     }

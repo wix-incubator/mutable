@@ -6,12 +6,12 @@ var clonedMembers = [
 ];
 
 function cloneType(Type) {
-    function ClonedType(value, options) {
-        return new ClonedType.type(value, ClonedType.options || options);
+    function TypeClone(value, options) {
+        return new TypeClone.type(value, TypeClone.options || options);
     }
-    clonedMembers.forEach(member => ClonedType[member] = Type[member]);
-    ClonedType.type = Type;
-    return ClonedType;
+    clonedMembers.forEach(member => TypeClone[member] = Type[member]);
+    TypeClone.type = Type;
+    return TypeClone;
 }
 
 export function withDefault(defaults, validate, options) {
