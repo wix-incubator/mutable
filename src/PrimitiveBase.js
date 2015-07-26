@@ -1,7 +1,8 @@
+import {withDefault, nullable} from './typeBuilder'
 
-export default class _PrimitiveBase {
+class _PrimitiveBase {}
 
+_PrimitiveBase.withDefault = withDefault;
+_PrimitiveBase.nullable = nullable;
 
-}
-
-_PrimitiveBase.nullable = function () { return this; }
+export default _PrimitiveBase;

@@ -42,51 +42,14 @@ export function generateFieldsOn(obj, fieldsDefinition) {
     });
 }
 
-export function generateWithDefault() {
-    return function withDefault(defaults, validate, options) {
-        options = options || this.options;
-        var def = defaults ? function() { return _.clone(defaults, true); } : this.defaults;
-
-        function typeWithDefault(value, options) {
-            return new typeWithDefault.type(value, typeWithDefault.options || options);
+export function validateNullValue(Type, value) {
+    if(value === null) {
+        if(!(Type.options && Type.options.nullable)) {
+            throw new Error('Cannot assign null value to a type which is not defined as nullable.');
+        } else {
+            return true;
         }
-
-        typeWithDefault.type             = this.type || this;
-        typeWithDefault.validate         = validate || this.validate;
-        typeWithDefault.validateType     = this.validateType;
-        typeWithDefault.allowPlainVal    = this.allowPlainVal;
-        typeWithDefault.isAssignableFrom = this.isAssignableFrom;
-        typeWithDefault.withDefault      = withDefault;//.bind(this);
-        typeWithDefault.defaults         = def;
-        typeWithDefault.options          = options;
-        typeWithDefault.wrapValue        = this.wrapValue;
-        typeWithDefault.create           = this.create;
-        return typeWithDefault;
+    } else {
+        return false;
     }
 }
-
-export function generateWithDefaultForSysImmutable(Type){
-    return function withDefault(defaults, validate){
-
-        var def = defaults ? function(){ return defaults; } : this.defaults;
-
-        function typeWithDefault(value){
-            return Type(value);
-        }
-        typeWithDefault.type = this.type;
-        typeWithDefault.validate = validate || this.validate;
-        typeWithDefault.validateType = this.validateType;
-        typeWithDefault.isAssignableFrom = this.isAssignableFrom;
-        typeWithDefault.allowPlainVal = this.allowPlainVal;
-        typeWithDefault.withDefault = this.withDefault;//.bind(this);
-        typeWithDefault.defaults = def;
-        typeWithDefault.wrapValue = Type;
-        typeWithDefault.create = this.create;
-        return typeWithDefault;
-    }
-}
-
-
-
-
-

@@ -1,12 +1,12 @@
-import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 import PrimitiveBase from "./PrimitiveBase"
+import {validateNullValue} from './defineTypeUtils'
 
 
 export default class _String extends PrimitiveBase{
 
     static defaults(){ return ''; }
 
-    static validate(v){ return typeof v === 'string'; }
+    static validate(v){ return typeof v === 'string' || validateNullValue(this, v); }
 
     static allowPlainVal(v){ return this.validate(v)}
 
@@ -23,4 +23,3 @@ export default class _String extends PrimitiveBase{
 _String.id = 'string';
 _String.type = _String;
 _String.create = String;
-_String.withDefault = generateWithDefaultForSysImmutable(String);

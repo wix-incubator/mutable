@@ -1,5 +1,5 @@
-import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 import PrimitiveBase from "./PrimitiveBase"
+import {validateNullValue} from './defineTypeUtils.js'
 
 
 
@@ -7,7 +7,7 @@ export default class _Boolean extends PrimitiveBase{
 
     static defaults(){ return false; }
 
-    static validate(v){ return typeof v === 'boolean'; }
+    static validate(v){ return typeof v === 'boolean' || validateNullValue(this, v); }
     static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {
@@ -23,4 +23,3 @@ export default class _Boolean extends PrimitiveBase{
 
 _Boolean.type = _Boolean;
 _Boolean.create = Boolean;
-_Boolean.withDefault = generateWithDefaultForSysImmutable(Boolean);

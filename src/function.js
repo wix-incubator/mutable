@@ -1,5 +1,5 @@
-import {generateWithDefaultForSysImmutable} from "./defineTypeUtils"
 import PrimitiveBase from "./PrimitiveBase"
+import {validateNullValue} from './defineTypeUtils'
 
 function noop() {};
 
@@ -7,7 +7,7 @@ export default class _Function extends PrimitiveBase{
 
     static defaults() { return noop; }
 
-    static validate(v) { return typeof v === 'function'; }
+    static validate(v) { return typeof v === 'function' || validateNullValue(this, v) }
     static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {
@@ -25,4 +25,3 @@ _Function.type = _Function;
 
 _Function.create = Object;
 
-_Function.withDefault = generateWithDefaultForSysImmutable(_Function.create);

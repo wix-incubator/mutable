@@ -3,7 +3,6 @@ import defineType from './defineType'
 import BaseType from './BaseType'
 import Number from './number'
 import String from './string'
-import {generateWithDefault} from './defineTypeUtils'
 
 // to maintain consistency so that everything
 var Typorama = {define: defineType};
@@ -63,8 +62,8 @@ class _Array extends BaseType {
 
 	static _wrapSingleItem(value, options, lifeCycle) {
 		var result = _.isFunction(options.subTypes) ?
-			this._wrapOrNull(value, options.subTypes, lifeCycle) :
-			_(options.subTypes).map((type) => this._wrapOrNull(value, type, lifeCycle)).filter().first();
+			this._validateAndWrap(value, options.subTypes, lifeCycle) :
+			_(options.subTypes).map((type) => this._validateAndWrap(value, type, lifeCycle)).filter().first();
 
 		if(null === result || undefined === result) {
 			throw new Error('Illegal value '+value+' of type '+BaseType.getValueTypeName(value)+' for Array of type '+_Array.getSignature(options));
@@ -330,8 +329,6 @@ class _Array extends BaseType {
 		return changed;
 	}
 }
-
-_Array.withDefault = generateWithDefault();
 
 export default Typorama.define('Array',{
 	spec: function() {

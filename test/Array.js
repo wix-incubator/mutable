@@ -970,7 +970,6 @@ describe('Array data', function() {
 				var count = 0;
 
 				numberList.forEach(function(item, index, arr) {
-                    debugger;
 					expect(item).to.equal(sourceArr[index]);
 					expect(index).to.equal(count);
 					expect(arr).to.equal(numberList);
@@ -1294,7 +1293,7 @@ describe('Array data', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]).$asReadOnly();
 				var lengthBeforePush = numberList.length;
 				var newIndex = numberList.push(5);
-				expect(newIndex).to.equal(null);
+				expect(newIndex).to.be.null;
 				expect(numberList.length).to.equal(lengthBeforePush);
 				expect(numberList.at(4)).to.equal(undefined);
 
@@ -1306,7 +1305,7 @@ describe('Array data', function() {
 				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]).$asReadOnly();
 				var lengthBeforeSplice = numberList.length;
 				var removedItems = numberList.splice(1, 2, 7, 6, 5);
-				expect(removedItems).to.equal(null);
+				expect(removedItems).to.be.null;
 				expect(numberList.length).to.equal(lengthBeforeSplice);
 				expect(numberList.at(0)).to.equal(1);
 				expect(numberList.at(1)).to.equal(2);
