@@ -3,7 +3,7 @@ import {expect, err} from 'chai';
 import sinon from 'sinon';
 import Typorama from "../src";
 
-describe('LifecycleManager :', function() {
+describe('LifecycleManager', function() {
 	var lifecycleManager;
 	beforeEach('init', ()=>{
 		lifecycleManager = new Typorama.LifeCycleManager();

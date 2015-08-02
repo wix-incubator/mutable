@@ -6,51 +6,32 @@ import {revision} from '../src/lifecycle';
 import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
-describe('assume', () =>{
-	it('max pluck', ()=>{
-		expect(Math.max(1, _.max([{val:3}, {v:5}, {val:4}], 'val').val)).to.equal(4);
-	});
-});
-describe('Custom data', function() {
+var UserType = aDataTypeWithSpec({
+	name: Typorama.String.withDefault('leon'),
+	age: Typorama.Number.withDefault(10),
+	address: Typorama.String.withDefault('no address')
+}, 'User');
 
-	var UserType = aDataTypeWithSpec({
-		name: Typorama.String.withDefault('leon'),
-		age: Typorama.Number.withDefault(10),
-		address: Typorama.String.withDefault('no address')
-	}, 'User');
-
-	var UserWithChildType = aDataTypeWithSpec({
-		name: Typorama.String.withDefault('leon'),
-		child: UserType.withDefault({name: 'bobi', age: 13})
-	}, 'UserWithChildType');
-
-	describe('definition', function() {
-		it('should throw error for reserved keys', function() { // ToDo: change to fields that start with $ and __
-			expect(() => aDataTypeWithSpec({$asReadOnly: Typorama.String})).to.throw();
-		});
-	});
-
-	describe('Type Class', function() {
-		it('should be able to describe itself', function() {
-			expect(UserType).to.have.field('name').with.defaults('leon').of.type(Typorama.String);
-			expect(UserType).to.have.field('age').with.defaults(10).of.type(Typorama.Number);
-		});
-	});
-
-	var CompositeContainer = aDataTypeWithSpec({
-		name: Typorama.String.withDefault('leon'),
-		child1: UserType,
-		child2: UserType
-	}, 'UserWith2ChildType');
-
-	var PrimitivesContainer = aDataTypeWithSpec({
-		name: Typorama.String.withDefault('leon'),
-		child1: Typorama.String,
-		child2: Typorama.String
-	}, 'User');
+var UserWithChildType = aDataTypeWithSpec({
+	name: Typorama.String.withDefault('leon'),
+	child: UserType.withDefault({name: 'bobi', age: 13})
+}, 'UserWithChildType');
 
 
-	var lifeCycleAsserter = lifecycleContract();
+var CompositeContainer = aDataTypeWithSpec({
+	name: Typorama.String.withDefault('leon'),
+	child1: UserType,
+	child2: UserType
+}, 'UserWith2ChildType');
+
+var PrimitivesContainer = aDataTypeWithSpec({
+	name: Typorama.String.withDefault('leon'),
+	child1: Typorama.String,
+	child2: Typorama.String
+}, 'User');
+
+var lifeCycleAsserter = lifecycleContract();
+(()=>{
 	lifeCycleAsserter.addFixture(
 		(u1, u2) => {
 			var result = new CompositeContainer();
@@ -66,39 +47,25 @@ describe('Custom data', function() {
 		() => 'foobar' + (counter++),
 		'object with primitive elements'
 	);
+})();
+
+describe('Custom data', function() {
+	describe('definition', function() {
+		it('should throw error for reserved keys', function() { // ToDo: change to fields that start with $ and __
+			expect(() => aDataTypeWithSpec({$asReadOnly: Typorama.String})).to.throw();
+		});
+	});
+
+	describe('Type Class', function() {
+		it('should be able to describe itself', function() {
+			expect(UserType).to.have.field('name').with.defaults('leon').of.type(Typorama.String);
+			expect(UserType).to.have.field('age').with.defaults(10).of.type(Typorama.Number);
+		});
+	});
 
 	describe('lifecycle:',function() {
 		lifeCycleAsserter.assertDirtyContract();
 	});
-    describe('type definition', function() {
-        it('should allow defining types with primitive fields',function(){
-            var primitives = aDataTypeWithSpec({
-                name: Typorama.String.withDefault('leon'),
-                child1: Typorama.String,
-                child2: Typorama.String
-            }, 'primitives');
-            expect(new primitives().name).to.equal('leon');
-        });
-        it('should allow defining types with custom fields',function(){
-            var primitives = aDataTypeWithSpec({
-                name: Typorama.String.withDefault('leon'),
-                child1: Typorama.String,
-                child2: Typorama.String
-            }, 'primitives');
-            var composite  = aDataTypeWithSpec({
-                child: primitives
-            }, 'composite');
-            expect(new composite().child.name).to.equal('leon');
-        });
-        it('should throw readable error if field type is not valid',function(){
-            expect(function(){
-                aDataTypeWithSpec({
-                    name: {}
-                }, 'invalid')
-            }).to.throw();
-
-        });
-    });
 
 	describe('toJSON', function() {
 		it('should take a typorama object, and return a native object', function() {
@@ -144,10 +111,10 @@ describe('Custom data', function() {
 			it("should not keep references to original json objects, even deep ones", function() {
 
 				var InnerType = aDataTypeWithSpec({
-							name: Typorama.String.withDefault("Gordon Shumway")
+					name: Typorama.String.withDefault("Gordon Shumway")
 				}, "InnerType");
 				var OuterType = aDataTypeWithSpec({
-							name: InnerType
+					name: InnerType
 				}, "OuterType");
 
 				var original = { name: { name: "Lilo" } };
@@ -210,42 +177,44 @@ describe('Custom data', function() {
 				expect(instance.numOfHeads).to.be.undefined;
 			});
 
-            it('should reference matching typorama objects passed as value', function() {
-                var instance = new UserType({numOfHeads: 2});
+			it('should reference matching typorama objects passed as value', function() {
+				var instance = new UserType({numOfHeads: 2});
 
-                var container = new CompositeContainer({child1:instance});
-                expect(container.child1).to.be.equal(instance);
-            });
+				var container = new CompositeContainer({child1:instance});
+				expect(container.child1).to.be.equal(instance);
+			});
 
 		});
 
 		describe('set', function() {
+			var ImageType, ProductType, StateType;
 
-			var ImageType = aDataTypeWithSpec({
-				src: Typorama.String.withDefault('default.jpg')
-			}, 'ImageType');
+			before('setup types', () =>{
+				ImageType = aDataTypeWithSpec({
+					src: Typorama.String.withDefault('default.jpg')
+				}, 'ImageType');
 
-			var ProductType = aDataTypeWithSpec({
-				image: ImageType,
-				title: Typorama.String.withDefault('default title')
-			}, 'ProductType');
+				ProductType = aDataTypeWithSpec({
+					image: ImageType,
+					title: Typorama.String.withDefault('default title')
+				}, 'ProductType');
 
-			var StateType = aDataTypeWithSpec({
-				product: ProductType.withDefault({
-					image:{ src:'original.jpg' },
-					title:'original title'
-				}),
-				relatedProducts: Typorama.Array.of(ProductType),
-				stringAndNumbers: Typorama.Array.of([Typorama.String, Typorama.Number])
-			}, 'StateType');
+				StateType = aDataTypeWithSpec({
+					product: ProductType.withDefault({
+						image:{ src:'original.jpg' },
+						title:'original title'
+					}),
+					relatedProducts: Typorama.Array.of(ProductType),
+					stringAndNumbers: Typorama.Array.of([Typorama.String, Typorama.Number])
+				}, 'StateType');
+			});
 
 			it('should not set data that does not fit the schema', function(){
 				var state = new StateType();
 				var image = new ImageType();
 				var productPrevRef = state.product;
 
-				state.product = image;
-
+				expect(() => state.product = image).to.throw(Error);
 				expect(state.product).to.be.equal(productPrevRef);
 				expect(state.product.title).to.be.equal('original title');
 				expect(state.product.image.src).to.be.equal('original.jpg');
@@ -261,15 +230,15 @@ describe('Custom data', function() {
 			});
 
 
-            //TODO: what to do?
+			//TODO: what to do?
 			xit('should not set data that has different options', function(){
 				var state = new StateType();
 				var booleanList = new (Typorama.Array.of(Typorama.Boolean))([]);
 				var relatedProductsPrevRef = state.relatedProducts;
 				var stringAndNumbersPrevRef = state.stringAndNumbers;
 
-				state.relatedProducts = booleanList;
-				state.stringAndNumbers = booleanList;
+				expect(() => state.relatedProducts = booleanList).to.throw(Error);
+				expect(() => state.stringAndNumbers = booleanList).to.throw(Error);
 
 				expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
 				expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
@@ -294,7 +263,7 @@ describe('Custom data', function() {
 					var state = new StateType();
 					var titlePrevVal = state.product.title;
 
-					state.product.title = {};
+					expect(() => state.product.title = {}).to.throw(Error);
 
 					expect(state.product.title).to.be.equal(titlePrevVal);
 				});
@@ -312,69 +281,69 @@ describe('Custom data', function() {
 		});
 
 		describe('setValue', function() {
-            describe('with json input',function(){
-                it('should set all values from an incoming JSON according to schema', function() {
-                    var instance = new UserType({address: '21 jump street'});
-                    instance.setValue({name: 'zaphod', age: 42});
+			describe('with json input',function(){
+				it('should set all values from an incoming JSON according to schema', function() {
+					var instance = new UserType({address: '21 jump street'});
+					instance.setValue({name: 'zaphod', age: 42});
 
-                    expect(instance.name).to.equal('zaphod');
-                    expect(instance.age).to.equal(42);
-                    expect(instance.address).to.equal('21 jump street');
-                });
+					expect(instance.name).to.equal('zaphod');
+					expect(instance.age).to.equal(42);
+					expect(instance.address).to.equal('21 jump street');
+				});
 
-                it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
-                    var instance = new UserType();
-                    var wrapped = {name: 'zaphod'};
-                    instance.setValue(wrapped);
+				it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
+					var instance = new UserType();
+					var wrapped = {name: 'zaphod'};
+					instance.setValue(wrapped);
 
-                    wrapped.name = 'ford';
+					wrapped.name = 'ford';
 
-                    expect(instance.name).to.equal('zaphod');
-                });
+					expect(instance.name).to.equal('zaphod');
+				});
 
-                it('should ignore fields that appear in the passed object but not in the type schema', function() {
-                    var instance = new UserType();
+				it('should ignore fields that appear in the passed object but not in the type schema', function() {
+					var instance = new UserType();
 
-                    instance.setValue({numOfHeads: 2});
+					instance.setValue({numOfHeads: 2});
 
-                    expect(instance.numOfHeads).to.be.undefined;
-                });
+					expect(instance.numOfHeads).to.be.undefined;
+				});
 
-                it('should not invalidate if fields havnt changed', function() {
-                    var instance = new UserWithChildType();
-                    var instance2 = new UserType();
+				it('should not invalidate if fields havnt changed', function() {
+					var instance = new UserWithChildType();
+					var instance2 = new UserType();
 					instance.setValue({child:instance2});
 					revision.advance();
 					var rev = revision.read();
-                    instance.setValue({child:instance2});
-                    expect(instance.$isDirty(rev)).to.be.equal(false);
-                });
+					instance.setValue({child:instance2});
+					expect(instance.$isDirty(rev)).to.be.equal(false);
+				});
 
-                it("should not allow values of wrong type", function() {
-                	var user = new UserType();
+				it("should not allow values of wrong type", function() {
+					var user = new UserType();
 					expect(() => user.setValue({ age: "666" })).to.throw(Error);
-                });
+				});
 
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
-            });
-            describe('with typorama input',function(){
-                it('should set replace all values from an incoming object with typorama fields according to schema', function() {
-                    var instance = new UserWithChildType();
-                    var childInstance = new UserType({name: 'zaphod', age: 42});
-                    instance.setValue({child: childInstance});
+			});
+			describe('with typorama input',function(){
+				it('should set replace all values from an incoming object with typorama fields according to schema', function() {
+					var instance = new UserWithChildType();
+					var childInstance = new UserType({name: 'zaphod', age: 42});
+					instance.setValue({child: childInstance});
 
-                    expect(instance.child).to.equal(childInstance);
-                });
-                it('should not invalidate if child instance hasnt is the same one', function() {
-                    var instance = new UserWithChildType();
-                    var childInstance = new UserType({name: 'zaphod', age: 42});
-                    instance.setValue({child: childInstance});
+					expect(instance.child).to.equal(childInstance);
+				});
+				it('should not invalidate if child instance hasnt is the same one', function() {
+					var instance = new UserWithChildType();
+					var childInstance = new UserType({name: 'zaphod', age: 42});
+					instance.setValue({child: childInstance});
 					revision.advance();
 					var rev = revision.read();
 					instance.setValue({child: childInstance});
-                    expect(instance.$isDirty(rev)).to.equal(false);
-                });
-            })
+					expect(instance.$isDirty(rev)).to.equal(false);
+				});
+			})
 		});
 
 		describe("with global freeze config", function(){
