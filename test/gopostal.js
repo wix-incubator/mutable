@@ -106,7 +106,7 @@ describe('Go Postal', () => {
 			gopostal.config({logThresholdStrategy: _.noop});
 			gopostal.config({panicThresholdStrategy: _.noop});
 		});
-		it('works retroactively', ()=> {
+		it('affects pre-existing mailboxes', ()=> {
 			var mailBox = gopostal.getMailBox();
 			var panicSpy = sandbox.spy();
 			gopostal.config({panicStrategy: _.constant(panicSpy)});
