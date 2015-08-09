@@ -10,9 +10,7 @@ import {listen, Report} from '../testDrivers/gopostalRecorder';
 var PARAMS = ['TEST PARAMS', 1, {}];
 var CONTEXT = {};
 function getOneTimeReporterForLevel(reportLevel) {
-	return () => {
-		gopostal.getMailBox(CONTEXT)[reportLevel](...PARAMS)
-	};
+	return () => {gopostal.getMailBox(CONTEXT)[reportLevel](...PARAMS);};
 }
 describe('gopostal testkit', () => {
 	gopostal.levels.forEach((reportLevel, reportIdx) => {
@@ -38,9 +36,9 @@ describe('gopostal testkit', () => {
 		});
 
 		it(`can match ${reportLevel} reports with explicit recorder`, () => {
-			var recording = listen(getOneTimeReporterForLevel(reportLevel));
-			expect(recording).to.contain({level : reportLevel, context : CONTEXT, params : PARAMS});
-			expect(recording).to.contain(expectedReport);
+			var recording = listen(reporterForLevel);
+			expect(recording).to.eql([{level : reportLevel, context : CONTEXT, params : PARAMS}]);
+			expect(recording).to.eql([expectedReport]);
 		});
 	});
 });
