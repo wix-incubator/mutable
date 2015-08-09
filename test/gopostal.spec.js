@@ -9,7 +9,7 @@ import * as gopostal from '../src/gopostal.js';
 var EXPECTED_LEVELS = ['debug', 'info', 'warn', 'error', 'fatal'];
 var PARAMS = ['TEST PARAMS', 1, {}];
 
-describe('Go Postal', () => {
+describe('gopostal', () => {
 	var sandbox, originalConfig;
 	after(() => {
 		sandbox.restore();

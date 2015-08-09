@@ -12,5 +12,5 @@ import "./Function";
 import "./boolean";
 import "./enum";
 import "./defineType.spec";
-import "./gopostal";
+import "./gopostal.spec";
 
