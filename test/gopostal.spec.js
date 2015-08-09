@@ -5,6 +5,7 @@ import _ from 'lodash';
 import {expect, err} from 'chai';
 import sinon from 'sinon';
 import * as gopostal from '../src/gopostal.js';
+import {Report} from '../test-kit/testDrivers/gopostalRecorder';
 
 var EXPECTED_LEVELS = ['debug', 'info', 'warn', 'error', 'fatal'];
 var PARAMS = ['TEST PARAMS', 1, {}];
@@ -27,62 +28,20 @@ describe('gopostal', () => {
 		});
 	});
 	describe('default configuration', () => {
-		it('default panic throws', ()=> {
+		it('logger threshold is info', ()=> {
+			expect(originalConfig.logThresholdStrategy()).to.eql('info');
+		});
+		it('panic threshold is info', ()=> {
+			expect(originalConfig.panicThresholdStrategy()).to.eql('fatal');
+		});
+		it('panic throws', ()=> {
 			expect(() => originalConfig.panicStrategy()(...PARAMS), 'reporting fatal with default configuration').to.throw;
 		});
 		['debug', 'info', 'warn', 'error'].forEach((level) => {
-			it(`default logger.${level} writes to console.${level} exactly once with the expected arguments`, ()=> {
+			it(`logger.${level} writes to console.${level}`, ()=> {
 				sandbox.spy(console, level);
 				originalConfig.loggerStrategy()[level](...PARAMS);
 				expect(console[level].args, 'arguments of logger call').to.eql([PARAMS]);
-			});
-		});
-		describe('posting messages', () => {
-			var mailBox, logger, panic;
-			beforeEach('init per test', ()=>{
-				logger = {};
-				panic = sandbox.spy();
-				mailBox = gopostal.getMailBox();
-				gopostal.config(originalConfig);
-				gopostal.config({
-					loggerStrategy: () => logger,
-					panicStrategy: () => panic
-				});
-			});
-			EXPECTED_LEVELS.forEach((level) => {
-				describe(`of level ${level}`, () => {
-					beforeEach(`spy on logger.${level} and report`, ()=> {
-						logger[level] = sandbox.spy();
-					});
-					if (level === 'debug') {
-						it(`logger.${level} is not called`, ()=> {
-							mailBox[level](...PARAMS);
-							expect(logger[level].called, 'logger called').to.be.false;
-						});
-						it(`panic is not called`, ()=> {
-							mailBox[level](...PARAMS);
-							expect(panic.called, 'panic called').to.be.false;
-						});
-					} else if (level === 'fatal') {
-						it(`logger.${level} is not called`, ()=> {
-							mailBox[level](...PARAMS);
-							expect(logger[level].called, 'logger called').to.be.false;
-						});
-						it(`panic is called`, ()=> {
-							mailBox[level](...PARAMS);
-							expect(panic.calledOnce, 'panic called once').to.be.true;
-						});
-					} else {
-						it(`logger.${level} is called exactly once with the expected arguments`, ()=> {
-							mailBox[level](...PARAMS);
-							expect(logger[level].args, 'logger called with expected args').to.eql([PARAMS]);
-						});
-						it(`panic is not called`, ()=> {
-							mailBox[level](...PARAMS);
-							expect(panic.called, 'panic called').to.be.false;
-						});
-					}
-				});
 			});
 		});
 	});
