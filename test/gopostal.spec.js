@@ -79,7 +79,7 @@ describe('gopostal', () => {
 		beforeEach('init per test', ()=>{
 			logger = {};
 			panic = sandbox.spy();
-			mailBox = gopostal.getMailBox();
+			mailBox = gopostal.getMailBox('some context');
 			gopostal.config({
 				loggerStrategy: () => logger,
 				panicStrategy: () => panic

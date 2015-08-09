@@ -3,6 +3,8 @@ import defineType from './defineType'
 import BaseType from './BaseType'
 import Number from './number'
 import String from './string'
+import * as gopostal from './gopostal';
+
 
 // to maintain consistency so that everything
 var Typorama = {define: defineType};
