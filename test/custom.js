@@ -50,11 +50,6 @@ var lifeCycleAsserter = lifecycleContract();
 })();
 
 describe('Custom data', function() {
-	describe('definition', function() {
-		it('should throw error for reserved keys', function() { // ToDo: change to fields that start with $ and __
-			expect(() => aDataTypeWithSpec({$asReadOnly: Typorama.String})).to.throw();
-		});
-	});
 
 	describe('Type Class', function() {
 		it('should be able to describe itself', function() {

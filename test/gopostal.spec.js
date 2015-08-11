@@ -41,6 +41,7 @@ describe('gopostal', () => {
 			it(`logger.${level} writes to console.${level}`, ()=> {
 				sandbox.spy(console, level);
 				originalConfig.loggerStrategy()[level](...PARAMS);
+				expect(console[level].called, 'logger called').to.be.true;
 				expect(console[level].args, 'arguments of logger call').to.eql([PARAMS]);
 			});
 		});

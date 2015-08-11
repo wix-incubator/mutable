@@ -5,8 +5,8 @@
 import * as gopostal from '../../src/gopostal';
 
 
-export function listen(actions) {
-	return new Recorder().record(actions).reports;
+export function listen(actions, filter = (ctx => ctx != 'gopostal')) {
+	return new Recorder().record(actions, filter).reports;
 }
 class Recorder{
 
@@ -14,31 +14,34 @@ class Recorder{
 		this.reports = [];
 	}
 
-	record(actions){
+	record(actions, filter = _.constant(true)){
 		// save old config
 		var oldConfig = gopostal.config();
-		// spy on gopostal
-		gopostal.config({
-			loggerStrategy: ctx => ({
-				debug : spyReporter(this.reports, 'debug')(ctx),
-				info : spyReporter(this.reports, 'info')(ctx),
-				warn : spyReporter(this.reports, 'warn')(ctx),
-				error : spyReporter(this.reports, 'error')(ctx)
-			}),
-			panicStrategy: spyReporter(this.reports, 'fatal'),
-			logThresholdStrategy: _.constant('debug'),
-			panicThresholdStrategy: _.constant('fatal')
-		});
-		// run actions
-		actions();
-		// restore config
-		gopostal.config(oldConfig);
+		try {
+			// spy on gopostal
+			gopostal.config({
+				loggerStrategy: ctx => filter(ctx) ? {
+					debug: spyReporter(this.reports, 'debug', ctx),
+					info: spyReporter(this.reports, 'info', ctx),
+					warn: spyReporter(this.reports, 'warn', ctx),
+					error: spyReporter(this.reports, 'error', ctx)
+				} : oldConfig.loggerStrategy(ctx),
+				panicStrategy: ctx => filter(ctx) ? spyReporter(this.reports, 'fatal', ctx) : oldConfig.panicStrategy(ctx),
+				logThresholdStrategy: ctx => filter(ctx) ? 'debug' : oldConfig.logThresholdStrategy(ctx),
+				panicThresholdStrategy: ctx => filter(ctx) ? 'fatal' : oldConfig.panicThresholdStrategy(ctx)
+			});
+			// run actions
+			actions();
+			// restore config
+		} finally {
+			gopostal.config(oldConfig);
+		}
 		return this;
 	}
 }
 
-function spyReporter(reports, level){
-	return (context) => (...params) => reports.push(new Report(level, context, params));
+function spyReporter(reports, level, context){
+	return (...params) => reports.push(new Report(level, context, params));
 }
 
 export class Report{

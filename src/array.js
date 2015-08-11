@@ -5,9 +5,10 @@ import Number from './number'
 import String from './string'
 import * as gopostal from './gopostal';
 
-
+const ARRAY_TYPE_NAME = 'Array';
 // to maintain consistency so that everything
-var Typorama = {define: defineType};
+const Typorama = {define: defineType};
+const MAILBOX = gopostal.getMailBox('Typorama.Array');
 
 class _Array extends BaseType {
 
@@ -42,10 +43,10 @@ class _Array extends BaseType {
 					return this._wrapSingleItem(itemValue, options);
 				}, this);
 			} else {
-				throw new Error('Unmet typorama type requirement.');
+				MAILBOX.error('Unmet typorama type requirement.')
 			}
 		} else if(!_.isArray(value)) {
-			throw new Error('Unmet array type requirement.');
+			MAILBOX.error('Unmet array type requirement.');
 		}
 
 		return value.map((itemValue) => {
@@ -68,7 +69,7 @@ class _Array extends BaseType {
 			_(options.subTypes).map((type) => this._validateAndWrap(value, type, lifeCycle)).filter().first();
 
 		if(null === result || undefined === result) {
-			throw new Error('Illegal value '+value+' of type '+BaseType.getValueTypeName(value)+' for Array of type '+_Array.getSignature(options));
+			MAILBOX.error('Illegal value '+value+' of type '+BaseType.getValueTypeName(value)+' for Array of type '+_Array.getSignature(options));
 		} else {
 			return result;
 		}
@@ -86,7 +87,7 @@ class _Array extends BaseType {
 	constructor(value=[], options={}) {
         if(!options.subTypes)
         {
-            throw new Error('Untyped arrays are not supported. Use Array<SomeType> instead.')
+			MAILBOX.error('Untyped arrays are not supported. Use Array<SomeType> instead.')
         }
 		if(_.isArray(options.subTypes)) {
 			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
@@ -256,7 +257,7 @@ class _Array extends BaseType {
 	}
 
 	toLocaleString(){
-		throw 'toLocaleString not implemented yet. Please do.';
+		MAILBOX.fatal('toLocaleString not implemented yet. Please do.');
 	}
 
 	indexOf(searchElement, fromIndex) {
@@ -332,7 +333,7 @@ class _Array extends BaseType {
 	}
 }
 
-export default Typorama.define('Array',{
+export default Typorama.define(ARRAY_TYPE_NAME,{
 	spec: function() {
 		return {
 			length: Number.withDefault(0)

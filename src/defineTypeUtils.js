@@ -1,6 +1,9 @@
 import _ from 'lodash'
 import BaseType from './BaseType'
 import PrimitiveBase from './PrimitiveBase'
+import * as gopostal from './gopostal';
+
+const MAILBOX = gopostal.getMailBox('Typorama.define');
 
 export function generateValidate() { // ToDo: check if its better jit-wise to move the spec to the closure: generateValidateForSpec(spec)
     return function(val) {
@@ -13,9 +16,9 @@ export function generateValidate() { // ToDo: check if its better jit-wise to mo
 export function generateFieldsOn(obj, fieldsDefinition) {
     _.forEach(fieldsDefinition, function(fieldDef, fieldName) {
         if(obj[fieldName]) {
-            throw new Error(`Field error on type:${obj.constructor.id}.${fieldName} is reserved.`);
-        } else if(!(fieldDef.type.prototype instanceof PrimitiveBase)) {
-            throw new Error(`Type mismatch: ${fieldName} must inherit PrimitiveBase data type.`);
+            MAILBOX.error(`Field error on type:${obj.constructor.id}.${fieldName} is reserved.`);
+        } else if(!(fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase)) {
+            MAILBOX.error(`Type mismatch: ${fieldName} must inherit PrimitiveBase data type.`);
         }
 
         Object.defineProperty(obj, fieldName, {

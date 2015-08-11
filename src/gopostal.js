@@ -7,7 +7,7 @@ import _ from 'lodash';
 export const levels = Object.freeze(['debug', 'info', 'warn', 'error', 'fatal']);
 
 export function getMailBox(context){
-	var mailBox = new Mailbox(getPostOffice(context));
+	var mailBox = new Mailbox(postOfficeFactory(context));
 	mailboxes.push({mailBox, context});
 	return mailBox;
 }
@@ -41,13 +41,17 @@ class Mailbox {
 	}
 }
 
-export function config(configParams = {}){
-	moduleConfig = _.defaults({}, configParams, moduleConfig);
-	// replace old strategies;
-	mailboxes.forEach(e => {
-		e.mailBox.postOffice = getPostOffice(e.context);
-	});
-	return _.clone(moduleConfig);
+export function config(configParams){
+	if (configParams) {
+		MAILBOX.warn(`configuration changes : ${Object.keys(configParams)}`);
+		moduleConfig = _.defaults({}, _.cloneDeep(configParams), moduleConfig);
+		// replace old strategies;
+		mailboxes.forEach(e => {
+//		MAILBOX.debug(`applying new configuration to ${JSON.stringify(e.context)}`);
+			e.mailBox.postOffice = postOfficeFactory(e.context);
+		});
+	}
+	return _.cloneDeep(moduleConfig);
 }
 
 var moduleConfig = {
@@ -63,7 +67,7 @@ var moduleConfig = {
 
 var mailboxes = [];
 
-function getPostOffice(context) {
+function postOfficeFactory(context) {
 	return new PostOffice(
 		moduleConfig.loggerStrategy(context),
 		moduleConfig.panicStrategy(context),
@@ -92,3 +96,5 @@ class PostOffice {
 		}
 	}
 }
+
+const MAILBOX = getMailBox('gopostal');
