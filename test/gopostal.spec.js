@@ -52,8 +52,9 @@ describe('gopostal', () => {
 		});
 		it('returns updated configuration', ()=> {
 			var comparisonBase = gopostal.config();
-			var newConfig = gopostal.config({loggerStrategy: _.noop});
-			comparisonBase.loggerStrategy = _.noop;
+			var func = _.constant('warn');
+			var newConfig = gopostal.config({logThresholdStrategy: func});
+			comparisonBase.logThresholdStrategy = func;
 			expect(comparisonBase).to.eql(newConfig);
 		});
 		it('returns detached configuration', ()=> {
@@ -61,10 +62,10 @@ describe('gopostal', () => {
 			expect(gopostal.config(), 'current config').to.eql(originalConfig);
 		});
 		it('accepts partial configuration', ()=> {
-			gopostal.config({loggerStrategy: _.noop});
-			gopostal.config({panicStrategy: _.noop});
-			gopostal.config({logThresholdStrategy: _.noop});
-			gopostal.config({panicThresholdStrategy: _.noop});
+			gopostal.config({loggerStrategy: originalConfig.loggerStrategy});
+			gopostal.config({panicStrategy: originalConfig.panicStrategy});
+			gopostal.config({logThresholdStrategy: originalConfig.logThresholdStrategy});
+			gopostal.config({panicThresholdStrategy: originalConfig.panicThresholdStrategy});
 		});
 		it('affects pre-existing mailboxes', ()=> {
 			var mailBox = gopostal.getMailBox();
@@ -77,30 +78,29 @@ describe('gopostal', () => {
 	});
 	describe('mailbox', () => {
 		var mailBox, logger, panic;
+		function replaceAllButGopostal(field, replacement){
+			var config = {};
+			config[field] = (ctx) => ctx === 'gopostal'? originalConfig[field](ctx) : replacement
+			gopostal.config(config);
+		}
 		beforeEach('init per test', ()=>{
 			logger = {};
 			panic = sandbox.spy();
 			mailBox = gopostal.getMailBox('some context');
-			gopostal.config({
-				loggerStrategy: () => logger,
-				panicStrategy: () => panic
-			});
+			replaceAllButGopostal('loggerStrategy', logger);
+			replaceAllButGopostal('panicStrategy', panic);
 		});
 
 		EXPECTED_LEVELS.forEach((logLevel, logLevelIdx) => {
 			describe(`with log threshold ${logLevel}`, () => {
 				beforeEach(`log threshold ${logLevel}`, () => {
-					gopostal.config({
-						logThresholdStrategy: _.constant(logLevel)
-					});
+					replaceAllButGopostal('logThresholdStrategy', logLevel);
 				});
 				EXPECTED_LEVELS.slice(logLevelIdx).forEach((panicLevel, panicLevelIdx) => {
 					panicLevelIdx += logLevelIdx;
 					describe(`and panic threshold ${panicLevel}`, () => {
 						beforeEach(`panic threshold ${panicLevel}`, () => {
-							gopostal.config({
-								panicThresholdStrategy: _.constant(panicLevel)
-							});
+							replaceAllButGopostal('panicThresholdStrategy', panicLevel);
 						});
 						EXPECTED_LEVELS.forEach((reportLevel, reportLevelIdx) => {
 							describe(`.${reportLevel} method`, () => {
