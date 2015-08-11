@@ -80,7 +80,7 @@ export function makeDirtyable(Type){
 	} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
             // no cache, go recursive
             // TODO replace this filthy solution
-            var lastModifiedChild = _.max(this.__value__, (v) => v.$calcLastChange ? v.$calcLastChange() : -1);
+            var lastModifiedChild = _.max(this.__value__, (v) => (v && v.$calcLastChange) ? v.$calcLastChange() : -1);
             if (lastModifiedChild && lastModifiedChild.__lastChange__){
                 this.__lastChange__ = Math.max(this.__lastChange__, lastModifiedChild.__lastChange__);
             }
