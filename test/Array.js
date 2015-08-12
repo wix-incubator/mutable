@@ -111,7 +111,7 @@ describe('Array data', function() {
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
-				}).to.throw();
+				}).to.throw('object is not extendible');
 			});
 
 		});
@@ -1056,12 +1056,12 @@ describe('Array data', function() {
 				Typorama.config.freezeInstance = false;
 			});
 
-			it("should throw error on unknown field setter", function(){
+			it("should report error on unknown field setter", function(){
 				var names = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]).$asReadOnly();
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
-				}).to.throw();
+				}).to.report({level : 'error'});
 			});
 
 		});
