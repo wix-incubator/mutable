@@ -88,7 +88,12 @@ class PostOffice {
 		this.logThreshold = levels.indexOf(logThreshold);
 		this.panicThreshold = levels.indexOf(panicThreshold);
 		if (this.panicThreshold < this.logThreshold) {
-			throw new Error(`log threshold ${logThreshold} is higher than panic threshold ${panicThreshold}`);
+			var msg = `log threshold ${logThreshold} is higher than panic threshold ${panicThreshold}`;
+			if (MAILBOX){
+				MAILBOX.error(msg);
+			} else {
+				throw new Error(msg);
+			}
 		}
 	}
 	post(levelIndex, ...params){
