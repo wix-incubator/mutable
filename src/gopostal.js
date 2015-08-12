@@ -55,14 +55,19 @@ export function config(configParams){
 }
 
 var moduleConfig = {
-	loggerStrategy :  _.constant(console),
+	loggerStrategy :  _.constant({
+		error : (...params) => console.error(...params),
+		warn : (...params) => console.warn(...params),
+		info : (...params) => console.info(...params),
+		debug : (...params) => console.info(...params) // some environments don't have console.debug
+	}),
 	panicStrategy :  _.constant(function defaultPanic(...params){
 		var error = new Error(params.join(' '));
 		error.params = params;
 		throw error;
 	}),
 	logThresholdStrategy :  _.constant('info'),
-	panicThresholdStrategy :  _.constant('fatal')
+	panicThresholdStrategy :  _.constant('error')
 };
 
 var mailboxes = [];

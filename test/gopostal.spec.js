@@ -28,21 +28,27 @@ describe('gopostal', () => {
 		});
 	});
 	describe('default configuration', () => {
+		before('spy on console', () => {
+			['info', 'warn', 'error'].forEach((level) => {
+				sandbox.spy(console, level);
+			});
+		});
 		it('logger threshold is info', ()=> {
 			expect(originalConfig.logThresholdStrategy()).to.eql('info');
 		});
-		it('panic threshold is info', ()=> {
-			expect(originalConfig.panicThresholdStrategy()).to.eql('fatal');
+		it('panic threshold is error', ()=> {
+			expect(originalConfig.panicThresholdStrategy()).to.eql('error');
 		});
 		it('panic throws', ()=> {
 			expect(() => originalConfig.panicStrategy()(...PARAMS), 'reporting fatal with default configuration').to.throw;
 		});
 		['debug', 'info', 'warn', 'error'].forEach((level) => {
-			it(`logger.${level} writes to console.${level}`, ()=> {
-				sandbox.spy(console, level);
+			var consoleLevel = (level === 'debug') ? 'info' : level;
+			it(`logger.${level} writes to console.${consoleLevel}`, ()=> {
+				console[consoleLevel].reset();
 				originalConfig.loggerStrategy()[level](...PARAMS);
-				expect(console[level].called, 'logger called').to.be.true;
-				expect(console[level].args, 'arguments of logger call').to.eql([PARAMS]);
+				expect(console[consoleLevel].called, 'logger called').to.be.true;
+				expect(console[consoleLevel].args, 'arguments of logger call').to.eql([PARAMS]);
 			});
 		});
 	});
@@ -80,7 +86,7 @@ describe('gopostal', () => {
 		var mailBox, logger, panic;
 		function replaceAllButGopostal(field, replacement){
 			var config = {};
-			config[field] = (ctx) => ctx === 'gopostal'? originalConfig[field](ctx) : replacement
+			config[field] = (ctx) => ctx === 'gopostal'? originalConfig[field](ctx) : replacement;
 			gopostal.config(config);
 		}
 		beforeEach('init per test', ()=>{
@@ -91,16 +97,18 @@ describe('gopostal', () => {
 			replaceAllButGopostal('panicStrategy', panic);
 		});
 
-		EXPECTED_LEVELS.forEach((logLevel, logLevelIdx) => {
-			describe(`with log threshold ${logLevel}`, () => {
-				beforeEach(`log threshold ${logLevel}`, () => {
-					replaceAllButGopostal('logThresholdStrategy', logLevel);
+		EXPECTED_LEVELS.forEach((panicLevel, panicLevelIdx) => {
+			describe(`with panic threshold ${panicLevel}`, () => {
+				beforeEach('reset log level to avoid it being higher than panic level', () => {
+					replaceAllButGopostal('logThresholdStrategy', 'debug');
 				});
-				EXPECTED_LEVELS.slice(logLevelIdx).forEach((panicLevel, panicLevelIdx) => {
-					panicLevelIdx += logLevelIdx;
-					describe(`and panic threshold ${panicLevel}`, () => {
-						beforeEach(`panic threshold ${panicLevel}`, () => {
-							replaceAllButGopostal('panicThresholdStrategy', panicLevel);
+				beforeEach(`panic threshold ${panicLevel}`, () => {
+					replaceAllButGopostal('panicThresholdStrategy', panicLevel);
+				});
+				EXPECTED_LEVELS.slice(0, panicLevelIdx + 1).forEach((logLevel, logLevelIdx) => {
+					describe(`and log threshold ${logLevel}`, () => {
+						beforeEach(`log threshold ${logLevel}`, () => {
+							replaceAllButGopostal('logThresholdStrategy', logLevel);
 						});
 						EXPECTED_LEVELS.forEach((reportLevel, reportLevelIdx) => {
 							describe(`.${reportLevel} method`, () => {
