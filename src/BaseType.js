@@ -79,8 +79,12 @@ export default class BaseType extends PrimitiveBase {
             {
                 fieldVal = spec[key].defaults();
             }
-            var newField = this._validateAndWrap(fieldVal,fieldSpec, undefined, new Error(`Invalid value for key ${key} of type ${fieldSpec.name}: '${fieldVal}'.`));
-            if(newField instanceof  Error) {
+			var error = {};
+            var newField = this._validateAndWrap(fieldVal,fieldSpec, undefined, error);
+			if(newField === error) {
+				newField = new Error("Invalid value for key " + key + " of type " + fieldSpec.name + ": '" + fieldVal + "'.");
+			}
+			if(newField instanceof  Error) {
                 throw newField;
             } else {
                 root[key] = newField;
