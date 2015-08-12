@@ -1,4 +1,7 @@
 import _ from 'lodash';
+import * as gopostal from './gopostal';
+
+const MAILBOX = gopostal.getMailBox('Typorama.typeBuilder');
 
 var clonedMembers = [
     'validate', 'validateType', 'allowPlainVal', 'isAssignableFrom',
@@ -26,7 +29,7 @@ export function withDefault(defaults, validate, options) {
             if(isNullable) {
                 NewType.defaults = () => null;
             } else {
-                throw 'Cannot assign null value to a type which is not defined as nullable.';
+                MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
             }
         } else if(_.isFunction(defaults)) {
             NewType.defaults = () => defaults;

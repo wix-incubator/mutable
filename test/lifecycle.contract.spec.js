@@ -313,10 +313,10 @@ function testCalcLastChange(context){
 function testSetManager(context) {
     describe('calling $setManager on ' + context.description, function () {
         context.setup();
-        it('with existing different manager throws error', function () {
+        it('with existing different manager reports error', function () {
             context.container.__lifecycleManager__ = new LifeCycleManager();
             var manager = new LifeCycleManager();
-            expect(() => context.container.$setManager(manager)).to.throw(Error);
+            expect(() => context.container.$setManager(manager)).to.report({level : /error/});
         });
         it('when no existing manager changes the manager field', function () {
             var manager = new LifeCycleManager();
@@ -329,12 +329,12 @@ function testSetManager(context) {
             context.container.$setManager(manager);
             expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
         });
-        it('in readonly form throws an error', function () {
+        it('in readonly form reports an error', function () {
             var manager = new LifeCycleManager();
-            expect(() => context.container.$asReadOnly().$setManager(manager)).to.throw(Error);
+            expect(() => context.container.$asReadOnly().$setManager(manager)).to.report({level : /error/});
         });
-        it('with invalid type throws an error', function () {
-            expect(() => context.container.$setManager({})).to.throw(Error);
+        it('with invalid type reports an error', function () {
+            expect(() => context.container.$setManager({})).to.report({level : /error/});
         });
     });
 }

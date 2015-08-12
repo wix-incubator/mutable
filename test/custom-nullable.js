@@ -112,8 +112,7 @@ describe('Nullable custom type', function() {
 
 			it('reports error while setting non-nullable field to null', function () {
 				var login = build.login.withStrictUser();
-				expect(() => { login.user = null })
-					.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+				expect(() => { login.user = null }).to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
 				expect(login.user).not.to.be.null;
 			});
 		});

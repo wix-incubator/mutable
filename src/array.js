@@ -9,6 +9,7 @@ const ARRAY_TYPE_NAME = 'Array';
 // to maintain consistency so that everything
 const Typorama = {define: defineType};
 const MAILBOX = gopostal.getMailBox('Typorama.Array');
+const ERROR_OBJ = {};
 
 class _Array extends BaseType {
 
@@ -59,7 +60,7 @@ class _Array extends BaseType {
         {
             return '<'+options.subTypes.type.id+'>';
         }else{
-            return '<'+options.subTypes.map('name').join(',')+'>';
+            return '<'+Object.keys(options.subTypes).join(',')+'>';
         }
 	}
 

@@ -209,7 +209,7 @@ describe('Custom data', function() {
 				var image = new ImageType();
 				var productPrevRef = state.product;
 
-				expect(() => state.product = image).to.throw(Error);
+				expect(() => state.product = image).to.report({level : /error/});
 				expect(state.product).to.be.equal(productPrevRef);
 				expect(state.product.title).to.be.equal('original title');
 				expect(state.product.image.src).to.be.equal('original.jpg');
@@ -232,8 +232,8 @@ describe('Custom data', function() {
 				var relatedProductsPrevRef = state.relatedProducts;
 				var stringAndNumbersPrevRef = state.stringAndNumbers;
 
-				expect(() => state.relatedProducts = booleanList).to.throw(Error);
-				expect(() => state.stringAndNumbers = booleanList).to.throw(Error);
+				expect(() => state.relatedProducts = booleanList).to.report({level : /error/});
+				expect(() => state.stringAndNumbers = booleanList).to.report({level : /error/});
 
 				expect(state.relatedProducts).to.be.equal(relatedProductsPrevRef);
 				expect(state.stringAndNumbers).to.be.equal(stringAndNumbersPrevRef);
@@ -258,7 +258,7 @@ describe('Custom data', function() {
 					var state = new StateType();
 					var titlePrevVal = state.product.title;
 
-					expect(() => state.product.title = {}).to.throw(Error);
+					expect(() => state.product.title = {}).to.report({level : /error/});
 
 					expect(state.product.title).to.be.equal(titlePrevVal);
 				});
@@ -316,7 +316,7 @@ describe('Custom data', function() {
 
 				it("should not allow values of wrong type", function() {
 					var user = new UserType();
-					expect(() => user.setValue({ age: "666" })).to.throw(Error);
+					expect(() => user.setValue({ age: "666" })).to.report({level : /error/});
 				});
 
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
