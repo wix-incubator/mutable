@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import BaseType from './BaseType'
 import PrimitiveBase from './PrimitiveBase'
-import * as gopostal from './gopostal';
+import * as gopostal from 'gopostal';
 
 const MAILBOX = gopostal.getMailBox('Typorama.define');
 

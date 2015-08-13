@@ -3,7 +3,7 @@ import _ from "lodash"
 import {makeDirtyable} from "./lifecycle"
 import PrimitiveBase from "./PrimitiveBase"
 import {validateNullValue} from './defineTypeUtils'
-import * as gopostal from './gopostal';
+import * as gopostal from 'gopostal';
 
 const MAILBOX = gopostal.getMailBox('Typorama.BaseType');
 

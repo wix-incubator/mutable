@@ -3,7 +3,7 @@ import defineType from './defineType'
 import BaseType from './BaseType'
 import Number from './number'
 import String from './string'
-import * as gopostal from './gopostal';
+import * as gopostal from 'gopostal';
 
 const ARRAY_TYPE_NAME = 'Array';
 // to maintain consistency so that everything

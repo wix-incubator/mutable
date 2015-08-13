@@ -4,7 +4,7 @@ import {either} from '../src/composite'
 import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
-import {Report} from '../test-kit/testDrivers/gopostalRecorder';
+import {Report} from 'gopostal/dist/test-kit/testDrivers';
 
 function typeErrorMessage(valueStr,typeStr,arraySubTypes){
 	return `Illegal value ${valueStr} of type ${typeStr} for Array of type ${arraySubTypes}`;
