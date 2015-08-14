@@ -2,7 +2,7 @@ import _ from "lodash"
 
 import * as gopostal from 'gopostal';
 
-const MAILBOX = gopostal.getMailBox('Typorama.BaseType');
+const MAILBOX = gopostal.getMailBox('Typorama.lifecycle');
 export let revision = {
     __count__ : 1,
     read : function(){return this.__count__;},
