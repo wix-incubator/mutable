@@ -2,6 +2,9 @@ import _ from "lodash";
 import {withDefault} from "./typeBuilder"
 import BaseType from './BaseType';
 import PrimitiveBase from './PrimitiveBase';
+import * as gopostal from 'gopostal';
+
+const MAILBOX = gopostal.getMailBox('Typorama.defineEnum');
 
 function createEnumMember(key, value, proto) {
 
@@ -34,7 +37,7 @@ function defineEnum(def) {
 		if(EnumType[key]){
 			return EnumType[key];
 		}
-		throw new TypeError(`Enum[${Object.keys(def)}] must be initialized with value.`);
+		MAILBOX.error(`Enum[${Object.keys(def)}] must be initialized with value.`);
 	};
 
 	EnumType.prototype.__proto__ = PrimitiveBase.prototype;

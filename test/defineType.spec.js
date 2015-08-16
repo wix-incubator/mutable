@@ -4,9 +4,10 @@ import {either} from '../src/composite'
 import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
+import {Report} from 'gopostal/dist/test-kit/testDrivers';
 
 function typeErrorMessage(valueStr,typeStr,arraySubTypes){
-	return 'Illegal value '+valueStr+' of type '+typeStr+' for Array of type '+arraySubTypes;
+	return `Illegal value ${valueStr} of type ${typeStr} for Array of type ${arraySubTypes}`;
 }
 
 describe('defining', () => {
@@ -15,7 +16,7 @@ describe('defining', () => {
 		describe('that is isomorphic to another type', () => {
 			it('should result in two compatible types', () => {
 				new Type2(new Type1({foo: "bar"}));
-				expect(() => new Type2(new Type1({foo: "bar"}))).not.to.throw;
+				expect(() => new Type2(new Type1({foo: "bar"}))).not.to.report({level : /warn|error|fatal/});
 			})
 		});
 		it('should allow defining types with primitive fields', function () {
@@ -43,14 +44,24 @@ describe('defining', () => {
 			});
 			expect(new composite().child.name).to.equal('leon');
 		});
-		it('should throw readable error if field type is not valid', function () {
+		it('should report error if field type is not valid', function () {
 			expect(function () {
 				Typorama.define('invalid', {
 					spec: () => ({
 						name: {}
 					})
 				});
-			}).to.throw();
+			}).to.report({level : 'error'});
+		});
+
+		it('should report error for reserved keys', function() { // ToDo: change to fields that start with $ and __
+			expect(() => {
+				Typorama.define('invalid', {
+					spec: () => ({
+						$asReadOnly: Typorama.String
+					})
+				});
+			}).to.report({level : 'error', params : [/Field error.*reserved/]});
 		});
 	});
 
@@ -74,9 +85,9 @@ describe('defining', () => {
 			});
 		});
 		describe("with no sub-types",()=>{
-			it('should throw readable error when instantiating', () => {
+			it('should report error when instantiating', () => {
 				var inValidArrType = Typorama.Array;
-				expect(()=>{new inValidArrType()}).to.throw('Untyped arrays are not supported');
+				expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.Array', /Untyped arrays are not supported/));
 			});
 		});
 		describe('with one sub-type', () => {
@@ -200,27 +211,27 @@ describe('defining', () => {
 
 				expect(mixedList.at(0)).to.be.instanceOf(UserType);
 			});
-			it('should throw readable error when unallowed primitive is added',function(){
+			it('should report error when unallowed primitive is added',function(){
 				var ListCls = Typorama.Array.of(AddressType);
-				expect(function(){ListCls.create(['gaga'])}).to.throw(typeErrorMessage('gaga','string','<Address>'));
+				expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('gaga','string','<Address>')));
 
 				ListCls = Typorama.Array.of(Typorama.Number);
-				expect(function(){ListCls.create(['gaga'])}).to.throw(typeErrorMessage('gaga','string','<number>'));
+				expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('gaga','string','<number>')));
 			});
 
-			it('should throw readable error when object is added an no object types allowed',function(){
+			it('should report error when object is added an no object types allowed',function(){
 				var ListCls = Typorama.Array.of(Typorama.String);
-				expect(function(){ListCls.create([{}])}).to.throw(typeErrorMessage('[object Object]','object','<string>'));
+				expect(function(){ListCls.create([{}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','object','<string>')));
 			});
 
-			it('should throw readable error when unallowed typorama is added',function(){
+			it('should report error when unallowed typorama is added',function(){
 				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create([new AddressType()])}).to.throw(typeErrorMessage('[object Object]','Address','<User>'));
+				expect(function(){ListCls.create([new AddressType()])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','Address','<User>')));
 			});
 
-			it('should throw readable error when json with unallowed _type added',function(){
+			it('should report error when json with unallowed _type added',function(){
 				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create([{_type:'Address'}])}).to.throw(typeErrorMessage('[object Object]','Address','<User>'));
+				expect(function(){ListCls.create([{_type:'Address'}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','Address','<User>')));
 			});
 
 		});

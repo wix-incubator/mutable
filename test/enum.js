@@ -21,7 +21,7 @@ describe('Enum Type', function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
             expect(function() {
                 new Ape();
-            }).to.throw();
+            }).to.report({level : /error/});
         });
 
         it("enum extends PrimitiveType", function() {
@@ -99,7 +99,7 @@ describe('Enum Type', function() {
             var Ape = Typorama.defineEnum({ chimp: 1, gorilla: 2 });
             expect(function() {
                 Ape.chimp.blyat = "blyat";
-            }).to.throw();
+            }).to.throw('object is not extensible');
         });
 
         it("instanceOf works", function() {

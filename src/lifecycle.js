@@ -1,5 +1,8 @@
 import _ from "lodash"
 
+import * as gopostal from 'gopostal';
+
+const MAILBOX = gopostal.getMailBox('Typorama.lifecycle');
 export let revision = {
     __count__ : 1,
     read : function(){return this.__count__;},
@@ -35,10 +38,10 @@ export function makeDirtyable(Type){
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (lifecycleManager) {
             if (this.__isReadOnly__) {
-                throw new Error('Attempt to set lifecycle manager on a read-only instance');
+                MAILBOX.error('Attempt to set lifecycle manager on a read-only instance');
             } else if (lifecycleManager instanceof LifeCycleManager) {
                 if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager) {
-                    throw new Error('Attempt to set lifecycle manager on a read-write instance with another manager already set');
+                    MAILBOX.error('Attempt to set lifecycle manager on a read-write instance with another manager already set');
                 }
                 this.__lifecycleManager__ = lifecycleManager;
                 _.forEach(this.__value__, (val) => {
@@ -47,7 +50,7 @@ export function makeDirtyable(Type){
                     }
                 });
             } else {
-                throw new Error('Attempt to set wrong type of lifecycle manager');
+                MAILBOX.error('Attempt to set wrong type of lifecycle manager');
             }
         }
     };

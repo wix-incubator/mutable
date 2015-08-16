@@ -111,7 +111,7 @@ describe('Array data', function() {
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
-				}).to.throw();
+				}).to.throw('object is not extensible');
 			});
 
 		});
@@ -1061,7 +1061,7 @@ describe('Array data', function() {
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
-				}).to.throw();
+				}).to.throw('object is not extensible');
 			});
 
 		});

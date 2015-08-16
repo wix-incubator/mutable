@@ -3,6 +3,9 @@ import _ from "lodash"
 import {makeDirtyable} from "./lifecycle"
 import PrimitiveBase from "./PrimitiveBase"
 import {validateNullValue} from './defineTypeUtils'
+import * as gopostal from 'gopostal';
+
+const MAILBOX = gopostal.getMailBox('Typorama.BaseType');
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -12,6 +15,8 @@ function createReadOnly(source){
 	}
     return readOnlyInstance;
 }
+
+const ERROR_OBJ = {};
 
 export default class BaseType extends PrimitiveBase {
 
@@ -53,9 +58,9 @@ export default class BaseType extends PrimitiveBase {
             if(isNullable) {
                 return itemValue;
             } else {
-                return new Error('Cannot assign null value to a type which is not defined as nullable.');
+                MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
+                return defaultErr;
             }
-
         }
         if(type.validateType(itemValue)){
             BaseType.optionalSetManager(itemValue, lifeCycle);
@@ -75,21 +80,15 @@ export default class BaseType extends PrimitiveBase {
         Object.keys(spec).forEach((key) => {
             var fieldSpec = spec[key];
             var fieldVal = value[key];
-            if(fieldVal===undefined)
-            {
+            if(fieldVal===undefined){
                 fieldVal = spec[key].defaults();
             }
-			var error = {};
-            var newField = this._validateAndWrap(fieldVal,fieldSpec, undefined, error);
-			if(newField === error) {
-				newField = new Error("Invalid value for key " + key + " of type " + fieldSpec.name + ": '" + fieldVal + "'.");
-			}
-			if(newField instanceof  Error) {
-                throw newField;
-            } else {
+            var newField = this._validateAndWrap(fieldVal,fieldSpec, undefined, ERROR_OBJ);
+			if(newField === ERROR_OBJ) {
+                MAILBOX.error("Invalid value for key " + key + " of type " + fieldSpec.name + ": '" + fieldVal + "'.");
+			} else {
                 root[key] = newField;
             }
-
         });
         return root;
     }
@@ -121,10 +120,9 @@ export default class BaseType extends PrimitiveBase {
                 var fieldSpec = this.$getFieldDef(fieldName);
                 if (fieldSpec) {
                     var valueType = fieldValue === null ? 'null' : fieldValue.constructor.name;
-                    var defaultErr = new Error(`Invalid value for type ${fieldSpec.name}: '${valueType}'.`);
-                    var newVal = this.constructor._validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, defaultErr);
-                    if(newVal instanceof Error) {
-                        throw newVal;
+                    var newVal = this.constructor._validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, ERROR_OBJ);
+                    if(newVal === ERROR_OBJ) {
+                        MAILBOX.error(`Invalid value for type ${fieldSpec.name}: '${valueType}'.`);
                     }
 
                     if(this.__value__[fieldName]!==newVal){
@@ -153,7 +151,7 @@ export default class BaseType extends PrimitiveBase {
     }
 
     // validates and assigns input to field.
-    // will throw for undefined fields
+    // will report error for undefined fields
     // returns whether the field value has changed
     $validateAndAssignField(fieldName, newValue){
         // don't assign if input is the same as existing value
@@ -166,7 +164,7 @@ export default class BaseType extends PrimitiveBase {
                 this.$assignField(fieldName, newValue);
                 return true;
             } else {
-                throw new Error(`Invalid value for key ${fieldName} of type ${fieldDef.type.id}: '${newValue.constructor.name}'.`);
+                MAILBOX.error(`Invalid value for key ${fieldName} of type ${fieldDef.type.id}: '${newValue && newValue.constructor.name}'.`);
             }
         }
         return false;
