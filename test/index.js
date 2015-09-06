@@ -9,7 +9,7 @@ import "../test-kit/test";
 
 import "./custom";
 import "./custom-nullable";
-import "./Array";
+import "./array/Array";
 import "./Function";
 import "./boolean";
 import "./enum";

@@ -1,4 +1,3 @@
-import {withDefault} from './typeBuilder'
 import * as gopostal from 'gopostal';
 
 const MAILBOX = gopostal.getMailBox('Typorama.PrimitiveBase');
