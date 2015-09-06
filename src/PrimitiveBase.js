@@ -1,6 +1,22 @@
 import {withDefault, nullable} from './typeBuilder'
+import * as gopostal from 'gopostal';
 
-class _PrimitiveBase {}
+const MAILBOX = gopostal.getMailBox('Typorama.define');
+
+class _PrimitiveBase {
+
+    static validateNullValue(Type, value) {
+        if(value === null) {
+            if(!(Type.options && Type.options.nullable)) {
+                MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+}
 
 _PrimitiveBase.withDefault = withDefault;
 _PrimitiveBase.nullable = nullable;

@@ -1,12 +1,10 @@
 import PrimitiveBase from "./PrimitiveBase"
-import {validateNullValue} from './defineTypeUtils'
-
 
 export default class _String extends PrimitiveBase{
 
     static defaults(){ return ''; }
 
-    static validate(v){ return typeof v === 'string' || validateNullValue(this, v); }
+    static validate(v){ return typeof v === 'string' || PrimitiveBase.validateNullValue(this, v); }
 
     static allowPlainVal(v){ return this.validate(v)}
 
