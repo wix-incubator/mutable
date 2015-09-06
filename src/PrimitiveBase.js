@@ -46,7 +46,6 @@ class _PrimitiveBase {
        }
        return NewType;
    }
-
 }
 
 const clonedMembers = [

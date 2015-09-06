@@ -46,82 +46,7 @@ describe('Array data', function() {
 
 		require('./at');
 
-		describe('pop', function() {
-			it('should remove the last element from an array', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				var oldArr = numberList.concat();
-
-				var valueRemoved = numberList.pop();
-
-				expect(numberList.length).to.equal(oldArr.length - 1);
-				expect(valueRemoved).to.equal(oldArr.at(oldArr.length - 1));
-			});
-
-			it('should return undefined if called on an empty array', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([]);
-
-				var valueRemoved = numberList.pop();
-
-				expect(valueRemoved).to.be.undefined;
-
-			});
-
-			lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
-		});
-
-		describe('push',function() {
-			it('it should add a number to an array ', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				var lengthBeforePush = numberList.length;
-				var newIndex = numberList.push(5);
-				expect(newIndex).to.equal(5);
-				expect(numberList.length).to.equal(lengthBeforePush+1);
-				expect(numberList.at(4)).to.equal(5);
-			});
-
-			it('Should add a typed item for none immutable data (like custom types)', function() {
-				var arr = Typorama.Array.of(UserType).create([]);
-				arr.push({name: 'zag'});
-				expect(arr.at(0) instanceof UserType).to.equal(true);
-			});
-
-			it('Should add a typed item form multiple types if there is _type field', function() {
-				var arr = Typorama.Array.of(either(UserType, AddressType)).create([]);
-				arr.push({_type: 'User'});
-				arr.push({_type: 'Address'});
-				expect(arr.at(0) instanceof UserType).to.equal(true);
-				expect(arr.at(1) instanceof AddressType).to.equal(true);
-			});
-
-			it('Should support multiple push items', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				numberList.push(5, 6);
-
-				expect(numberList.length).to.equal(6);
-				expect(numberList.at(4)).to.equal(5);
-				expect(numberList.at(5)).to.equal(6);
-			});
-			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
-
-		});
-
-		describe('set', () => {
-			it('should replace an existing element', ()  => {
-				var arr = Typorama.Array.of(Typorama.String).create(['a']);
-				arr.set(0, 'b');
-				expect(arr.toJSON()).to.eql(['b']);
-			});
-			it('should add an element if none exists', ()  => {
-				var arr = Typorama.Array.of(Typorama.String).create([]);
-				arr.set(0, 'b');
-				expect(arr.toJSON()).to.eql(['b']);
-			});
-			it ('should return the element', () => {
-				var arr = Typorama.Array.of(Typorama.String).create(['a']);
-				expect(arr.set(0, 'b')).to.eql('b');
-			});
-			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
-		});
+		require('./item-mutations');
 
 		describe('reverse', function() {
 			it('should reverse the order of elements in an array', function() {
@@ -315,6 +240,7 @@ describe('Array data', function() {
 				expect(result).to.eql(-1);
 			});
 		});
+
 		describe('valueOf', function() {
 			it('should return the primitive value of the specified object', function() {
 				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
