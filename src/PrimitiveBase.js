@@ -1,7 +1,7 @@
 import {withDefault, nullable} from './typeBuilder'
 import * as gopostal from 'gopostal';
 
-const MAILBOX = gopostal.getMailBox('Typorama.define');
+const MAILBOX = gopostal.getMailBox('Typorama.PrimitiveBase');
 
 class _PrimitiveBase {
 
