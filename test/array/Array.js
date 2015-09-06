@@ -44,83 +44,7 @@ describe('Array data', function() {
 
 		require('./set-value');
 
-		describe('at', function() {
-
-			it('Should return a number for native immutable Typorama.Number', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				expect(numberList.at(0)).to.equal(1);
-			});
-
-			it('Should return a string for native immutable Typorama.String', function() {
-				var arr = Typorama.Array.of(Typorama.String).create(['123', 'abcd']);
-				expect(arr.at(0)).to.equal('123');
-			});
-
-			it('Should return wrapped item that passes the test() of their type', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				expect(numberList.__options__.subTypes.validate(numberList.at(0))).to.equal(true);
-			});
-
-			it('Should return a typed item for none immutable data (like custom types)', function() {
-				var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-				expect(arr.at(0) instanceof UserType).to.equal(true);
-			});
-
-			it('Should always return a the same reference for wrapper', function() {
-				var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-				var ref1 = arr.at(0);
-				var ref2 = arr.at(0);
-
-                expect(ref1).to.equal(ref2);
-			});
-
-			it('Should return a typed item form multiple types if there is _type field', function() {
-				var data = [
-					{_type:'User',  name: 'avi', age: 12},
-					{_type:'Address', name: 'avi', age: 12}
-				];
-				var arr = Typorama.Array.of(either(UserType,  AddressType)).create(data);
-				expect(arr.at(0) instanceof UserType).to.equal(true, 'first item');
-				expect(arr.at(1) instanceof AddressType).to.equal(true, 'second item');
-			});
-
-			it('Should modify inner complex data', function() {
-				var arrComplexType = Typorama.Array.of(UserWithAddressType).create([{}, {}, {}]);
-
-				arrComplexType.at(1).user.name = 'modified user name';
-
-				expect(arrComplexType.at(1).user.name).to.equal('modified user name');
-			});
-
-			it('Should handle multi level array', function() {
-				var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]]);
-
-				expect(arrComplexType.at(0).at(0) instanceof UserWithAddressType).to.equal(true);
-			});
-
-			it('Should change type form multi level array', function() {
-				var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]]);
-				var userWithAddress = arrComplexType.at(0).at(0);
-
-				userWithAddress.user.name = 'you got a new name';
-
-				expect(userWithAddress.user.name).to.equal('you got a new name');
-			});
-
-			it('Should keep read only item as read only', function() {
-				var userDefaultName = UserWithAddressType.getFieldsSpec().user.defaults().name;
-				var readOnlyData = new UserWithAddressType().$asReadOnly();
-				var arrComplexType = Typorama.Array.of(UserWithAddressType).create([readOnlyData]);
-
-				var readOnlyItemData = arrComplexType.at(0);
-
-				readOnlyItemData.user.name = 'you got a new name';
-
-				expect(readOnlyItemData.user.name).to.equal(userDefaultName);
-				expect(readOnlyItemData).to.equal(readOnlyData);
-			});
-
-		});
+		require('./at');
 
 		describe('pop', function() {
 			it('should remove the last element from an array', function() {
@@ -145,6 +69,41 @@ describe('Array data', function() {
 			lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
 		});
 
+		describe('push',function() {
+			it('it should add a number to an array ', function() {
+				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+				var lengthBeforePush = numberList.length;
+				var newIndex = numberList.push(5);
+				expect(newIndex).to.equal(5);
+				expect(numberList.length).to.equal(lengthBeforePush+1);
+				expect(numberList.at(4)).to.equal(5);
+			});
+
+			it('Should add a typed item for none immutable data (like custom types)', function() {
+				var arr = Typorama.Array.of(UserType).create([]);
+				arr.push({name: 'zag'});
+				expect(arr.at(0) instanceof UserType).to.equal(true);
+			});
+
+			it('Should add a typed item form multiple types if there is _type field', function() {
+				var arr = Typorama.Array.of(either(UserType, AddressType)).create([]);
+				arr.push({_type: 'User'});
+				arr.push({_type: 'Address'});
+				expect(arr.at(0) instanceof UserType).to.equal(true);
+				expect(arr.at(1) instanceof AddressType).to.equal(true);
+			});
+
+			it('Should support multiple push items', function() {
+				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+				numberList.push(5, 6);
+
+				expect(numberList.length).to.equal(6);
+				expect(numberList.at(4)).to.equal(5);
+				expect(numberList.at(5)).to.equal(6);
+			});
+			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
+
+		});
 
 		describe('set', () => {
 			it('should replace an existing element', ()  => {
@@ -534,42 +493,6 @@ describe('Array data', function() {
 					return currentValue;
 				});
 			});
-		});
-
-		describe('push',function() {
-			it('it should add a number to an array ', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				var lengthBeforePush = numberList.length;
-				var newIndex = numberList.push(5);
-				expect(newIndex).to.equal(5);
-				expect(numberList.length).to.equal(lengthBeforePush+1);
-				expect(numberList.at(4)).to.equal(5);
-			});
-
-			it('Should add a typed item for none immutable data (like custom types)', function() {
-				var arr = Typorama.Array.of(UserType).create([]);
-				arr.push({name: 'zag'});
-				expect(arr.at(0) instanceof UserType).to.equal(true);
-			});
-
-			it('Should add a typed item form multiple types if there is _type field', function() {
-				var arr = Typorama.Array.of(either(UserType, AddressType)).create([]);
-				arr.push({_type: 'User'});
-				arr.push({_type: 'Address'});
-				expect(arr.at(0) instanceof UserType).to.equal(true);
-				expect(arr.at(1) instanceof AddressType).to.equal(true);
-			});
-
-			it('Should support multiple push items', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				numberList.push(5, 6);
-
-				expect(numberList.length).to.equal(6);
-				expect(numberList.at(4)).to.equal(5);
-				expect(numberList.at(5)).to.equal(6);
-			});
-			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
-
 		});
 
 		describe('forEach',function() {

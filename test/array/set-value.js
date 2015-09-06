@@ -28,7 +28,7 @@ describe('setValue', function () {
     });
 
     it('should completely redefine array data', function () {
-        var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
+        var numberList = aNumberArray([1, 2, 3]);
 
         numberList.setValue([1, 2]);
 

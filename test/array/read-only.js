@@ -97,6 +97,17 @@ describe('(Read Only) instance', function() {
             expect(userWithAddress.user.name).to.equal('');
         });
 
+
+        it('should keep read only item as read only', function() {
+       		var readOnlyData = new UserWithAddressType().$asReadOnly();
+       		var arrComplexType = Typorama.Array.of(UserWithAddressType).create([readOnlyData]);
+
+       		var readOnlyItemData = arrComplexType.at(0);
+       		readOnlyItemData.user.name = 'you got a new name';
+
+       		expect(readOnlyItemData).to.eql(readOnlyData);
+       	});
+
     });
 
     describe('push',function() {
