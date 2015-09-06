@@ -16,8 +16,8 @@ var UserWithAddressType = aDataTypeWithSpec({
 	address: AddressType
 }, 'UserWithAddress');
 
-function aStringArray() {
-	return Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"]);
+function aStringArray(optionalArr) {
+	return Typorama.Array.of(Typorama.String).create(optionalArr || ["John", "Paul", "George", "Ringo"]);
 }
 
 function aNumberArray(optionalArr) {

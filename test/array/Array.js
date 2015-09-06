@@ -7,71 +7,19 @@ import _ from 'lodash';
 import {lifecycleContract} from '../lifecycle.contract.spec.js';
 import sinon from 'sinon';
 import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from './builders';
-
-var lifeCycleAsserter = lifecycleContract();
-lifeCycleAsserter.addFixture(
-	(...elements) => Typorama.Array.of(UserType).create(elements),
-	() => new UserType(),
-	'array with mutable elements'
-);
-lifeCycleAsserter.addFixture(
-	(...elements) => Typorama.Array.of(Typorama.Number).create(elements),
-	() => Math.random(),
-	'array with primitives'
-);
-
+import lifeCycleAsserter from './lifecycle.js';
 
 describe('Array data', function() {
 
 	describe('lifecycle:',function() {
-
 		lifeCycleAsserter.assertDirtyContract();
-	});
-	describe('unsync __value__ array bug', function(){
-
-		it('__value__ should be synced with the readonly', function(){
-			var User = Typorama.define('user', {
-				spec: function(){
-					return {
-						name: Typorama.String
-					}
-				}
-
-			});
-
-			var arr = Typorama.Array.of(User).create();
-			var readOnly = arr.$asReadOnly();
-			arr.setValue([User.defaults()])
-			expect(arr.__value__).to.equal(readOnly.__value__);
-		});
-		xit('should fail', function(){
-			var Type = Typorama.define('Type',{
-				spec: function(){
-					return {
-						items: Typorama.Array.of(User)
-					};
-				}
-			});
-			var type = new Type();
-			var readOnly = type.$asReadOnly();
-			type.setValue({items: Typorama.Array.of(User).create([User.defaults(), User.defaults()]) });
-			var items = readOnly.items;
-			expect(items.__value__).to.eql(['hello', 'world'])
-		})
 	});
 
 	describe('mutable instance', function() {
 
-		var TestType, testType;
-
-		before("define an array type with default", function() {
-			TestType = aDataTypeWithSpec({
-				names: Typorama.Array.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
-			}, "TestType");
-		});
-
-		before("instantiate a type with default array", function() {
-			testType = new TestType();
+		it('Should have default length', function() {
+			var numberList = aNumberArray([1, 2, 3]);
+			expect(numberList.length).to.equal(3);
 		});
 
 		describe("with global freeze config", function(){
@@ -85,7 +33,7 @@ describe('Array data', function() {
 			});
 
 			it("should throw error on unknown field setter", function(){
-				var names = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
+				var names = aStringArray();
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
@@ -94,168 +42,8 @@ describe('Array data', function() {
 
 		});
 
-		it('Should have default length', function() {
-			var numberList = new Typorama.Array([1, 2, 3, 4], {subTypes: Typorama.Number});
-			expect(numberList.length).to.equal(4);
-		});
+		require('./set-value');
 
-		it('Should be created once for each data instance', function() {
-			var numberList = new Typorama.Array([1, 2, 3, 4], {subTypes: Typorama.Number});
-			var numberListReadOnly = numberList.$asReadOnly();
-			var numberListReadOnly2 = numberList.$asReadOnly();
-
-			expect(numberListReadOnly).to.equal(numberListReadOnly2);
-		});
-
-		describe('setValue', function() {
-			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.setValue([elemFactory(), elemFactory()]), 'setValue');
-
-			it('should not get dirty if values are not changed', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				revision.advance();
-				var rev = revision.read();
-				numberList.setValue([1, 2, 3, 4]);
-				expect(numberList.$isDirty(rev)).to.equal(false);
-			});
-			it('should replace the value of the array', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				numberList.setValue([5, 6, 7, 8]);
-				expect(numberList.toJSON()).to.eql([5, 6, 7, 8]);
-			});
-			it('should completely redefine array data', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				numberList.setValue([1, 2]);
-
-				expect(numberList.toJSON()).to.eql([1,2]);
-			});
-			describe('setValue on an array with complex subtype',function(){
-				it('should keep typorama objects passed to it that fit its subtypes', function() {
-					var mixedList = Typorama.Array.of(either(UserType,AddressType)).create([]);
-					var newUser = new UserType();
-					var newAddress = new AddressType();
-					mixedList.setValue([newUser, newAddress]);
-
-					expect(mixedList.at(0)).to.eql(newUser);
-					expect(mixedList.at(1)).to.eql(newAddress);
-				});
-				it('single subtype array should allow setting data with json, ', function() {
-					var address = new AddressType({address:'gaga'});
-					var mixedList = Typorama.Array.of(AddressType).create([address]);
-					mixedList.setValue([{code:5}]);
-
-					expect(mixedList.at(0)).to.be.instanceOf(AddressType);
-					expect(mixedList.at(0).code).to.be.eql(5);
-					expect(mixedList.at(0).address).to.be.eql('');
-					expect(mixedList.at(0)).to.not.be.eql(address);
-
-				});
-				it('should set the new item lifecycle manager when creating new from JSON ', function() {
-
-					var mockManager = new LifeCycleManager();
-					var address = new AddressType({address:'gaga'});
-					var mixedList = Typorama.Array.of(AddressType).create([]);
-					mixedList.$setManager(mockManager);
-					mixedList.setValue([{code:5}]);
-
-					expect(mixedList.at(0).__lifecycleManager__).to.be.eql(mockManager);
-
-				});
-			})
-
-		});
-
-		it("setValue with Typorama object containing Typorama array of string", function() {
-			testType = new TestType();
-
-			expect(testType.names.length).to.equal(4);
-			expect(testType.names.at(0)).to.equal("Beyonce");
-			expect(testType.names.at(1)).to.equal("Rihanna");
-			expect(testType.names.at(2)).to.equal("Britney");
-			expect(testType.names.at(3)).to.equal("Christina");
-
-			testType.setValue({
-				names: Typorama.Array.of(Typorama.String).create(["John", "Paul", "George", "Ringo"])
-			});
-
-			expect(testType.names.length).to.equal(4);
-			expect(testType.names.at(0)).to.equal("John");
-			expect(testType.names.at(1)).to.equal("Paul");
-			expect(testType.names.at(2)).to.equal("George");
-			expect(testType.names.at(3)).to.equal("Ringo");
-		});
-
-		it("setValue on array with JSON array of string", function() {
-			var test = Typorama.Array.of(Typorama.String).create();
-
-			expect(test.length).to.equal(0);
-
-			test.setValue(["John", "Paul", "George", "Ringo"]);
-
-			expect(testType.names.length).to.equal(4);
-			expect(test.at(0)).to.equal("John");
-			expect(test.at(1)).to.equal("Paul");
-			expect(test.at(2)).to.equal("George");
-			expect(test.at(3)).to.equal("Ringo");
-		});
-
-
-		it("setValue with JSON object containg JSON array of string", function() {
-			testType = new TestType();
-
-			expect(testType.names.length).to.equal(4);
-			expect(testType.names.at(0)).to.equal("Beyonce");
-			expect(testType.names.at(1)).to.equal("Rihanna");
-			expect(testType.names.at(2)).to.equal("Britney");
-			expect(testType.names.at(3)).to.equal("Christina");
-
-			testType.setValue({ names: ["John", "Paul", "George", "Ringo"] });
-
-			expect(testType.names.length).to.equal(4);
-			expect(testType.names.at(0)).to.equal("John");
-			expect(testType.names.at(1)).to.equal("Paul");
-			expect(testType.names.at(2)).to.equal("George");
-			expect(testType.names.at(3)).to.equal("Ringo");
-		});
-
-        it("setValue with JSON object containg empty array", function() {
-            var TestType1 = aDataTypeWithSpec({
-                gaga: Typorama.String
-            }, "TestType1");
-            var TestType2 = aDataTypeWithSpec({
-                baga: Typorama.String
-            }, "TestType2");
-            var TestType3 = aDataTypeWithSpec({
-                gagot: Typorama.Array.of(TestType1,TestType2).withDefault([{},{}])
-            }, "TestType3");
-            var testObj = new TestType3();
-
-
-            testObj.setValue({ gagot: [] });
-
-            expect(testObj.gagot.length).to.equal(0);
-            expect(testObj.gagot.at(0)).to.equal(undefined);
-        });
-        it("setValue with array with compatible but different options", function() {
-            var TestType1 = aDataTypeWithSpec({
-                gaga: Typorama.String
-            }, "TestType1");
-            var TestType2 = aDataTypeWithSpec({
-                baga: Typorama.String
-            }, "TestType2");
-            var TestType3 = aDataTypeWithSpec({
-                gagot: Typorama.Array.of(TestType1,TestType2).withDefault([{},{},{}])
-            }, "TestType3");
-            var TestType4 = aDataTypeWithSpec({
-                gagot: Typorama.Array.of(TestType2).withDefault([{}])
-            }, "TestType3");
-            var testObj = new TestType3();
-            var test2Obj = new TestType4();
-
-
-            testObj.setValue({ gagot: test2Obj.gagot });
-
-            expect(testObj.gagot.length).to.equal(1);
-        });
 		describe('at', function() {
 
 			it('Should return a number for native immutable Typorama.Number', function() {
@@ -280,7 +68,10 @@ describe('Array data', function() {
 
 			it('Should always return a the same reference for wrapper', function() {
 				var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]);
-				expect(arr.at(0)).to.equal(arr.at(0));
+				var ref1 = arr.at(0);
+				var ref2 = arr.at(0);
+
+                expect(ref1).to.equal(ref2);
 			});
 
 			it('Should return a typed item form multiple types if there is _type field', function() {

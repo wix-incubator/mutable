@@ -20,6 +20,14 @@ describe('(Read Only) instance', function() {
         expect(numberList.toJSON()).to.eql([5,6]);
     });
 
+    it('Should be created once for each data instance', function() {
+        var numberList = aNumberArray();
+        var roInstance1 = numberList.$asReadOnly();
+        var roInstance2 = numberList.$asReadOnly();
+
+        expect(roInstance1).to.equal(roInstance2);
+    });
+
     describe("with global freeze config", function(){
 
         before("set global freeze configuration", function(){
@@ -117,5 +125,32 @@ describe('(Read Only) instance', function() {
             expect(numberList.at(0)).to.equal(1);
             expect(numberList.at(1)).to.equal(2);
         })
+    });
+
+    describe('__value__', function() {
+        it('should be synced with the readonly', function () {
+            var arr = Typorama.Array.of(UserType).create();
+            var readOnly = arr.$asReadOnly();
+
+            arr.setValue([UserType.defaults()])
+
+            expect(arr.__value__).to.equal(readOnly.__value__);
+        });
+
+        //TODO @baraki wrote this and I'm not sure what it's supposed to do
+        xit('should fail', function(){
+            var Type = Typorama.define('Type',{
+                spec: function(){
+                    return {
+                        items: Typorama.Array.of(UserType)
+                    };
+                }
+            });
+            var type = new Type();
+            var readOnly = type.$asReadOnly();
+            type.setValue({items: Typorama.Array.of(UserType).create([UserType.defaults(), UserType.defaults()]) });
+            var items = readOnly.items;
+            expect(items.__value__).to.eql(['hello', 'world'])
+        });
     });
 });
