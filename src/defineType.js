@@ -1,5 +1,4 @@
 import _ from "lodash"
-import * as typeBuilder from './typeBuilder'
 import BaseType from "./BaseType"
 import PrimitiveBase from './PrimitiveBase'
 import * as gopostal from 'gopostal';
@@ -31,11 +30,11 @@ export default function(id, typeDefinition, TypeConstructor){
     TypeConstructor.type                  = TypeConstructor;
     TypeConstructor.validate              = TypeConstructor.validate || generateValidate();
     TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
-    TypeConstructor.allowPlainVal          = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
-    TypeConstructor.withDefault           = TypeConstructor.withDefault || typeBuilder.withDefault;
-    TypeConstructor.nullable              = typeBuilder.nullable;
-    TypeConstructor._validateAndWrap      = BaseType._validateAndWrap;
+    TypeConstructor.allowPlainVal         = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
+    TypeConstructor.withDefault           = TypeConstructor.withDefault || PrimitiveBase.withDefault;
     TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
+    TypeConstructor.nullable              = PrimitiveBase.nullable;
+    TypeConstructor._validateAndWrap      = BaseType._validateAndWrap;
     TypeConstructor.create                = BaseType.create;
 
     var superTypeConstructor = TypeConstructor.prototype.__proto__.constructor;
