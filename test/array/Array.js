@@ -72,28 +72,6 @@ describe('Array data', function() {
 			lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
 		});
 
-		describe('shift', function() {
-			it('should return the first element from the array', function() {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				var arrayBeforeShift = numberList.concat();
-
-				var valueRemoved = numberList.shift();
-
-				expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
-			});
-
-			it('should remove an element from the array', function () {
-				var numberList = Typorama.Array.of(Typorama.Number).create([1, 2, 3, 4]);
-				var lengthBeforeShift = numberList.length;
-
-				numberList.shift();
-
-				expect(numberList.length).to.equal(lengthBeforeShift - 1);
-			});
-
-			lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
-		});
-
 		describe('sort', function() {
 			it('should sort the elements of an array in place', function() {
 				var stringArray = Typorama.Array.of(Typorama.String).create(['Blue', 'Humpback', 'Beluga']);

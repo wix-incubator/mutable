@@ -89,3 +89,26 @@ describe('set', function() {
 
 	lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
 });
+
+
+describe('shift', function() {
+	it('should return the first element from the array', function() {
+		var numberList = aNumberArray();
+		var arrayBeforeShift = numberList.concat();
+
+		var valueRemoved = numberList.shift();
+
+		expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
+	});
+
+	it('should remove an element from the array', function () {
+		var numberList = aNumberArray();
+		var lengthBeforeShift = numberList.length;
+
+		numberList.shift();
+
+		expect(numberList.length).to.equal(lengthBeforeShift - 1);
+	});
+
+	lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
+});
