@@ -44,7 +44,7 @@ describe('Array data', function() {
 
 		require('./set-value');
 
-		require('./at');
+		require('./item-read');
 
 		require('./item-mutations');
 
@@ -75,80 +75,27 @@ describe('Array data', function() {
 		});
 
 		describe('sort', function() {
-					it('should sort the elements of an array in place', function() {
-						var stringArray = Typorama.Array.of(Typorama.String).create(['Blue', 'Humpback', 'Beluga']);
-						var numberArray = Typorama.Array.of(Typorama.Number).create([40, 1, 5, 200]);
+			it('should sort the elements of an array in place', function() {
+				var stringArray = Typorama.Array.of(Typorama.String).create(['Blue', 'Humpback', 'Beluga']);
+				var numberArray = Typorama.Array.of(Typorama.Number).create([40, 1, 5, 200]);
 
-						function compareNumbers(a, b) {
-							return a - b;
-						}
+				function compareNumbers(a, b) {
+					return a - b;
+				}
 
-						var sortedStringArray = stringArray.sort().toJSON();
-						var sortedNumberArray = numberArray.sort().toJSON();
-						var funkySortNumberArray = numberArray.sort(compareNumbers).toJSON();
-
-
-						expect(sortedStringArray).to.eql(sortedStringArray.sort());
-						expect(sortedNumberArray).to.eql(sortedNumberArray.sort());
-						expect(funkySortNumberArray).to.eql(funkySortNumberArray.sort(compareNumbers));
-					});
-
-					lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
-				});
+				var sortedStringArray = stringArray.sort().toJSON();
+				var sortedNumberArray = numberArray.sort().toJSON();
+				var funkySortNumberArray = numberArray.sort(compareNumbers).toJSON();
 
 
-		describe('indexOf', function () {
-			it('should return the first index of an element within an array equal to the specified value', function() {
-				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
-
-				var result = arrA.indexOf('a');
-
-				expect(result).to.eql(0);
+				expect(sortedStringArray).to.eql(sortedStringArray.sort());
+				expect(sortedNumberArray).to.eql(sortedNumberArray.sort());
+				expect(funkySortNumberArray).to.eql(funkySortNumberArray.sort(compareNumbers));
 			});
-			it('should return -1 if none is found', function() {
-				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
 
-				var result = arrA.indexOf('a', 1);
-
-				expect(result).to.eql(-1);
-			});
+			lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {return a > b; }), 'sort');
 		});
 
-		describe('lastIndexOf', function () {
-			it('should return the last index at which a given element can be found in the array', function() {
-				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
-				var result = arrA.lastIndexOf('a');
-
-				expect(result).to.eql(2);
-			});
-
-			it('should take a 2nd argument, the index at which to start searching backwards', function() {
-				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
-
-				var result = arrA.lastIndexOf('b', 2);
-
-				expect(result).to.eql(1);
-			});
-
-			it('should return -1 if none is found', function() {
-				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
-
-				var result = arrA.lastIndexOf('c');
-
-				expect(result).to.eql(-1);
-			});
-		});
-
-		describe('valueOf', function() {
-			it('should return the primitive value of the specified object', function() {
-				var arrA = Typorama.Array.of(Typorama.String).create(['a', 'b']);
-
-				var result = arrA.valueOf();
-				expect(result).to.eql(['a', 'b']);
-				expect(result instanceof Array).to.be.true;
-			});
-
-		});
 
 		describe('map', function() {
 			describe('with property name iteratee', function() {

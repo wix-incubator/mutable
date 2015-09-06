@@ -58,6 +58,41 @@ describe('at', function() {
    		expect(userWithAddress.user.name).to.equal('you got a new name');
 
 	});
+});
 
+
+describe('indexOf', function () {
+	var stringArray = aStringArray(['a', 'b']);
+
+	it('should return the first index of an element within an array equal to the specified value', function() {
+		expect(stringArray.indexOf('a')).to.eql(0);
+	});
+
+	it('should return -1 if none is found', function() {
+		expect(stringArray.indexOf('a', 1)).to.eql(-1);
+	});
+});
+
+describe('lastIndexOf', function () {
+	var stringArray = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
+
+	it('should return the last index at which a given element can be found in the array', function() {
+		expect(stringArray.lastIndexOf('a')).to.eql(2);
+	});
+
+	it('should take a 2nd argument, the index at which to start searching backwards', function() {
+		expect(stringArray.lastIndexOf('b', 2)).to.eql(1);
+	});
+
+	it('should return -1 if none is found', function() {
+		expect(stringArray.lastIndexOf('c')).to.eql(-1);
+	});
+});
+
+describe('valueOf', function() {
+	it('should return the primitive value of the specified object', function() {
+		var wrapped = ['a', 'b'];
+        expect(Typorama.Array.of(Typorama.String).create(wrapped).valueOf()).to.eql(wrapped).and.to.be.instanceOf(Array);
+	});
 
 });
