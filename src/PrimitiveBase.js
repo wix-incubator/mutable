@@ -1,4 +1,5 @@
 import * as gopostal from 'gopostal';
+import _ from 'lodash';
 
 const MAILBOX = gopostal.getMailBox('Typorama.PrimitiveBase');
 
