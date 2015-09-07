@@ -155,79 +155,72 @@ describe('every',function() {
 });
 
 describe('some', function() {
+	it('returns false for an empty array', function() {
+		expect(anEmptyArray().every(_.identity)).to.beFalse;
+	});
+
 	it('should return true if any elements pass the test provided by the callback', function() {
-		var arr = Typorama.Array.of(Typorama.String).create(['a', 'b']);
-		var areAll = arr.some(function (element) {
-			return element === 'a';
-		});
-		expect(areAll).to.equal(true);
+		expect(aStringArray(['a', 'b']).every(elem => elem === 'a')).to.beTrue
+
 	});
 	it('should return false if all elements fail to pass the test provided by the callback', function() {
-		var arr = Typorama.Array.of(Typorama.String).create(['b', 'b']);
-		var areAll = arr.some(function (element) {
-			return element === 'a';
-		});
-		expect(areAll).to.equal(false);
+		expect(aStringArray(['a', 'a']).every(elem => elem === 'b')).to.beFalse
+
 	})
 });
 
 describe('find',function() {
-	it('should return the first element that passes the callback test', function() {
-		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
-		var itemFound = arr.find(function(element) {
-			return element.name === 'mollari'
-		});
-		expect(itemFound).to.equal(arr.at(1));
+	it('returns the first element matching a predicate', function() {
+		expect(aStringArray(['aa', 'ab']).find(x => x.startsWith('a'))).to.equal('aa');
 	});
-	xit('should return the first element that matches the passed object', function() {
-		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
-		var itemFound = arr.find({name: 'mollari'});
-		expect(itemFound).to.equal(arr.at(1));
-	});
-	it('should return undefined if no elements that pass the callback test', function() {
-		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
-		var itemFound = arr.find((element) => element.name === `G'Kar`);
-		expect(itemFound).to.equal(undefined);
-	})
 
+	it('returns undefined if no matching element passes the predicate', function() {
+		expect(aNumberArray([1, 2]).find(x => x < 0)).to.be.undefined;
+	});
+
+	it('supports an object as the predicate', function() {
+		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
+
+		expect(arr.find({name: 'mollari'})).to.equal(arr.at(1));
+	});
 });
 
 describe('findIndex',function() {
-	it('should return the index of the first element that passes the callback test', function() {
-		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
-		var itemIndex = arr.findIndex(function(element) {
-			return element.name === 'mollari'
-		});
-		expect(itemIndex).to.equal(1);
+	it('returns the first element matching a predicate', function() {
+		expect(aStringArray(['aa', 'ab']).findIndex(x => x.startsWith('ab'))).to.equal(1);
 	});
-	xit('should return the index of the first element that matches the passed object', function() {
-		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
-		var itemIndex = arr.findIndex({name: 'mollari'});
-		expect(itemIndex).to.equal(1);
-	});
-	it('should return -1 if no elements pass the callback test', function() {
-		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
-		var itemIndex = arr.findIndex((element) => `G'Kar` === element.name);
-		expect(itemIndex).to.equal(-1);
-	})
 
+	it('returns -1 if no matching element passes the predicate', function() {
+		expect(aNumberArray([1, 2]).findIndex(x => x < 0)).to.equal(-1);
+	});
+
+	it('supports an object as the predicate', function() {
+		var arr = Typorama.Array.of(UserType).create([{name: 'lando'}, {name: 'mollari'}]);
+
+		expect(arr.findIndex({name: 'mollari'})).to.equal(1);
+	});
 });
 
 describe('filter',function() {
-	it('should return a new array with all elements that pass the callback test', function() {
-		var arr = Typorama.Array.of(Typorama.Number).create([42, 3, 15, 4, 7]);
-		var filterArray = arr.filter(function(element) {
-			return element > 5;
-		});
-              expect(filterArray).to.be.instanceof(Typorama.Array);
-		expect(filterArray.length).to.equal(3);
-		expect(filterArray.valueOf()).to.eql([42, 15, 7]);
+	it('should return a new array with all elements that pass the predicate', function() {
+		var positives = aNumberArray(0, 1, 2).filter(x => x > 0);
+
+		expect(positives).to.be.instanceof(Typorama.Array);
+        expect(positives.valueOf()).to.eql([1, 2]);
 	});
-	it('should return an empty array if no elements pass the callback test', function() {
-		var arr = Typorama.Array.of(Typorama.Number).create([42, 3, 15, 4, 7]);
-		var filterArray = arr.filter(function(element) {
-			return element > 50;
-		});
-		expect(filterArray.length).to.equal(0);
+
+	it('should return an empty array if no elements pass the predicate', function() {
+		var positives = aNumberArray(0, 1, 2).filter(x => x < 0);
+
+		expect(positives).to.be.instanceof(Typorama.Array);
+        expect(positives.valueOf()).to.be.empty;
+	});
+
+	it('supports an object as the predicate', function() {
+		var lando = {name: 'lando', age: Infinity};
+		var mollari = {name: 'mollari', age: Infinity};
+        var arr = Typorama.Array.of(UserType).create([lando, mollari]);
+
+		expect(arr.filter(lando).toJSON()).to.eql([lando]);
 	});
 });
