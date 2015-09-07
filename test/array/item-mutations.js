@@ -1,5 +1,5 @@
 import Typorama from '../../src';
-import {aNumberArray, aStringArray, UserType, AddressType} from './builders';
+import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType} from './builders';
 import {expect} from 'chai';
 import {either} from '../../src/composite'
 import lifeCycleAsserter from './lifecycle.js';
@@ -17,7 +17,7 @@ describe('pop', function() {
 	});
 
 	it('should return undefined if called on an empty array', function() {
-		var numberList = aNumberArray([]);
+		var numberList = anEmptyArray();
 
 		var valueRemoved = numberList.pop();
 
@@ -74,11 +74,11 @@ describe('set', function() {
 		expect(arr.toJSON()).to.eql(['b']);
 	});
 	it('should add an element if none exists', ()  => {
-		var arr = aStringArray([]);
+		var arr = anEmptyArray();
 
-		arr.set(0, 'b');
+		arr.set(0, 42);
 
-		expect(arr.toJSON()).to.eql(['b']);
+		expect(arr.toJSON()).to.eql([42]);
 	});
 
 	it ('should return the element', () => {
@@ -89,7 +89,6 @@ describe('set', function() {
 
 	lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
 });
-
 
 describe('shift', function() {
 	it('should return the first element from the array', function() {
@@ -111,4 +110,27 @@ describe('shift', function() {
 	});
 
 	lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
+});
+
+
+describe('unshift', function () {
+	it('should return the length of the array', function() {
+		var numberList = aNumberArray();
+
+		var valueRemoved = numberList.unshift();
+
+		expect(numberList.length).to.equal(valueRemoved, 'Did not return the proper array.length');
+	});
+
+	it('should add an element to the array', function () {
+		var numberList = aNumberArray();
+		var lengthBeforeUnshift = numberList.length;
+
+		numberList.unshift(5);
+
+		expect(numberList.length).to.equal(lengthBeforeUnshift + 1);
+	});
+
+	lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.unshift(elemFactory(), elemFactory()), 'unshift');
+
 });

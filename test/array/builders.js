@@ -24,4 +24,8 @@ function aNumberArray(optionalArr) {
 	return Typorama.Array.of(Typorama.Number).create(optionalArr || [1,2]);
 }
 
-export default  {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray}
+function anEmptyArray() {
+	return aNumberArray([]);
+}
+
+export default  {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray, anEmptyArray}

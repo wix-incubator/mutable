@@ -89,10 +89,3 @@ describe('lastIndexOf', function () {
 	});
 });
 
-describe('valueOf', function() {
-	it('should return the primitive value of the specified object', function() {
-		var wrapped = ['a', 'b'];
-        expect(Typorama.Array.of(Typorama.String).create(wrapped).valueOf()).to.eql(wrapped).and.to.be.instanceOf(Array);
-	});
-
-});

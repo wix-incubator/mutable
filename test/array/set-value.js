@@ -1,4 +1,4 @@
-import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from './builders';
+import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, UserWithAddressType} from './builders';
 import {LifeCycleManager, revision} from '../../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
 import Typorama from '../../src';
@@ -19,32 +19,16 @@ describe('setValue', function () {
         expect(numberList.$isDirty(rev)).to.beFalse;
     });
 
-    it('should replace the value of the array', function () {
-        var numberList = aNumberArray();
-
-        numberList.setValue([2]);
-
-        expect(numberList.toJSON()).to.eql([2]);
-    });
-
-    it('should completely redefine array data', function () {
-        var numberList = aNumberArray([1, 2, 3]);
-
-        numberList.setValue([1, 2]);
-
-        expect(numberList.toJSON()).to.eql([1, 2]);
-    });
-
-    it("on array with JSON array of string", function () {
-        var list = aStringArray([]);
+    it("accepts a vanilla JS array", function () {
+        var list = anEmptyArray();
 
         expect(list.length).to.equal(0);
 
-        list.setValue(["John", "Paul"]);
+        list.setValue([17, 42]);
 
         expect(list.length).to.equal(2);
-        expect(list.at(0)).to.equal("John");
-        expect(list.at(1)).to.equal("Paul");
+        expect(list.at(0)).to.equal(17);
+        expect(list.at(1)).to.equal(42);
     });
 
     describe('replaces the value', function() {

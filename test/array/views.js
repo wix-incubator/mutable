@@ -1,6 +1,7 @@
 import Typorama from '../../src';
 import {expect} from 'chai';
-import {aNumberArray, aStringArray, UserType} from './builders';
+import {aNumberArray, aStringArray, UserType, AddressType} from './builders';
+import {either} from '../../src/composite'
 
 describe('join', function () {
     it('should join all the elements of an array into a string with default separator', function () {
@@ -43,7 +44,8 @@ describe('slice', function () {
     });
 });
 
-describe('concat', function () {
+
+describe('concat',function() { // ToDo: make them work
     it('should not alter the original array', function () {
         var numberArray = aNumberArray();
         var oldArray = numberArray.concat();
@@ -52,6 +54,7 @@ describe('concat', function () {
 
         expect(numberArray).to.eql(oldArray);
     });
+
     it('should return a typed object', function () {
         var numberArray = aNumberArray();
 
@@ -59,7 +62,44 @@ describe('concat', function () {
 
         expect(concattedArray).to.be.instanceOf(Typorama.Array);
     });
+
+    it('should be able to concat N arrays of the same type', function() {
+        var concatResult = aNumberArray([1, 2]).concat(aNumberArray([3, 4]), [5,6]);
+
+		expect(concatResult.length).to.equal(6, 'Length check');
+		expect(concatResult.__value__).to.eql([1, 2, 3, 4, 5, 6], 'Equality test'); //TODO: create matcher.
+	});
+
+	it('should be able to concat N arrays of the different types', function() {
+		var mixedArray = Typorama.Array.of([Typorama.Number, Typorama.String]).create([1, '2']);
+
+        var concatResult = mixedArray.concat(aStringArray(['3', '4']), [5, 6]);
+
+		expect(concatResult.length).to.equal(6, 'Length check');
+		expect(concatResult.__value__).to.eql([1, '2', '3', '4', 5, 6], 'Equality test'); //TODO: create matcher.
+	});
+
+	it('should allow subtypes allowed by all the different arrays',function() {
+		var mixedInstance = Typorama.Array.of(either(UserType, AddressType)).create([
+			{ _type: UserType.id },
+			{ _type: AddressType.id },
+			{}
+		]);
+		var addressList = Typorama.Array.of(AddressType).create([{}]);
+		var mixedList = [{_type: UserType.id}, {_type: AddressType.id}];
+
+		var concatResult = mixedInstance.concat(addressList, mixedList);
+
+		expect(concatResult.length).to.equal(6);
+		expect(concatResult.at(0)).to.be.instanceOf(UserType);
+		expect(concatResult.at(1)).to.be.instanceOf(AddressType);
+		expect(concatResult.at(2)).to.be.instanceOf(UserType);
+		expect(concatResult.at(3)).to.be.instanceOf(AddressType);
+		expect(concatResult.at(4)).to.be.instanceOf(UserType);
+		expect(concatResult.at(5)).to.be.instanceOf(AddressType);
+	});
 });
+
 
 describe('toString', function () {
     it('should take an array, and return a string', function () {
@@ -84,4 +124,12 @@ describe('toJSON', function () {
 
         expect(arrA.toJSON(false), 'toJSON (non-recursive) called').to.eql([new UserType({age: 11}), new UserType({age: 12})]);
     });
+});
+
+describe('valueOf', function() {
+	it('should return the primitive value of the specified object', function() {
+		var wrapped = ['a', 'b'];
+        expect(Typorama.Array.of(Typorama.String).create(wrapped).valueOf()).to.eql(wrapped).and.to.be.instanceOf(Array);
+	});
+
 });
