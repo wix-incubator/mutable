@@ -1,12 +1,10 @@
 import PrimitiveBase from "./PrimitiveBase"
-import {validateNullValue} from './defineTypeUtils'
-
 
 export default class _Number extends PrimitiveBase{
 
     static defaults(){ return 0; }
 
-    static validate(v){ return typeof v === 'number' || validateNullValue(this, v); }
+    static validate(v){ return typeof v === 'number' || PrimitiveBase.validateNullValue(this, v); }
     static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {

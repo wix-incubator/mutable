@@ -1,26 +1,26 @@
 import config from './typoramaConfiguration'
-import defineType from './defineType'
+import define from './defineType'
 import BaseType from './BaseType'
 import PrimitiveBase from './PrimitiveBase'
-import stringType from './string'
-import booleanType from './boolean'
-import numberType from './number'
-import arrayType from './array'
-import functionType from './function'
+import String from './string'
+import Boolean from './boolean'
+import Number from './number'
+import Array from './array'
+import Function from './function'
 import defineEnum from "./defineEnum";
 import { LifeCycleManager , revision} from "./lifecycle";
 import {either} from './composite'
 
 export default {
-	config: config,
-    define: defineType,
-    BaseType: BaseType,
-	PrimitiveBase: PrimitiveBase,
-    String: stringType,
-    Boolean: booleanType,
-    Number: numberType,
-    Array: arrayType,
-    Function: functionType,
+	config,
+    define,
+    BaseType,
+	PrimitiveBase,
+    String,
+    Boolean,
+    Number,
+    Array,
+    Function,
     defineEnum,
     LifeCycleManager,
     either,

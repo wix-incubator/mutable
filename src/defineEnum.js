@@ -1,5 +1,4 @@
 import _ from "lodash";
-import {withDefault} from "./typeBuilder"
 import BaseType from './BaseType';
 import PrimitiveBase from './PrimitiveBase';
 import * as gopostal from 'gopostal';
@@ -75,7 +74,7 @@ function defineEnum(def) {
 	EnumType.create = BaseType.create;
 
 	EnumType.withDefault = function(defaults, validate) {
-		var NewType = withDefault.call(this, defaults, validate);
+		var NewType = PrimitiveBase.withDefault.call(this, defaults, validate);
 		NewType.defaults = () => defaults;
 		return NewType;
 	};

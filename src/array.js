@@ -18,19 +18,7 @@ class _Array extends BaseType {
 	static validate(value) { return Array.isArray(value); }
 
 	static validateType(value) {
-		var isValid = BaseType.validateType.call(this, value);
-		//if(isValid){
-		//	var subTypes = this.options.subTypes;
-		//	var valueSubTypes = value.__options__.subTypes;
-		//	if(typeof subTypes === 'function'){
-		//		isValid = subTypes === valueSubTypes;
-		//	} else {
-		//		isValid = (typeof valueSubTypes !== 'function') && _.any(valueSubTypes, (Type) => {
-		//			return subTypes[Type.id || Type.name] === Type;
-		//		});
-		//	}
-		//}
-		return isValid;
+		return BaseType.validateType.call(this, value);
 	}
 
 	static allowPlainVal(val){
@@ -79,7 +67,7 @@ class _Array extends BaseType {
 
 
 	static of(subTypes) {
-		//TODO: remove this when transpiler shananigans are over
+		//TODO: remove this when transpiler shenanigans are over
 		if(arguments.length>1)
 			subTypes = arguments;
 		return this.withDefault(undefined, undefined, { subTypes });
