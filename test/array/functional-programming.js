@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType} from './builders';
 import {either} from '../../src/composite'
 import sinon from 'sinon';
+import _ from 'lodash';
 
 describe('map', function() {
     var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
@@ -171,7 +172,7 @@ describe('some', function() {
 
 describe('find',function() {
 	it('returns the first element matching a predicate', function() {
-		expect(aStringArray(['aa', 'ab']).find(x => x.startsWith('a'))).to.equal('aa');
+		expect(aStringArray(['aa', 'ab']).find(x => _.startsWith(x, 'a'))).to.equal('aa');
 	});
 
 	it('returns undefined if no matching element passes the predicate', function() {
@@ -187,7 +188,7 @@ describe('find',function() {
 
 describe('findIndex',function() {
 	it('returns the first element matching a predicate', function() {
-		expect(aStringArray(['aa', 'ab']).findIndex(x => x.startsWith('ab'))).to.equal(1);
+		expect(aStringArray(['aa', 'ab']).findIndex(x => _.startsWith(x, 'ab'))).to.equal(1);
 	});
 
 	it('returns -1 if no matching element passes the predicate', function() {
