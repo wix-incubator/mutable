@@ -24,5 +24,9 @@ export default {
     defineEnum,
     LifeCycleManager,
     either,
-    revision
+    revision,
+
+    // This is temporarily alias included for backward compatibility.
+    // In the future, Array should be renamed to List entirely.
+    List:Array
 };
