@@ -84,3 +84,9 @@ describe('Array data', function() {
 	require("./read-only-instance");
 
 });
+
+describe('List data type', function () {
+	it('should be identical with the Array data type', function () {
+		expect(Typorama.List).to.equal(Typorama.Array);
+	});
+});
