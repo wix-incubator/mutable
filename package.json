@@ -4,7 +4,7 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
-  "version": "0.0.70",
+  "version": "0.0.72",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
@@ -12,8 +12,8 @@
     "url": "git+ssh://git@github.com:wix/typorama"
   },
   "scripts": {
-    "build:src": "./node_modules/.bin/babel ./src/ -d ./dist/src/ --modules umd --source-maps",
-    "build:test": "./node_modules/.bin/babel ./test/ -d ./dist/test/ --modules umd --source-maps",
+    "build:src": "rm -rf ./dist/src && ./node_modules/.bin/babel ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "build:test": "rm -rf ./dist/test && ./node_modules/.bin/babel ./test/ -d ./dist/test/ --modules umd --source-maps",
     "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
     "pretest": "npm run build:test && npm run build:testkit",
     "publish:tc": "./node_modules/.bin/ci",
@@ -36,6 +36,7 @@
     "node-libs-browser": "^0.5.2",
     "react": "^0.13.3",
     "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
+    "sinon-chai": "^2.8.0",
     "webpack": "^1.9.10",
     "webpack-dev-server": "^1.9.0"
   },

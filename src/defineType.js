@@ -1,7 +1,9 @@
 import _ from "lodash"
-import * as defineTypeUtils from "./defineTypeUtils"
-import * as typeBuilder from './typeBuilder'
 import BaseType from "./BaseType"
+import PrimitiveBase from './PrimitiveBase'
+import * as gopostal from 'gopostal';
+
+const MAILBOX = gopostal.getMailBox('Typorama.define');
 
 /*
  * Called to generate a default value resolver for custom types. The default value resolver is called upon constructing an instance
@@ -26,13 +28,13 @@ export default function(id, typeDefinition, TypeConstructor){
     };
     TypeConstructor.id                    = id;
     TypeConstructor.type                  = TypeConstructor;
-    TypeConstructor.validate              = TypeConstructor.validate || defineTypeUtils.generateValidate();
+    TypeConstructor.validate              = TypeConstructor.validate || generateValidate();
     TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
-    TypeConstructor.allowPlainVal          = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
-    TypeConstructor.withDefault           = TypeConstructor.withDefault || typeBuilder.withDefault;
-    TypeConstructor.nullable              = typeBuilder.nullable;
-    TypeConstructor._validateAndWrap      = BaseType._validateAndWrap;
+    TypeConstructor.allowPlainVal         = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
+    TypeConstructor.withDefault           = TypeConstructor.withDefault || PrimitiveBase.withDefault;
     TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
+    TypeConstructor.nullable              = PrimitiveBase.nullable;
+    TypeConstructor._validateAndWrap      = BaseType._validateAndWrap;
     TypeConstructor.create                = BaseType.create;
 
     var superTypeConstructor = TypeConstructor.prototype.__proto__.constructor;
@@ -49,8 +51,49 @@ export default function(id, typeDefinition, TypeConstructor){
     TypeConstructor._spec                 = typeDefinition.spec(TypeConstructor);
     TypeConstructor.wrapValue             = TypeConstructor.wrapValue || BaseType.wrapValue;
 
-    defineTypeUtils.generateFieldsOn(TypeConstructor.prototype, TypeConstructor._spec);
+    generateFieldsOn(TypeConstructor.prototype, TypeConstructor._spec);
 
     return TypeConstructor;
 };
+
+function generateValidate() { // ToDo: check if its better jit-wise to move the spec to the closure: generateValidateForSpec(spec)
+    return function(val) {
+        return Object.keys(this._spec).every(function(key) {
+            return this._spec[key].validate(val[key])
+        }, this);
+    };
+}
+
+function generateFieldsOn(obj, fieldsDefinition) {
+    _.forEach(fieldsDefinition, function(fieldDef, fieldName) {
+        if(obj[fieldName]) {
+            MAILBOX.error(`Field error on type:${obj.constructor.id}.${fieldName} is reserved.`);
+        } else if(!(fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase)) {
+            MAILBOX.error(`Type mismatch: ${fieldName} must inherit PrimitiveBase data type.`);
+        }
+
+        Object.defineProperty(obj, fieldName, {
+            get: function() {
+                if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable()) {
+                    return this.__value__[fieldName];
+                } else {
+                    return this.__value__[fieldName].$asReadOnly();
+                }
+            },
+            set: function(newValue) {
+                if (this.$isDirtyable()) {
+                    if(this.$validateAndAssignField(fieldName, newValue)) {
+                        this.$setDirty();
+                    }
+                } else {
+                    // todo:warn hook
+                    console.warn(`Attemt to override readonly value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
+                }
+            },
+            enumerable:true,
+            configurable:false
+        });
+    });
+}
+
 

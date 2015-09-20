@@ -1,5 +1,4 @@
 import PrimitiveBase from "./PrimitiveBase"
-import {validateNullValue} from './defineTypeUtils.js'
 
 
 
@@ -7,7 +6,7 @@ export default class _Boolean extends PrimitiveBase{
 
     static defaults(){ return false; }
 
-    static validate(v){ return typeof v === 'boolean' || validateNullValue(this, v); }
+    static validate(v){ return typeof v === 'boolean' || PrimitiveBase.validateNullValue(this, v); }
     static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {

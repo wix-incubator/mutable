@@ -2,7 +2,6 @@ import config from './typoramaConfiguration'
 import _ from "lodash"
 import {makeDirtyable} from "./lifecycle"
 import PrimitiveBase from "./PrimitiveBase"
-import {validateNullValue} from './defineTypeUtils'
 import * as gopostal from 'gopostal';
 
 const MAILBOX = gopostal.getMailBox('Typorama.BaseType');
@@ -29,7 +28,7 @@ export default class BaseType extends PrimitiveBase {
     }
 
     static validateType(value) {
-        return validateNullValue(this, value) ||
+        return PrimitiveBase.validateNullValue(this, value) ||
             ( value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type));
     }
 
