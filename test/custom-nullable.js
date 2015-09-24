@@ -9,6 +9,46 @@ import sinon from 'sinon';
 var ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE = 'Cannot assign null value to a type which is not defined as nullable.';
 
 
+describe('Nullable custom type initialize', function(){
+	
+	it('should create primitive types with null', function(){
+		
+		var UserType = aDataTypeWithSpec({
+			name: Typorama.String.nullable().withDefault(null)
+		}, 'User');
+
+		var user = new UserType();
+		
+		expect(user.name === null).to.equal(true);
+		user.name = "Hi";
+		expect(user.name === "Hi").to.equal(true);
+		user.name = null;
+		expect(user.name === null).to.equal(true);
+	});
+	
+		
+	it('should create complex types with null (readOnly)', function(){
+		
+		var Friend = aDataTypeWithSpec({
+			name: Typorama.String.nullable().withDefault(null)
+		}, 'User');
+		
+		var UserType = aDataTypeWithSpec({
+			name: Typorama.String.nullable().withDefault(null),
+			friend: Friend.nullable().withDefault(null)
+		}, 'User');
+
+		var user = new UserType();
+		
+		var readOnlyUser = user.$asReadOnly();
+		
+		expect(readOnlyUser.name === null).to.equal(true);
+		expect(readOnlyUser.friend === null).to.equal(true);
+		
+	});
+	
+});
+
 describe('Nullable custom type', function() {
 
 	var defaultUser = {

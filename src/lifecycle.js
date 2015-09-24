@@ -78,16 +78,26 @@ export function makeDirtyable(Type){
 
 // may be called at any time
     Type.prototype.$calcLastChange = function $calcLastChange() {
-	if (this.$isReadOnly()){
-		return this.$asReadWrite().$calcLastChange();
-	} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
-            // no cache, go recursive
-            // TODO replace this filthy solution
-            var lastModifiedChild = _.max(this.__value__, (v) => (v && v.$calcLastChange) ? v.$calcLastChange() : -1);
-            if (lastModifiedChild && lastModifiedChild.__lastChange__){
-                this.__lastChange__ = Math.max(this.__lastChange__, lastModifiedChild.__lastChange__);
-            }
-            this.__cacheLockToken__ = this.$getManagerLockToken() || unlockedToken;
+		if (this.$isReadOnly()){
+			return this.$asReadWrite().$calcLastChange();
+		} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
+			// no cache, go recursive
+			// todo this condition should be refactored to a flag for collection types
+			if(this.constructor.id === 'Array'){
+
+				var lastModifiedChild = _.max(this.__value__, (v) => (v && v.$calcLastChange) ? v.$calcLastChange() : -1);
+				if (lastModifiedChild && lastModifiedChild.__lastChange__){
+					this.__lastChange__ = Math.max(this.__lastChange__, lastModifiedChild.__lastChange__);
+				}
+				
+			} else if(this.constructor._complex){
+				this.__lastChange__ = _.reduce(this.constructor._complex, function(acc, key){
+					var value = this.__value__[key];
+					return value ? Math.max(value.$calcLastChange(), acc) : acc;
+				}, this.__lastChange__, this);
+			}
+			
+			this.__cacheLockToken__ = this.$getManagerLockToken() || unlockedToken;
         }
         return this.__lastChange__;
     };
