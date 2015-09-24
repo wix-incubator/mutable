@@ -82,7 +82,7 @@ export function makeDirtyable(Type){
 			return this.$asReadWrite().$calcLastChange();
 		} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
 			// no cache, go recursive
-
+			// todo this condition should be refactored to a flag for collection types
 			if(this.constructor.id === 'Array'){
 
 				var lastModifiedChild = _.max(this.__value__, (v) => (v && v.$calcLastChange) ? v.$calcLastChange() : -1);
