@@ -49,12 +49,23 @@ export default function(id, typeDefinition, TypeConstructor){
 
     TypeConstructor.getFieldsSpec         = typeDefinition.spec.bind(null, TypeConstructor);
     TypeConstructor._spec                 = typeDefinition.spec(TypeConstructor);
+	TypeConstructor._complex              = getComplexFields(TypeConstructor._spec);
     TypeConstructor.wrapValue             = TypeConstructor.wrapValue || BaseType.wrapValue;
 
     generateFieldsOn(TypeConstructor.prototype, TypeConstructor._spec);
 
     return TypeConstructor;
 };
+
+function getComplexFields(spec){
+	var complex = [];
+	for(var k in spec){
+		if(spec[k] && spec[k]._spec){
+			complex[complex.length] = k;
+		}		
+	}
+	return complex;
+}
 
 function generateValidate() { // ToDo: check if its better jit-wise to move the spec to the closure: generateValidateForSpec(spec)
     return function(val) {
