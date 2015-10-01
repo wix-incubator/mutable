@@ -28,5 +28,9 @@ export default {
 
     // This is temporarily alias included for backward compatibility.
     // In the future, Array should be renamed to List entirely.
-    List:Array
+    List:Array,
+
+	// Stubs used only for declarations:
+	Enum: {},
+	GenericEnum: {}
 };
