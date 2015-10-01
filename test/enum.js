@@ -10,6 +10,11 @@ import {revision} from '../src/lifecycle';
 
 describe('Enum Type', function() {
 
+	it('exists as a stub on the typorama object', function () {
+		expect(Typorama.Enum).to.be.a("object");
+		expect(Typorama.GenericEnum).to.be.a("object");
+	});
+
     describe("instantiation", function() {
 
         it("should return a class", function() {
@@ -43,7 +48,7 @@ describe('Enum Type', function() {
 
         it("enum can be initialized as member in a custom type", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            var TestType = aDataTypeWithSpec({ 
+            var TestType = aDataTypeWithSpec({
                 ape: Ape
             });
             var tt = TestType.create(Ape.chimp);
@@ -52,7 +57,7 @@ describe('Enum Type', function() {
 
         it("enum can be initialized using withDefault", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            var TestType = aDataTypeWithSpec({ 
+            var TestType = aDataTypeWithSpec({
                 ape: Ape.withDefault(Ape.gorilla)
             });
             var tt = TestType.create();
@@ -61,7 +66,7 @@ describe('Enum Type', function() {
 
         it("enum can receive value from create of parent type", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            var TestType = aDataTypeWithSpec({ 
+            var TestType = aDataTypeWithSpec({
                 ape: Ape.withDefault(Ape.gorilla)
             });
             var tt = TestType.create({ ape: Ape.chimp });
@@ -87,9 +92,9 @@ describe('Enum Type', function() {
         });
 
         it("members can have object values", function() {
-            var Ape = Typorama.defineEnum({ 
-                chimp: { dateOfBirth: "11/11/1980" }, 
-                gorilla: { dateOfBirth: "12/12/1995" } 
+            var Ape = Typorama.defineEnum({
+                chimp: { dateOfBirth: "11/11/1980" },
+                gorilla: { dateOfBirth: "12/12/1995" }
             });
             expect(Ape.chimp.value.dateOfBirth).to.be.equal("11/11/1980");
             expect(Ape.gorilla.value.dateOfBirth).to.be.equal("12/12/1995");
