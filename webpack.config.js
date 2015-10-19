@@ -5,13 +5,14 @@ module.exports = {
 	entry: {
 		'typorama'              : [	'./src' ],
 		'test-kit'              : [ './test-kit' ],
-		'test'                  : ['mocha!./test'],
+		'test'                  : ['./test'],
+		'webtest'                  : ['mocha!./test'],
 		'examples/ReactGallery' : [ './examples/ReactGallery' ],
 		'examples/benchmark'    : [ './examples/benchmark' ],
 	},
 	output: {
 		path: __dirname + '/dist',
-		filename: '[name].js',
+		filename: '[name].bundle.js',
 		libraryTarget: 'umd',
 		pathinfo: true
 	},
