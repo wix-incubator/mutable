@@ -1,10 +1,10 @@
 {
-  "private": false ,
+  "private": false,
   "publishConfig": {
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
-  "version": "0.0.89",
+  "version": "0.0.90",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
