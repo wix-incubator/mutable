@@ -1,7 +1,14 @@
 import PrimitiveBase from "./PrimitiveBase"
 
 export default class _Number extends PrimitiveBase{
-
+	
+	static create(v){
+		if(PrimitiveBase.validateNullValue(this, v)){
+			return v;
+		}
+		return Number(v);
+	}
+	
     static defaults(){ return 0; }
 
     static validate(v){ return typeof v === 'number' || PrimitiveBase.validateNullValue(this, v); }
@@ -20,4 +27,4 @@ export default class _Number extends PrimitiveBase{
 
 _Number.type = _Number;
 _Number.id = 'number';
-_Number.create = Number;
+//_Number.create = Number;

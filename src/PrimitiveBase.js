@@ -1,9 +1,10 @@
-import {getMailBox} from 'gopostal';
 import _ from 'lodash';
+import {getMailBox} from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.PrimitiveBase');
 
 const clonedMembers = [
+	'type',
     'validate',
 	'validateType', 
 	'validateAndWrap',
@@ -14,7 +15,7 @@ const clonedMembers = [
 	'wrapValue', 
 	'create', 
 	'defaults', 
-	'options', 
+	'options',
 	'_spec',
 	'id'
 ];
@@ -23,10 +24,9 @@ class PrimitiveBase {
 	
 	static cloneType(Type){
 		function TypeClone(value, options) {
-			return new TypeClone.type(value, TypeClone.options || options);
+			return Type.create(value !== undefined ? value : TypeClone.defaults(), TypeClone.options || options);
 		}
 		clonedMembers.forEach(member => {TypeClone[member] = Type[member]});
-		TypeClone.type = Type;
 		return TypeClone;
 	}
 	
@@ -43,18 +43,19 @@ class PrimitiveBase {
     }
 
     static nullable() {
-        var NullableType = PrimitiveBase.cloneType(this.type || this);
-        NullableType.options = NullableType.options || {};
-        NullableType.options.nullable = true;
+        var NullableType = PrimitiveBase.cloneType(this);
+        NullableType.options = NullableType.options ? _.cloneDeep(NullableType.options) : {};
+		NullableType.options.nullable = true;
         return NullableType;
     }
-
+		
     static withDefault(defaults, validate, options) {
-       var NewType = PrimitiveBase.cloneType(this.type || this);
+       var NewType = PrimitiveBase.cloneType(this);
        if(validate) {
            NewType.validate = validate;
        }
        NewType.options = options || this.options;
+
        if(defaults !== undefined) {
            if(defaults === null) {
                var isNullable = NewType.options && NewType.options.nullable;

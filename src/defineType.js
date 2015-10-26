@@ -10,16 +10,15 @@ export default function(id, typeDefinition, TypeConstructor){
     var Type = TypeConstructor || function Type(value, options){
         BaseType.call(this, value, options);
     };
-	//PrimitiveBase.cloneType()
-	
-    Type.validate         = Type.validate         || BaseType.validate;
-    Type.validateType     = Type.validateType     || BaseType.validateType;
-    Type.allowPlainVal    = Type.allowPlainVal    || BaseType.allowPlainVal;
-    Type.defaults         = Type.defaults         || BaseType.defaults;
-    Type.withDefault      = Type.withDefault      || BaseType.withDefault;
-    Type.nullable         = Type.nullable         || BaseType.nullable;
-    Type.create           = Type.create           || BaseType.create;
-	Type.wrapValue        = Type.wrapValue        || BaseType.wrapValue;
+		
+    Type.validate      = Type.validate      || BaseType.validate;
+    Type.validateType  = Type.validateType  || BaseType.validateType;
+    Type.allowPlainVal = Type.allowPlainVal || BaseType.allowPlainVal;
+    Type.defaults      = Type.defaults      || BaseType.defaults;
+    Type.withDefault   = Type.withDefault   || BaseType.withDefault;
+    Type.nullable      = Type.nullable      || BaseType.nullable;
+    Type.create        = Type.create        || BaseType.create;
+	Type.wrapValue     = Type.wrapValue     || BaseType.wrapValue;
     
     var superTypeConstructor = Object.getPrototypeOf(Type.prototype).constructor;
 

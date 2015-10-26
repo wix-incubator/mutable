@@ -3,7 +3,13 @@ import PrimitiveBase from "./PrimitiveBase"
 function noop() {};
 
 export default class _Function extends PrimitiveBase{
-
+	static create(v){
+		if(PrimitiveBase.validateNullValue(this, v)){
+			return v;
+		}
+		return Object(v);
+	}
+	
     static defaults() { return noop; }
 
     static validate(v) { return typeof v === 'function' || PrimitiveBase.validateNullValue(this, v) }
@@ -22,5 +28,5 @@ export default class _Function extends PrimitiveBase{
 
 _Function.id = 'function';
 _Function.type = _Function;
-_Function.create = Object;
+//_Function.create = Object;
 

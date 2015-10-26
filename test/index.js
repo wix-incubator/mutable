@@ -16,4 +16,5 @@ import "./Function";
 import "./boolean";
 import "./enum";
 import "./defineType.spec";
+import "./primitive-defaults";
 

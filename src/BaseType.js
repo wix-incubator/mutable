@@ -83,7 +83,7 @@ export default class BaseType extends PrimitiveBase {
         return root;
     }
 
-    constructor(value, options = {}){
+    constructor(value, options=null){
         super(value);
         this.__isReadOnly__ = false;
         this.__readOnlyInstance__ = createReadOnly(this);
@@ -94,12 +94,11 @@ export default class BaseType extends PrimitiveBase {
             this.constructor._spec,
             options
         );
-
 		if(config.freezeInstance) {
 			Object.freeze(this);
 		}
     }
-
+	
 
     // merge native javascript data into the object
     // this method traverses the input recursively until it reaches typorama values (then it sets them)

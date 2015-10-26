@@ -25,8 +25,7 @@ describe('Nullable custom type initialize', function(){
 		user.name = null;
 		expect(user.name === null).to.equal(true);
 	});
-	
-		
+			
 	it('should create complex types with null (readOnly)', function(){
 		
 		var Friend = aDataTypeWithSpec({

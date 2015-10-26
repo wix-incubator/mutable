@@ -1,8 +1,9 @@
 import _ from "lodash"
 
-import * as gopostal from 'gopostal';
+import {getMailBox} from 'gopostal';
+const MAILBOX = getMailBox('Typorama.lifecycle');
 
-const MAILBOX = gopostal.getMailBox('Typorama.lifecycle');
+
 export let revision = {
     __count__ : 1,
     read : function(){return this.__count__;},
