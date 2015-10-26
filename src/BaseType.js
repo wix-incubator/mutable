@@ -1,10 +1,12 @@
 import config from './typoramaConfiguration'
 import _ from "lodash"
+import {validateAndWrap, optionalSetManager} from "./validation"
 import {makeDirtyable} from "./lifecycle"
 import PrimitiveBase from "./PrimitiveBase"
-import * as gopostal from 'gopostal';
+import {getMailBox} from 'gopostal';
 
-const MAILBOX = gopostal.getMailBox('Typorama.BaseType');
+const MAILBOX = getMailBox('Typorama.BaseType');
+const ERROR = {};
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -15,10 +17,12 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
-const ERROR_OBJ = {};
-
 export default class BaseType extends PrimitiveBase {
-
+	
+	static withDefault(){
+		return PrimitiveBase.withDefault.apply(this, arguments);
+	}
+	
     static create(value, options) {
         return new this(value, options);
     }
@@ -27,20 +31,31 @@ export default class BaseType extends PrimitiveBase {
         return type && (type.id === this.type.id || (type.ancestors && _.contains(type.ancestors, this.type.id)));
     }
 
+	static validate(val) {
+        return Object.keys(this._spec).every(function(key) {
+            return this._spec[key].validate(val[key])
+        }, this);
+    }
+	
+	static defaults() {
+        var spec = this._spec;
+        var args = arguments;
+        return Object.keys(this._spec).reduce(function (val, key) {
+            var fieldSpec = spec[key];
+            val[key] = fieldSpec.defaults.apply(fieldSpec, args);
+            return val;
+        }, {});
+    }
+	
     static validateType(value) {
         return PrimitiveBase.validateNullValue(this, value) ||
             ( value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type));
     }
 
     static allowPlainVal(val){
-        return _.isPlainObject(val) && (!val._type || val._type===this.id)
+        return _.isPlainObject(val) && (!val._type || val._type === this.id)
     }
-
-    static optionalSetManager(itemValue, lifeCycle) {
-        if (itemValue && itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
-            itemValue.$setManager(lifeCycle);
-        }
-    }
+   
     static getValueTypeName(value){
         if(value.constructor && value.constructor.id){
             return value.constructor.id
@@ -51,44 +66,20 @@ export default class BaseType extends PrimitiveBase {
         return typeof value;
     }
 
-    static _validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
-        if(itemValue === null) {
-            var isNullable = type.options && type.options.nullable;
-            if(isNullable) {
-                return itemValue;
-            } else {
-                MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
-                return defaultErr;
-            }
-        }
-        if(type.validateType(itemValue)){
-            BaseType.optionalSetManager(itemValue, lifeCycle);
-            return itemValue;
-        } else if(type.type.allowPlainVal(itemValue)){
-            var newItem = type.create(itemValue);
-			if (newItem.$setManager && _.isFunction(newItem.$setManager)) {
-            	newItem.$setManager(lifeCycle);
-			}
-            return newItem;
-        }
-        return defaultErr;
-    }
-
     static wrapValue(value, spec, options){
         var root = {};
-        Object.keys(spec).forEach((key) => {
-            var fieldSpec = spec[key];
-            var fieldVal = value[key];
-            if(fieldVal===undefined){
+		_.each(spec, function(fieldSpec, key){
+			var fieldVal = value[key];
+            if(fieldVal === undefined){
                 fieldVal = spec[key].defaults();
             }
-            var newField = this._validateAndWrap(fieldVal,fieldSpec, undefined, ERROR_OBJ);
-			if(newField === ERROR_OBJ) {
+            var newField = validateAndWrap(fieldVal, fieldSpec, undefined, ERROR);
+			if(newField === ERROR) {
                 MAILBOX.error("Invalid value for key " + key + " of type " + fieldSpec.name + ": '" + fieldVal + "'.");
 			} else {
                 root[key] = newField;
             }
-        });
+		});
         return root;
     }
 
@@ -118,29 +109,18 @@ export default class BaseType extends PrimitiveBase {
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = this.$getFieldDef(fieldName);
                 if (fieldSpec) {
-                    var valueType = fieldValue === null ? 'null' : fieldValue.constructor.name;
-                    var newVal = this.constructor._validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, ERROR_OBJ);
-                    if(newVal === ERROR_OBJ) {
+                    var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, ERROR);
+                    if(newVal === ERROR) {
+						var valueType = fieldValue === null ? 'null' : fieldValue.constructor.name;
                         MAILBOX.error(`Invalid value for type ${fieldSpec.name}: '${valueType}'.`);
                     }
-
-                    if(this.__value__[fieldName]!==newVal){
+                    if(this.__value__[fieldName] !== newVal){
                         changed = true;
                         this.__value__[fieldName] = newVal;
                     }
-                    //if (this.__value__[fieldName].setValue && !BaseType.validateType(fieldValue)) {
-                    //    // recursion call
-                    //    changed = this.__value__[fieldName].setValue(fieldValue) || changed;
-                    //} else {
-                    //    // end recursion, assign value (if applicable)
-                    //    changed = this.$validateAndAssignField(fieldName, fieldValue) || changed;
-                    //}
                 }
             });
-            if(changed)
-            {
-                this.$setDirty();
-            }
+			changed && this.$setDirty();
             return changed;
         }
     }
@@ -171,7 +151,7 @@ export default class BaseType extends PrimitiveBase {
 
     $assignField(fieldName, newValue) {
         this.__value__[fieldName] = newValue;
-        BaseType.optionalSetManager(newValue, this.__lifecycleManager__);
+        this.$optionalSetManager(newValue, this.__lifecycleManager__);
     }
 
     $isReadOnly(){
@@ -195,8 +175,12 @@ export default class BaseType extends PrimitiveBase {
     }
 }
 
+
+
+BaseType._spec = Object.freeze(Object.create(null));
+
 BaseType.ancestors = [];
-BaseType.id                    = 'BaseType';
-BaseType.type                  = BaseType;
+BaseType.id        = 'BaseType';
+BaseType.type      = BaseType;
 
 makeDirtyable(BaseType);

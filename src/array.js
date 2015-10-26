@@ -1,18 +1,19 @@
-import _ from 'lodash'
-import defineType from './defineType'
-import BaseType from './BaseType'
-import Number from './number'
-import String from './string'
-import * as gopostal from 'gopostal';
+import _ from 'lodash';
+import defineType from './defineType';
+import {validateAndWrap} from "./validation"
+import BaseType from './BaseType';
+import Number from './number';
+import String from './string';
+import {getMailBox} from 'gopostal';
 
-const ARRAY_TYPE_NAME = 'Array';
-// to maintain consistency so that everything
-const Typorama = {define: defineType};
-const MAILBOX = gopostal.getMailBox('Typorama.Array');
-const ERROR_OBJ = {};
+const MAILBOX = getMailBox('Typorama.Array');
 
 class _Array extends BaseType {
-
+	
+	static withDefault(){
+		return BaseType.withDefault.apply(this, arguments);
+	}
+	
 	static defaults() { return []; }
 
 	static validate(value) { return Array.isArray(value); }
@@ -22,7 +23,7 @@ class _Array extends BaseType {
 	}
 
 	static allowPlainVal(val){
-		return _.isArray(val);
+		return Array.isArray(val);
 	}
 
 	static wrapValue(value, spec, options) {
@@ -44,8 +45,7 @@ class _Array extends BaseType {
 	}
 
 	static getSignature(options) {
-        if(_.isFunction(options.subTypes))
-        {
+        if(typeof options.subTypes === 'function'){
             return '<'+options.subTypes.type.id+'>';
         }else{
             return '<'+Object.keys(options.subTypes).join(',')+'>';
@@ -53,10 +53,12 @@ class _Array extends BaseType {
 	}
 
 	static _wrapSingleItem(value, options, lifeCycle) {
-		var result = _.isFunction(options.subTypes) ?
-			this._validateAndWrap(value, options.subTypes, lifeCycle) :
-			_(options.subTypes).map((type) => this._validateAndWrap(value, type, lifeCycle)).filter().first();
-
+		var result;
+		if(_.isFunction(options.subTypes)){
+			result = validateAndWrap(value, options.subTypes, lifeCycle);
+		} else {
+			result = _(options.subTypes).map((type) => validateAndWrap(value, type, lifeCycle)).filter().first();
+		}
 		if(null === result || undefined === result) {
 			MAILBOX.error('Illegal value '+value+' of type '+BaseType.getValueTypeName(value)+' for Array of type '+_Array.getSignature(options));
 		} else {
@@ -64,19 +66,17 @@ class _Array extends BaseType {
 		}
 	}
 
-
-
 	static of(subTypes) {
 		//TODO: remove this when transpiler shenanigans are over
-		if(arguments.length>1)
+		if(arguments.length > 1) {
 			subTypes = arguments;
+		}
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
 	constructor(value=[], options={}) {
-        if(!options.subTypes)
-        {
-			MAILBOX.error('Untyped arrays are not supported. Use Array<SomeType> instead.')
+        if(!options.subTypes){
+			MAILBOX.error('Untyped arrays are not supported. Use Array<SomeType> instead.');
         }
 		if(_.isArray(options.subTypes)) {
 			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
@@ -98,12 +98,14 @@ class _Array extends BaseType {
 		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
 		return this.__wrapArr__(valueArray);
 	}
+	
 	__lodashProxy__(key, fn, ctx){
 		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
 		return valueArray;
 	}
 
     __getLodashIterateeWrapper__(iteratee){
+		
 		if (_.isFunction(iteratee)) {
 			var typoramaArr = this;
 			return function (item, index) {
@@ -115,13 +117,9 @@ class _Array extends BaseType {
     }
 
 	__getValueArr__(){
-		if(this.__isReadOnly__)
-		{
-			return _.map(this.__value__,function(item){
-				if(item instanceof BaseType)
-					return item.$asReadOnly();
-				else
-					return item;
+		if(this.__isReadOnly__){
+			return _.map(this.__value__, function(item){
+				return (item.$asReadOnly) ? item.$asReadOnly() : item;
 			})
 		}else{
 			return this.__value__;
@@ -304,16 +302,15 @@ class _Array extends BaseType {
 				changed = true;
 				this.__value__.splice(newValue.length, lengthDiff);
 			}
-			_.forEach(newValue, ((itemValue, idx) => {
+			_.forEach(newValue, (itemValue, idx) => {
 
 				var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__);
 				changed = changed || newItemVal!= this.__value__[idx];
 
 				this.__value__[idx] = newItemVal;
 
-			}).bind(this));
-			if(changed)
-			{
+			});
+			if(changed){
 				this.$setDirty();
 			}
 			this.__value__.length = newValue.length;
@@ -322,7 +319,7 @@ class _Array extends BaseType {
 	}
 }
 
-export default Typorama.define(ARRAY_TYPE_NAME,{
+export default defineType('Array',{
 	spec: function() {
 		return {
 			length: Number.withDefault(0)

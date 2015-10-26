@@ -34,6 +34,11 @@ export function makeDirtyable(Type){
     Type.prototype.__cacheLockToken__ = unlockedToken;
 
 
+	Type.prototype.$optionalSetManager = function $optionalSetManager(itemValue, lifeCycle) {
+		if (itemValue && itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
+			itemValue.$setManager(lifeCycle);
+		}
+	}
 // called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (lifecycleManager) {
@@ -105,4 +110,5 @@ export function makeDirtyable(Type){
     Type.prototype.$isDirty = function $isDirty(r) {
         return this.$calcLastChange() >= r;
     }
+
 }

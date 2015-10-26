@@ -1,10 +1,35 @@
-import * as gopostal from 'gopostal';
+import {getMailBox} from 'gopostal';
 import _ from 'lodash';
 
-const MAILBOX = gopostal.getMailBox('Typorama.PrimitiveBase');
+const MAILBOX = getMailBox('Typorama.PrimitiveBase');
 
-class _PrimitiveBase {
+const clonedMembers = [
+    'validate',
+	'validateType', 
+	'validateAndWrap',
+	'allowPlainVal', 
+	'isAssignableFrom', 
+	'nullable',
+    'withDefault', 
+	'wrapValue', 
+	'create', 
+	'defaults', 
+	'options', 
+	'_spec',
+	'id'
+];
 
+class PrimitiveBase {
+	
+	static cloneType(Type){
+		function TypeClone(value, options) {
+			return new TypeClone.type(value, TypeClone.options || options);
+		}
+		clonedMembers.forEach(member => {TypeClone[member] = Type[member]});
+		TypeClone.type = Type;
+		return TypeClone;
+	}
+	
     static validateNullValue(Type, value) {
         if(value === null) {
             if(!(Type.options && Type.options.nullable)) {
@@ -18,14 +43,14 @@ class _PrimitiveBase {
     }
 
     static nullable() {
-        var NullableType = cloneType(this.type || this);
+        var NullableType = PrimitiveBase.cloneType(this.type || this);
         NullableType.options = NullableType.options || {};
         NullableType.options.nullable = true;
         return NullableType;
     }
 
     static withDefault(defaults, validate, options) {
-       var NewType = cloneType(this.type || this);
+       var NewType = PrimitiveBase.cloneType(this.type || this);
        if(validate) {
            NewType.validate = validate;
        }
@@ -46,20 +71,7 @@ class _PrimitiveBase {
        }
        return NewType;
    }
+
 }
 
-const clonedMembers = [
-    'validate', 'validateType', 'allowPlainVal', 'isAssignableFrom',
-    'withDefault', 'wrapValue', 'create', 'defaults', 'options', '_spec'
-];
-
-function cloneType(Type) {
-    function TypeClone(value, options) {
-        return new TypeClone.type(value, TypeClone.options || options);
-    }
-    clonedMembers.forEach(member => TypeClone[member] = Type[member]);
-    TypeClone.type = Type;
-    return TypeClone;
-}
-
-export default _PrimitiveBase;
+export default PrimitiveBase;

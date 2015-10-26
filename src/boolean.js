@@ -19,6 +19,6 @@ export default class _Boolean extends PrimitiveBase{
     }
 
 }
-
+_Boolean.id = 'boolean';
 _Boolean.type = _Boolean;
 _Boolean.create = Boolean;

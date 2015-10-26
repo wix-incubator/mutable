@@ -20,7 +20,7 @@ export default class _Function extends PrimitiveBase{
 
 }
 
+_Function.id = 'function';
 _Function.type = _Function;
-
 _Function.create = Object;
 
