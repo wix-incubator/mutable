@@ -22,7 +22,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
 		return itemValue;
 	} else if(type.type.allowPlainVal(itemValue)){
 		var newItem = type.create(itemValue);
-		if (_.isFunction(newItem.$setManager)) {
+		if (typeof newItem.$setManager === 'function') {
 			newItem.$setManager(lifeCycle);
 		}
 		return newItem;
