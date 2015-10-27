@@ -1,6 +1,6 @@
-import _ from "lodash"
-
+import _            from 'lodash';
 import {getMailBox} from 'gopostal';
+
 const MAILBOX = getMailBox('Typorama.lifecycle');
 
 
@@ -34,12 +34,6 @@ export function makeDirtyable(Type){
     Type.prototype.__lastChange__ = 1;
     Type.prototype.__cacheLockToken__ = unlockedToken;
 
-
-	Type.prototype.$optionalSetManager = function $optionalSetManager(itemValue, lifeCycle) {
-		if (itemValue && itemValue.$setManager && _.isFunction(itemValue.$setManager) && !itemValue.$isReadOnly()) {
-			itemValue.$setManager(lifeCycle);
-		}
-	}
 // called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (lifecycleManager) {

@@ -1,7 +1,8 @@
-import _ from "lodash"
-import BaseType from "./BaseType"
-import PrimitiveBase from './PrimitiveBase'
-import {getMailBox} from 'gopostal';
+import _                  from "lodash";
+import BaseType           from "./BaseType";
+import PrimitiveBase      from './PrimitiveBase';
+import {isAssignableFrom} from "./validation"
+import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
 
@@ -21,8 +22,8 @@ export default function(id, typeDefinition, TypeConstructor){
 	Type.wrapValue     = Type.wrapValue     || BaseType.wrapValue;
     
     var superTypeConstructor = Object.getPrototypeOf(Type.prototype).constructor;
-
-    if(BaseType.isAssignableFrom(superTypeConstructor.type)){
+	
+    if(isAssignableFrom(BaseType, superTypeConstructor.type)){
         Type.ancestors             = superTypeConstructor.ancestors.concat([superTypeConstructor.id]);
     } else {
         Type.prototype             = Object.create(BaseType.prototype);
@@ -63,7 +64,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
         Object.defineProperty(obj, fieldName, {
             get: function() {
 				var value = this.__value__[fieldName];
-                if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable() || value === null || value === undefined) {
+                if (!isAssignableFrom(BaseType, fieldDef.type) || this.$isDirtyable() || value === null || value === undefined) {
                     return value;
                 } else {
                     return value.$asReadOnly();
@@ -71,7 +72,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
             },
             set: function(newValue) {
                 if (this.$isDirtyable()) {
-                    if(this.$validateAndAssignField(fieldName, newValue)) {
+                    if(this.$assignField(fieldName, newValue)) {
                         this.$setDirty();
                     }
                 } else {

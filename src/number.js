@@ -1,9 +1,10 @@
-import PrimitiveBase from "./PrimitiveBase"
+import PrimitiveBase from "./PrimitiveBase";
+import {validateNullValue} from "./validation";
 
 export default class _Number extends PrimitiveBase{
 	
 	static create(v){
-		if(PrimitiveBase.validateNullValue(this, v)){
+		if(validateNullValue(this, v)){
 			return v;
 		}
 		return Number(v);
@@ -11,7 +12,7 @@ export default class _Number extends PrimitiveBase{
 	
     static defaults(){ return 0; }
 
-    static validate(v){ return typeof v === 'number' || PrimitiveBase.validateNullValue(this, v); }
+    static validate(v){ return typeof v === 'number' || validateNullValue(this, v); }
     static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {

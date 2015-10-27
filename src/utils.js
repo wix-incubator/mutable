@@ -1,0 +1,49 @@
+import _ from 'lodash';
+
+const clonedMembers = [
+	//every type have a type and id
+	'id',
+	'type',
+	//PrimitiveBase
+	'create', 
+	'defaults', 
+    'validate',
+	'allowPlainVal', 
+	'validateType', 
+	//PrimitiveBase Mods
+	'nullable',
+    'withDefault', 
+	//BaseType	
+	'wrapValue', 
+	'_spec'
+];
+
+export function cloneType(ClonedType){
+	function Type(value, options) {
+		return ClonedType.create(value !== undefined ? value : Type.defaults(), Type.options || options);
+	}
+	clonedMembers.forEach(member => {Type[member] = ClonedType[member]});
+	return Type;
+}
+
+export function getSubtypeSignature(options){
+	if(typeof options.subTypes === 'function'){
+		return '<'+options.subTypes.type.id+'>';
+	}else {
+		return '<'+Object.keys(options.subTypes).join(',')+'>';
+	}
+}
+
+export function getValueTypeName(value){
+	if(value.constructor && value.constructor.id){
+		return value.constructor.id
+	}
+	if(_.isPlainObject(value) && value._type){
+			return value._type
+	}
+	return typeof value;
+}
+
+export function getFieldDef(Type, fieldName){
+	return Type._spec[fieldName];
+}

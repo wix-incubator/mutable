@@ -7,10 +7,30 @@ export function optionalSetManager(itemValue, lifeCycle) {
 	}
 }
 
+export function isAssignableFrom(toType, type) {
+	return type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
+}
+
+export function isNullable(Type){
+	return Type.options && Type.options.nullable;
+}
+
+export function validateNullValue(Type, value) {
+	if(value === null) {
+		if(isNullable(Type)) {
+			return true;
+		} else {
+			MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
+
 export function validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
 	if(itemValue === null) {
-		var isNullable = type.options && type.options.nullable;
-		if(isNullable) {
+		if(isNullable(type)) {
 			return itemValue;
 		} else {
 			MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');

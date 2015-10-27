@@ -1,56 +1,25 @@
 import _ from 'lodash';
 import {getMailBox} from 'gopostal';
+import {cloneType} from './utils';
 
 const MAILBOX = getMailBox('Typorama.PrimitiveBase');
 
-const clonedMembers = [
-	'type',
-    'validate',
-	'validateType', 
-	'validateAndWrap',
-	'allowPlainVal', 
-	'isAssignableFrom', 
-	'nullable',
-    'withDefault', 
-	'wrapValue', 
-	'create', 
-	'defaults', 
-	'options',
-	'_spec',
-	'id'
-];
 
 class PrimitiveBase {
+	static create(){}
+	static defaults(){}
+	static validate(value){}	
+	static allowPlainVal(){}
+	static validateType(){}
 	
-	static cloneType(Type){
-		function TypeClone(value, options) {
-			return Type.create(value !== undefined ? value : TypeClone.defaults(), TypeClone.options || options);
-		}
-		clonedMembers.forEach(member => {TypeClone[member] = Type[member]});
-		return TypeClone;
-	}
-	
-    static validateNullValue(Type, value) {
-        if(value === null) {
-            if(!(Type.options && Type.options.nullable)) {
-                MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }
-
     static nullable() {
-        var NullableType = PrimitiveBase.cloneType(this);
+        var NullableType = cloneType(this);
         NullableType.options = NullableType.options ? _.cloneDeep(NullableType.options) : {};
 		NullableType.options.nullable = true;
         return NullableType;
-    }
-		
+    }		
     static withDefault(defaults, validate, options) {
-       var NewType = PrimitiveBase.cloneType(this);
+       var NewType = cloneType(this);
        if(validate) {
            NewType.validate = validate;
        }
@@ -72,7 +41,6 @@ class PrimitiveBase {
        }
        return NewType;
    }
-
 }
 
 export default PrimitiveBase;

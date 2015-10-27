@@ -1,9 +1,15 @@
-import config from './typoramaConfiguration'
-import _ from "lodash"
-import {validateAndWrap, optionalSetManager} from "./validation"
-import {makeDirtyable} from "./lifecycle"
-import PrimitiveBase from "./PrimitiveBase"
-import {getMailBox} from 'gopostal';
+import _               from 'lodash';
+import config          from './typoramaConfiguration';
+import {makeDirtyable} from './lifecycle';
+import PrimitiveBase   from './PrimitiveBase';
+import {getFieldDef}   from './utils';
+import {
+	validateAndWrap, 
+	optionalSetManager, 
+	isAssignableFrom, 
+	validateNullValue} from "./validation";
+	
+import {getMailBox}    from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.BaseType');
 const ERROR = {};
@@ -18,23 +24,9 @@ function createReadOnly(source){
 }
 
 export default class BaseType extends PrimitiveBase {
-	
-	static withDefault(){
-		return PrimitiveBase.withDefault.apply(this, arguments);
-	}
-	
+		
     static create(value, options) {
         return new this(value, options);
-    }
-
-    static isAssignableFrom(type) {
-        return type && (type.id === this.type.id || (type.ancestors && _.contains(type.ancestors, this.type.id)));
-    }
-
-	static validate(val) {
-        return Object.keys(this._spec).every(function(key) {
-            return this._spec[key].validate(val[key])
-        }, this);
     }
 	
 	static defaults() {
@@ -46,24 +38,24 @@ export default class BaseType extends PrimitiveBase {
             return val;
         }, {});
     }
-	
-    static validateType(value) {
-        return PrimitiveBase.validateNullValue(this, value) ||
-            ( value && value.constructor && BaseType.isAssignableFrom.call(this, value.constructor.type));
+
+	static validate(val) {
+        return Object.keys(this._spec).every(function(key) {
+            return this._spec[key].validate(val[key])
+        }, this);
     }
 
     static allowPlainVal(val){
         return _.isPlainObject(val) && (!val._type || val._type === this.id)
     }
-   
-    static getValueTypeName(value){
-        if(value.constructor && value.constructor.id){
-            return value.constructor.id
-        }
-        if(_.isPlainObject(value) && value._type){
-                return value._type
-        }
-        return typeof value;
+	
+	static withDefault(){
+		return PrimitiveBase.withDefault.apply(this, arguments);
+	}
+
+    static validateType(value) {
+        return validateNullValue(this, value) ||
+            ( value && value.constructor && isAssignableFrom(this, value.constructor.type));
     }
 
     static wrapValue(value, spec, options){
@@ -106,7 +98,7 @@ export default class BaseType extends PrimitiveBase {
         if (this.$isDirtyable()) {
             var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
-                var fieldSpec = this.$getFieldDef(fieldName);
+                var fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
                     var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, ERROR);
                     if(newVal === ERROR) {
@@ -124,33 +116,25 @@ export default class BaseType extends PrimitiveBase {
         }
     }
 
-    $getFieldDef(fieldName){
-        return this.constructor._spec[fieldName];
-    }
-
     // validates and assigns input to field.
     // will report error for undefined fields
     // returns whether the field value has changed
-    $validateAndAssignField(fieldName, newValue){
+    $assignField(fieldName, newValue){
         // don't assign if input is the same as existing value
         if (this.__value__[fieldName] !== newValue){
-            var fieldDef = this.$getFieldDef(fieldName);
-            var typedField = BaseType.isAssignableFrom(fieldDef.type);
+            var fieldDef = getFieldDef(this.constructor, fieldName);
+            var typedField = isAssignableFrom(BaseType, fieldDef.type);
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
             if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))){
-                // validation passed
-                this.$assignField(fieldName, newValue);
+                // validation passed set the value
+				this.__value__[fieldName] = newValue;
+				optionalSetManager(newValue, this.__lifecycleManager__);
                 return true;
             } else {
                 MAILBOX.error(`Invalid value for key ${fieldName} of type ${fieldDef.type.id}: '${newValue && newValue.constructor.name}'.`);
             }
         }
         return false;
-    }
-
-    $assignField(fieldName, newValue) {
-        this.__value__[fieldName] = newValue;
-        this.$optionalSetManager(newValue, this.__lifecycleManager__);
     }
 
     $isReadOnly(){

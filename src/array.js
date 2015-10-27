@@ -1,10 +1,12 @@
-import _ from 'lodash';
-import defineType from './defineType';
-import {validateAndWrap} from "./validation"
-import BaseType from './BaseType';
-import Number from './number';
-import String from './string';
-import {getMailBox} from 'gopostal';
+import _                  from 'lodash';
+import defineType         from './defineType';
+import {validateAndWrap}  from './validation';
+import {
+	getValueTypeName,
+	getSubtypeSignature}  from './utils';
+import BaseType           from './BaseType';
+import Number             from './number';
+import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.Array');
 
@@ -44,23 +46,15 @@ class _Array extends BaseType {
 		}, this);
 	}
 
-	static getSignature(options) {
-        if(typeof options.subTypes === 'function'){
-            return '<'+options.subTypes.type.id+'>';
-        }else{
-            return '<'+Object.keys(options.subTypes).join(',')+'>';
-        }
-	}
-
 	static _wrapSingleItem(value, options, lifeCycle) {
 		var result;
-		if(_.isFunction(options.subTypes)){
+		if(typeof options.subTypes === 'function'){
 			result = validateAndWrap(value, options.subTypes, lifeCycle);
 		} else {
 			result = _(options.subTypes).map((type) => validateAndWrap(value, type, lifeCycle)).filter().first();
 		}
 		if(null === result || undefined === result) {
-			MAILBOX.error('Illegal value '+value+' of type '+BaseType.getValueTypeName(value)+' for Array of type '+_Array.getSignature(options));
+			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ getSubtypeSignature(options));
 		} else {
 			return result;
 		}

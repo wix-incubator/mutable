@@ -1,10 +1,11 @@
 import PrimitiveBase from "./PrimitiveBase"
+import {validateNullValue} from "./validation"
 
 function noop() {};
 
 export default class _Function extends PrimitiveBase{
 	static create(v){
-		if(PrimitiveBase.validateNullValue(this, v)){
+		if(validateNullValue(this, v)){
 			return v;
 		}
 		return Object(v);
@@ -12,7 +13,7 @@ export default class _Function extends PrimitiveBase{
 	
     static defaults() { return noop; }
 
-    static validate(v) { return typeof v === 'function' || PrimitiveBase.validateNullValue(this, v) }
+    static validate(v) { return typeof v === 'function' || validateNullValue(this, v) }
     static allowPlainVal(v){ return this.validate(v)}
 
     static validateType(value) {

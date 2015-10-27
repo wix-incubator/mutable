@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import Typorama from '../src';
-import {either} from '../src/composite'
+import {isAssignableFrom} from '../src/validation';
+import {either} from '../src/composite';
 import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
@@ -94,7 +95,7 @@ describe('defining', () => {
 			describe('should be compatible', () => {
 				it('with itself', () => {
 					var arrType = Typorama.Array.of(UserType);
-					expect(arrType.type).to.satisfy(arrType.isAssignableFrom.bind(arrType));
+					expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
 				});
 				it('with instances of itself', () => {
 					var arrType = Typorama.Array.of(UserType);
@@ -110,7 +111,7 @@ describe('defining', () => {
 				it('with types of same schema', () => {
 					var arrType1 = Typorama.Array.of(UserType);
 					var arrType2 = Typorama.Array.of(UserType);
-					expect(arrType1.type).to.satisfy(arrType2.isAssignableFrom.bind(arrType2));
+					expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
 				});
 			});
 		});
@@ -118,7 +119,7 @@ describe('defining', () => {
 			describe('should be compatible', () => {
 				it('with itself', () => {
 					var arrType = Typorama.Array.of(either(UserType,AddressType));
-					expect(arrType.type).to.satisfy(arrType.isAssignableFrom.bind(arrType));
+					expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
 				});
 				it('with instances of itself', () => {
 					var arrType = Typorama.Array.of(either(UserType,AddressType));
@@ -134,7 +135,7 @@ describe('defining', () => {
 				it('with types of same schema', () => {
 					var arrType1 = Typorama.Array.of(either(UserType,AddressType));
 					var arrType2 = Typorama.Array.of(either(UserType,AddressType));
-					expect(arrType1.type).to.satisfy(arrType2.isAssignableFrom.bind(arrType2));
+					expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
 				});
 			});
 		});
