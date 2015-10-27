@@ -377,5 +377,4 @@ describe('Nullable primitive type', function() {
 			})
 		});
 	});
-
 });
