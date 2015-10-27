@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {getMailBox} from 'gopostal';
 const MAILBOX = getMailBox('Typorama.validation');
 
