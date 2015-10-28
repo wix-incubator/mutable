@@ -52,6 +52,6 @@
   },
   "dependencies": {
     "lodash": "3.9.3",
-    "gopostal": "0.0.17"
+    "gopostal": "0.0.18"
   }
 }
