@@ -50,3 +50,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
 	}
 	return defaultErr;
 }
+
+export default {
+	isAssignableFrom
+}
