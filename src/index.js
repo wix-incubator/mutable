@@ -8,10 +8,14 @@ import Number from './number'
 import Array from './array'
 import Function from './function'
 import defineEnum from "./defineEnum";
+import utils from "./utils";
+import validation from "./validation";
 import { LifeCycleManager , revision} from "./lifecycle";
 import {either} from './composite'
 
 export default {
+	validation,
+	utils,
 	config,
     define,
     BaseType,
