@@ -1,60 +1,46 @@
-import _ from "lodash"
-import BaseType from "./BaseType"
-import PrimitiveBase from './PrimitiveBase'
-import * as gopostal from 'gopostal';
+import _                  from "lodash";
+import BaseType           from "./BaseType";
+import PrimitiveBase      from './PrimitiveBase';
+import {isAssignableFrom} from "./validation"
+import {getMailBox}       from 'gopostal';
 
-const MAILBOX = gopostal.getMailBox('Typorama.define');
-
-/*
- * Called to generate a default value resolver for custom types. The default value resolver is called upon constructing an instance
- * to populate undefined fields
- */
-function generateDefaultValueResolver(){
-    return function() {
-        var spec = this._spec;
-        var args = arguments;
-        return Object.keys(this._spec).reduce(function (val, key) {
-            var fieldSpec = spec[key];
-            val[key] = fieldSpec.defaults.apply(fieldSpec, args);
-            return val;
-        }, {});
-    }
-}
+const MAILBOX = getMailBox('Typorama.define');
 
 export default function(id, typeDefinition, TypeConstructor){
 
-    TypeConstructor = TypeConstructor || function Type(value, options){
+    var Type = TypeConstructor || function Type(value, options){
         BaseType.call(this, value, options);
     };
-    TypeConstructor.id                    = id;
-    TypeConstructor.type                  = TypeConstructor;
-    TypeConstructor.validate              = TypeConstructor.validate || generateValidate();
-    TypeConstructor.validateType          = TypeConstructor.validateType || BaseType.validateType;
-    TypeConstructor.allowPlainVal         = TypeConstructor.allowPlainVal || BaseType.allowPlainVal;
-    TypeConstructor.withDefault           = TypeConstructor.withDefault || PrimitiveBase.withDefault;
-    TypeConstructor.defaults              = TypeConstructor.defaults || generateDefaultValueResolver();
-    TypeConstructor.nullable              = PrimitiveBase.nullable;
-    TypeConstructor._validateAndWrap      = BaseType._validateAndWrap;
-    TypeConstructor.create                = BaseType.create;
-
-    var superTypeConstructor = TypeConstructor.prototype.__proto__.constructor;
-
-    if(BaseType.isAssignableFrom(superTypeConstructor.type)){
-        TypeConstructor.ancestors             = superTypeConstructor.ancestors.concat([superTypeConstructor.id]);
+		
+    Type.validate      = Type.validate      || BaseType.validate;
+    Type.validateType  = Type.validateType  || BaseType.validateType;
+    Type.allowPlainVal = Type.allowPlainVal || BaseType.allowPlainVal;
+    Type.defaults      = Type.defaults      || BaseType.defaults;
+    Type.withDefault   = Type.withDefault   || BaseType.withDefault;
+    Type.nullable      = Type.nullable      || BaseType.nullable;
+    Type.create        = Type.create        || BaseType.create;
+	Type.wrapValue     = Type.wrapValue     || BaseType.wrapValue;
+    
+    var superTypeConstructor = Object.getPrototypeOf(Type.prototype).constructor;
+	
+    if(isAssignableFrom(BaseType, superTypeConstructor.type)){
+        Type.ancestors             = superTypeConstructor.ancestors.concat([superTypeConstructor.id]);
     } else {
-        TypeConstructor.prototype             = Object.create(BaseType.prototype);
-        TypeConstructor.prototype.constructor = TypeConstructor;
-        TypeConstructor.ancestors             = [BaseType.id];
+        Type.prototype             = Object.create(BaseType.prototype);
+        Type.prototype.constructor = Type;
+        Type.ancestors             = [BaseType.id];
     }
 
-    TypeConstructor.getFieldsSpec         = typeDefinition.spec.bind(null, TypeConstructor);
-    TypeConstructor._spec                 = typeDefinition.spec(TypeConstructor);
-	TypeConstructor._complex              = getComplexFields(TypeConstructor._spec);
-    TypeConstructor.wrapValue             = TypeConstructor.wrapValue || BaseType.wrapValue;
+	Type.id            = id;
+    Type.type          = Type;
+    Type.getFieldsSpec = typeDefinition.spec.bind(null, Type);
+    Type._spec         = typeDefinition.spec(Type);
+	Type._complex      = getComplexFields(Type._spec);
+    
 
-    generateFieldsOn(TypeConstructor.prototype, TypeConstructor._spec);
+    generateFieldsOn(Type.prototype, Type._spec);
 
-    return TypeConstructor;
+    return Type;
 };
 
 function getComplexFields(spec){
@@ -67,14 +53,6 @@ function getComplexFields(spec){
 	return complex;
 }
 
-function generateValidate() { // ToDo: check if its better jit-wise to move the spec to the closure: generateValidateForSpec(spec)
-    return function(val) {
-        return Object.keys(this._spec).every(function(key) {
-            return this._spec[key].validate(val[key])
-        }, this);
-    };
-}
-
 function generateFieldsOn(obj, fieldsDefinition) {
     _.forEach(fieldsDefinition, function(fieldDef, fieldName) {
         if(obj[fieldName]) {
@@ -85,8 +63,8 @@ function generateFieldsOn(obj, fieldsDefinition) {
 
         Object.defineProperty(obj, fieldName, {
             get: function() {
-		var value = this.__value__[fieldName];
-                if (!BaseType.isAssignableFrom(fieldDef.type) || this.$isDirtyable() || value === null || value === undefined) {
+				var value = this.__value__[fieldName];
+                if (!isAssignableFrom(BaseType, fieldDef.type) || this.$isDirtyable() || value === null || value === undefined) {
                     return value;
                 } else {
                     return value.$asReadOnly();
@@ -94,7 +72,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
             },
             set: function(newValue) {
                 if (this.$isDirtyable()) {
-                    if(this.$validateAndAssignField(fieldName, newValue)) {
+                    if(this.$assignField(fieldName, newValue)) {
                         this.$setDirty();
                     }
                 } else {

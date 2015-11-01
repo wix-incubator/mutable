@@ -1,8 +1,9 @@
-import _ from "lodash"
+import _            from 'lodash';
+import {getMailBox} from 'gopostal';
 
-import * as gopostal from 'gopostal';
+const MAILBOX = getMailBox('Typorama.lifecycle');
 
-const MAILBOX = gopostal.getMailBox('Typorama.lifecycle');
+
 export let revision = {
     __count__ : 1,
     read : function(){return this.__count__;},
@@ -32,7 +33,6 @@ export function makeDirtyable(Type){
 // add a default dirty state for all objects
     Type.prototype.__lastChange__ = 1;
     Type.prototype.__cacheLockToken__ = unlockedToken;
-
 
 // called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
@@ -105,4 +105,5 @@ export function makeDirtyable(Type){
     Type.prototype.$isDirty = function $isDirty(r) {
         return this.$calcLastChange() >= r;
     }
+
 }

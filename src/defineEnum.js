@@ -39,7 +39,8 @@ function defineEnum(def) {
 		MAILBOX.error(`Enum[${Object.keys(def)}] must be initialized with value.`);
 	};
 
-	EnumType.prototype.__proto__ = PrimitiveBase.prototype;
+	EnumType.prototype = Object.create(PrimitiveBase.prototype);
+	EnumType.prototype.constructor = EnumType;
 
 	EnumType.prototype.toJSON = function(){
 		return this.value;
@@ -70,6 +71,7 @@ function defineEnum(def) {
 		return _.includes(def, plainVal);
 	};
 
+	EnumType.id = 'enum';
 	EnumType.type = EnumType;
 	EnumType.create = BaseType.create;
 
