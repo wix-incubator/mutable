@@ -15,5 +15,6 @@ import "./array/Array";
 import "./Function";
 import "./boolean";
 import "./enum";
+import "./reference";
 import "./defineType.spec";
 import "./primitive-defaults";

@@ -6,29 +6,29 @@ import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
 
-export default function(id, typeDefinition, TypeConstructor){
-
+export default function(id, typeDefinition, ParentType, TypeConstructor){
+	ParentType = ParentType || BaseType;
     var Type = TypeConstructor || function Type(value, options){
-        BaseType.call(this, value, options);
+		ParentType.call(this, value, options);
     };
-		
-    Type.validate      = Type.validate      || BaseType.validate;
-    Type.validateType  = Type.validateType  || BaseType.validateType;
-    Type.allowPlainVal = Type.allowPlainVal || BaseType.allowPlainVal;
-    Type.defaults      = Type.defaults      || BaseType.defaults;
-    Type.withDefault   = Type.withDefault   || BaseType.withDefault;
-    Type.nullable      = Type.nullable      || BaseType.nullable;
-    Type.create        = Type.create        || BaseType.create;
-	Type.wrapValue     = Type.wrapValue     || BaseType.wrapValue;
-    
+
+    Type.validate      = Type.validate      || ParentType.validate;
+    Type.validateType  = Type.validateType  || ParentType.validateType;
+    Type.allowPlainVal = Type.allowPlainVal || ParentType.allowPlainVal;
+    Type.defaults      = Type.defaults      || ParentType.defaults;
+    Type.withDefault   = Type.withDefault   || ParentType.withDefault;
+    Type.nullable      = Type.nullable      || ParentType.nullable;
+    Type.create        = Type.create        || ParentType.create;
+	Type.wrapValue     = Type.wrapValue     || ParentType.wrapValue;
+
     var superTypeConstructor = Object.getPrototypeOf(Type.prototype).constructor;
-	
-    if(isAssignableFrom(BaseType, superTypeConstructor.type)){
+
+    if(isAssignableFrom(ParentType, superTypeConstructor.type)){
         Type.ancestors             = superTypeConstructor.ancestors.concat([superTypeConstructor.id]);
     } else {
-        Type.prototype             = Object.create(BaseType.prototype);
+        Type.prototype             = Object.create(ParentType.prototype);
         Type.prototype.constructor = Type;
-        Type.ancestors             = [BaseType.id];
+        Type.ancestors             = ParentType.id === 'BaseType' ? [ParentType.id] : ParentType.ancestors.slice();
     }
 
 	Type.id            = id;
@@ -36,7 +36,7 @@ export default function(id, typeDefinition, TypeConstructor){
     Type.getFieldsSpec = typeDefinition.spec.bind(null, Type);
     Type._spec         = typeDefinition.spec(Type);
 	Type._complex      = getComplexFields(Type._spec);
-    
+
 
     generateFieldsOn(Type.prototype, Type._spec);
 
@@ -48,7 +48,7 @@ function getComplexFields(spec){
 	for(var k in spec){
 		if(spec[k] && spec[k]._spec){
 			complex[complex.length] = k;
-		}		
+		}
 	}
 	return complex;
 }

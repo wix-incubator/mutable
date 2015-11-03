@@ -11,11 +11,11 @@ import {getMailBox}       from 'gopostal';
 const MAILBOX = getMailBox('Typorama.Array');
 
 class _Array extends BaseType {
-	
+
 	static withDefault(){
 		return BaseType.withDefault.apply(this, arguments);
 	}
-	
+
 	static defaults() { return []; }
 
 	static validate(value) { return Array.isArray(value); }
@@ -92,14 +92,14 @@ class _Array extends BaseType {
 		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
 		return this.__wrapArr__(valueArray);
 	}
-	
+
 	__lodashProxy__(key, fn, ctx){
 		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
 		return valueArray;
 	}
 
     __getLodashIterateeWrapper__(iteratee){
-		
+
 		if (_.isFunction(iteratee)) {
 			var typoramaArr = this;
 			return function (item, index) {
@@ -319,4 +319,4 @@ export default defineType('Array',{
 			length: Number.withDefault(0)
 		};
 	}
-}, _Array);
+}, null, _Array);
