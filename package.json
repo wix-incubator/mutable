@@ -12,16 +12,15 @@
     "url": "git+ssh://git@github.com:wix/typorama"
   },
   "scripts": {
-    "build:src": "rm -rf ./dist/src && ./node_modules/.bin/babel ./src/ -d ./dist/src/ --modules umd --source-maps",
-    "build:test": "rm -rf ./dist/test && ./node_modules/.bin/babel ./test/ -d ./dist/test/ --modules umd --source-maps",
+    "build:src": "rm -rf ./dist/src && babel ./src/ -d ./dist/src/ --modules umd --source-maps",
+    "build:test": "rm -rf ./dist/test && babel ./test/ -d ./dist/test/ --modules umd --source-maps",
     "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
     "build:webpack": "webpack",
-    "test:node": "./node_modules/.bin/mocha --reporter $npm_config_reporter ./dist/test",
+    "test:node": "mocha --reporter $npm_config_reporter ./dist/test",
     "test:browser": "karma start --single-run",
     "pretest": "npm run build:test && npm run build:testkit && npm run build:webpack",
-    "publish:tc": "./node_modules/.bin/ci",
     "test": "npm run test:browser && npm run test:node",
-    "start": "./node_modules/.bin/webpack-dev-server --progress --hot --inline --no-colors"
+    "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
   "author": "core3",
   "license": "c",
