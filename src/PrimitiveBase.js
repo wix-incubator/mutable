@@ -8,22 +8,23 @@ const MAILBOX = getMailBox('Typorama.PrimitiveBase');
 class PrimitiveBase {
 	static create(){}
 	static defaults(){}
-	static validate(value){}	
+	static validate(value){}
 	static allowPlainVal(){}
 	static validateType(){}
-	
+
     static nullable() {
         var NullableType = cloneType(this);
-        NullableType.options = NullableType.options ? _.cloneDeep(NullableType.options) : {};
 		NullableType.options.nullable = true;
         return NullableType;
-    }		
+    }
     static withDefault(defaults, validate, options) {
        var NewType = cloneType(this);
        if(validate) {
            NewType.validate = validate;
        }
-       NewType.options = options || this.options;
+		if(options){
+			NewType.options = options;
+		}
 
        if(defaults !== undefined) {
            if(defaults === null) {

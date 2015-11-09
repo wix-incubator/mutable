@@ -14,12 +14,14 @@ function typeErrorMessage(valueStr,typeStr,arraySubTypes){
 describe('defining', () => {
 
 	describe('a basic type', () => {
+
 		describe('that is isomorphic to another type', () => {
 			it('should result in two compatible types', () => {
 				new Type2(new Type1({foo: "bar"}));
 				expect(() => new Type2(new Type1({foo: "bar"}))).not.to.report({level : /warn|error|fatal/});
 			})
 		});
+
 		it('should allow defining types with primitive fields', function () {
 			var primitives = Typorama.define('primitives', {
 				spec: () => ({
@@ -30,6 +32,7 @@ describe('defining', () => {
 			});
 			expect(new primitives().name).to.equal('leon');
 		});
+
 		it('should allow defining types with custom fields', function () {
 			var primitives = Typorama.define('primitives', {
 				spec: () => ({
@@ -45,6 +48,7 @@ describe('defining', () => {
 			});
 			expect(new composite().child.name).to.equal('leon');
 		});
+
 		it('should report error if field type is not valid', function () {
 			expect(function () {
 				Typorama.define('invalid', {
@@ -64,8 +68,41 @@ describe('defining', () => {
 				});
 			}).to.report({level : 'error', params : [/Field error.*reserved/]});
 		});
+
 	});
 
+	describe('type with default value', function(){
+
+		it('should clone the previous type definition', function(){
+			var originalType = Typorama.String;
+			originalType.options = {};
+
+			var customDefaultType = originalType.withDefault('im special!');
+
+			expect(customDefaultType).not.to.equal(originalType);
+			expect(customDefaultType.options).not.to.equal(originalType.options);
+		});
+
+	});
+
+	describe('nullable type', function(){
+
+		it('should clone the previous type definition and options', function(){
+			var originalType = Typorama.String;
+			originalType.options = { randomConfig:{someOption:true} };
+
+			var customDefaultType = originalType.nullable();
+
+			expect(customDefaultType).not.to.equal(originalType);
+			expect(customDefaultType.options).not.to.equal(originalType.options);
+			expect(customDefaultType.options.randomConfig).not.to.equal(originalType.options.randomConfig);
+			expect(customDefaultType.options).to.eql({
+				randomConfig:{someOption:true},
+				nullable:true
+			});
+		});
+
+	});
 
 	describe("an array type",() => {
 

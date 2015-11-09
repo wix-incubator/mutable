@@ -67,7 +67,7 @@ describe('Custom data', function() {
 			var container = new UserWithChildType({child : {age : 11}});
 
 			expect(container.toJSON(), 'toJSON() called').to.eql({name : new UserWithChildType().name, child : new UserType({age : 11}).toJSON()});
-			expect(container.toJSON(false), 'toJSON(false) called').to.eql({name : new UserWithChildType().name, child : new UserType({age : 11})});
+			expect(container.toJSON(false), 'toJSON(false) called').to.eql({name : new UserWithChildType().name, child : container.__value__.child});
 		});
 	});
 
