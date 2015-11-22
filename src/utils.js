@@ -5,24 +5,25 @@ const clonedMembers = [
 	'id',
 	'type',
 	//PrimitiveBase
-	'create', 
-	'defaults', 
+	'create',
+	'defaults',
     'validate',
-	'allowPlainVal', 
-	'validateType', 
+	'allowPlainVal',
+	'validateType',
 	//PrimitiveBase Mods
 	'nullable',
-    'withDefault', 
-	//BaseType	
-	'wrapValue', 
+    'withDefault',
+	//BaseType
+	'wrapValue',
 	'_spec'
 ];
 
-export function cloneType(ClonedType){
+export function cloneType(TypeToClone){
 	function Type(value, options) {
-		return ClonedType.create(value !== undefined ? value : Type.defaults(), Type.options || options);
+		return TypeToClone.create(value !== undefined ? value : Type.defaults(), Type.options || options);
 	}
-	clonedMembers.forEach(member => {Type[member] = ClonedType[member]});
+	Type.options = TypeToClone.options ? _.cloneDeep(TypeToClone.options) : {};
+	clonedMembers.forEach(member => {Type[member] = TypeToClone[member]});
 	return Type;
 }
 
