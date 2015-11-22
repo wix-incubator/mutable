@@ -6,7 +6,7 @@ import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
 
-export default function(id, typeDefinition, ParentType, TypeConstructor){
+function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	ParentType = ParentType || BaseType;
     var Type = TypeConstructor || function Type(value, options){
 		ParentType.call(this, value, options);
@@ -42,6 +42,12 @@ export default function(id, typeDefinition, ParentType, TypeConstructor){
 
     return Type;
 };
+
+defineType.newImpl = function(id, typeDefinition, TypeConstructor){
+	return defineType(id, typeDefinition, TypeConstructor);
+};
+
+export default defineType;
 
 function getComplexFields(spec){
 	var complex = [];
