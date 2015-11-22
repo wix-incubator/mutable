@@ -43,7 +43,7 @@ function defineType(id, typeDefinition, TypeConstructor){
     return Type;
 };
 
-defineType.newImpl = function(id, typeDefinition, ParentType, TypeConstructor){
+defineType.newImpl = function(id, typeDefinition, TypeConstructor){
 	return defineType(id, typeDefinition, TypeConstructor);
 };
 
