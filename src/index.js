@@ -7,6 +7,7 @@ import Boolean from './boolean'
 import Number from './number'
 import Array from './array'
 import Function from './function'
+import Reference from './reference'
 import defineEnum from "./defineEnum";
 import validation from "./validation";
 import { LifeCycleManager , revision} from "./lifecycle";
@@ -23,6 +24,7 @@ export default {
     Number,
     Array,
     Function,
+	Reference,
     defineEnum,
     LifeCycleManager,
     either,
