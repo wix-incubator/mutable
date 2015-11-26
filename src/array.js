@@ -82,7 +82,7 @@ class _Array extends BaseType {
 	static of(subTypes) {
 		//TODO: remove this when transpiler shenanigans are over
 		if(arguments.length > 1) {
-			subTypes = Array.from(arguments);
+			subTypes = Array.prototype.slice.call(arguments);
 		}
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
