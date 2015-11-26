@@ -15,6 +15,7 @@ const clonedMembers = [
     'withDefault',
 	//BaseType
 	'wrapValue',
+	'cloneValue',
 	'_spec'
 ];
 

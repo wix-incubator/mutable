@@ -68,7 +68,7 @@ function defineEnum(def) {
 
 	EnumType.validateType = EnumType.validate;
     EnumType.allowPlainVal = function(plainVal){
-		return _.includes(def, plainVal);
+		return _.includes(def, plainVal); // ToDo: is enum nullable? || validateNullValue(this, val);
 	};
 
 	EnumType.id = 'enum';

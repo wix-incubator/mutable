@@ -80,7 +80,8 @@ describe('setValue', function () {
         var TestType3 = aDataTypeWithSpec({
             gagot: Typorama.Array.of(TestType1, TestType2).withDefault([{}, {}])
         }, "TestType3");
-        var testObj = new TestType3();
+
+		var testObj = new TestType3();
 
         testObj.setValue({gagot: []});
 

@@ -1,6 +1,6 @@
 import _                  from 'lodash';
 import defineType         from './defineType';
-import {validateAndWrap}  from './validation';
+import {validateAndWrap, validateNullValue}  from './validation';
 import {
 	getValueTypeName,
 	getSubtypeSignature}  from './utils';
@@ -18,6 +18,25 @@ class _Array extends BaseType {
 
 	static defaults() { return []; }
 
+	static cloneValue(value){
+		if(!Array.isArray(value)) { return []; }
+		var subTypes = this.options.subTypes;
+		function getItemType(itemValue){
+			if(typeof subTypes === 'function') {
+				return subTypes.allowPlainVal(itemValue) && subTypes;
+			} else if(Array.isArray(subTypes)){
+				return _(subTypes).map((Type) => Type.allowPlainVal(itemValue) ? Type : null ).filter().first();
+			}
+		}
+		return value.map((itemValue, index) => {
+			var Type = getItemType(itemValue);
+			if(!Type){
+				throw new Error("cloneValue error: no type found for index " + index)
+			}
+			return Type.cloneValue(itemValue);
+		});
+	}
+
 	static validate(value) { return Array.isArray(value); }
 
 	static validateType(value) {
@@ -25,7 +44,7 @@ class _Array extends BaseType {
 	}
 
 	static allowPlainVal(val){
-		return Array.isArray(val);
+		return Array.isArray(val) || validateNullValue(this, val);
 	}
 
 	static wrapValue(value, spec, options) {
@@ -63,7 +82,7 @@ class _Array extends BaseType {
 	static of(subTypes) {
 		//TODO: remove this when transpiler shenanigans are over
 		if(arguments.length > 1) {
-			subTypes = arguments;
+			subTypes = Array.prototype.slice.call(arguments);
 		}
 		return this.withDefault(undefined, undefined, { subTypes });
 	};

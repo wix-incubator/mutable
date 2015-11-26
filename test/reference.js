@@ -14,6 +14,14 @@ function defineRef(def, id){
 	}, Typorama.Reference);
 }
 
+function defineType(def, id){
+	return Typorama.define(id || 'unnamedRefType', {
+		spec: function() {
+			return def;
+		}
+	});
+}
+
 describe("reference type", function() {
 
 	describe('initial value', function(){
@@ -40,11 +48,43 @@ describe("reference type", function() {
 			expect(typeIns.age).to.equal(undefined);
 		});
 
+		it('should keep the original value reference', function(){
+			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
+			var inputRef = { age:30 };
+
+			var typeIns = new RefType(inputRef);
+
+			expect(typeIns.__value__).to.equal(inputRef);
+		});
+
+		it('should keep the original value reference (from defaults of complex list)', function(){
+			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
+			var defaultInputRef = { age:30 };
+			var listOfRef = Typorama.Array.of(RefType).withDefault([defaultInputRef]);
+
+			var listIns = new listOfRef();
+
+			expect(listIns.at(0).__value__).to.equal(defaultInputRef);
+		});
+
+		it('should keep original value reference (from defaults of complex type)', function(){
+			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
+			var MyType = defineType({ ref: RefType}, 'MyType');
+			var myRef = {age:1};
+			var T = MyType.withDefault({
+				ref: myRef
+			});
+
+			var t = new T();
+
+			expect(t.ref.__value__).to.equal(myRef);
+		});
+
 	});
 
 	describe('get field', function(){
 
-		it('should proxy the according to spec', function(){
+		it('should proxy according to spec', function(){
 			var RefType = defineRef({ id:Typorama.String, count:Typorama.Number });
 			var value = { id:"001", count:5 };
 
@@ -101,6 +141,15 @@ describe("reference type", function() {
 
 			expect(value.id).to.equal("001");
 		});
+
+	});
+
+	describe('validateType', function(){
+
+		//it('should accept any value that has the spec interface', function(){
+		//	var RefType = defineRef({ id:Typorama.String });
+		//	expect(RefType.validateType({id:"001"})).to.be.true;
+		//});
 
 	});
 

@@ -4,11 +4,11 @@ import {makeDirtyable} from './lifecycle';
 import PrimitiveBase   from './PrimitiveBase';
 import {getFieldDef}   from './utils';
 import {
-	validateAndWrap, 
-	optionalSetManager, 
-	isAssignableFrom, 
+	validateAndWrap,
+	optionalSetManager,
+	isAssignableFrom,
 	validateNullValue} from "./validation";
-	
+
 import {getMailBox}    from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.BaseType');
@@ -24,11 +24,11 @@ function createReadOnly(source){
 }
 
 export default class BaseType extends PrimitiveBase {
-		
+
     static create(value, options) {
         return new this(value, options);
     }
-	
+
 	static defaults() {
         var spec = this._spec;
         var args = arguments;
@@ -39,6 +39,17 @@ export default class BaseType extends PrimitiveBase {
         }, {});
     }
 
+	static cloneValue(value){
+		if(!_.isPlainObject(value)) { return {}; }
+
+		return _.reduce(this._spec, (cloneObj, fieldSpec, fieldId) => {
+			if(fieldSpec.allowPlainVal(value[fieldId])){
+				cloneObj[fieldId] = value[fieldId];
+			}
+			return cloneObj;
+		}, {});
+	}
+
 	static validate(val) {
         return Object.keys(this._spec).every(function(key) {
             return this._spec[key].validate(val[key])
@@ -46,9 +57,9 @@ export default class BaseType extends PrimitiveBase {
     }
 
     static allowPlainVal(val){
-        return _.isPlainObject(val) && (!val._type || val._type === this.id)
+        return _.isPlainObject(val) && (!val._type || val._type === this.id) || validateNullValue(this, val);
     }
-	
+
 	static withDefault(){
 		return PrimitiveBase.withDefault.apply(this, arguments);
 	}
@@ -90,7 +101,7 @@ export default class BaseType extends PrimitiveBase {
 			Object.freeze(this);
 		}
     }
-	
+
 
     // merge native javascript data into the object
     // this method traverses the input recursively until it reaches typorama values (then it sets them)
@@ -144,7 +155,7 @@ export default class BaseType extends PrimitiveBase {
     $asReadOnly(){
         return this.__readOnlyInstance__;
     }
-	
+
 	$asReadWrite(){
 		return this.__readWriteInstance__;
 	}
