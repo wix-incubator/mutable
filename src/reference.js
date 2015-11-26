@@ -1,6 +1,6 @@
 import BaseType from "./BaseType";
 import DefineType from "./defineType";
-import { validateAndWrap } from "./validation";
+import { validateAndWrap, validateNullValue } from "./validation";
 import {getMailBox}       from 'gopostal';
 import _ from "lodash";
 
@@ -8,9 +8,12 @@ const MAILBOX = getMailBox('Typorama.Reference');
 
 class _Reference extends BaseType {
 
-	//static allowPlainVal(val){
-	//	return (typeof val === 'string') || React.isValidElement(val) || _.isPlainObject(val);
-	//}
+	static allowPlainVal(value){
+
+		return (_.isPlainObject(value) && _.every(this._spec, (fieldSpec, fieldId) => {
+			return fieldSpec.allowPlainVal(value[fieldId]);
+		})) || validateNullValue(this, val);
+	}
 
 	static wrapValue(refVal, spec, options = {}) {
 		var isValid = true;
@@ -26,6 +29,8 @@ class _Reference extends BaseType {
 		});
 		return isValid ? refVal : {};
 	}
+
+	static cloneValue(value){ return value; }
 }
 
 var Reference = DefineType('Reference', {

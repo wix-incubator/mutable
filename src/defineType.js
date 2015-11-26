@@ -20,6 +20,7 @@ function defineType(id, typeDefinition, ParentType, TypeConstructor){
     Type.nullable      = Type.nullable      || ParentType.nullable;
     Type.create        = Type.create        || ParentType.create;
 	Type.wrapValue     = Type.wrapValue     || ParentType.wrapValue;
+	Type.cloneValue    = Type.cloneValue    || ParentType.cloneValue;
 
     var superTypeConstructor = Object.getPrototypeOf(Type.prototype).constructor;
 

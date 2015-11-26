@@ -30,7 +30,7 @@ export function validateNullValue(Type, value) {
 }
 
 export function validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
-	if(itemValue === null) {
+	if(itemValue === null) { // shortcut check for nullable (also checked in allowPlainVal)
 		if(isNullable(type)) {
 			return itemValue;
 		} else {
