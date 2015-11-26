@@ -7,14 +7,5 @@ chai.use(testKit.chai);
 chai.use(gopostalTestKit.chai);
 chai.use(sinonChai);
 
-import "../test-kit/test";
-
-import "./custom";
-import "./custom-nullable";
-import "./array/Array";
-import "./Function";
-import "./boolean";
-import "./enum";
-import "./reference";
-import "./defineType.spec";
-import "./primitive-defaults";
+var context = require.context('./', true, /.+\.spec\.js?$/);
+context.keys().forEach(context);
