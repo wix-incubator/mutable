@@ -16,7 +16,7 @@
     "build:test": "rm -rf ./dist/test && babel ./test/ -d ./dist/test/ --modules umd --source-maps",
     "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
     "build:webpack": "webpack",
-    "test:node": "mocha --reporter $npm_config_reporter ./dist/test",
+    "test:node": "mocha --reporter $npm_config_reporter ./dist/test.bundle.js",
     "test:browser": "karma start --single-run",
     "pretest": "npm run build:test && npm run build:testkit && npm run build:webpack",
     "test": "npm run test:browser && npm run test:node",

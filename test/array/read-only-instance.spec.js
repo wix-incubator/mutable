@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {either} from '../../src/composite';
 import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from './builders';
 
-describe('(Read Only) instance', function() {
+describe('Array read-only instance', function() {
 
     it('Should have default length', function() {
         var numberList = aNumberArray([1, 2, 3]).$asReadOnly();
