@@ -57,12 +57,33 @@ describe("reference type", function() {
 			expect(typeIns.__value__).to.equal(inputRef);
 		});
 
+		it('should accept none object classes', function(){
+			var MyClass = function(){ this.age = 35; };
+			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
+			var inputRef = new MyClass();
+
+			var typeIns = new RefType(inputRef);
+
+			expect(typeIns.__value__).to.equal(inputRef);
+		});
+
 		it('should keep the original value reference (from defaults of complex list)', function(){
 			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
 			var defaultInputRef = { age:30 };
 			var listOfRef = Typorama.Array.of(RefType).withDefault([defaultInputRef]);
 
 			var listIns = new listOfRef();
+
+			expect(listIns.at(0).__value__).to.equal(defaultInputRef);
+		});
+
+		it('should accept non-object classes (in list)', function(){
+			var MyClass = function(){ this.age = 35; };
+			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
+			var defaultInputRef = new MyClass();
+			var listOfRef = Typorama.Array.of(RefType);
+
+			var listIns = new listOfRef([defaultInputRef]);
 
 			expect(listIns.at(0).__value__).to.equal(defaultInputRef);
 		});
@@ -78,6 +99,17 @@ describe("reference type", function() {
 			var t = new T();
 
 			expect(t.ref.__value__).to.equal(myRef);
+		});
+
+		it('should accept non-object classes (in complex type)', function(){
+			var MyClass = function(){ this.age = 35; };
+			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
+			var defaultInputRef = new MyClass();
+			var MyType = defineType({ ref: RefType}, 'MyType');
+
+			var t = new MyType({ref:defaultInputRef});
+
+			expect(t.__value__.ref.__value__).to.equal(defaultInputRef);
 		});
 
 	});

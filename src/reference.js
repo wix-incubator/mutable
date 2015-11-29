@@ -10,7 +10,7 @@ class _Reference extends BaseType {
 
 	static allowPlainVal(value){
 
-		return (_.isPlainObject(value) && _.every(this._spec, (fieldSpec, fieldId) => {
+		return (_.isObject(value) && _.every(this._spec, (fieldSpec, fieldId) => {
 			return fieldSpec.allowPlainVal(value[fieldId]);
 		})) || validateNullValue(this, value);
 	}
