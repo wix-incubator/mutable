@@ -178,7 +178,14 @@ describe('Custom data', function() {
 				var container = new CompositeContainer({child1:instance});
 				expect(container.child1).to.be.equal(instance);
 			});
-
+			describe('__id__:',function() {
+				it('should be auto generated and unique', function() {
+					var sourceData = {numOfHeads: 2};
+					var instance = new UserType(sourceData);
+					var instance2 = new UserType(sourceData);
+					expect(instance.__id__).not.to.equal(instance2.__id__);
+				});
+			});
 		});
 
 		describe('set', function() {
@@ -499,6 +506,14 @@ describe('Custom data', function() {
 			expect(readOnlyChild.name).to.equal('bobi');
 		});
 
+		describe('__id__:',function() {
+			it('should be the same for instance and readonly ver', function() {
+				var sourceData = {numOfHeads: 2};
+				var instance = new UserType(sourceData);
+				var readOnly = instance.$asReadOnly();
+				expect(instance.__id__).to.equal(readOnly.__id__);
+			});
+		});
 		describe("with global freeze config", function(){
 
 			before("set global freeze configuration", function(){

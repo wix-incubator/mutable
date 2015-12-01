@@ -168,7 +168,19 @@ export default class BaseType extends PrimitiveBase {
         }, {});
     }
 }
-
+var dataCounter=0;
+function generateId(){
+	return dataCounter++;
+}
+Object.defineProperty(BaseType.prototype,'__id__',{
+	enumerable:false,
+	configurable:false,
+	set:function(){},
+	get:function(){
+		this.___id___ = this.___id___ || generateId();
+		return this.___id___;
+	}
+});
 
 
 BaseType._spec = Object.freeze(Object.create(null));
