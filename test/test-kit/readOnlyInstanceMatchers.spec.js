@@ -1,5 +1,5 @@
 import Typorama from '../../src'
-import {aDataTypeWithSpec} from "../testDrivers/index";
+import {aDataTypeWithSpec} from "../../test-kit/testDrivers/index";
 import {expect, err} from "chai";
 
 describe('Read only instances', () => {
