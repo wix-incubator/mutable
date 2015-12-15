@@ -45,7 +45,7 @@ export function makeDirtyable(Type){
                 }
                 this.__lifecycleManager__ = lifecycleManager;
                 _.forEach(this.__value__, (val) => {
-                    if (val.$setManager && _.isFunction(val.$setManager)) {
+                    if (val && val.$setManager && _.isFunction(val.$setManager)) {
                         val.$setManager(lifecycleManager);
                     }
                 });
@@ -89,14 +89,14 @@ export function makeDirtyable(Type){
 				if (lastModifiedChild && lastModifiedChild.__lastChange__){
 					this.__lastChange__ = Math.max(this.__lastChange__, lastModifiedChild.__lastChange__);
 				}
-				
+
 			} else if(this.constructor._complex){
 				this.__lastChange__ = _.reduce(this.constructor._complex, function(acc, key){
 					var value = this.__value__[key];
 					return value ? Math.max(value.$calcLastChange(), acc) : acc;
 				}, this.__lastChange__, this);
 			}
-			
+
 			this.__cacheLockToken__ = this.$getManagerLockToken() || unlockedToken;
         }
         return this.__lastChange__;
