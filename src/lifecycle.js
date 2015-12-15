@@ -34,7 +34,7 @@ export function makeDirtyable(Type){
     Type.prototype.__lastChange__ = 1;
     Type.prototype.__cacheLockToken__ = unlockedToken;
 
-// called when a new lifecycle manager is introduced to this object 
+// called when a new lifecycle manager is introduced to this object
     Type.prototype.$setManager = function $setManager(lifecycleManager) {
         if (lifecycleManager) {
             if (this.__isReadOnly__) {
