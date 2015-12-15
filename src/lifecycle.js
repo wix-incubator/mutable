@@ -45,7 +45,7 @@ export function makeDirtyable(Type){
                 }
                 this.__lifecycleManager__ = lifecycleManager;
                 _.forEach(this.__value__, (val) => {
-                    if (val && val.$setManager && _.isFunction(val.$setManager)) {
+                    if (val.$setManager && _.isFunction(val.$setManager)) {
                         val.$setManager(lifecycleManager);
                     }
                 });
