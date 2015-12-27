@@ -12,9 +12,9 @@
     "url": "git+ssh://git@github.com:wix/typorama"
   },
   "scripts": {
-    "build:src": "rm -rf ./dist/src && babel ./src/ -d ./dist/src/ --modules umd --source-maps",
-    "build:test": "rm -rf ./dist/test && babel ./test/ -d ./dist/test/ --modules umd --source-maps",
-    "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps",
+    "build:src": "rm -rf ./dist/src && babel ./src/ -d ./dist/src/ --modules umd --source-maps --loose all",
+    "build:test": "rm -rf ./dist/test && babel ./test/ -d ./dist/test/ --modules umd --source-maps --loose all",
+    "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --modules umd --source-maps --loose all",
     "build:webpack": "webpack",
     "test:node": "mocha --reporter $npm_config_reporter ./dist/test.bundle.js",
     "test:browser": "karma start --single-run",
