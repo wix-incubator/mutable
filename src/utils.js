@@ -21,7 +21,8 @@ const clonedMembers = [
 
 export function cloneType(TypeToClone){
 	function Type(value, options) {
-		return TypeToClone.create(value !== undefined ? value : Type.defaults(), Type.options || options);
+		var mergeOptions = options ? _.assign({}, Type.options, options) : Type.options;
+		return TypeToClone.create(value !== undefined ? value : Type.defaults(), mergeOptions);
 	}
 	Type.options = TypeToClone.options ? _.cloneDeep(TypeToClone.options) : {};
 	clonedMembers.forEach(member => {Type[member] = TypeToClone[member]});
