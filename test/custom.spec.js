@@ -178,12 +178,12 @@ describe('Custom data', function() {
 				var container = new CompositeContainer({child1:instance});
 				expect(container.child1).to.be.equal(instance);
 			});
-			describe('runtimeId:',function() {
+			describe('getRuntimeId():',function() {
 				it('should be auto generated and unique', function() {
 					var sourceData = {numOfHeads: 2};
 					var instance = new UserType(sourceData);
 					var instance2 = new UserType(sourceData);
-					expect(instance.runtimeId).not.to.equal(instance2.runtimeId);
+					expect(instance.getRuntimeId()).not.to.equal(instance2.getRuntimeId());
 				});
 			});
 		});
@@ -506,12 +506,12 @@ describe('Custom data', function() {
 			expect(readOnlyChild.name).to.equal('bobi');
 		});
 
-		describe('runtimeId:',function() {
+		describe('getRuntimeId():',function() {
 			it('should be the same for instance and readonly ver', function() {
 				var sourceData = {numOfHeads: 2};
 				var instance = new UserType(sourceData);
 				var readOnly = instance.$asReadOnly();
-				expect(instance.runtimeId).to.equal(readOnly.runtimeId);
+				expect(instance.getRuntimeId()).to.equal(readOnly.getRuntimeId());
 			});
 		});
 		describe("with global freeze config", function(){
