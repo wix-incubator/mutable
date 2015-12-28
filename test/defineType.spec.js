@@ -53,10 +53,10 @@ describe('defining', () => {
 			expect(function () {
 				Typorama.define('invalid', {
 					spec: () => ({
-						name: {}
+						zagzag: {}
 					})
 				});
-			}).to.report({level : 'error'});
+			}).to.report({level : 'error','params':['Field error on type invalid, field zagzag must be a primitive type or extend core3.Type']});
 		});
 
 		it('should report error for reserved keys', function() { // ToDo: change to fields that start with $ and __
@@ -66,7 +66,7 @@ describe('defining', () => {
 						$asReadOnly: Typorama.String
 					})
 				});
-			}).to.report({level : 'error', params : [/Field error.*reserved/]});
+			}).to.report({level : 'error', params : ['Field error on type invalid, field $asReadOnly is reserved.']});
 		});
 
 	});

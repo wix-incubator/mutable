@@ -63,9 +63,9 @@ function getComplexFields(spec){
 function generateFieldsOn(obj, fieldsDefinition) {
     _.forEach(fieldsDefinition, function(fieldDef, fieldName) {
         if(obj[fieldName]) {
-            MAILBOX.error(`Field error on type:${obj.constructor.id}.${fieldName} is reserved.`);
+            MAILBOX.error(`Field error on type ${obj.constructor.id}, field ${fieldName} is reserved.`);
         } else if(!(fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase)) {
-            MAILBOX.error(`Type mismatch: ${fieldName} must inherit PrimitiveBase data type.`);
+            MAILBOX.error(`Field error on type ${obj.constructor.id}, field ${fieldName} must be a primitive type or extend core3.Type`);
         }
 
         Object.defineProperty(obj, fieldName, {
