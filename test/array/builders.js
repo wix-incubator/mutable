@@ -28,4 +28,8 @@ function anEmptyArray() {
 	return aNumberArray([]);
 }
 
-export default  {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray, anEmptyArray}
+function aUserArray(optionalArr) {
+	return Typorama.Array.of(UserType).create(optionalArr || [{},{name:'yossi'}]);
+}
+
+export default  {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray, anEmptyArray,aUserArray}

@@ -140,6 +140,7 @@ class _Array extends BaseType {
 	}
 
     __wrapArr__(val){
+
         return new this.constructor(val, this.__options__);
     }
 
@@ -231,7 +232,7 @@ class _Array extends BaseType {
 	}
 
 	concat(...addedArrays) {
-		return this.__wrapArr__(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)));
+		return this.__wrapArr__(Array.prototype.concat.apply(this.__getValueArr__(), addedArrays.map((array) => array.__getValueArr__ ? array.__getValueArr__()  :array)));
 	}
 
 	join(separator = ',') {
@@ -240,9 +241,9 @@ class _Array extends BaseType {
 
 	slice(begin, end) {
 		if(end) {
-			return this.__wrapArr__(this.__value__.slice(begin, end));
+			return this.__wrapArr__(this.__getValueArr__().slice(begin, end));
 		} else {
-			return this.__wrapArr__(this.__value__.slice(begin));
+			return this.__wrapArr__(this.__getValueArr__().slice(begin));
 		}
 	}
 
