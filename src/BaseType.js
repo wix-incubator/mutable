@@ -23,6 +23,11 @@ function createReadOnly(source){
     return readOnlyInstance;
 }
 
+var dataCounter=0;
+function generateId(){
+	return dataCounter++;
+}
+
 export default class BaseType extends PrimitiveBase {
 
     static create(value, options) {
@@ -167,20 +172,12 @@ export default class BaseType extends PrimitiveBase {
             return json;
         }, {});
     }
-}
-var dataCounter=0;
-function generateId(){
-	return dataCounter++;
-}
-Object.defineProperty(BaseType.prototype,'runtimeId',{
-	enumerable:false,
-	configurable:false,
-	set:function(){},
-	get:function(){
+	getRuntimeId(){
 		this.___id___ = this.___id___ || generateId();
 		return this.___id___;
 	}
-});
+}
+
 
 
 BaseType._spec = Object.freeze(Object.create(null));
