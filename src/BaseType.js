@@ -172,7 +172,7 @@ var dataCounter=0;
 function generateId(){
 	return dataCounter++;
 }
-Object.defineProperty(BaseType.prototype,'__id__',{
+Object.defineProperty(BaseType.prototype,'runtimeId',{
 	enumerable:false,
 	configurable:false,
 	set:function(){},
