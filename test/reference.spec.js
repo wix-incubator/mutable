@@ -153,17 +153,27 @@ describe("reference type", function() {
 			expect(value.count).to.equal(6);
 		});
 
-		it('should no set the proxy value for none spec value', function(){
-			var RefType = defineRef({ id:Typorama.String });
+		it('should no set the proxy value for non spec value', function(){
+			var RefType = defineRef({ id:Typorama.String },'ParentType');
 			var value = { id:"001" };
 			var typeIns = new RefType(value);
 
 			expect(function(){
 				typeIns.id = 2;
-			}).to.report({ level:/warn|error|fatal/, params:[`Invalid value for key id of type string: 'Number'.`] });
+			}).to.report({ level:/warn|error|fatal/, params:[`set Field error on type ParentType, field id, expected type string but got number`] });
 			expect(value.id).to.equal("001");
 		});
+		it('should no set the proxy value for non spec value with complex values', function(){
+			var RefType = defineRef({ id:Typorama.String },'ParentType');
+			var RefType2 = defineRef({ id:Typorama.String },'ChildType');
+			var value = { id:"001" };
+			var typeIns = new RefType(value);
 
+			expect(function(){
+				typeIns.id = new RefType2();
+			}).to.report({ level:/warn|error|fatal/, params:[`set Field error on type ParentType, field id, expected type string but got ChildType`] });
+			expect(value.id).to.equal("001");
+		});
 		it('should no set the proxy value for read only copy', function(){
 			var RefType = defineRef({ id:Typorama.String });
 			var value = { id:"001" };

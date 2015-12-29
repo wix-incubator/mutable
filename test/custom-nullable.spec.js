@@ -6,46 +6,49 @@ import {revision} from '../src/lifecycle';
 import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
 
-var ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE = 'Cannot assign null value to a type which is not defined as nullable.';
+var ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE = (parentType,fieldId,fieldType,passedType)=>`set Field error on type ${parentType}, field ${fieldId}, expected type ${fieldType} but got ${passedType}`;
+var ERROR_NULL_SET_VALUE_TO_NON_NULLABLE = (parentType,fieldId,fieldType,passedType)=>`setValue error on type ${parentType}, field ${fieldId}, expected type ${fieldType} but got ${passedType}`;
+var ERROR_TYPORAMA_SET_VALUE = (parentType,fieldId,fieldType,passedType)=>`setValue error on type ${parentType} expected an object but got ${passedType}`;
+var ERROR_NULL_DEFAULTS_TO_NON_NULLABLE = (parentType,fieldId,fieldType,passedType)=>`Field error on type ${parentType}, field ${fieldId}, expected type ${fieldType} but got ${passedType}`;
 
 
 describe('Nullable custom type initialize', function(){
-	
+
 	it('should create primitive types with null', function(){
-		
+
 		var UserType = aDataTypeWithSpec({
 			name: Typorama.String.nullable().withDefault(null)
 		}, 'User');
 
 		var user = new UserType();
-		
+
 		expect(user.name === null).to.equal(true);
 		user.name = "Hi";
 		expect(user.name === "Hi").to.equal(true);
 		user.name = null;
 		expect(user.name === null).to.equal(true);
 	});
-			
+
 	it('should create complex types with null (readOnly)', function(){
-		
+
 		var Friend = aDataTypeWithSpec({
 			name: Typorama.String.nullable().withDefault(null)
 		}, 'User');
-		
+
 		var UserType = aDataTypeWithSpec({
 			name: Typorama.String.nullable().withDefault(null),
 			friend: Friend.nullable().withDefault(null)
 		}, 'User');
 
 		var user = new UserType();
-		
+
 		var readOnlyUser = user.$asReadOnly();
-		
+
 		expect(readOnlyUser.name === null).to.equal(true);
 		expect(readOnlyUser.friend === null).to.equal(true);
-		
+
 	});
-	
+
 });
 
 describe('Nullable custom type', function() {
@@ -67,14 +70,14 @@ describe('Nullable custom type', function() {
 					user: defaultValue === undefined
 						? UserType.nullable()
 						: UserType.nullable().withDefault(defaultValue)
-				}),
+				},'LoginType'),
 
 			withStrictUser: defaultValue =>
 				aDataTypeWithSpec({
 					user: defaultValue === undefined
 						? UserType
 						: UserType.withDefault(defaultValue)
-				})
+				},'LoginType')
 		},
 
 		login: {
@@ -99,8 +102,8 @@ describe('Nullable custom type', function() {
 		});
 
 		it('reports error if trying to initialize non-nullable with a null', function () {
-			expect(() => build.LoginType.withStrictUser(null))
-			.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+			expect(() =>build.LoginType.withStrictUser(null))
+			.to.report({params:ERROR_NULL_DEFAULTS_TO_NON_NULLABLE('LoginType','user','User','null')});
 		});
 
 
@@ -136,7 +139,7 @@ describe('Nullable custom type', function() {
 
 			it('reports error if trying to instantiate a non-nullable with a null value', function () {
 				expect(() => new build.login.withStrictUser(null))
-				.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+				.to.report({params:ERROR_NULL_DEFAULTS_TO_NON_NULLABLE('LoginType','user','User','null')});
 			})
 
 		});
@@ -151,7 +154,7 @@ describe('Nullable custom type', function() {
 
 			it('reports error while setting non-nullable field to null', function () {
 				var login = build.login.withStrictUser();
-				expect(() => { login.user = null }).to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+				expect(() => { login.user = null }).to.report({params:ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE('LoginType','user','User','null')});
 				expect(login.user).not.to.be.null;
 			});
 		});
@@ -168,29 +171,12 @@ describe('Nullable custom type', function() {
 				it('fails to set null value from an incoming JSON to a non-nullable field and reports', function() {
 					var login = build.login.withStrictUser();
 					expect(() => login.setValue({ user: null }))
-						.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+						.to.report({params:ERROR_NULL_SET_VALUE_TO_NON_NULLABLE('LoginType','user','User','null')});
 					expect(login.user).not.to.be.null;
 				});
 
 
             });
-            describe.skip('with typorama input',function(){
-				// This is weird, the input is typorama objects in a plain object - wtf?
-                it('sets null value from a typorama object', function() {
-					var source = build.login.withNullableUser({ user: null });
-					var login = build.login.withNullableUser();
-					login.setValue(source);
-					expect(login.user).to.be.null;
-					exoect(login).to.be.dirty;
-                });
-                it('fails to set null value to non-nullable field from a (nullable) typorama object and reports', function() {
-					var source = new (build.LoginType.withNullableUser())({ user: null });
-					var login = new (build.LoginType.withStrictUser())();
-					expect(() => login.setValue(source))
-						.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
-					expect(login.user).not.to.be.null;
-                });
-            })
 		});
 	});
 

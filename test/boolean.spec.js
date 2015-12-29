@@ -44,13 +44,16 @@ describe('Boolean Type', function() {
 
     xdescribe('lenient input', function() {
 
-        var BooleanValues = aDataTypeWithSpec({
-            yes: Typorama.Boolean.withDefault(1),
-            no: Typorama.Boolean.withDefault(0)
-        }, 'BooleanValues');
-
+        var BooleanValues;
         var booleans;
-        before(() => booleans = new BooleanValues());
+        before(() => {
+			BooleanValues = aDataTypeWithSpec({
+				yes: Typorama.Boolean.withDefault(1),
+				no: Typorama.Boolean.withDefault(0)
+			}, 'BooleanValues');
+
+			booleans = new BooleanValues()
+		});
 
         it('should resolve to javascript boolean', function() {
             expect(booleans.yes).to.be.a('boolean');

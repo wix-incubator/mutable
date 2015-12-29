@@ -87,9 +87,30 @@ class _Array extends BaseType {
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
+	static reportDefinitionErrors(value, options){
+		if(!options || !options.subTypes){
+			return "Untyped Lists are not support please state type of list item core3.List<string>"
+		}else{
+			var errorMessage = '';
+			if(typeof options.subTypes === 'function'){
+				errorMessage  = BaseType.reportFieldError(options.subTypes);
+				if(errorMessage){
+					return `subtype, `+errorMessage;
+				}
+			}else{
+				return _.first(_.filter(_.map(options.subTypes,(fieldDef, key)=>{
+					const errMsg = BaseType.reportFieldError(fieldDef);
+					return errMsg ? `subtype ${key}, ${errMsg}` : null;
+				})));
+			}
+
+		}
+	}
+
 	constructor(value=[], options={}) {
-        if(!options.subTypes){
-			MAILBOX.error('Untyped arrays are not supported. Use Array<SomeType> instead.');
+		const report = _Array.reportDefinitionErrors(value,options);
+        if(report){
+			MAILBOX.error('List constructor, '+report);
         }
 		if(_.isArray(options.subTypes)) {
 			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
