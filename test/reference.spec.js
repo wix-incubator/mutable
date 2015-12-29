@@ -160,7 +160,7 @@ describe("reference type", function() {
 
 			expect(function(){
 				typeIns.id = 2;
-			}).to.report({ level:/warn|error|fatal/, params:[`set Field error on type ParentType, field id, expected type string but got number`] });
+			}).to.report({ level:/warn|error|fatal/, params:[`Set error: "ParentType.id" expected type string but got number`] });
 			expect(value.id).to.equal("001");
 		});
 		it('should no set the proxy value for non spec value with complex values', function(){
@@ -171,7 +171,7 @@ describe("reference type", function() {
 
 			expect(function(){
 				typeIns.id = new RefType2();
-			}).to.report({ level:/warn|error|fatal/, params:[`set Field error on type ParentType, field id, expected type string but got ChildType`] });
+			}).to.report({ level:/warn|error|fatal/, params:[`Set error: "ParentType.id" expected type string but got ChildType`] });
 			expect(value.id).to.equal("001");
 		});
 		it('should no set the proxy value for read only copy', function(){

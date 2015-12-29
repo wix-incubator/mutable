@@ -89,18 +89,18 @@ class _Array extends BaseType {
 
 	static reportDefinitionErrors(value, options){
 		if(!options || !options.subTypes){
-			return "Untyped Lists are not support please state type of list item core3.List<string>"
+			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
 		}else{
-			var errorMessage = '';
+			var error;
 			if(typeof options.subTypes === 'function'){
-				errorMessage  = BaseType.reportFieldError(options.subTypes);
-				if(errorMessage){
-					return `subtype, `+errorMessage;
+				error  = BaseType.reportFieldError(options.subTypes);
+				if(error){
+					return {path:`<0${error.path}>`,message:error.message};
 				}
 			}else{
 				return _.first(_.filter(_.map(options.subTypes,(fieldDef, key)=>{
-					const errMsg = BaseType.reportFieldError(fieldDef);
-					return errMsg ? `subtype ${key}, ${errMsg}` : null;
+					error = BaseType.reportFieldError(fieldDef);
+					return error ? {path:`<${key}${error.path}>`,message:error.message} : null;
 				})));
 			}
 
@@ -110,7 +110,7 @@ class _Array extends BaseType {
 	constructor(value=[], options={}) {
 		const report = _Array.reportDefinitionErrors(value,options);
         if(report){
-			MAILBOX.error('List constructor, '+report);
+			MAILBOX.error('List constructor: '+report.message);
         }
 		if(_.isArray(options.subTypes)) {
 			options.subTypes = options.subTypes.reduce(function(subTypes, type) {

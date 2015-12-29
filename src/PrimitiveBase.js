@@ -9,10 +9,10 @@ function reportErrorInternal(value,options,allowPlain,allowInstance){
 	if(value !== undefined) {
 		if (value === null) {
 			if (!options || !options.nullable) {
-				return `expected type ${this.id} but got null`
+				return {message:`expected type ${this.id} but got null`,path:''}
 			}
 		}else if(!(allowPlain&&this.allowPlainVal(value))&&!(allowInstance&&this.validateType(value))){
-			return `expected type ${this.id} but got ${getReadableValueTypeName(value)}`;
+			return  {message:`expected type ${this.id} but got ${getReadableValueTypeName(value)}`,path:''};
 		};
 	}
 }
