@@ -87,9 +87,30 @@ class _Array extends BaseType {
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
+	static reportDefinitionErrors(value, options){
+		if(!options || !options.subTypes){
+			return "Untyped Lists are not support please state type of list item core3.List<string>"
+		}else{
+			var errorMessage = '';
+			if(typeof options.subTypes === 'function'){
+				errorMessage  = BaseType.reportFieldError(options.subTypes);
+				if(errorMessage){
+					return `subtype, `+errorMessage;
+				}
+			}else{
+				return _.first(_.filter(_.map(options.subTypes,(fieldDef, key)=>{
+					const errMsg = BaseType.reportFieldError(fieldDef);
+					return errMsg ? `subtype ${key}, ${errMsg}` : null;
+				})));
+			}
+
+		}
+	}
+
 	constructor(value=[], options={}) {
-        if(!options.subTypes){
-			MAILBOX.error('Untyped arrays are not supported. Use Array<SomeType> instead.');
+		const report = _Array.reportDefinitionErrors(value,options);
+        if(report){
+			MAILBOX.error('List constructor, '+report);
         }
 		if(_.isArray(options.subTypes)) {
 			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
@@ -140,6 +161,7 @@ class _Array extends BaseType {
 	}
 
     __wrapArr__(val){
+
         return new this.constructor(val, this.__options__);
     }
 
@@ -231,7 +253,7 @@ class _Array extends BaseType {
 	}
 
 	concat(...addedArrays) {
-		return this.__wrapArr__(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)));
+		return this.__wrapArr__(Array.prototype.concat.apply(this.__getValueArr__(), addedArrays.map((array) => array.__getValueArr__ ? array.__getValueArr__()  :array)));
 	}
 
 	join(separator = ',') {
@@ -240,9 +262,9 @@ class _Array extends BaseType {
 
 	slice(begin, end) {
 		if(end) {
-			return this.__wrapArr__(this.__value__.slice(begin, end));
+			return this.__wrapArr__(this.__getValueArr__().slice(begin, end));
 		} else {
-			return this.__wrapArr__(this.__value__.slice(begin));
+			return this.__wrapArr__(this.__getValueArr__().slice(begin));
 		}
 	}
 

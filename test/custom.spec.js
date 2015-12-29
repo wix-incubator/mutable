@@ -160,11 +160,7 @@ describe('Custom data', function() {
 				expect(userData.age).to.equal(53);
 			});
 
-			xit('should provide default values for mismatching fields', function() {
-				var userData = new UserType({age: {}});
 
-				expect(userData).to.be.a.dataInstance.with.field('age').with.defaultValue();
-			});
 
 			it('should not copy fields that do not appear in the schema', function() {
 				var instance = new UserType({numOfHeads: 2});
@@ -173,11 +169,27 @@ describe('Custom data', function() {
 			});
 
 			it('should reference matching typorama objects passed as value', function() {
-				var instance = new UserType({numOfHeads: 2});
+				var instance = new UserType();
 
 				var container = new CompositeContainer({child1:instance});
 				expect(container.child1).to.be.equal(instance);
 			});
+
+			describe('initial value errors',function(){
+				it('throw error for non nullable field recieving null', function() {
+					expect(()=>new UserType({name: null}))
+						.to.report({level:'error',params:`User constructor, field name, expected type string but got null`})
+				});
+				it('throw error for field type mismatch', function() {
+					expect(()=>new UserType({age: 'gaga'}))
+						.to.report({level:'error',params:`User constructor, field age, expected type number but got string`})
+				});
+				it('throws error for field type mismatch in deep field', function() {
+					expect(()=>new CompositeContainer({child1:{name:5}}))
+						.to.report({level:'error',params:`User constructor, field name, expected type string but got number`})
+				});
+			});
+
 			describe('getRuntimeId():',function() {
 				it('should be auto generated and unique', function() {
 					var sourceData = {numOfHeads: 2};

@@ -53,10 +53,21 @@ describe('defining', () => {
 			expect(function () {
 				Typorama.define('invalid', {
 					spec: () => ({
-						name: {}
+						zagzag: {}
 					})
 				});
-			}).to.report({level : 'error'});
+			}).to.report({level : 'fatal','params':['Field error on type invalid, field zagzag, must be a primitive type or extend core3.Type']});
+		});
+
+
+		it('should report error if field type is missing', function () {
+			expect(function () {
+				Typorama.define('invalid', {
+					spec: () => ({
+						zagzag: null
+					})
+				});
+			}).to.report({level : 'fatal','params':['Field error on type invalid, field zagzag, must be a primitive type or extend core3.Type']});
 		});
 
 		it('should report error for reserved keys', function() { // ToDo: change to fields that start with $ and __
@@ -66,10 +77,43 @@ describe('defining', () => {
 						$asReadOnly: Typorama.String
 					})
 				});
-			}).to.report({level : 'error', params : [/Field error.*reserved/]});
+			}).to.report({level : 'fatal', params : ['Field error on type invalid, field $asReadOnly, is reserved.']});
+		});
+
+		describe('type with generic field', function(){
+			it('should throw error if field doesnt include generics info', function(){
+				expect(() => {
+					Typorama.define('invalid', {
+						spec: () => ({
+							zagzag: Typorama.Array
+						})
+					});
+				}).to.report({level : 'fatal', params : ['Field error on type invalid, field zagzag, Untyped Lists are not support please state type of list item core3.List<string>']});
+			});
+			it('should throw error if field subtypes are invalid', function(){
+				expect(() => {
+					Typorama.define('invalid', {
+						spec: () => ({
+							zagzag: Typorama.Array.of(Typorama.String,function(){})
+						})
+					});
+				}).to.report({level : 'fatal', params : ['Field error on type invalid, field zagzag, subtype 1, must be a primitive type or extend core3.Type']});
+			});
+			it('should throw error if field subtypes dont include generics info', function(){
+				expect(() => {
+					Typorama.define('invalid', {
+						spec: () => ({
+							zagzag: Typorama.Array.of(Typorama.Array)
+						})
+					});
+				}).to.report({level : 'fatal', params : ['Field error on type invalid, field zagzag, subtype, Untyped Lists are not support please state type of list item core3.List<string>']});
+			});
+
 		});
 
 	});
+
+
 
 	describe('type with default value', function(){
 
@@ -125,7 +169,7 @@ describe('defining', () => {
 		describe("with no sub-types",()=>{
 			it('should report error when instantiating', () => {
 				var inValidArrType = Typorama.Array;
-				expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.Array', /Untyped arrays are not supported/));
+				expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.Array', 'List constructor, Untyped Lists are not support please state type of list item core3.List<string>'));
 			});
 		});
 		describe('with one sub-type', () => {

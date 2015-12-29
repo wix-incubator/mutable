@@ -1,7 +1,7 @@
 import Typorama from '../../src';
 import {expect} from 'chai';
 import {either} from '../../src/composite';
-import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from './builders';
+import {aNumberArray, aStringArray, aUserArray, UserType, AddressType, UserWithAddressType} from './builders';
 
 describe('Array read-only instance', function() {
 
@@ -138,12 +138,33 @@ describe('Array read-only instance', function() {
         })
     });
 
+	describe('views',function(){
+		it('slice should return mutable version',function(){
+			var arr = aUserArray();
+			var readOnly = arr.$asReadOnly();
+
+			var arr = readOnly.slice();
+
+			expect(arr.$isReadOnly()).to.equal(false);
+			expect(arr.at(0).$isReadOnly()).to.equal(true);
+		});
+		it('concat should return mutable version',function(){
+			var arr = aUserArray();
+			var readOnly = arr.$asReadOnly();
+
+			var arr = readOnly.concat();
+
+			expect(arr.$isReadOnly()).to.equal(false);
+			expect(arr.at(0).$isReadOnly()).to.equal(true);
+		});
+	});
+
     describe('__value__', function() {
         it('should be synced with the readonly', function () {
-            var arr = Typorama.Array.of(UserType).create();
+            var arr = aUserArray();
             var readOnly = arr.$asReadOnly();
 
-            arr.setValue([UserType.defaults()])
+            arr.setValue([UserType.defaults()]);
 
             expect(arr.__value__).to.equal(readOnly.__value__);
         });

@@ -21,7 +21,6 @@ export function validateNullValue(Type, value) {
 		if(isNullable(Type)) {
 			return true;
 		} else {
-			MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
 			return false;
 		}
 	} else {

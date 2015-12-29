@@ -1,10 +1,13 @@
 import _                  from "lodash";
 import BaseType           from "./BaseType";
+import {whenDebugMode}           from "./utils";
 import PrimitiveBase      from './PrimitiveBase';
 import {isAssignableFrom} from "./validation"
 import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
+
+
 
 function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	ParentType = ParentType || BaseType;
@@ -17,6 +20,9 @@ function defineType(id, typeDefinition, ParentType, TypeConstructor){
     Type.allowPlainVal = Type.allowPlainVal || ParentType.allowPlainVal;
     Type.defaults      = Type.defaults      || ParentType.defaults;
     Type.withDefault   = Type.withDefault   || ParentType.withDefault;
+    Type.reportDefinitionErrors   = Type.reportDefinitionErrors   || ParentType.reportDefinitionErrors;
+    Type.reportSetValueErrors   = Type.reportSetValueErrors   || ParentType.reportSetValueErrors;
+    Type.reportSetErrors   = Type.reportSetErrors   || ParentType.reportSetErrors;
     Type.nullable      = Type.nullable      || ParentType.nullable;
     Type.create        = Type.create        || ParentType.create;
 	Type.wrapValue     = Type.wrapValue     || ParentType.wrapValue;
@@ -60,13 +66,21 @@ function getComplexFields(spec){
 	return complex;
 }
 
+
 function generateFieldsOn(obj, fieldsDefinition) {
     _.forEach(fieldsDefinition, function(fieldDef, fieldName) {
-        if(obj[fieldName]) {
-            MAILBOX.error(`Field error on type:${obj.constructor.id}.${fieldName} is reserved.`);
-        } else if(!(fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase)) {
-            MAILBOX.error(`Type mismatch: ${fieldName} must inherit PrimitiveBase data type.`);
-        }
+		whenDebugMode(function(){
+			var errorText = '';
+			if(obj[fieldName]) {
+				errorText = 'is reserved.'
+			}else{
+				errorText  = BaseType.reportFieldError(fieldDef);
+			}
+
+			if(errorText){
+				MAILBOX.fatal(`Field error on type ${obj.constructor.id}, field ${fieldName}, ${errorText}`)
+			}
+		});
 
         Object.defineProperty(obj, fieldName, {
             get: function() {
