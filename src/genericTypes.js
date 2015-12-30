@@ -29,14 +29,18 @@ export function doOnType(subTypes, action){
 		mapFirst(subTypes, (type) => type && typeof type === 'function' && action(type)));
 }
 
-export function toString(subTypes){
-	if(typeof subTypes === 'function'){
-		return '<'+subTypes.type.id+'>';
-	} else if (subTypes){
-		return '<'+Object.keys(subTypes).join(',')+'>';
-	} else {
-		MAILBOX.error('unknown subTypes : ' + JSON.stringify(subTypes));
-	}
+/**
+ * @param subTypesArgs one or many subtypes objects (a propper result of unionTypes())
+ * @returns {string} string representation using angular notation
+ */
+export function toString(...subTypesArgs){
+	return '<' +
+		subTypesArgs.map(subTypes =>
+			(typeof subTypes === 'function' && subTypes.type.id) ||
+			(subTypes && Object.keys(subTypes).join('|'))
+		).join(', ') +
+		'>';
+
 }
 
 /**

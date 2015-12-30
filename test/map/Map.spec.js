@@ -1,0 +1,1 @@
+require('./mutable/instance.spec');
