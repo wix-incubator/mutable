@@ -227,6 +227,12 @@ describe('defining', () => {
 				});
 			});
 
+			describe('with complex key sub-type and union value sub-type', () => {
+				typeCompatibilityTest(function typeFactory() {
+					return Typorama.Map.of(UserType, either(UserType,AddressType));
+				});
+			});
+
 		});
 
 		describe("an array type",() => {
