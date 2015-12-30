@@ -29,14 +29,6 @@ export function cloneType(TypeToClone){
 	return Type;
 }
 
-export function getSubtypeSignature(options){
-	if(typeof options.subTypes === 'function'){
-		return '<'+options.subTypes.type.id+'>';
-	}else {
-		return '<'+Object.keys(options.subTypes).join(',')+'>';
-	}
-}
-
 export function getValueTypeName(value){
 	if(value.constructor && value.constructor.id){
 		return value.constructor.id

@@ -1,17 +1,18 @@
-import config from './typoramaConfiguration'
-import define from './defineType'
-import BaseType from './BaseType'
-import PrimitiveBase from './PrimitiveBase'
-import String from './string'
-import Boolean from './boolean'
-import Number from './number'
-import Array from './array'
-import Function from './function'
-import Reference from './reference'
+import config from './typoramaConfiguration';
+import define from './defineType';
+import BaseType from './BaseType';
+import PrimitiveBase from './PrimitiveBase';
+import String from './string';
+import Boolean from './boolean';
+import Number from './number';
+import Array from './array';
+import Function from './function';
+import Reference from './reference';
 import defineEnum from "./defineEnum";
 import validation from "./validation";
 import { LifeCycleManager , revision} from "./lifecycle";
-import {either} from './composite'
+import {either} from './genericTypes';
+import Map from './map';
 
 export default {
 	validation,
@@ -36,5 +37,6 @@ export default {
 
 	// Stubs used only for declarations:
 	Enum: {},
-	GenericEnum: {}
+	GenericEnum: {},
+	Map
 };

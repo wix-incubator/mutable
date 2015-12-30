@@ -2,14 +2,13 @@ import Typorama from '../../src';
 import {LifeCycleManager, revision} from '../../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
 import {expect} from 'chai';
-import {either} from '../../src/composite'
 import _ from 'lodash';
 import {lifecycleContract} from '../lifecycle.contract.spec.js';
 import sinon from 'sinon';
 import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from './builders';
 import lifeCycleAsserter from './lifecycle.js';
 
-describe('Array data', function() {
+describe('Array', function() {
 
 	describe('lifecycle:',function() {
 		lifeCycleAsserter.assertDirtyContract();

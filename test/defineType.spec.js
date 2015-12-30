@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Typorama from '../src';
 import {isAssignableFrom} from '../src/validation';
-import {either} from '../src/composite';
+import {either} from '../src/genericTypes';
 import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
