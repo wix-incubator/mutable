@@ -158,8 +158,7 @@ describe('defining', () => {
 
 	});
 
-	describe("an array type",() => {
-
+	describe("collection",() => {
 		var UserType, AddressType;
 		before('define helper types',()=>{
 			UserType = Typorama.define('User', {
@@ -176,156 +175,177 @@ describe('defining', () => {
 				})
 			});
 		});
-		describe("with no sub-types",()=>{
-			it('should report error when instantiating', () => {
-				var inValidArrType = Typorama.Array;
-				expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.Array', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+		describe("a map type",() => {
+
+			describe("with no sub-types",()=>{
+				it('should report error when instantiating', () => {
+					var inValidMapType = Typorama.Map;
+					expect(()=>new inValidMapType()).to.report(new Report('error', 'Typorama.Map', 'Map constructor: Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>'));
+				});
 			});
-		});
-		describe('with one sub-type', () => {
-			describe('should be compatible', () => {
-				it('with itself', () => {
-					var arrType = Typorama.Array.of(UserType);
-					expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
+			describe("with partial sub-types",()=>{
+				it('should report error when defining with zero types', () => {
+					expect(()=>Typorama.Map.of()).to.report(new Report('error', 'Typorama.Map', 'Wrong number of types for map. Use Map<SomeType, SomeType>'));
 				});
-				it('with instances of itself', () => {
-					var arrType = Typorama.Array.of(UserType);
-					var arr = new arrType();
-					expect(arr).to.satisfy(arrType.validateType.bind(arrType));
-				});
-				xit('with instance of same schema', () => {
-					var arrType1 = Typorama.Array.of(UserType);
-					var arrType2 = Typorama.Array.of(UserType);
-					var arr1 = new arrType1();
-					expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
-				});
-				it('with types of same schema', () => {
-					var arrType1 = Typorama.Array.of(UserType);
-					var arrType2 = Typorama.Array.of(UserType);
-					expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
+				it('should report error when defining with one type', () => {
+					expect(()=>Typorama.Map.of(Typorama.String)).to.report(new Report('error', 'Typorama.Map', 'Wrong number of types for map. Use Map<SomeType, SomeType>'));
 				});
 			});
 		});
-		describe('with more than one sub-type', () => {
-			describe('should be compatible', () => {
-				it('with itself', () => {
-					var arrType = Typorama.Array.of(either(UserType,AddressType));
-					expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
-				});
-				it('with instances of itself', () => {
-					var arrType = Typorama.Array.of(either(UserType,AddressType));
-					var arr = new arrType();
-					expect(arr).to.satisfy(arrType.validateType.bind(arrType));
-				});
-				xit('with instance of same schema', () => {
-					var arrType1 = Typorama.Array.of(either(UserType,AddressType));
-					var arrType2 = Typorama.Array.of(either(UserType,AddressType));
-					var arr1 = new arrType1();
-					expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
-				});
-				it('with types of same schema', () => {
-					var arrType1 = Typorama.Array.of(either(UserType,AddressType));
-					var arrType2 = Typorama.Array.of(either(UserType,AddressType));
-					expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
+
+		describe("an array type",() => {
+
+			describe("with no sub-types",()=>{
+				it('should report error when instantiating', () => {
+					var inValidArrType = Typorama.Array;
+					expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.Array', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
 				});
 			});
-		});
-		describe("with default values", function() {
-
-			var array, TestType, testType;
-
-			before("instantiate with create", function () {
-				array = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
-			});
-
-			before("define an array type with default", function () {
-				TestType = Typorama.define('TestType', {
-					spec: () => ({
-						names: Typorama.Array.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
-					})
+			describe('with one sub-type', () => {
+				describe('should be compatible', () => {
+					it('with itself', () => {
+						var arrType = Typorama.Array.of(UserType);
+						expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
+					});
+					it('with instances of itself', () => {
+						var arrType = Typorama.Array.of(UserType);
+						var arr = new arrType();
+						expect(arr).to.satisfy(arrType.validateType.bind(arrType));
+					});
+					xit('with instance of same schema', () => {
+						var arrType1 = Typorama.Array.of(UserType);
+						var arrType2 = Typorama.Array.of(UserType);
+						var arr1 = new arrType1();
+						expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
+					});
+					it('with types of same schema', () => {
+						var arrType1 = Typorama.Array.of(UserType);
+						var arrType2 = Typorama.Array.of(UserType);
+						expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
+					});
 				});
 			});
-
-			before("instantiate a type with default array", function () {
-				testType = new TestType();
+			describe('with more than one sub-type', () => {
+				describe('should be compatible', () => {
+					it('with itself', () => {
+						var arrType = Typorama.Array.of(either(UserType,AddressType));
+						expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
+					});
+					it('with instances of itself', () => {
+						var arrType = Typorama.Array.of(either(UserType,AddressType));
+						var arr = new arrType();
+						expect(arr).to.satisfy(arrType.validateType.bind(arrType));
+					});
+					xit('with instance of same schema', () => {
+						var arrType1 = Typorama.Array.of(either(UserType,AddressType));
+						var arrType2 = Typorama.Array.of(either(UserType,AddressType));
+						var arr1 = new arrType1();
+						expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
+					});
+					it('with types of same schema', () => {
+						var arrType1 = Typorama.Array.of(either(UserType,AddressType));
+						var arrType2 = Typorama.Array.of(either(UserType,AddressType));
+						expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
+					});
+				});
 			});
+			describe("with default values", function() {
 
-			it("should have correct initial values in instances", function () {
-				expect(array.length).to.equal(4);
-				expect(array.at(0)).to.equal("Beyonce");
-				expect(array.at(1)).to.equal("Rihanna");
-				expect(array.at(2)).to.equal("Britney");
-				expect(array.at(3)).to.equal("Christina");
-			});
+				var array, TestType, testType;
 
-			it("should have correct initial values in withDefaults", function () {
-				expect(testType.names.length).to.equal(4);
-				expect(testType.names.at(0)).to.equal("Beyonce");
-				expect(testType.names.at(1)).to.equal("Rihanna");
-				expect(testType.names.at(2)).to.equal("Britney");
-				expect(testType.names.at(3)).to.equal("Christina");
-			});
+				before("instantiate with create", function () {
+					array = Typorama.Array.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
+				});
 
-		});
-		describe("Array with complex subtype instantiation",function(){
-			it('should keep typorama objects passed to it that fit its subtypes', function() {
-				var newUser = new UserType();
-				var newAddress = new AddressType();
+				before("define an array type with default", function () {
+					TestType = Typorama.define('TestType', {
+						spec: () => ({
+							names: Typorama.Array.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
+						})
+					});
+				});
 
-				var mixedList = Typorama.Array.of(either(UserType,AddressType)).create([newUser,newAddress]);
+				before("instantiate a type with default array", function () {
+					testType = new TestType();
+				});
 
-				expect(mixedList.at(0)).to.eql(newUser);
-				expect(mixedList.at(1)).to.eql(newAddress);
-			});
-			it('single subtype array should allow setting data with json, ', function() {
+				it("should have correct initial values in instances", function () {
+					expect(array.length).to.equal(4);
+					expect(array.at(0)).to.equal("Beyonce");
+					expect(array.at(1)).to.equal("Rihanna");
+					expect(array.at(2)).to.equal("Britney");
+					expect(array.at(3)).to.equal("Christina");
+				});
 
-				var mixedList = Typorama.Array.of(AddressType).create([{address:'gaga'}]);
-
-				expect(mixedList.at(0)).to.be.instanceOf(AddressType);
-				expect(mixedList.at(0).code).to.be.eql(10);
-				expect(mixedList.at(0).address).to.be.eql('gaga');
-
-			});
-
-			it('a multi subtype array should default to first object based types for json', function() {
-				var mixedList = Typorama.Array.of(either(AddressType, UserType)).create([{}]);
-
-				expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+				it("should have correct initial values in withDefaults", function () {
+					expect(testType.names.length).to.equal(4);
+					expect(testType.names.at(0)).to.equal("Beyonce");
+					expect(testType.names.at(1)).to.equal("Rihanna");
+					expect(testType.names.at(2)).to.equal("Britney");
+					expect(testType.names.at(3)).to.equal("Christina");
+				});
 
 			});
-			it('a multi subtype array should detect primitives', function() {
-				var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create(['gaga']);
+			describe("Array with complex subtype instantiation",function(){
+				it('should keep typorama objects passed to it that fit its subtypes', function() {
+					var newUser = new UserType();
+					var newAddress = new AddressType();
 
-				expect(mixedList.at(0)).to.be.eql('gaga');
+					var mixedList = Typorama.Array.of(either(UserType,AddressType)).create([newUser,newAddress]);
+
+					expect(mixedList.at(0)).to.eql(newUser);
+					expect(mixedList.at(1)).to.eql(newAddress);
+				});
+				it('single subtype array should allow setting data with json, ', function() {
+
+					var mixedList = Typorama.Array.of(AddressType).create([{address:'gaga'}]);
+
+					expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+					expect(mixedList.at(0).code).to.be.eql(10);
+					expect(mixedList.at(0).address).to.be.eql('gaga');
+
+				});
+
+				it('a multi subtype array should default to first object based types for json', function() {
+					var mixedList = Typorama.Array.of(either(AddressType, UserType)).create([{}]);
+
+					expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+
+				});
+				it('a multi subtype array should detect primitives', function() {
+					var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create(['gaga']);
+
+					expect(mixedList.at(0)).to.be.eql('gaga');
+				});
+				it('a multi subtype array should use _type field to detect which subtype to use', function() {
+					var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create([{_type:'User'}]);
+
+					expect(mixedList.at(0)).to.be.instanceOf(UserType);
+				});
+				it('should report error when unallowed primitive is added',function(){
+					var ListCls = Typorama.Array.of(AddressType);
+					expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('gaga','string','<Address>')));
+
+					ListCls = Typorama.Array.of(Typorama.Number);
+					expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('gaga','string','<number>')));
+				});
+
+				it('should report error when object is added an no object types allowed',function(){
+					var ListCls = Typorama.Array.of(Typorama.String);
+					expect(function(){ListCls.create([{}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','object','<string>')));
+				});
+
+				it('should report error when unallowed typorama is added',function(){
+					var ListCls = Typorama.Array.of(UserType);
+					expect(function(){ListCls.create([new AddressType()])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','Address','<User>')));
+				});
+
+				it('should report error when json with unallowed _type added',function(){
+					var ListCls = Typorama.Array.of(UserType);
+					expect(function(){ListCls.create([{_type:'Address'}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','Address','<User>')));
+				});
+
 			});
-			it('a multi subtype array should use _type field to detect which subtype to use', function() {
-				var mixedList = Typorama.Array.of([AddressType, UserType,Typorama.String]).create([{_type:'User'}]);
-
-				expect(mixedList.at(0)).to.be.instanceOf(UserType);
-			});
-			it('should report error when unallowed primitive is added',function(){
-				var ListCls = Typorama.Array.of(AddressType);
-				expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('gaga','string','<Address>')));
-
-				ListCls = Typorama.Array.of(Typorama.Number);
-				expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('gaga','string','<number>')));
-			});
-
-			it('should report error when object is added an no object types allowed',function(){
-				var ListCls = Typorama.Array.of(Typorama.String);
-				expect(function(){ListCls.create([{}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','object','<string>')));
-			});
-
-			it('should report error when unallowed typorama is added',function(){
-				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create([new AddressType()])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','Address','<User>')));
-			});
-
-			it('should report error when json with unallowed _type added',function(){
-				var ListCls = Typorama.Array.of(UserType);
-				expect(function(){ListCls.create([{_type:'Address'}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('[object Object]','Address','<User>')));
-			});
-
 		});
 	});
 });
