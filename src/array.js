@@ -88,7 +88,7 @@ class _Array extends BaseType {
         if(report){
 			MAILBOX.error('List constructor: '+report.message);
         }
-		options.subTypes = generics.unionTypes(options.subTypes);
+		options.subTypes = generics.normalizeTypes(options.subTypes);
 		super(value, options);
 	}
 

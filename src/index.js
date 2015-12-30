@@ -11,7 +11,7 @@ import Reference from './reference';
 import defineEnum from "./defineEnum";
 import validation from "./validation";
 import { LifeCycleManager , revision} from "./lifecycle";
-import {either} from './composite';
+import {either} from './genericTypes';
 import Map from './map';
 
 export default {

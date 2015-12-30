@@ -40,7 +40,7 @@ export function reportDefinitionErrors(subTypes, reportFieldError){
 }
 
 /**
- * @param subTypesArgs one or many subtypes objects (a propper result of unionTypes())
+ * @param subTypesArgs one or many subtypes objects (a propper result of normalizeTypes())
  * @returns {string} string representation using angular notation
  */
 export function toString(...subTypesArgs){
@@ -54,15 +54,25 @@ export function toString(...subTypesArgs){
 
 /**
  *
- * @param subTypes could be a type, an array of types or a result of a previous call to this function
+ * @param subTypes could be a type, a result of a call to either() or a result of a previous call to this function
  * @returns {*} a type, or an object that maps type ids to types (a union type object)
  */
-export function unionTypes(subTypes){
-	if(_.isArray(subTypes)) {
+export function normalizeTypes(subTypes){
+	if(subTypes && subTypes.union) {
 		subTypes = subTypes.reduce(function (subTypes, type) {
 			subTypes[type.id || type.name] = type;
 			return subTypes;
 		}, {});
 	}
 	return subTypes;
+}
+
+/**
+ * method for union types creation
+ * @param types types to unionize
+ * @returns {*} the union of the supplied types
+ */
+export function either(...types){
+	types.union = true;
+	return types;
 }

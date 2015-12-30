@@ -1,7 +1,7 @@
 import Typorama from '../../../src';
 import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType} from '../builders';
 import {expect} from 'chai';
-import {either} from '../../../src/composite'
+import {either} from '../../../src/genericTypes'
 import lifeCycleAsserter from '../lifecycle.js';
 
 describe('Array', function() {

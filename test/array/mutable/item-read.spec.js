@@ -1,7 +1,7 @@
 import Typorama from '../../../src';
 import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from '../builders';
 import {expect} from 'chai';
-import {either} from '../../../src/composite'
+import {either} from '../../../src/genericTypes'
 
 describe('Array', function() {
 	describe('mutable instance', function() {

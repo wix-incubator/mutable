@@ -1,7 +1,7 @@
 import Typorama from '../../../src';
 import {expect} from 'chai';
 import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType} from '../builders';
-import {either} from '../../../src/composite'
+import {either} from '../../../src/genericTypes'
 import sinon from 'sinon';
 import _ from 'lodash';
 

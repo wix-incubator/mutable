@@ -1,6 +1,6 @@
 import Typorama from '../../src';
 import {expect} from 'chai';
-import {either} from '../../src/composite';
+import {either} from '../../src/genericTypes';
 import {aNumberArray, aStringArray, aUserArray, UserType, AddressType, UserWithAddressType} from './builders';
 
 describe('Array', function() {
