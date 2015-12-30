@@ -26,7 +26,17 @@ export function getPlainValType(subTypes, instance) {
 export function doOnType(subTypes, action){
 	return subTypes && (
 		(typeof subTypes === 'function' && action(subTypes)) ||
-		mapFirst(subTypes, (type) => type && typeof type === 'function' && action(type)));
+		mapFirst(subTypes, (...args) => args[0] && typeof args[0] === 'function' && action(...args)));
+}
+
+
+export function reportDefinitionErrors(subTypes, reportFieldError){
+	return doOnType(subTypes, (type, key='0') => {
+		const error  = reportFieldError(type);
+		if(error){
+			return {path:`<${key}${error.path}>`,message:error.message};
+		}
+	});
 }
 
 /**
@@ -40,7 +50,6 @@ export function toString(...subTypesArgs){
 			(subTypes && Object.keys(subTypes).join('|'))
 		).join(', ') +
 		'>';
-
 }
 
 /**

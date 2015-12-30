@@ -56,10 +56,10 @@ export default class BaseType extends PrimitiveBase {
 	}
 
 	static reportFieldError(fieldDef,value){
-		if(!(fieldDef && fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase)){
-			return {path:'',message:`must be a primitive type or extend core3.Type`}
-		}else{
-			return fieldDef.type.reportDefinitionErrors(value || fieldDef.defaults(),fieldDef.options);
+		if (fieldDef && fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase) {
+			return fieldDef.type.reportDefinitionErrors(value || fieldDef.defaults(), fieldDef.options);
+		} else {
+			return {path: '', message: `must be a primitive type or extend core3.Type`}
 		}
 	}
 	static reportDefinitionErrors(){

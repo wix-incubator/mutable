@@ -32,14 +32,16 @@ describe('Array', function() {
 		});
 
 		describe('as field on data object', function() {
-
-			var GroupType = Typorama.define('GroupType', {
-				spec: function() {
-					return {
-						title: Typorama.String,
-						users: Typorama.Array.of(UserType)
-					};
-				}
+			var GroupType;
+			beforeEach(() => {
+				GroupType = Typorama.define('GroupType', {
+					spec: function() {
+						return {
+							title: Typorama.String,
+							users: Typorama.Array.of(UserType)
+						};
+					}
+				});
 			});
 
 			it('Should be modified from json ', function() {
