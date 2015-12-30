@@ -64,7 +64,10 @@ describe('Array mutable instance', function() {
 
 
 	describe('indexOf', function () {
-		var stringArray = aStringArray(['a', 'b']);
+		var stringArray;
+		beforeEach(() => {
+			stringArray = aStringArray(['a', 'b']);
+		});
 
 		it('should return the first index of an element within an array equal to the specified value', function () {
 			expect(stringArray.indexOf('a')).to.eql(0);
@@ -76,7 +79,10 @@ describe('Array mutable instance', function() {
 	});
 
 	describe('lastIndexOf', function () {
-		var stringArray = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
+		var stringArray;
+		beforeEach(() => {
+			stringArray = Typorama.Array.of(Typorama.String).create(['a', 'b', 'a']);
+		});
 
 		it('should return the last index at which a given element can be found in the array', function () {
 			expect(stringArray.lastIndexOf('a')).to.eql(2);

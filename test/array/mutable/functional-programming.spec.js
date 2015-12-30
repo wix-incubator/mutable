@@ -8,7 +8,10 @@ import _ from 'lodash';
 describe('Array mutable instance', function() {
 
 	describe('map', function () {
-		var usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+		var usersList;
+		beforeEach(() => {
+			usersList = Typorama.Array.of(UserType).create([{age: 11}, {age: 12}]);
+		});
 
 		describe('with property name iteratee', function () {
 
