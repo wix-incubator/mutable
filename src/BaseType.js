@@ -57,7 +57,7 @@ export default class BaseType extends PrimitiveBase {
 
 	static reportFieldError(fieldDef,value){
 		if(!(fieldDef && fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase)){
-			return 'must be a primitive type or extend core3.Type'
+			return {path:'',message:`must be a primitive type or extend core3.Type`}
 		}else{
 			return fieldDef.type.reportDefinitionErrors(value || fieldDef.defaults(),fieldDef.options);
 		}
@@ -100,7 +100,9 @@ export default class BaseType extends PrimitiveBase {
 			whenDebugMode(()=>{
 				var fieldError = fieldSpec.type.reportSetErrors(fieldVal,fieldSpec.options);
 				if(fieldError){
-					MAILBOX.error(`${this.id} constructor, field ${key}, ${fieldError}`);
+					var fullPath = fieldError.path ? `${this.id}.${key}.${fieldError.path}` : `${this.id}.${key}`;
+
+					MAILBOX.error(`Type constructor error: "${fullPath}" ${fieldError.message}`);
 				}
 			});
             if(fieldVal === undefined){
@@ -142,7 +144,7 @@ export default class BaseType extends PrimitiveBase {
 					whenDebugMode(()=>{
 						var fieldError = fieldSpec.type.reportSetValueErrors(fieldValue,fieldSpec.options);
 						if(fieldError){
-							MAILBOX.error(`setValue error on type ${this.constructor.id}, field ${fieldName}, ${fieldError}`);
+							MAILBOX.error(`SetValue error: "${this.constructor.id}.${fieldName}" ${fieldError.message}`);
 						}
 					});
                     var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, ERROR);
@@ -173,7 +175,7 @@ export default class BaseType extends PrimitiveBase {
                 return true;
             } else {
 				const passedType = getReadableValueTypeName(newValue);
-                MAILBOX.error(`set Field error on type ${this.constructor.id}, field ${fieldName}, expected type ${fieldDef.type.id} but got ${passedType}`);
+                MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.type.id} but got ${passedType}`);
             }
         }
         return false;

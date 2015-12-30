@@ -70,15 +70,17 @@ function getComplexFields(spec){
 function generateFieldsOn(obj, fieldsDefinition) {
     _.forEach(fieldsDefinition, function(fieldDef, fieldName) {
 		whenDebugMode(function(){
-			var errorText = '';
+			var error;
+			var myPath = `${obj.constructor.id}.${fieldName}`;
 			if(obj[fieldName]) {
-				errorText = 'is reserved.'
+				error = {message:`is a reserved field.`,path:''}
 			}else{
-				errorText  = BaseType.reportFieldError(fieldDef);
+				error  = BaseType.reportFieldError(fieldDef);
 			}
 
-			if(errorText){
-				MAILBOX.fatal(`Field error on type ${obj.constructor.id}, field ${fieldName}, ${errorText}`)
+			if(error){
+				var fullPath = error.path ? myPath+error.path : myPath;
+				MAILBOX.fatal(`Type definition error: "${fullPath}" ${error.message}`)
 			}
 		});
 
