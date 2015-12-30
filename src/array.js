@@ -60,7 +60,7 @@ class _Array extends BaseType {
 	static _wrapSingleItem(value, options, lifeCycle) {
 		var result = generics.doOnType(options.subTypes, type => validateAndWrap(value, type, lifeCycle));
 		if(null === result || undefined === result) {
-			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ generics.toString(options));
+			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ generics.toString(options.subTypes));
 		} else {
 			return result;
 		}

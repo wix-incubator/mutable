@@ -32,18 +32,24 @@ export function doOnType(subTypes, action){
 export function toString(subTypes){
 	if(typeof subTypes === 'function'){
 		return '<'+subTypes.type.id+'>';
-	}else {
+	} else if (subTypes){
 		return '<'+Object.keys(subTypes).join(',')+'>';
+	} else {
+		MAILBOX.error('unknown subTypes : ' + JSON.stringify(subTypes));
 	}
 }
 
+/**
+ *
+ * @param subTypes could be a type, an array of types or a result of a previous call to this function
+ * @returns {*} a type, or an object that maps type ids to types (a union type object)
+ */
 export function unionTypes(subTypes){
-	if (typeof subTypes === 'function'){
-		return subTypes;
-	} else if(_.isArray(subTypes)) {
-		 return subTypes.reduce(function(subTypes, type) {
+	if(_.isArray(subTypes)) {
+		subTypes = subTypes.reduce(function (subTypes, type) {
 			subTypes[type.id || type.name] = type;
 			return subTypes;
 		}, {});
 	}
+	return subTypes;
 }
