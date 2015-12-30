@@ -2,10 +2,10 @@ import _                  from 'lodash';
 import defineType         from './defineType';
 import {validateAndWrap, validateNullValue}  from './validation';
 import {
-	getValueTypeName,
-	getSubtypeSignature}  from './utils';
+	getValueTypeName}     from './utils';
 import BaseType           from './BaseType';
 import Number             from './number';
+import * as generics      from './genericTypes';
 import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.Array');
@@ -20,16 +20,8 @@ class _Array extends BaseType {
 
 	static cloneValue(value){
 		if(!Array.isArray(value)) { return []; }
-		var subTypes = this.options.subTypes;
-		function getItemType(itemValue){
-			if(typeof subTypes === 'function') {
-				return subTypes.allowPlainVal(itemValue) && subTypes;
-			} else if(Array.isArray(subTypes)){
-				return _(subTypes).map((Type) => Type.allowPlainVal(itemValue) ? Type : null ).filter().first();
-			}
-		}
 		return value.map((itemValue, index) => {
-			var Type = getItemType(itemValue);
+			var Type = generics.getPlainValType(this.options.subTypes, itemValue);
 			if(!Type){
 				throw new Error("cloneValue error: no type found for index " + index)
 			}
@@ -66,14 +58,9 @@ class _Array extends BaseType {
 	}
 
 	static _wrapSingleItem(value, options, lifeCycle) {
-		var result;
-		if(typeof options.subTypes === 'function'){
-			result = validateAndWrap(value, options.subTypes, lifeCycle);
-		} else {
-			result = _(options.subTypes).map((type) => validateAndWrap(value, type, lifeCycle)).filter().first();
-		}
+		var result = generics.doOnType(options.subTypes, type => validateAndWrap(value, type, lifeCycle));
 		if(null === result || undefined === result) {
-			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ getSubtypeSignature(options));
+			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ generics.toString(options));
 		} else {
 			return result;
 		}
@@ -88,16 +75,10 @@ class _Array extends BaseType {
 	};
 
 	constructor(value=[], options={}) {
-        if(!options.subTypes){
+		if(!options.subTypes){
 			MAILBOX.error('Untyped arrays are not supported. Use Array<SomeType> instead.');
-        }
-		if(_.isArray(options.subTypes)) {
-			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
-				subTypes[type.id || type.name] = type;
-				return subTypes;
-			}, {});
 		}
-
+		options.subTypes = generics.unionTypes(options.subTypes);
 		super(value, options);
 	}
 
@@ -117,7 +98,7 @@ class _Array extends BaseType {
 		return valueArray;
 	}
 
-    __getLodashIterateeWrapper__(iteratee){
+	__getLodashIterateeWrapper__(iteratee){
 
 		if (_.isFunction(iteratee)) {
 			var typoramaArr = this;
@@ -127,7 +108,7 @@ class _Array extends BaseType {
 		} else {
 			return iteratee;
 		}
-    }
+	}
 
 	__getValueArr__(){
 		if(this.__isReadOnly__){
@@ -139,9 +120,9 @@ class _Array extends BaseType {
 		}
 	}
 
-    __wrapArr__(val){
-        return new this.constructor(val, this.__options__);
-    }
+	__wrapArr__(val){
+		return new this.constructor(val, this.__options__);
+	}
 
 	// Mutator methods
 
@@ -271,16 +252,16 @@ class _Array extends BaseType {
 	// Iteration methods
 
 	forEach(fn, ctx){
-        this.__lodashProxy__('forEach',this.__getLodashIterateeWrapper__(fn), ctx);
+		this.__lodashProxy__('forEach',this.__getLodashIterateeWrapper__(fn), ctx);
 	}
 
 	find(fn, ctx){
-        return this.__lodashProxy__('find',this.__getLodashIterateeWrapper__(fn), ctx);
+		return this.__lodashProxy__('find',this.__getLodashIterateeWrapper__(fn), ctx);
 	}
 
 	findIndex(fn, ctx){
-        return this.__lodashProxy__('findIndex',this.__getLodashIterateeWrapper__(fn), ctx);
-    }
+		return this.__lodashProxy__('findIndex',this.__getLodashIterateeWrapper__(fn), ctx);
+	}
 
 	map(fn, ctx) {
 		return this.__lodashProxy__('map',this.__getLodashIterateeWrapper__(fn), ctx);
