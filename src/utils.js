@@ -42,3 +42,20 @@ export function getValueTypeName(value){
 export function getFieldDef(Type, fieldName){
 	return Type._spec[fieldName];
 }
+
+
+export function getReadableValueTypeName(value){
+	if(value===null)
+		return 'null';
+	if(value===undefined)
+		return 'undefined';
+	if(value.constructor && value.constructor.id){
+		return value.constructor.id
+	}
+	return typeof value;
+}
+
+export function whenDebugMode(func){
+	func();
+}
+

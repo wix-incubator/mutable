@@ -75,6 +75,16 @@ function defineEnum(def) {
 	EnumType.type = EnumType;
 	EnumType.create = BaseType.create;
 
+	EnumType.reportDefinitionErrors = function(){
+		return null;
+	};
+	EnumType.reportSetErrors = function(){
+		return null;
+	};
+	EnumType.reportSetValueErrors = function(){
+		return null;
+	};
+
 	EnumType.withDefault = function(defaults, validate) {
 		var NewType = PrimitiveBase.withDefault.call(this, defaults, validate);
 		NewType.defaults = () => defaults;

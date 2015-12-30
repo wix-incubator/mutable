@@ -2,7 +2,7 @@ import _               from 'lodash';
 import config          from './typoramaConfiguration';
 import {makeDirtyable} from './lifecycle';
 import PrimitiveBase   from './PrimitiveBase';
-import {getFieldDef}   from './utils';
+import {getFieldDef,getReadableValueTypeName,whenDebugMode}   from './utils';
 import {
 	validateAndWrap,
 	optionalSetManager,
@@ -55,6 +55,23 @@ export default class BaseType extends PrimitiveBase {
 		}, {});
 	}
 
+	static reportFieldError(fieldDef,value){
+		if(!(fieldDef && fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase)){
+			return {path:'',message:`must be a primitive type or extend core3.Type`}
+		}else{
+			return fieldDef.type.reportDefinitionErrors(value || fieldDef.defaults(),fieldDef.options);
+		}
+	}
+	static reportDefinitionErrors(){
+		return PrimitiveBase.reportDefinitionErrors.apply(this, arguments);
+	}
+	static reportSetValueErrors(value,options){
+		return PrimitiveBase.reportSetValueErrors.apply(this, arguments);
+	}
+
+	static reportSetErrors(value,options){
+		return PrimitiveBase.reportSetValueErrors.apply(this, arguments);
+	}
 	static validate(val) {
         return Object.keys(this._spec).every(function(key) {
             return this._spec[key].validate(val[key])
@@ -69,6 +86,7 @@ export default class BaseType extends PrimitiveBase {
 		return PrimitiveBase.withDefault.apply(this, arguments);
 	}
 
+
     static validateType(value) {
         return validateNullValue(this, value) ||
             ( value && value.constructor && isAssignableFrom(this, value.constructor.type));
@@ -76,19 +94,25 @@ export default class BaseType extends PrimitiveBase {
 
     static wrapValue(value, spec, options){
         var root = {};
-		_.each(spec, function(fieldSpec, key){
+
+		_.each(spec, (fieldSpec, key)=>{
 			var fieldVal = value[key];
+			whenDebugMode(()=>{
+				var fieldError = fieldSpec.type.reportSetErrors(fieldVal,fieldSpec.options);
+				if(fieldError){
+					var fullPath = fieldError.path ? `${this.id}.${key}.${fieldError.path}` : `${this.id}.${key}`;
+
+					MAILBOX.error(`Type constructor error: "${fullPath}" ${fieldError.message}`);
+				}
+			});
             if(fieldVal === undefined){
                 fieldVal = spec[key].defaults();
             }
             var newField = validateAndWrap(fieldVal, fieldSpec, undefined, ERROR);
-			if(newField === ERROR) {
-                MAILBOX.error("Invalid value for key " + key + " of type " + fieldSpec.name + ": '" + fieldVal + "'.");
-			} else {
-                root[key] = newField;
-            }
+			root[key] = newField;
+
 		});
-        return root;
+		return root;
     }
 
     constructor(value, options=null){
@@ -111,16 +135,19 @@ export default class BaseType extends PrimitiveBase {
     // merge native javascript data into the object
     // this method traverses the input recursively until it reaches typorama values (then it sets them)
     setValue(newValue){
+
         if (this.$isDirtyable()) {
             var changed = false;
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
+					whenDebugMode(()=>{
+						var fieldError = fieldSpec.type.reportSetValueErrors(fieldValue,fieldSpec.options);
+						if(fieldError){
+							MAILBOX.error(`SetValue error: "${this.constructor.id}.${fieldName}" ${fieldError.message}`);
+						}
+					});
                     var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, ERROR);
-                    if(newVal === ERROR) {
-						var valueType = fieldValue === null ? 'null' : fieldValue.constructor.name;
-                        MAILBOX.error(`Invalid value for type ${fieldSpec.name}: '${valueType}'.`);
-                    }
                     if(this.__value__[fieldName] !== newVal){
                         changed = true;
                         this.__value__[fieldName] = newVal;
@@ -147,7 +174,8 @@ export default class BaseType extends PrimitiveBase {
 				optionalSetManager(newValue, this.__lifecycleManager__);
                 return true;
             } else {
-                MAILBOX.error(`Invalid value for key ${fieldName} of type ${fieldDef.type.id}: '${newValue && newValue.constructor.name}'.`);
+				const passedType = getReadableValueTypeName(newValue);
+                MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.type.id} but got ${passedType}`);
             }
         }
         return false;

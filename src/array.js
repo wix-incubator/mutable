@@ -75,9 +75,36 @@ class _Array extends BaseType {
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
+	static reportDefinitionErrors(value, options){
+		if(!options || !options.subTypes){
+			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
+		}else{
+			var error;
+			if(typeof options.subTypes === 'function'){
+				error  = BaseType.reportFieldError(options.subTypes);
+				if(error){
+					return {path:`<0${error.path}>`,message:error.message};
+				}
+			}else{
+				return _.first(_.filter(_.map(options.subTypes,(fieldDef, key)=>{
+					error = BaseType.reportFieldError(fieldDef);
+					return error ? {path:`<${key}${error.path}>`,message:error.message} : null;
+				})));
+			}
+
+		}
+	}
+
 	constructor(value=[], options={}) {
-		if(!options.subTypes){
-			MAILBOX.error('Untyped arrays are not supported. Use Array<SomeType> instead.');
+		const report = _Array.reportDefinitionErrors(value,options);
+        if(report){
+			MAILBOX.error('List constructor: '+report.message);
+        }
+		if(_.isArray(options.subTypes)) {
+			options.subTypes = options.subTypes.reduce(function(subTypes, type) {
+				subTypes[type.id || type.name] = type;
+				return subTypes;
+			}, {});
 		}
 		options.subTypes = generics.unionTypes(options.subTypes);
 		super(value, options);
@@ -121,9 +148,9 @@ class _Array extends BaseType {
 		}
 	}
 
-	__wrapArr__(val){
-		return new this.constructor(val, this.__options__);
-	}
+    __wrapArr__(val){
+        return new this.constructor(val, this.__options__);
+    }
 
 	// Mutator methods
 
@@ -213,7 +240,7 @@ class _Array extends BaseType {
 	}
 
 	concat(...addedArrays) {
-		return this.__wrapArr__(Array.prototype.concat.apply(this.__value__, addedArrays.map((array) => array.__value__ || array)));
+		return this.__wrapArr__(Array.prototype.concat.apply(this.__getValueArr__(), addedArrays.map((array) => array.__getValueArr__ ? array.__getValueArr__()  :array)));
 	}
 
 	join(separator = ',') {
@@ -222,9 +249,9 @@ class _Array extends BaseType {
 
 	slice(begin, end) {
 		if(end) {
-			return this.__wrapArr__(this.__value__.slice(begin, end));
+			return this.__wrapArr__(this.__getValueArr__().slice(begin, end));
 		} else {
-			return this.__wrapArr__(this.__value__.slice(begin));
+			return this.__wrapArr__(this.__getValueArr__().slice(begin));
 		}
 	}
 

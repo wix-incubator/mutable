@@ -1,10 +1,21 @@
 import _ from 'lodash';
 import {getMailBox} from 'gopostal';
-import {cloneType} from './utils';
+import {cloneType,getReadableValueTypeName} from './utils';
 import {validateNullValue} from "./validation";
 
 const MAILBOX = getMailBox('Typorama.PrimitiveBase');
 
+function reportErrorInternal(value,options,allowPlain,allowInstance){
+	if(value !== undefined) {
+		if (value === null) {
+			if (!options || !options.nullable) {
+				return {message:`expected type ${this.id} but got null`,path:''}
+			}
+		}else if(!(allowPlain&&this.allowPlainVal(value))&&!(allowInstance&&this.validateType(value))){
+			return  {message:`expected type ${this.id} but got ${getReadableValueTypeName(value)}`,path:''};
+		};
+	}
+}
 
 class PrimitiveBase {
 	static create(){}
@@ -32,12 +43,7 @@ class PrimitiveBase {
 
        if(defaults !== undefined) {
            if(defaults === null) {
-               var isNullable = NewType.options && NewType.options.nullable;
-               if(isNullable) {
-                   NewType.defaults = () => null;
-               } else {
-                   MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
-               }
+			   NewType.defaults = () => null;
            } else if(_.isFunction(defaults)) {
                NewType.defaults = () => defaults;
            } else {
@@ -46,6 +52,18 @@ class PrimitiveBase {
        }
        return NewType;
    }
+	static reportDefinitionErrors(value,options){
+		return reportErrorInternal.call(this,value,options,true,false);
+	}
+	static reportSetValueErrors(value,options){
+		return reportErrorInternal.call(this,value,options,true,true);
+	}
+
+	static reportSetErrors(value,options){
+		return reportErrorInternal.call(this,value,options,false,true);
+	}
+
+
 }
 
 export default PrimitiveBase;
