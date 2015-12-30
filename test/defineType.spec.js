@@ -175,22 +175,58 @@ describe('defining', () => {
 				})
 			});
 		});
+		function typeCompatibilityTest(typeFactory){
+			describe('should be compatible', () => {
+				it('with itself', () => {
+					var type = typeFactory();
+					expect(type.type).to.satisfy(isAssignableFrom.bind(null, type));
+				});
+				it('with instances of itself', () => {
+					var type = typeFactory();
+					var instance = new type();
+					expect(instance).to.satisfy(type.validateType.bind(type));
+				});
+				it('with instance of same schema', () => {
+					var type1 = typeFactory();
+					var type2 = typeFactory();
+					var instance = new type1();
+					expect(instance).to.satisfy(type2.validateType.bind(type2));
+				});
+				it('with types of same schema', () => {
+					var type1 = typeFactory();
+					var type2 = typeFactory();
+					expect(type1.type).to.satisfy(isAssignableFrom.bind(null, type2));
+				});
+			});
+		}
+
 		describe("a map type",() => {
 
-			describe("with no sub-types",()=>{
-				it('should report error when instantiating', () => {
+			describe("with missing sub-types",()=>{
+				it('should report error when instantiating vanilla Map', () => {
 					var inValidMapType = Typorama.Map;
 					expect(()=>new inValidMapType()).to.report(new Report('error', 'Typorama.Map', 'Map constructor: Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>'));
 				});
-			});
-			describe("with partial sub-types",()=>{
-				it('should report error when defining with zero types', () => {
+				it('should report error when defining Map with zero types', () => {
 					expect(()=>Typorama.Map.of()).to.report(new Report('error', 'Typorama.Map', 'Wrong number of types for map. Use Map<SomeType, SomeType>'));
 				});
-				it('should report error when defining with one type', () => {
+				it('should report error when defining Map with one type', () => {
 					expect(()=>Typorama.Map.of(Typorama.String)).to.report(new Report('error', 'Typorama.Map', 'Wrong number of types for map. Use Map<SomeType, SomeType>'));
 				});
 			});
+
+			describe('with complex value sub-type', () => {
+				typeCompatibilityTest(function typeFactory() {
+					return Typorama.Map.of(Typorama.String, UserType);
+				});
+			});
+
+			describe('with complex key sub-type', () => {
+				typeCompatibilityTest(function typeFactory() {
+					return Typorama.Map.of(UserType, Typorama.String);
+				});
+			});
+
 		});
 
 		describe("an array type",() => {
@@ -202,51 +238,13 @@ describe('defining', () => {
 				});
 			});
 			describe('with one sub-type', () => {
-				describe('should be compatible', () => {
-					it('with itself', () => {
-						var arrType = Typorama.Array.of(UserType);
-						expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
-					});
-					it('with instances of itself', () => {
-						var arrType = Typorama.Array.of(UserType);
-						var arr = new arrType();
-						expect(arr).to.satisfy(arrType.validateType.bind(arrType));
-					});
-					xit('with instance of same schema', () => {
-						var arrType1 = Typorama.Array.of(UserType);
-						var arrType2 = Typorama.Array.of(UserType);
-						var arr1 = new arrType1();
-						expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
-					});
-					it('with types of same schema', () => {
-						var arrType1 = Typorama.Array.of(UserType);
-						var arrType2 = Typorama.Array.of(UserType);
-						expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
-					});
+				typeCompatibilityTest(function typeFactory() {
+					return Typorama.Array.of(UserType);
 				});
 			});
 			describe('with more than one sub-type', () => {
-				describe('should be compatible', () => {
-					it('with itself', () => {
-						var arrType = Typorama.Array.of(either(UserType,AddressType));
-						expect(arrType.type).to.satisfy(isAssignableFrom.bind(null, arrType));
-					});
-					it('with instances of itself', () => {
-						var arrType = Typorama.Array.of(either(UserType,AddressType));
-						var arr = new arrType();
-						expect(arr).to.satisfy(arrType.validateType.bind(arrType));
-					});
-					xit('with instance of same schema', () => {
-						var arrType1 = Typorama.Array.of(either(UserType,AddressType));
-						var arrType2 = Typorama.Array.of(either(UserType,AddressType));
-						var arr1 = new arrType1();
-						expect(arr1).to.satisfy(arrType2.validate.bind(arrType2));
-					});
-					it('with types of same schema', () => {
-						var arrType1 = Typorama.Array.of(either(UserType,AddressType));
-						var arrType2 = Typorama.Array.of(either(UserType,AddressType));
-						expect(arrType1.type).to.satisfy(isAssignableFrom.bind(null, arrType2));
-					});
+				typeCompatibilityTest(function typeFactory() {
+					return Typorama.Array.of(either(UserType,AddressType));
 				});
 			});
 			describe("with default values", function() {

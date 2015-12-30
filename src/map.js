@@ -76,13 +76,18 @@ class _Map extends BaseType {
 			} else {
 				MAILBOX.error('Strange typorama Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
 			}
-		} else if(isIterable(value)){
-			return this._wrapIterable(value, options);
-		} else if (options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
-			return this._wrapIterable(entries(value), options);
-		} else {
-			MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
 		}
+		if(isIterable(value)){
+			return this._wrapIterable(value, options);
+		}
+		if (value instanceof Object){
+			if (Object.keys(value).length === 0){
+				return this._wrapIterable([], options);
+			} else if (options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
+				return this._wrapIterable(entries(value), options);
+			}
+		}
+		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
 	}
 
 	static reportDefinitionErrors(value, options){
