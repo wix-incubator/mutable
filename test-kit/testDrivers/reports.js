@@ -20,10 +20,9 @@ export function ERROR_MISSING_GENERICS(path){
 export function ERROR_RESERVED_FIELD(path){
 	return {level:'fatal',params:`Type definition error: "${path}" ${reserved}`};
 };
-export function ERROR_IN_CONSTRUCTOR(path,fieldType,passedType){
+export function ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR(path,fieldType,passedType){
 	return {level:'error',params:`Type constructor error: "${path}" expected type ${fieldType} but got ${passedType}`}
 };
-
-export function ERROR_UNTYPED_LIST(){
-	return {level:'error',params:`${untypedList}`}
+export function ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR(path,fieldType,passedType){
+	return {level:'error',params:`List constructor error: "${path}" expected type ${fieldType} but got ${passedType}`}
 };
