@@ -5,12 +5,7 @@ import {expect, err} from 'chai';
 import {revision} from '../src/lifecycle';
 import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
-
-var ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE = (path,fieldType,passedType)=>`Set error: "${path}" expected type ${fieldType} but got ${passedType}`;
-var ERROR_NULL_SET_VALUE_TO_NON_NULLABLE = (path,fieldType,passedType)=>`SetValue error: "${path}" expected type ${fieldType} but got ${passedType}`;
-var ERROR_NULL_DEFAULTS_TO_NON_NULLABLE = (path,fieldType,passedType)=>`Type definition error: "${path}" expected type ${fieldType} but got ${passedType}`;
-var ERROR_CONSTRUCTOR_VALUES = (path,fieldType,passedType)=>`Type constructor error: "${path}" expected type ${fieldType} but got ${passedType}`;
-
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR,ERROR_IN_SET,ERROR_IN_SET_VALUE,ERROR_IN_DEFAULT_VALUES} from '../test-kit/testDrivers/reports'
 
 describe('Nullable custom type initialize', function(){
 
@@ -103,7 +98,7 @@ describe('Nullable custom type', function() {
 
 		it('reports error if trying to initialize non-nullable with a null', function () {
 			expect(() =>build.LoginType.withStrictUser(null))
-			.to.report({params:ERROR_NULL_DEFAULTS_TO_NON_NULLABLE('LoginType.user','User','null')});
+			.to.report(ERROR_IN_DEFAULT_VALUES('LoginType.user','User','null'));
 		});
 
 
@@ -139,7 +134,7 @@ describe('Nullable custom type', function() {
 
 			it('reports error if trying to instantiate a non-nullable with a null value', function () {
 				expect(() => new build.login.withStrictUser(null))
-				.to.report({params:ERROR_NULL_DEFAULTS_TO_NON_NULLABLE('LoginType.user','User','null')});
+				.to.report(ERROR_IN_DEFAULT_VALUES('LoginType.user','User','null'));
 			})
 
 		});
@@ -154,7 +149,7 @@ describe('Nullable custom type', function() {
 
 			it('reports error while setting non-nullable field to null', function () {
 				var login = build.login.withStrictUser();
-				expect(() => { login.user = null }).to.report({params:ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE('LoginType.user','User','null')});
+				expect(() => { login.user = null }).to.report(ERROR_IN_SET('LoginType.user','User','null'));
 				expect(login.user).not.to.be.null;
 			});
 		});
@@ -171,7 +166,7 @@ describe('Nullable custom type', function() {
 				it('fails to set null value from an incoming JSON to a non-nullable field and reports', function() {
 					var login = build.login.withStrictUser();
 					expect(() => login.setValue({ user: null }))
-						.to.report({params:ERROR_NULL_SET_VALUE_TO_NON_NULLABLE('LoginType.user','User','null')});
+						.to.report(ERROR_IN_SET_VALUE('LoginType.user','User','null'));
 					expect(login.user).not.to.be.null;
 				});
 
@@ -250,7 +245,7 @@ describe('Nullable primitive type', function() {
 
 		it('reports error if trying to initialize non-nullable with a null', function () {
 			expect(() => build.UserType.withStrictName(null))
-				.to.report({level:'fatal',params:ERROR_NULL_DEFAULTS_TO_NON_NULLABLE('User.name','string','null')});
+				.to.report(ERROR_IN_DEFAULT_VALUES('User.name','string','null'));
 		});
 
 
@@ -286,7 +281,7 @@ describe('Nullable primitive type', function() {
 
 			it('reports error if trying to instantiate a non-nullable with a null value', function () {
 				expect(() => new (build.UserType.withStrictFields())({name:null}))
-					.to.report({level:'error',params:ERROR_CONSTRUCTOR_VALUES("User.name","string","null")});
+					.to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR("User.name","string","null"));
 			})
 
 		});
@@ -310,10 +305,10 @@ describe('Nullable primitive type', function() {
 			it('reports error while setting non-nullable field to null', function () {
 				var user = build.user.withStrictFields();
 
-				expect(() => { user.name = null }).to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
-				expect(() => { user.age = null }).to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
-				expect(() => { user.loggedIn = null }).to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
-				expect(() => { user.onLogIn = null }).to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+				expect(() => { user.name = null }).to.report(ERROR_IN_SET('User.name','string','null'));
+				expect(() => { user.age = null }).to.report(ERROR_IN_SET('User.age','number','null'));
+				expect(() => { user.loggedIn = null }).to.report(ERROR_IN_SET('User.loggedIn','boolean','null'));
+				expect(() => { user.onLogIn = null }).to.report(ERROR_IN_SET('User.onLogIn','function','null'));
 
 				expect(user).not.to.deep.equal(nullUser);
 				expect(user).to.be.dirty;
@@ -335,7 +330,14 @@ describe('Nullable primitive type', function() {
 				it('fails to set null value from an incoming JSON to a non-nullable field and reports', function() {
 					var user = build.user.withStrictFields();
 					expect(() => user.setValue(nullUser))
-						.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+						.to.report(ERROR_IN_SET_VALUE('User.age','number','null'));
+					expect(() => user.setValue(nullUser))
+						.to.report(ERROR_IN_SET_VALUE('User.name','string','null'));
+					expect(() => user.setValue(nullUser))
+						.to.report(ERROR_IN_SET_VALUE('User.loggedIn','boolean','null'));
+					expect(() => user.setValue(nullUser))
+						.to.report(ERROR_IN_SET_VALUE('User.onLogIn','function','null'));
+
 					expect(user).not.to.deep.equal(nullUser);
 					expect(user).not.to.be.dirty;
 				});
@@ -355,13 +357,13 @@ describe('Nullable primitive type', function() {
 					var source = new (LoginType.withNullableUser())({ user: null });
 					var login = new (LoginType.withStrictUser())();
 					expect(() => login.setValue(source))
-						.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+						.to.report(ERROR_IN_SET_VALUE('LoginType.user','User','null'));
 					expect(login.user).not.to.be.null;
 
 					var source = build.user.withNullableFields(null);
 					var user = build.user.withStrictFields();
 					expect(() => user.setValue(source))
-						.to.report(ERROR_NULL_ASSIGNMENT_TO_NON_NULLABLE);
+						.to.report(ERROR_IN_SET_VALUE('LoginType.user','User','null'));
 					expect(user).not.to.deep.equal(nullUser);
 					expect(user).not.to.be.dirty;
 				});

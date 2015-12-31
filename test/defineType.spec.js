@@ -6,6 +6,8 @@ import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
 import {Report} from 'gopostal/dist/test-kit/testDrivers';
+import {ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_UNTYPED_LIST,ERROR_RESERVED_FIELD} from '../test-kit/testDrivers/reports'
+
 
 function typeErrorMessage(valueStr,typeStr,arraySubTypes){
 	return `Illegal value ${valueStr} of type ${typeStr} for Array of type ${arraySubTypes}`;
@@ -56,7 +58,7 @@ describe('defining', () => {
 						zagzag: {}
 					})
 				});
-			}).to.report({level : 'fatal','params':[`Type definition error: "invalid.zagzag" must be a primitive type or extend core3.Type`]});
+			}).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
 		});
 
 
@@ -67,7 +69,7 @@ describe('defining', () => {
 						zagzag: null
 					})
 				});
-			}).to.report({level : 'fatal','params':['Type definition error: "invalid.zagzag" must be a primitive type or extend core3.Type']});
+			}).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
 		});
 
 		it('should report error for reserved keys', function() { // ToDo: change to fields that start with $ and __
@@ -77,7 +79,7 @@ describe('defining', () => {
 						$asReadOnly: Typorama.String
 					})
 				});
-			}).to.report({level : 'fatal', params : ['Type definition error: "invalid.$asReadOnly" is a reserved field.']});
+			}).to.report(ERROR_RESERVED_FIELD('invalid.$asReadOnly'));
 		});
 
 		describe('type with generic field', function(){
@@ -88,7 +90,7 @@ describe('defining', () => {
 							zagzag: Typorama.Array
 						})
 					});
-				}).to.report({level : 'fatal', params : ['Type definition error: "invalid.zagzag" Untyped Lists are not supported please state type of list item in the format core3.List<string>']});
+				}).to.report(ERROR_MISSING_GENERICS('invalid.zagzag'));
 			});
 			it('should throw error if field subtypes are invalid', function(){
 				expect(() => {
@@ -97,7 +99,7 @@ describe('defining', () => {
 							zagzag: Typorama.Array.of(Typorama.String,function(){})
 						})
 					});
-				}).to.report({level : 'fatal', params : ['Type definition error: "invalid.zagzag<1>" must be a primitive type or extend core3.Type']});
+				}).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag<1>'));
 			});
 			it('should throw error if field subtypes dont include generics info', function(){
 				expect(() => {
@@ -106,7 +108,7 @@ describe('defining', () => {
 							zagzag: Typorama.Array.of(Typorama.Array)
 						})
 					});
-				}).to.report({level : 'fatal', params : ['Type definition error: "invalid.zagzag<0>" Untyped Lists are not supported please state type of list item in the format core3.List<string>']});
+				}).to.report(ERROR_MISSING_GENERICS('invalid.zagzag<0>'));
 			});
 
 			xit('should throw error if field subtypes have invalid generics info', function(){
@@ -116,7 +118,7 @@ describe('defining', () => {
 							zagzag: Typorama.Array.of(Typorama.Array.of(function(){}))
 						})
 					});
-				}).to.report({level : 'fatal', params : ['Type definition error: "invalid.zagzag<0<0>>" must be a primitive type or extend core3.Type']});
+				}).to.report(ERROR_MISSING_GENERICS('invalid.zagzag<0<0>>'));
 			});
 
 		});

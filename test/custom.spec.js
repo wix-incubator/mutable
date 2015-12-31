@@ -5,6 +5,8 @@ import {expect, err} from 'chai';
 import {revision} from '../src/lifecycle';
 import {lifecycleContract} from './lifecycle.contract.spec.js';
 import sinon from 'sinon';
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR,ERROR_IN_SET,ERROR_IN_SET_VALUE} from '../test-kit/testDrivers/reports'
+
 
 var UserType = aDataTypeWithSpec({
 	name: Typorama.String.withDefault('leon'),
@@ -178,15 +180,15 @@ describe('Custom data', function() {
 			describe('initial value errors',function(){
 				it('throw error for non nullable field recieving null', function() {
 					expect(()=>new UserType({name: null}))
-						.to.report({level:'error',params:`Type constructor error: "User.name" expected type string but got null`})
+						.to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('User.name','string','null'))
 				});
 				it('throw error for field type mismatch', function() {
 					expect(()=>new UserType({age: 'gaga'}))
-						.to.report({level:'error',params:`Type constructor error: "User.age" expected type number but got string`})
+						.to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('User.age','number','string'))
 				});
 				it.skip('throws error for field type mismatch in deep field', function() {
 					expect(()=>new CompositeContainer({child1:{name:5}}))
-						.to.report({level:'error',params:`Type constructor error: "CompositeContainer.child1.name" expected type string but got number`})
+						.to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('CompositeContainer.child1.name','string','number'))
 				});
 			});
 
@@ -228,7 +230,7 @@ describe('Custom data', function() {
 				var image = new ImageType();
 				var productPrevRef = state.product;
 
-				expect(() => state.product = image).to.report({level : /error/});
+				expect(() => state.product = image).to.report(ERROR_IN_SET('StateType.product','ProductType','ImageType'));
 				expect(state.product).to.be.equal(productPrevRef);
 				expect(state.product.title).to.be.equal('original title');
 				expect(state.product.image.src).to.be.equal('original.jpg');
@@ -277,7 +279,7 @@ describe('Custom data', function() {
 					var state = new StateType();
 					var titlePrevVal = state.product.title;
 
-					expect(() => state.product.title = {}).to.report({level : /error/});
+					expect(() => state.product.title = {}).to.report(ERROR_IN_SET('ProductType.title','string','object'));
 
 					expect(state.product.title).to.be.equal(titlePrevVal);
 				});
@@ -335,7 +337,7 @@ describe('Custom data', function() {
 
 				it("should not allow values of wrong type", function() {
 					var user = new UserType();
-					expect(() => user.setValue({ age: "666" })).to.report({level : /error/});
+					expect(() => user.setValue({ age: "666" })).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
 				});
 
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
