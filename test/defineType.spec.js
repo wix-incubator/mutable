@@ -231,10 +231,10 @@ describe('defining', () => {
 					expect(()=>new inValidMapType()).to.report(new Report('error', 'Typorama.Map', 'Map constructor: Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>'));
 				});
 				it('should report error when defining Map with zero types', () => {
-					expect(()=>Typorama.Map.of()).to.report(new Report('error', 'Typorama.Map', 'Wrong number of types for map. Use Map<SomeType, SomeType>'));
+					expect(()=>Typorama.Map.of()).to.report(new Report('error', 'Typorama.Map', 'Missing types for map. Use Map<SomeType, SomeType>'));
 				});
 				it('should report error when defining Map with one type', () => {
-					expect(()=>Typorama.Map.of(Typorama.String)).to.report(new Report('error', 'Typorama.Map', 'Wrong number of types for map. Use Map<SomeType, SomeType>'));
+					expect(()=>Typorama.Map.of(Typorama.Number)).to.report(new Report('error', 'Typorama.Map', 'Wrong number of types for map. Instead of Map<number> Use Map<string, number>'));
 				});
 			});
 

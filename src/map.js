@@ -37,6 +37,28 @@ class _Map extends BaseType {
 
 	static defaults() { return new Map(); }
 
+	static _allowIterable(iterable, options){
+		for (let [key,value] of iterable) {
+			if(!generics.getMatchingType(options.subTypes.key, key) || ! generics.getMatchingType(options.subTypes.value, value)){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	static allowPlainVal(value){
+		if (super.allowPlainVal(value)){
+			return true;
+		}
+		if(isIterable(value)){
+			return this._allowIterable(value, this.options);
+		}
+		if (value instanceof Object && options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
+			return this._allowIterable(entries(value), this.options);
+		}
+		return false;
+	}
+
 	static _wrapKey(key, options, lifeCycle) {
 		var result = generics.doOnType(options.subTypes.key, type => validateAndWrap(key, type, lifeCycle));
 		if(null === result || undefined === result) {
@@ -76,12 +98,8 @@ class _Map extends BaseType {
 		if(isIterable(value)){
 			return this._wrapIterable(value, options);
 		}
-		if (value instanceof Object){
-			if (Object.keys(value).length === 0){
-				return this._wrapIterable([], options);
-			} else if (options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
-				return this._wrapIterable(entries(value), options);
-			}
+		if (value instanceof Object && options && options.subTypes && generics.getMatchingType(options.subTypes.key, '')){
+			return this._wrapIterable(entries(value), options);
 		}
 		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
 	}
@@ -97,10 +115,27 @@ class _Map extends BaseType {
 
 	static of(key, value) {
 		if (key && value) {
-			// todo union types
 			return this.withDefault(undefined, undefined, {subTypes: {key, value}});
 		} else {
-			MAILBOX.error('Wrong number of types for map. Use Map<SomeType, SomeType>');
+			// error. build most appropriate message
+			switch (arguments.length){
+				case 0:
+					MAILBOX.error('Missing types for map. Use Map<SomeType, SomeType>');
+					break;
+				case 1:
+					key = generics.normalizeTypes(key);
+
+					MAILBOX.error(`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`);
+					break;
+				case 2:
+					key = generics.normalizeTypes(key);
+					value = generics.normalizeTypes(value);
+					MAILBOX.error(`Illegal key type for map : Map${generics.toString(key, value)}`);
+					break;
+				default:
+					MAILBOX.error(`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`);
+
+			}
 		}
 	};
 
