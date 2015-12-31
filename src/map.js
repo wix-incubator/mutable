@@ -4,6 +4,7 @@
 import defineType         from './defineType';
 import {getMailBox}       from 'gopostal';
 import BaseType           from './BaseType';
+import {getValueTypeName} from './utils';
 import Number             from './number';
 import String             from './string';
 import * as generics      from './genericTypes';
@@ -13,11 +14,6 @@ import {
 
 
 const MAILBOX = getMailBox('Typorama.Map');
-
-// avoid crashing if symbol namespace does not exist
-if(typeof Symbol === 'undefined'){
-	var Symbol = {iterator:'iterator'}; // using var, to define in the global scope
-}
 
 // because Object.entries is too tall an order
 function entries(obj) {
@@ -29,7 +25,7 @@ function safeAsReadOnly (item) {
 }
 
 function isIterable(value) {
-	return value && typeof value[Symbol.iterator] === "function";
+	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === "function");
 
 }
 
@@ -118,6 +114,19 @@ class _Map extends BaseType {
 			options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
 		}
 		super(value, options);
+	}
+
+	set(key, element) {
+		if(this.$setDirty()){
+			return this.__value__.set(key, this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__));
+		} else {
+			return null;
+		}
+	}
+
+	get(key) {
+		var item = this.__value__.get(key);
+		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
 	}
 }
 
