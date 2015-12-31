@@ -4,6 +4,7 @@
 import defineType         from './defineType';
 import {getMailBox}       from 'gopostal';
 import BaseType           from './BaseType';
+import {getValueTypeName} from './utils';
 import Number             from './number';
 import String             from './string';
 import * as generics      from './genericTypes';
@@ -13,11 +14,6 @@ import {
 
 
 const MAILBOX = getMailBox('Typorama.Map');
-
-// avoid crashing if symbol namespace does not exist
-if(typeof Symbol === 'undefined'){
-	var Symbol = {iterator:'iterator'}; // using var, to define in the global scope
-}
 
 // because Object.entries is too tall an order
 function entries(obj) {
@@ -29,7 +25,7 @@ function safeAsReadOnly (item) {
 }
 
 function isIterable(value) {
-	return value && typeof value[Symbol.iterator] === "function";
+	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === "function");
 
 }
 
@@ -41,30 +37,30 @@ class _Map extends BaseType {
 
 	static defaults() { return new Map(); }
 
-	constructor(value=[], options={}) {
-		if (!options.subTypes || !options.subTypes.key || !options.subTypes.value) {
-			MAILBOX.error('Untyped maps are not supported. Use Map<SomeType, SomeType> instead.');
-		}
-		super(value, options);
-	}
-
 	static _wrapKey(key, options, lifeCycle) {
-			var result = generics.doOnType(options.subTypes.key, type => validateAndWrap(key, type, lifeCycle));
-			if(null === result || undefined === result) {
-				MAILBOX.error('Illegal key '+key+' of type '+getValueTypeName(key)+' for Map of type '+ generics.toString(options.subTypes.key, options.subTypes.value));
-			} else {
-				return result;
-			}
+		var result = generics.doOnType(options.subTypes.key, type => validateAndWrap(key, type, lifeCycle));
+		if(null === result || undefined === result) {
+			MAILBOX.error('Illegal key '+key+' of type '+getValueTypeName(key)+' for Map of type '+ generics.toString(options.subTypes.key, options.subTypes.value));
+		} else {
+			return result;
+		}
 	}
 
 	static _wrapValue(value, options, lifeCycle) {
-
+		var result = generics.doOnType(options.subTypes.value, type => validateAndWrap(value, type, lifeCycle));
+		if(null === result || undefined === result) {
+			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Map of type '+ generics.toString(options.subTypes.key, options.subTypes.value));
+		} else {
+			return result;
+		}
 	}
 
 	static _wrapIterable(iterable, options, lifeCycle) {
 		var result = new Map();
 		for (let [key,value] of iterable) {
-			result.set(this._wrapKey(key, options, lifeCycle), this._wrapValue(value, options, lifeCycle));
+			key = this._wrapKey(key, options, lifeCycle);
+			value = this._wrapValue(value, options, lifeCycle);
+			result.set(key, value);
 		}
 		return result;
 	}
@@ -76,24 +72,62 @@ class _Map extends BaseType {
 			} else {
 				MAILBOX.error('Strange typorama Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
 			}
-		} else if(isIterable(value)){
-			return this._wrapIterable(value, options);
-		} else if (generics.doOnType(options.subTypes.key, type => type === String)){
-			return this._wrapIterable(entries(value), options);
-		} else {
-			MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
 		}
+		if(isIterable(value)){
+			return this._wrapIterable(value, options);
+		}
+		if (value instanceof Object){
+			if (Object.keys(value).length === 0){
+				return this._wrapIterable([], options);
+			} else if (options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
+				return this._wrapIterable(entries(value), options);
+			}
+		}
+		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
 	}
 
+	static reportDefinitionErrors(value, options){
+		if (!options || !options.subTypes || !options.subTypes.key || !options.subTypes.value) {
+			return {path:'',message:`Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`}
+		} else {
+			return generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldError) ||
+				generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldError);
+		}
+	}
 
 	static of(key, value) {
 		if (key && value) {
 			// todo union types
 			return this.withDefault(undefined, undefined, {subTypes: {key, value}});
 		} else {
-			MAILBOX.error('Wrong number of types for map. Use Map<SomeType, SomeType>.');
+			MAILBOX.error('Wrong number of types for map. Use Map<SomeType, SomeType>');
 		}
 	};
+
+
+	constructor(value=[], options={}) {
+		const report = _Map.reportDefinitionErrors(value, options);
+		if(report){
+			MAILBOX.error('Map constructor: '+report.message);
+		} else {
+			options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
+			options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
+		}
+		super(value, options);
+	}
+
+	set(key, element) {
+		if(this.$setDirty()){
+			return this.__value__.set(key, this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__));
+		} else {
+			return null;
+		}
+	}
+
+	get(key) {
+		var item = this.__value__.get(key);
+		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+	}
 }
 
 export default defineType('Map',{
