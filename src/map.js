@@ -124,7 +124,6 @@ class _Map extends BaseType {
 					break;
 				case 1:
 					key = generics.normalizeTypes(key);
-
 					MAILBOX.error(`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`);
 					break;
 				case 2:
@@ -138,7 +137,6 @@ class _Map extends BaseType {
 			}
 		}
 	};
-
 
 	constructor(value=[], options={}) {
 		const report = _Map.reportDefinitionErrors(value, options);

@@ -24,7 +24,7 @@ export function getPlainValType(subTypes, instance) {
 }
 
 export function getMatchingType(subTypes, val){
-	return generics.doOnType(subTypes, type =>
+	return doOnType(subTypes, type =>
 		(typeof type.validateType === 'function' && type.validateType(val)) ||
 		(typeof type.allowPlainVal === 'function' && type.type.allowPlainVal(val))
 	);
