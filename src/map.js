@@ -37,6 +37,28 @@ class _Map extends BaseType {
 
 	static defaults() { return new Map(); }
 
+	static _allowIterable(iterable, options){
+		for (let [key,value] of iterable) {
+			if(!generics.getMatchingType(options.subTypes.key, key) || ! generics.getMatchingType(options.subTypes.value, value)){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	static allowPlainVal(value){
+		if (super.allowPlainVal(value)){
+			return true;
+		}
+		if(isIterable(value)){
+			return this._allowIterable(value, this.options);
+		}
+		if (value instanceof Object && options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
+			return this._allowIterable(entries(value), this.options);
+		}
+		return false;
+	}
+
 	static _wrapKey(key, options, lifeCycle) {
 		var result = generics.doOnType(options.subTypes.key, type => validateAndWrap(key, type, lifeCycle));
 		if(null === result || undefined === result) {
@@ -76,12 +98,8 @@ class _Map extends BaseType {
 		if(isIterable(value)){
 			return this._wrapIterable(value, options);
 		}
-		if (value instanceof Object){
-			if (Object.keys(value).length === 0){
-				return this._wrapIterable([], options);
-			} else if (options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
-				return this._wrapIterable(entries(value), options);
-			}
+		if (value instanceof Object && options && options.subTypes && generics.getMatchingType(options.subTypes.key, '')){
+			return this._wrapIterable(entries(value), options);
 		}
 		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
 	}
@@ -97,13 +115,28 @@ class _Map extends BaseType {
 
 	static of(key, value) {
 		if (key && value) {
-			// todo union types
 			return this.withDefault(undefined, undefined, {subTypes: {key, value}});
 		} else {
-			MAILBOX.error('Wrong number of types for map. Use Map<SomeType, SomeType>');
+			// error. build most appropriate message
+			switch (arguments.length){
+				case 0:
+					MAILBOX.error('Missing types for map. Use Map<SomeType, SomeType>');
+					break;
+				case 1:
+					key = generics.normalizeTypes(key);
+					MAILBOX.error(`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`);
+					break;
+				case 2:
+					key = generics.normalizeTypes(key);
+					value = generics.normalizeTypes(value);
+					MAILBOX.error(`Illegal key type for map : Map${generics.toString(key, value)}`);
+					break;
+				default:
+					MAILBOX.error(`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`);
+
+			}
 		}
 	};
-
 
 	constructor(value=[], options={}) {
 		const report = _Map.reportDefinitionErrors(value, options);
@@ -116,17 +149,53 @@ class _Map extends BaseType {
 		super(value, options);
 	}
 
-	set(key, element) {
+	set(key, value) {
 		if(this.$setDirty()){
-			return this.__value__.set(key, this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__));
-		} else {
-			return null;
+			key = this.constructor._wrapKey(key, this.__options__, this.__lifecycleManager__);
+			value = this.constructor._wrapValue(value, this.__options__, this.__lifecycleManager__);
+			this.__value__.set(key, value);
 		}
+		return this;
 	}
 
 	get(key) {
 		var item = this.__value__.get(key);
 		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+	}
+
+	$getElements(){
+		let result = [];
+		for (let [key,value] of this.__value__.entries()) {
+			result.push(key,value);
+		}
+		return result;
+	}
+
+	toJSON(recursive = true) {
+		let result = [];
+		for (let [key,value] of this.__value__.entries()) {
+			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : key;
+			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : value;
+			result.push([key,value]);
+		}
+		return result;
+	}
+
+	/**
+	 * get iterator over all map keys and values that are dirtyable
+	 */
+	// consider optimizing if array is of primitive type only
+	$dirtyableElementsIterator(yielder) {
+		for (let key of this.__value__.keys()) {
+			if (key && _.isFunction(key.$calcLastChange)) {
+				yielder(key);
+			}
+		}
+		for (let value of this.__value__.values()) {
+			if (value && _.isFunction(value.$calcLastChange)) {
+				yielder(value);
+			}
+		}
 	}
 }
 

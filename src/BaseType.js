@@ -7,6 +7,7 @@ import {
 	validateAndWrap,
 	optionalSetManager,
 	isAssignableFrom,
+	validateValue,
 	validateNullValue} from "./validation";
 
 import {getMailBox}    from 'gopostal';
@@ -86,11 +87,14 @@ export default class BaseType extends PrimitiveBase {
 		return PrimitiveBase.withDefault.apply(this, arguments);
 	}
 
-
+	/**
+	 * @param value any value
+	 * @returns {*} true if value is a legal value for this type, falsy otherwise
+	 */
     static validateType(value) {
-        return validateNullValue(this, value) ||
-            ( value && value.constructor && isAssignableFrom(this, value.constructor.type));
+        return validateValue(this, value);
     }
+
 
     static wrapValue(value, spec, options){
         var root = {};
@@ -205,8 +209,6 @@ export default class BaseType extends PrimitiveBase {
 		return this.___id___;
 	}
 }
-
-
 
 BaseType._spec = Object.freeze(Object.create(null));
 

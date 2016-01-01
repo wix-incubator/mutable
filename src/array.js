@@ -22,7 +22,7 @@ class _Array extends BaseType {
 	static cloneValue(value){
 		if(!Array.isArray(value)) { return []; }
 		return value.map((itemValue, index) => {
-			var Type = generics.getPlainValType(this.options.subTypes, itemValue);
+			var Type = generics.getMatchingType(this.options.subTypes, itemValue);
 			if(!Type){
 				throw new Error("cloneValue error: no type found for index " + index)
 			}
@@ -320,6 +320,18 @@ class _Array extends BaseType {
 			this.__value__.length = newValue.length;
 		}
 		return changed;
+	}
+
+	/**
+	 * get iterator over all array elements that are dirtyable
+	 */
+	// consider optimizing if array is of primitive type only
+	$dirtyableElementsIterator(yielder){
+		for(let element of this.__value__){
+			if (element && _.isFunction(element.$calcLastChange)){
+				yielder(element);
+			}
+		}
 	}
 }
 

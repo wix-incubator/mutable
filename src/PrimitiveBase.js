@@ -11,9 +11,9 @@ function reportErrorInternal(value,options,allowPlain,allowInstance){
 			if (!options || !options.nullable) {
 				return {message:`expected type ${this.id} but got null`,path:''}
 			}
-		}else if(!(allowPlain&&this.allowPlainVal(value))&&!(allowInstance&&this.validateType(value))){
+		} else if((!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))){
 			return  {message:`expected type ${this.id} but got ${getReadableValueTypeName(value)}`,path:''};
-		};
+		}
 	}
 }
 

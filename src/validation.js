@@ -9,16 +9,24 @@ export function optionalSetManager(itemValue, lifeCycle) {
 }
 
 export function isAssignableFrom(toType, type) {
-	return type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
+	return type && toType.type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
 }
 
-export function isNullable(Type){
-	return Type.options && Type.options.nullable;
+export function isNullable(type){
+	return type.options && type.options.nullable;
 }
 
-export function validateNullValue(Type, value) {
+export function validateValue(type, value) {
+	return validateNullValue(type, value) || validateNotNullValue(type, value);
+}
+
+export function validateNotNullValue(type, value) {
+	return  value && value.constructor && isAssignableFrom(type, value.constructor.type);
+}
+
+export function validateNullValue(type, value) {
 	if(value === null) {
-		if(isNullable(Type)) {
+		if(isNullable(type)) {
 			return true;
 		} else {
 			return false;
