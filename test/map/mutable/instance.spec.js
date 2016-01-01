@@ -2,10 +2,11 @@ import Typorama from '../../../src';
 import {expect} from 'chai';
 import sinon from 'sinon';
 import {aNumberMap, UserType} from '../builders';
+import lifeCycleAsserter from '../lifecycle.js';
 
 describe('Map', function() {
 	describe('mutable instance', function() {
-		it('Should have correct length', function() {
+		it('Should have correct size', function() {
 			var numbers = aNumberMap({1:1, 2:2, 3:3});
 			expect(numbers.size).to.equal(3);
 		});
@@ -60,6 +61,32 @@ describe('Map', function() {
 			});
 		});
 
+		describe('set', function () {
+			it('should replace an existing element', ()  => {
+				var numbers = aNumberMap({a:1});
+
+				numbers.set('a', 5);
+
+				expect(numbers.toJSON()).to.eql([['a', 5]]);
+			});
+			it('should add an element if none exists', ()  => {
+				var numbers = aNumberMap();
+
+				numbers.set('a', 42);
+
+				expect(numbers.toJSON()).to.eql([['a', 42]]);
+			});
+
+			it('should return the map', () => {
+				var numbers = aNumberMap({a:5});
+
+				expect(numbers.set('a', 42)).to.eql(numbers);
+			});
+
+			lifeCycleAsserter.assertMutatorContract(
+				(map, elemFactory) => map.set(elemFactory(), elemFactory()), 'set');
+		});
 	});
+
 
 });
