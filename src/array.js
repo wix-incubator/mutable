@@ -59,9 +59,13 @@ class _Array extends BaseType {
 	}
 
 	static _wrapSingleItem(value, options, lifeCycle) {
-		var result = generics.doOnType(options.subTypes, type => validateAndWrap(value, type, lifeCycle));
+		var result = generics.doOnType(options.subTypes, type => {
+			if(type.validateType(value) || type.allowPlainVal(value)){
+				return validateAndWrap(value, type, lifeCycle);
+			}
+		});
 		if(null === result || undefined === result) {
-		MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ generics.toString(options.subTypes));
+			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ generics.toString(options.subTypes));
 		} else {
 			return result;
 		}
@@ -76,6 +80,13 @@ class _Array extends BaseType {
 	};
 
 	static reportDefinitionErrors(value, options){
+		if(!options || !options.subTypes){
+			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
+		} else {
+			return generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldError);
+		}
+	}
+	static reportDefinitionErrors2(options){
 		if(!options || !options.subTypes){
 			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
 		} else {

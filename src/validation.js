@@ -1,7 +1,17 @@
 import _ from 'lodash';
 import {getMailBox} from 'gopostal';
 const MAILBOX = getMailBox('Typorama.validation');
+import {getReadableValueTypeName} from './utils'
 
+function misMatchMessage(errorContext, expected,recieved,overridepath){
+	return `${errorContext.entryPoint}: "${overridepath||errorContext.path}" expected type ${expected.id} but got ${getReadableValueTypeName(recieved)}`
+}
+export function reportNullError(errorContext,type){
+	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,null))
+}
+export function reportMisMatchError(errorContext,type,value,overridepath){
+	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,value,overridepath))
+}
 export function optionalSetManager(itemValue, lifeCycle) {
 	if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
 		itemValue.$setManager(lifeCycle);
@@ -28,13 +38,13 @@ export function validateNullValue(Type, value) {
 	}
 }
 
-export function validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
+export function validateAndWrap(itemValue, type,  lifeCycle, errorContext){
 	if(itemValue === null) { // shortcut check for nullable (also checked in allowPlainVal)
 		if(isNullable(type)) {
 			return itemValue;
 		} else {
-			MAILBOX.error('Cannot assign null value to a type which is not defined as nullable.');
-			return defaultErr;
+			reportNullError(errorContext,type);
+			return type.defaults();
 		}
 	}
 	if(type.validateType(itemValue)){
@@ -47,7 +57,8 @@ export function validateAndWrap(itemValue, type,  lifeCycle, defaultErr){
 		}
 		return newItem;
 	}
-	return defaultErr;
+	reportMisMatchError(errorContext, type, itemValue);
+	return type.create();
 }
 
 export default {
