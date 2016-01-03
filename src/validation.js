@@ -62,7 +62,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, errorContext,errorT
 		optionalSetManager(itemValue, lifeCycle);
 		return itemValue;
 	} else if(type.type.allowPlainVal(itemValue)){
-		var newItem = type.create(itemValue);
+		var newItem = type.create(itemValue,undefined,errorContext);
 		if (typeof newItem.$setManager === 'function') {
 			newItem.$setManager(lifeCycle);
 		}

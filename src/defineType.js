@@ -11,8 +11,8 @@ const MAILBOX = getMailBox('Typorama.define');
 
 function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	ParentType = ParentType || BaseType;
-	var Type = TypeConstructor || function Type(value, options){
-			ParentType.call(this, value, options);
+	var Type = TypeConstructor || function Type(value, options,eventContext){
+			ParentType.call(this, value, options, eventContext);
 		};
 
     Type.validate      = Type.validate      || ParentType.validate;

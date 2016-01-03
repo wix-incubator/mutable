@@ -64,6 +64,14 @@ describe('Array', function() {
 				expect(numberList.at(3)).to.equal(4);
 			});
 
+			it('should report deep errors', function () {
+				var numberList = aNumberArray([1, 2]);
+				numberList.push(3, 4);
+
+				expect(numberList.length).to.equal(4);
+				expect(numberList.at(2)).to.equal(3);
+				expect(numberList.at(3)).to.equal(4);
+			});
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
 		});
 
