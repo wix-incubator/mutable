@@ -24,7 +24,10 @@ export function ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR(path,fieldType,passedType){
 	return {level:'error',params:`Type constructor error: "${path}" expected type ${fieldType} but got ${passedType}`}
 }
 export function ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR(path,fieldType,passedType){
-	return {level:'error',params:`List constructor error: "${path}" expected type ${fieldType} but got ${passedType}`}
+	return ERROR_FIELD_MISMATCH_IN_LIST_METHOD('constructor', path,fieldType,passedType);
+}
+export function ERROR_FIELD_MISMATCH_IN_LIST_METHOD(method, path,fieldType,passedType){
+	return {level:'error',params:`List ${method} error: "${path}" expected type ${fieldType} but got ${passedType}`}
 }
 export function ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR(path,fieldType,passedType){
 	return {level:'error',params:`Map constructor error: "${path}" expected value of type ${fieldType} but got ${passedType}`}

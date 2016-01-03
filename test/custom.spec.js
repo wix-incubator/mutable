@@ -189,9 +189,10 @@ describe('Custom data', function() {
 					expect(()=>new UserType({age: 'gaga'}))
 						.to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('User.age','number','string'))
 				});
-				it.skip('throws error for field type mismatch in deep field', function() {
-					expect(()=>new CompositeContainer({child1:{name:5}}))
-						.to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('CompositeContainer.child1.name','string','number'))
+				it("report correct path for field type mismatch in deep field", function() {
+					var container = new VeryCompositeContainer();
+					expect(() => new VeryCompositeContainer({child1: {child: { age: "666" }}}))
+						.to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('UserWithDeepChildType.child1.child.age','number','string'));
 				});
 			});
 

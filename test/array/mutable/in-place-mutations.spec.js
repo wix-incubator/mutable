@@ -1,7 +1,8 @@
 import Typorama from '../../../src';
-import {aNumberArray, aStringArray, UserType} from '../builders';
+import {aNumberArray, aStringArray, aVeryCompositeContainerArray, UserType} from '../builders';
 import {expect} from 'chai';
 import lifeCycleAsserter from '../lifecycle.js';
+import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/testDrivers/reports'
 
 describe('Array', function() {
 	describe('mutable instance', function() {
@@ -75,6 +76,12 @@ describe('Array', function() {
 				expect(arr.at(1).name).to.equal('dag');
 			});
 
+			// todo: add another test with _type annotation
+			it("report correct path for field type mismatch in deep field", function() {
+				var numberList = aVeryCompositeContainerArray([{},{},{},{}]);
+				expect(() => numberList.splice(2,1,{}, {child1: {user: { age: "666" }}}))
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('splice', 'List<VeryCompositeContainer>[3]VeryCompositeContainer.child1.user.age','number','string'));
+			});
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
 		});
 	});

@@ -1,8 +1,9 @@
 import Typorama from '../../../src';
-import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType} from '../builders';
+import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, aVeryCompositeContainerArray} from '../builders';
 import {expect} from 'chai';
 import {either} from '../../../src/genericTypes'
 import lifeCycleAsserter from '../lifecycle.js';
+import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/testDrivers/reports'
 
 describe('Array', function() {
 	describe('mutable instance', function() {
@@ -64,13 +65,10 @@ describe('Array', function() {
 				expect(numberList.at(3)).to.equal(4);
 			});
 
-			it('should report deep errors', function () {
-				var numberList = aNumberArray([1, 2]);
-				numberList.push(3, 4);
-
-				expect(numberList.length).to.equal(4);
-				expect(numberList.at(2)).to.equal(3);
-				expect(numberList.at(3)).to.equal(4);
+			it("report correct path for field type mismatch in deep field", function() {
+				var aList = aVeryCompositeContainerArray([{}, {}]);
+				expect(() => aList.push({}, {child1: {user: { age: "666" }}}))
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('push', 'List<VeryCompositeContainer>[3]VeryCompositeContainer.child1.user.age','number','string'));
 			});
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
 		});
@@ -95,6 +93,12 @@ describe('Array', function() {
 				var arr = aStringArray(['a']);
 
 				expect(arr.set(0, 'b')).to.eql('b');
+			});
+
+			it("report correct path for field type mismatch in deep field", function() {
+				var aList = aVeryCompositeContainerArray([{}, {}]);
+				expect(() => aList.set(1, {child1: {user: { age: "666" }}}))
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('set', 'List<VeryCompositeContainer>VeryCompositeContainer.child1.user.age','number','string'));
 			});
 
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
@@ -139,6 +143,12 @@ describe('Array', function() {
 				numberList.unshift(5);
 
 				expect(numberList.length).to.equal(lengthBeforeUnshift + 1);
+			});
+
+			it("report correct path for field type mismatch in deep field", function() {
+				var aList = aVeryCompositeContainerArray([{}, {}]);
+				expect(() => aList.unshift({}, {child1: {user: { age: "666" }}}))
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('unshift', 'List<VeryCompositeContainer>[1]VeryCompositeContainer.child1.user.age','number','string'));
 			});
 
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.unshift(elemFactory(), elemFactory()), 'unshift');

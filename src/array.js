@@ -67,6 +67,7 @@ class _Array extends BaseType {
 	static _wrapSingleItem(value, options, lifeCycle,errorContext) {
 		var result = generics.doOnType(options.subTypes, type => {
 			if(type.validateType(value) || type.allowPlainVal(value)){
+				errorContext.path += type.type.id;
 				return validateAndWrap(value, type, lifeCycle,errorContext);
 			}
 		});
@@ -94,13 +95,18 @@ class _Array extends BaseType {
 		}
 	}
 
+	static createErrorContext(entryPoint,level, options){
+		options = options || this.options || this.__options__;
+		return {
+			level,
+			entryPoint,
+			path:'List'+generics.toString(generics.normalizeTypes(options.subTypes))
+		}
+	}
+
 	constructor(value=[], options={}, errorContext) {
 		if(!errorContext){
-			errorContext = {
-				level:'error',
-				entryPoint:'List constructor error',
-				path:'List'+generics.toString(options.subTypes)
-			}
+			errorContext = _Array.createErrorContext('List constructor error', 'error', options);
 		}
 		const report = _Array.reportDefinitionErrors(options);
         if(report){
@@ -159,7 +165,7 @@ class _Array extends BaseType {
 			if(this.__value__.length === 0) {
 				return undefined;
 			}
-			return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
+			return this.__value__.pop();
 		} else {
 			return null;
 		}
@@ -169,7 +175,11 @@ class _Array extends BaseType {
 		if(this.$setDirty()){
 			return Array.prototype.push.apply(
 				this.__value__,
-				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
+				newItems.map((item, idx) => {
+					let errorContext = this.constructor.createErrorContext('List push error','error', this.__options__);
+					errorContext.path += `[${this.__value__.length + idx}]`;
+					return this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__, errorContext);
+				})
 			);
 		} else {
 			return null;
@@ -187,7 +197,7 @@ class _Array extends BaseType {
 
 	shift() {
 		if(this.$setDirty()){
-			return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
+			return this.__value__.shift();
 		} else {
 			return null;
 		}
@@ -204,8 +214,10 @@ class _Array extends BaseType {
 	splice(index, removeCount, ...addedItems) {
 		if(this.$setDirty()){
 			var spliceParams = [index, removeCount];
-			addedItems.forEach(function (newItem) {
-				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__,this.__lifecycleManager__))
+			addedItems.forEach(function (newItem, idx) {
+				let errorContext = this.constructor.createErrorContext('List splice error','error', this.__options__);
+				errorContext.path += `[${index + idx}]`;
+				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__,this.__lifecycleManager__, errorContext))
 			}.bind(this));
 			return this.__value__.splice.apply(this.__value__, spliceParams);
 			//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
@@ -218,7 +230,11 @@ class _Array extends BaseType {
 		if(this.$setDirty()){
 			return Array.prototype.unshift.apply(
 				this.__value__,
-				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
+				newItems.map((item, idx) => {
+					let errorContext = this.constructor.createErrorContext('List unshift error','error', this.__options__);
+					errorContext.path += `[${idx}]`;
+					return this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__, errorContext);
+				})
 			);
 		} else {
 			return null;
@@ -227,7 +243,9 @@ class _Array extends BaseType {
 
 	set(index, element) {
 		if(this.$setDirty()){
-			return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__,this.__lifecycleManager__);
+
+			let errorContext = this.constructor.createErrorContext('List set error','error', this.__options__);
+			return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__,this.__lifecycleManager__, errorContext);
 		} else {
 			return null;
 		}
@@ -311,7 +329,7 @@ class _Array extends BaseType {
 	filter(fn, ctx) {
 		return this.__lodashProxyWrap__('filter',this.__getLodashIterateeWrapper__(fn), ctx);
 	}
-	setValue(newValue) {
+	setValue(newValue, errorContext) {
 		var changed = false;
 		if(newValue instanceof _Array) {
 			newValue = newValue.__getValueArr__();
@@ -324,9 +342,11 @@ class _Array extends BaseType {
 				changed = true;
 				this.__value__.splice(newValue.length, lengthDiff);
 			}
-			_.forEach(newValue, (itemValue, idx) => {
 
-				var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__);
+			_.forEach(newValue, (itemValue, idx) => {
+				let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List setValue error','error', this.__options__);
+				errorContext.path += `[${idx}]`;
+				var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__, errorContext);
 				changed = changed || newItemVal!= this.__value__[idx];
 
 				this.__value__[idx] = newItemVal;
@@ -353,7 +373,7 @@ class _Array extends BaseType {
 	}
 }
 
-export default defineType('Array',{
+export default defineType('List',{
 	spec: function() {
 		return {
 			length: Number.withDefault(0)
