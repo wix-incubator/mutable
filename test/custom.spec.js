@@ -19,12 +19,15 @@ var UserWithChildType = aDataTypeWithSpec({
 	child: UserType.withDefault({name: 'bobi', age: 13})
 }, 'UserWithChildType');
 
-
 var CompositeContainer = aDataTypeWithSpec({
 	name: Typorama.String.withDefault('leon'),
 	child1: UserType,
 	child2: UserType
 }, 'UserWith2ChildType');
+
+var VeryCompositeContainer = aDataTypeWithSpec({
+	child1: UserWithChildType
+}, 'UserWithDeepChildType');
 
 var PrimitivesContainer = aDataTypeWithSpec({
 	name: Typorama.String.withDefault('leon'),
@@ -338,6 +341,12 @@ describe('Custom data', function() {
 				it("should not allow values of wrong type", function() {
 					var user = new UserType();
 					expect(() => {return user.setValue({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
+				});
+
+				it("report correct path if setting values of wrong type", function() {
+					var container = new VeryCompositeContainer();
+					expect(() => {return container.setValue({child1: {child: { age: "666" }}})})
+						.to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age','number','string'));
 				});
 
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');

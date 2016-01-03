@@ -154,7 +154,12 @@ export default class BaseType extends PrimitiveBase {
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
-                    var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, {level:errorContext.level,entryPoint:errorContext.entryPoint,path:errorContext.path+'.'+fieldName});
+                    var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
+						{
+							level:errorContext.level,entryPoint:
+							errorContext.entryPoint,path:
+							errorContext.path+'.'+fieldName
+						});
                     if(this.__value__[fieldName] !== newVal){
                         changed = true;
                         this.__value__[fieldName] = newVal;
