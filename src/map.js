@@ -68,7 +68,7 @@ class _Map extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes.key);
-			reportMisMatchError(errorContext,allowedTypes,key);
+			reportMisMatchError(errorContext,allowedTypes,key,null,'key');
 		} else {
 			return result;
 		}
