@@ -7,8 +7,9 @@ import {
 	validateAndWrap,
 	optionalSetManager,
 	isAssignableFrom,
+	validateNullValue,
 	validateValue,
-	validateNullValue} from "./validation";
+	reportNullError} from "./validation";
 
 import {getMailBox}    from 'gopostal';
 
@@ -29,10 +30,11 @@ function generateId(){
 	return dataCounter++;
 }
 
+
 export default class BaseType extends PrimitiveBase {
 
-    static create(value, options) {
-        return new this(value, options);
+    static create(value, options, errorContext) {
+        return new this(value, options, errorContext);
     }
 
 	static defaults() {
@@ -56,16 +58,14 @@ export default class BaseType extends PrimitiveBase {
 		}, {});
 	}
 
-	static reportFieldError(fieldDef,value){
-		if (fieldDef && fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase) {
-			return fieldDef.type.reportDefinitionErrors(value || fieldDef.defaults(), fieldDef.options);
-		} else {
-			return {path: '', message: `must be a primitive type or extend core3.Type`}
+
+	static reportFieldDefinitionError(fieldDef,template){
+		if (!fieldDef || !fieldDef.type || !(fieldDef.type.prototype instanceof PrimitiveBase)) {
+			return {message:`must be a primitive type or extend core3.Type`,path:""};
 		}
+		return fieldDef.type.reportDefinitionErrors(fieldDef.options);
 	}
-	static reportDefinitionErrors(){
-		return PrimitiveBase.reportDefinitionErrors.apply(this, arguments);
-	}
+
 	static reportSetValueErrors(value,options){
 		return PrimitiveBase.reportSetValueErrors.apply(this, arguments);
 	}
@@ -73,6 +73,15 @@ export default class BaseType extends PrimitiveBase {
 	static reportSetErrors(value,options){
 		return PrimitiveBase.reportSetValueErrors.apply(this, arguments);
 	}
+
+	static createErrorContext(entryPoint,level){
+		return {
+			level,
+			entryPoint,
+			path:this.id
+		}
+	}
+
 	static validate(val) {
         return Object.keys(this._spec).every(function(key) {
             return this._spec[key].validate(val[key])
@@ -96,39 +105,39 @@ export default class BaseType extends PrimitiveBase {
     }
 
 
-    static wrapValue(value, spec, options){
+    static wrapValue(value, spec, options, errorContext){
         var root = {};
 
 		_.each(spec, (fieldSpec, key)=>{
 			var fieldVal = value[key];
-			whenDebugMode(()=>{
-				var fieldError = fieldSpec.type.reportSetErrors(fieldVal,fieldSpec.options);
-				if(fieldError){
-					var fullPath = fieldError.path ? `${this.id}.${key}.${fieldError.path}` : `${this.id}.${key}`;
 
-					MAILBOX.error(`Type constructor error: "${fullPath}" ${fieldError.message}`);
-				}
-			});
             if(fieldVal === undefined){
                 fieldVal = spec[key].defaults();
             }
-            var newField = validateAndWrap(fieldVal, fieldSpec, undefined, ERROR);
+            var newField = validateAndWrap(fieldVal, fieldSpec, undefined, {level:errorContext.level,entryPoint:errorContext.entryPoint,path:errorContext.path+'.'+key});
 			root[key] = newField;
 
 		});
 		return root;
     }
 
-    constructor(value, options=null){
+	static __reportMisMatch__
+
+    constructor(value, options=null, errorContext=null){
         super(value);
-        this.__isReadOnly__ = false;
-        this.__readOnlyInstance__ = createReadOnly(this);
-        this.__readWriteInstance__ = this;
-        this.__options__ = options;
-        this.__value__ = this.constructor.wrapValue(
+
+		errorContext = errorContext || this.constructor.createErrorContext('Type constructor error','error');
+
+		this.__isReadOnly__ = false;
+		this.__readOnlyInstance__ = createReadOnly(this);
+		this.__readWriteInstance__ = this;
+		this.__options__ = options;
+
+		this.__value__ = this.constructor.wrapValue(
             (value === undefined) ? this.constructor.defaults() : value,
             this.constructor._spec,
-            options
+            options,
+			errorContext
         );
 		if(config.freezeInstance) {
 			Object.freeze(this);
@@ -138,20 +147,14 @@ export default class BaseType extends PrimitiveBase {
 
     // merge native javascript data into the object
     // this method traverses the input recursively until it reaches typorama values (then it sets them)
-    setValue(newValue){
-
+    setValue(newValue,errorContext = null){
         if (this.$isDirtyable()) {
             var changed = false;
+			errorContext = errorContext || this.constructor.createErrorContext('SetValue error','error');
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
-					whenDebugMode(()=>{
-						var fieldError = fieldSpec.type.reportSetValueErrors(fieldValue,fieldSpec.options);
-						if(fieldError){
-							MAILBOX.error(`SetValue error: "${this.constructor.id}.${fieldName}" ${fieldError.message}`);
-						}
-					});
-                    var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, ERROR);
+                    var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, {level:errorContext.level,entryPoint:errorContext.entryPoint,path:errorContext.path+'.'+fieldName});
                     if(this.__value__[fieldName] !== newVal){
                         changed = true;
                         this.__value__[fieldName] = newVal;
@@ -184,6 +187,8 @@ export default class BaseType extends PrimitiveBase {
         }
         return false;
     }
+
+
 
     $isReadOnly(){
         return this.__isReadOnly__;

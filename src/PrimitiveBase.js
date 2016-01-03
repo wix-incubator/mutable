@@ -52,8 +52,8 @@ class PrimitiveBase {
        }
        return NewType;
    }
-	static reportDefinitionErrors(value,options){
-		return reportErrorInternal.call(this,value,options,true,false);
+	static reportDefinitionErrors(options){
+		return null;
 	}
 	static reportSetValueErrors(value,options){
 		return reportErrorInternal.call(this,value,options,true,true);

@@ -36,9 +36,9 @@ export function doOnType(subTypes, action){
 }
 
 
-export function reportDefinitionErrors(subTypes, reportFieldError){
+export function reportDefinitionErrors(subTypes, reportFieldError,template){
 	return doOnType(subTypes, (type, key='0') => {
-		const error  = reportFieldError(type);
+		const error  = reportFieldError(type,template);
 		if(error){
 			return {path:`<${key}${error.path}>`,message:error.message};
 		}
@@ -57,6 +57,9 @@ export function toString(...subTypesArgs){
 		).join(', ') +
 		'>';
 }
+
+
+
 
 /**
  *

@@ -6,12 +6,8 @@ import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
 import {Report} from 'gopostal/dist/test-kit/testDrivers';
-import {ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_UNTYPED_LIST,ERROR_RESERVED_FIELD} from '../test-kit/testDrivers/reports'
+import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD} from '../test-kit/testDrivers/reports'
 
-
-function typeErrorMessage(valueField, valueStr,typeStr,subTypes, collectionType){
-	return `Illegal ${valueField} ${valueStr} of type ${typeStr} for ${collectionType} of type ${subTypes}`;
-}
 
 function typeCompatibilityTest(typeFactory){
 	describe('should be compatible', () => {
@@ -263,8 +259,7 @@ describe('defining', () => {
 						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
 				});
 				it('should report error when unallowed primitive key is added',function(){
-					expect(() => typeFactory().create([[5, 'gaga']])).to.report(
-						new Report('error', 'Typorama.Map', typeErrorMessage('key', 5, 'number', '<string, Address>', 'Map')));
+					expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', 'string','number'));
 				});
 				it('should report error when unallowed primitive value is added',function(){
 					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(
@@ -411,25 +406,25 @@ describe('defining', () => {
 					});
 					it('should report error when unallowed primitive is added',function(){
 						var ListCls = Typorama.Array.of(AddressType);
-						expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('value', 'gaga','string','<Address>', 'Array')));
+						expect(function(){ListCls.create(['gaga'])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<Address>[0]','<Address>','string'));
 
 						ListCls = Typorama.Array.of(Typorama.Number);
-						expect(function(){ListCls.create(['gaga'])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('value', 'gaga','string','<number>', 'Array')));
+						expect(function(){ListCls.create(['gaga'])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<number>[0]','<number>','string'));
 					});
 
 					it('should report error when object is added an no object types allowed',function(){
 						var ListCls = Typorama.Array.of(Typorama.String);
-						expect(function(){ListCls.create([{}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('value', '[object Object]','object','<string>', 'Array')));
+						expect(function(){ListCls.create([{}])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<string>[0]','<string>','object'));
 					});
 
 					it('should report error when unallowed typorama is added',function(){
 						var ListCls = Typorama.Array.of(UserType);
-						expect(function(){ListCls.create([new AddressType()])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('value', '[object Object]','Address','<User>', 'Array')));
+						expect(function(){ListCls.create([new AddressType()])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<User>[0]','<User>','Address'));
 					});
 
 					it('should report error when json with unallowed _type added',function(){
 						var ListCls = Typorama.Array.of(UserType);
-						expect(function(){ListCls.create([{_type:'Address'}])}).to.report(new Report('error', 'Typorama.Array', typeErrorMessage('value', '[object Object]','Address','<User>', 'Array')));
+						expect(function(){ListCls.create([{_type:'Address'}])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<User>[0]','<User>','object with _type Address'));
 					});
 
 				});

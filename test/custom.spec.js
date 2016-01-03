@@ -337,7 +337,7 @@ describe('Custom data', function() {
 
 				it("should not allow values of wrong type", function() {
 					var user = new UserType();
-					expect(() => user.setValue({ age: "666" })).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
+					expect(() => {return user.setValue({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
 				});
 
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
