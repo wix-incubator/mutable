@@ -286,6 +286,7 @@ describe('defining', () => {
 				});
 				it('should report error when null value is added',function(){
 					expect(() => typeFactory().create([[new UserType(), null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','null'));
+				});
 				it('should report error when unallowed primitive key is added',function(){
 					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','string'));
 				});
