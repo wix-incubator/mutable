@@ -78,9 +78,6 @@ function defineEnum(def) {
 	EnumType.reportDefinitionErrors = function(){
 		return null;
 	};
-	EnumType.reportDefinitionErrors2 = function(){
-		return null;
-	};
 	EnumType.reportSetErrors = function(){
 		return null;
 	};

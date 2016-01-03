@@ -30,7 +30,7 @@ export function cloneType(TypeToClone){
 }
 
 export function getValueTypeName(value){
-	if(value.constructor && value.constructor.id){
+	if(value && value.constructor && value.constructor.id){
 		return value.constructor.id
 	}
 	if(_.isPlainObject(value) && value._type){
@@ -51,6 +51,8 @@ export function getReadableValueTypeName(value){
 		return 'undefined';
 	if(value.constructor && value.constructor.id){
 		return value.constructor.id
+	}if(typeof value ==='object' && typeof value._type === 'string'){
+		return 'object with _type '+value._type;
 	}
 	return typeof value;
 }

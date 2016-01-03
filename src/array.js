@@ -2,7 +2,8 @@ import _                  from 'lodash';
 import defineType         from './defineType';
 import {
 	validateAndWrap,
-	validateNullValue}    from './validation';
+	validateNullValue,
+	reportMisMatchError}    from './validation';
 import {getValueTypeName} from './utils';
 import BaseType           from './BaseType';
 import Number             from './number';
@@ -22,7 +23,7 @@ class _Array extends BaseType {
 	static cloneValue(value){
 		if(!Array.isArray(value)) { return []; }
 		return value.map((itemValue, index) => {
-			var Type = generics.getPlainValType(this.options.subTypes, itemValue);
+			var Type = generics.getMatchingType(this.options.subTypes, itemValue);
 			if(!Type){
 				throw new Error("cloneValue error: no type found for index " + index)
 			}
@@ -40,11 +41,11 @@ class _Array extends BaseType {
 		return Array.isArray(val) || validateNullValue(this, val);
 	}
 
-	static wrapValue(value, spec, options) {
+	static wrapValue(value, spec, options,errorContext) {
 		if(BaseType.validateType(value)) {
 			if (value.__value__.map) {
 				return value.__value__.map((itemValue) => {
-					return this._wrapSingleItem(itemValue, options);
+					return this._wrapSingleItem(itemValue, options,null,errorContext);
 				}, this);
 			} else {
 				MAILBOX.error('Unmet typorama type requirement.')
@@ -53,19 +54,25 @@ class _Array extends BaseType {
 			MAILBOX.error('Unmet array type requirement.');
 		}
 
-		return value.map((itemValue) => {
-			return this._wrapSingleItem(itemValue, options);
+		return value.map((itemValue,itemIndex) => {
+
+			return this._wrapSingleItem(itemValue, options,null,{
+				level:errorContext.level,
+				entryPoint:errorContext.entryPoint,
+				path:errorContext.path+'['+itemIndex+']'
+			});
 		}, this);
 	}
 
-	static _wrapSingleItem(value, options, lifeCycle) {
+	static _wrapSingleItem(value, options, lifeCycle,errorContext) {
 		var result = generics.doOnType(options.subTypes, type => {
 			if(type.validateType(value) || type.allowPlainVal(value)){
-				return validateAndWrap(value, type, lifeCycle);
+				return validateAndWrap(value, type, lifeCycle,errorContext);
 			}
 		});
 		if(null === result || undefined === result) {
-			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ generics.toString(options.subTypes));
+			var allowedTypes = generics.toString(options.subTypes);
+			reportMisMatchError(errorContext,allowedTypes,value);
 		} else {
 			return result;
 		}
@@ -79,28 +86,28 @@ class _Array extends BaseType {
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
-	static reportDefinitionErrors(value, options){
+	static reportDefinitionErrors(options){
 		if(!options || !options.subTypes){
 			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
 		} else {
-			return generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldError);
-		}
-	}
-	static reportDefinitionErrors2(options){
-		if(!options || !options.subTypes){
-			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
-		} else {
-			return generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldError);
+			return generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldDefinitionError);
 		}
 	}
 
-	constructor(value=[], options={}) {
-		const report = _Array.reportDefinitionErrors(value, options);
+	constructor(value=[], options={}, errorContext) {
+		if(!errorContext){
+			errorContext = {
+				level:'error',
+				entryPoint:'List constructor error',
+				path:'List'+generics.toString(options.subTypes)
+			}
+		}
+		const report = _Array.reportDefinitionErrors(options);
         if(report){
 			MAILBOX.error('List constructor: '+report.message);
         }
 		options.subTypes = generics.normalizeTypes(options.subTypes);
-		super(value, options);
+		super(value, options,errorContext);
 	}
 
 	toJSON(recursive = true) {
@@ -331,6 +338,18 @@ class _Array extends BaseType {
 			this.__value__.length = newValue.length;
 		}
 		return changed;
+	}
+
+	/**
+	 * get iterator over all array elements that are dirtyable
+	 */
+	// consider optimizing if array is of primitive type only
+	$dirtyableElementsIterator(yielder){
+		for(let element of this.__value__){
+			if (element && _.isFunction(element.$calcLastChange)){
+				yielder(element);
+			}
+		}
 	}
 }
 

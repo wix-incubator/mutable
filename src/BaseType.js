@@ -8,6 +8,7 @@ import {
 	optionalSetManager,
 	isAssignableFrom,
 	validateNullValue,
+	validateValue,
 	reportNullError} from "./validation";
 
 import {getMailBox}    from 'gopostal';
@@ -57,23 +58,14 @@ export default class BaseType extends PrimitiveBase {
 		}, {});
 	}
 
-	static reportFieldError(fieldDef,value){
-		if (fieldDef && fieldDef.type && fieldDef.type.prototype instanceof PrimitiveBase) {
-			return fieldDef.type.reportDefinitionErrors(value || fieldDef.defaults(), fieldDef.options);
-		} else {
-			return {path: '', message: `must be a primitive type or extend core3.Type`}
-		}
-	}
 
-	static reportFieldDefinitionError(fieldDef){
+	static reportFieldDefinitionError(fieldDef,template){
 		if (!fieldDef || !fieldDef.type || !(fieldDef.type.prototype instanceof PrimitiveBase)) {
 			return {message:`must be a primitive type or extend core3.Type`,path:""};
 		}
-		return fieldDef.type.reportDefinitionErrors2(fieldDef.options);
+		return fieldDef.type.reportDefinitionErrors(fieldDef.options);
 	}
-	static reportDefinitionErrors(){
-		return PrimitiveBase.reportDefinitionErrors.apply(this, arguments);
-	}
+
 	static reportSetValueErrors(value,options){
 		return PrimitiveBase.reportSetValueErrors.apply(this, arguments);
 	}
@@ -104,11 +96,14 @@ export default class BaseType extends PrimitiveBase {
 		return PrimitiveBase.withDefault.apply(this, arguments);
 	}
 
-
+	/**
+	 * @param value any value
+	 * @returns {*} true if value is a legal value for this type, falsy otherwise
+	 */
     static validateType(value) {
-        return validateNullValue(this, value) ||
-            ( value && value.constructor && isAssignableFrom(this, value.constructor.type));
+        return validateValue(this, value);
     }
+
 
     static wrapValue(value, spec, options, errorContext){
         var root = {};
@@ -125,6 +120,8 @@ export default class BaseType extends PrimitiveBase {
 		});
 		return root;
     }
+
+	static __reportMisMatch__
 
     constructor(value, options=null, errorContext=null){
         super(value);
@@ -191,6 +188,8 @@ export default class BaseType extends PrimitiveBase {
         return false;
     }
 
+
+
     $isReadOnly(){
         return this.__isReadOnly__;
     }
@@ -215,8 +214,6 @@ export default class BaseType extends PrimitiveBase {
 		return this.___id___;
 	}
 }
-
-
 
 BaseType._spec = Object.freeze(Object.create(null));
 

@@ -11,9 +11,9 @@ function reportErrorInternal(value,options,allowPlain,allowInstance){
 			if (!options || !options.nullable) {
 				return {message:`expected type ${this.id} but got null`,path:''}
 			}
-		}else if(!(allowPlain&&this.allowPlainVal(value))&&!(allowInstance&&this.validateType(value))){
+		} else if((!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))){
 			return  {message:`expected type ${this.id} but got ${getReadableValueTypeName(value)}`,path:''};
-		};
+		}
 	}
 }
 
@@ -52,10 +52,7 @@ class PrimitiveBase {
        }
        return NewType;
    }
-	static reportDefinitionErrors(value,options){
-		return reportErrorInternal.call(this,value,options,true,true);
-	}
-	static reportDefinitionErrors2(options){
+	static reportDefinitionErrors(options){
 		return null;
 	}
 	static reportSetValueErrors(value,options){

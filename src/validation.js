@@ -3,15 +3,18 @@ import {getMailBox} from 'gopostal';
 const MAILBOX = getMailBox('Typorama.validation');
 import {getReadableValueTypeName} from './utils'
 
-function misMatchMessage(errorContext, expected,recieved,overridepath){
-	return `${errorContext.entryPoint}: "${overridepath||errorContext.path}" expected type ${expected.id} but got ${getReadableValueTypeName(recieved)}`
+function misMatchMessage(errorContext, expected,recieved,overridepath, template){
+	var expectedMessage = template==='key'? 'expected key of type' : 'expected type'
+	return `${errorContext.entryPoint}: "${overridepath||errorContext.path}" ${expectedMessage} ${expected.id || expected} but got ${getReadableValueTypeName(recieved)}`
 }
-export function reportNullError(errorContext,type){
-	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,null))
+export function reportNullError(errorContext,type, template){
+	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,null, template))
 }
-export function reportMisMatchError(errorContext,type,value,overridepath){
-	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,value,overridepath))
+export function reportMisMatchError(errorContext,type,value,overridepath,template){
+	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,value,overridepath,template))
 }
+
+
 export function optionalSetManager(itemValue, lifeCycle) {
 	if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
 		itemValue.$setManager(lifeCycle);
@@ -19,16 +22,24 @@ export function optionalSetManager(itemValue, lifeCycle) {
 }
 
 export function isAssignableFrom(toType, type) {
-	return type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
+	return type && toType.type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
 }
 
-export function isNullable(Type){
-	return Type.options && Type.options.nullable;
+export function isNullable(type){
+	return type.options && type.options.nullable;
 }
 
-export function validateNullValue(Type, value) {
+export function validateValue(type, value) {
+	return validateNullValue(type, value) || validateNotNullValue(type, value);
+}
+
+export function validateNotNullValue(type, value) {
+	return  value && value.constructor && isAssignableFrom(type, value.constructor.type);
+}
+
+export function validateNullValue(type, value) {
 	if(value === null) {
-		if(isNullable(Type)) {
+		if(isNullable(type)) {
 			return true;
 		} else {
 			return false;
@@ -38,12 +49,12 @@ export function validateNullValue(Type, value) {
 	}
 }
 
-export function validateAndWrap(itemValue, type,  lifeCycle, errorContext){
+export function validateAndWrap(itemValue, type,  lifeCycle, errorContext,errorTemplate){
 	if(itemValue === null) { // shortcut check for nullable (also checked in allowPlainVal)
 		if(isNullable(type)) {
 			return itemValue;
 		} else {
-			reportNullError(errorContext,type);
+			reportNullError(errorContext,type,errorTemplate);
 			return type.defaults();
 		}
 	}
@@ -57,7 +68,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, errorContext){
 		}
 		return newItem;
 	}
-	reportMisMatchError(errorContext, type, itemValue);
+	reportMisMatchError(errorContext, type, itemValue,null,errorTemplate);
 	return type.create();
 }
 

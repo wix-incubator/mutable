@@ -43,7 +43,9 @@ export function lifecycleContract(){
 }
 
 function setContainedElements(context) {
-    context.containedElements = _.intersection(context.allElements, _.values(context.container.__value__));
+	var elements = [];
+	context.container.$dirtyableElementsIterator(e => elements.push(e));
+	context.containedElements = _.intersection(context.allElements, elements);
 }
 
 function setFactoriesInFixture(context, containerFactory, elementFactory) {
@@ -282,31 +284,31 @@ function testIsDirty(context){
 
 function testCalcLastChange(context){
 	describe('$calcLastChange', function(){
-	
+
 		context.setup();
-			
+
 		if (context.dirtyableElements) {
-					
+
 			it('should update the cache on the readWrite container', function(){
 				var startRev = context.container.__lastChange__;
-				
+
 				var readOnly = context.container.$asReadOnly();
-			    
+
 				revision.advance();
 				expect(context.container.__lastChange__).to.equal(startRev);
-				
+
 				context.containedElements[0].$setDirty();
-				
+
 				readOnly.$calcLastChange();
-				
+
 				expect(context.container.__lastChange__).to.equal(revision.read());
 				expect(readOnly.__lastChange__).to.equal(revision.read())
-				
-			
+
+
 			});
-			
+
 		}
-		
+
 	})
 }
 

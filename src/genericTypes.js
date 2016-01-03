@@ -8,19 +8,25 @@ import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.genericTypes');
 
+/**
+ * map each value in a collection and return the first not-falsy result
+ */
 function mapFirst(collection, mapper) {
 	return _(collection).map(mapper).filter().first();
 }
 
 /**
- * try to match a type to a plain value
+ * try to match a type to a value
  * @param subTypes either a type or a collection of types
- * @param instance plain value instance to match
+ * @param instance null, typorama or plain value instance to match
  * @returns {*} type if matched, otherwise undefined
  */
-export function getPlainValType(subTypes, instance) {
-	return doOnType(subTypes,
-		type => typeof type.allowPlainVal === 'function' && type.allowPlainVal(instance) ? type : undefined);
+export function getMatchingType(subTypes, val){
+	return doOnType(subTypes, type =>
+		(typeof type.validateType === 'function' && type.validateType(val)) ||
+		(typeof type.allowPlainVal === 'function' && type.type.allowPlainVal(val))
+		? type : null
+	);
 }
 
 export function doOnType(subTypes, action){
@@ -30,9 +36,9 @@ export function doOnType(subTypes, action){
 }
 
 
-export function reportDefinitionErrors(subTypes, reportFieldError){
+export function reportDefinitionErrors(subTypes, reportFieldError,template){
 	return doOnType(subTypes, (type, key='0') => {
-		const error  = reportFieldError(type);
+		const error  = reportFieldError(type,template);
 		if(error){
 			return {path:`<${key}${error.path}>`,message:error.message};
 		}
@@ -51,6 +57,9 @@ export function toString(...subTypesArgs){
 		).join(', ') +
 		'>';
 }
+
+
+
 
 /**
  *
