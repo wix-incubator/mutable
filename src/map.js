@@ -10,7 +10,8 @@ import String             from './string';
 import * as generics      from './genericTypes';
 import {
 	validateAndWrap,
-	validateNullValue}    from './validation';
+	validateNullValue,
+	reportMisMatchError}    from './validation';
 
 
 const MAILBOX = getMailBox('Typorama.Map');
