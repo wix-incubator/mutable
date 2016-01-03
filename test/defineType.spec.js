@@ -254,6 +254,14 @@ describe('defining', () => {
 						expect(map.get('foo').address).to.eql('gaga');
 					});
 				});
+				it('should report error when null key is added',function(){
+					expect(() => typeFactory().create([[null, 'gaga']])).to.report(
+						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
+				});
+				it('should report error when null key is added',function(){
+					expect(() => typeFactory().create([[5, null]])).to.report(
+						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
+				});
 				it('should report error when unallowed primitive key is added',function(){
 					expect(() => typeFactory().create([[5, 'gaga']])).to.report(
 						new Report('error', 'Typorama.Map', typeErrorMessage('key', 5, 'number', '<string, Address>', 'Map')));
@@ -285,6 +293,14 @@ describe('defining', () => {
 					return Typorama.Map.of(UserType, Typorama.String);
 				}
 				typeCompatibilityTest(typeFactory);
+				it('should report error when null key is added',function(){
+					expect(() => typeFactory().create([[null, 'gaga']])).to.report(
+						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
+				});
+				it('should report error when null key is added',function(){
+					expect(() => typeFactory().create([[new UserType(), null]])).to.report(
+						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
+				});
 				it('should report error when unallowed primitive key is added',function(){
 					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(
 						new Report('error', 'Typorama.Map', typeErrorMessage('key', 'baga','string','<User, string>', 'Map')));
