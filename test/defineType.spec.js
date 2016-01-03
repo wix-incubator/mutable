@@ -265,16 +265,16 @@ describe('defining', () => {
 					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','string'));
 				});
 				it('should report error when unallowed object key is added',function(){
-					expect(() => typeFactory().create([[{}, new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','Address'));
+					expect(() => typeFactory().create([[{}, new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','object'));
 				});
 				it('should report error when when json value with unallowed _type is added',function(){
-					expect(() => typeFactory().create([['baga', {_type:'User'}]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','object with _type User'));
+					expect(() => typeFactory().create([['baga', {_type:'User'}]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','object with _type User'));
 				});
 				it('should report error when unallowed typorama key is added',function(){
 					expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
 				});
 				it('should report error when unallowed typorama value is added',function(){
-					expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
+					expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','User'));
 				});
 			});
 
@@ -292,22 +292,22 @@ describe('defining', () => {
 						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
 				});
 				it('should report error when unallowed primitive key is added',function(){
-					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
+					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','string'));
 				});
 				it('should report error when unallowed primitive value is added',function(){
-					expect(() => typeFactory().create([[new UserType(), 5]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
+					expect(() => typeFactory().create([[new UserType(), 5]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','number'));
 				});
 				it('should report error unallowed object value is added',function(){
-					expect(() => typeFactory().create([[new UserType(), new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
+					expect(() => typeFactory().create([[new UserType(), new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','User'));
 				});
 				it('should report error when when json key with unallowed _type is added',function(){
-					expect(() => typeFactory().create([[{_type:'Address'}, 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
+					expect(() => typeFactory().create([[{_type:'Address'}, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','object with _type Address'));
 				});
 				it('should report error when unallowed typorama key is added',function(){
-					expect(() => typeFactory().create([[new AddressType(), 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
+					expect(() => typeFactory().create([[new AddressType(), 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','Address'));
 				});
 				it('should report error when unallowed typorama value is added',function(){
-					expect(() => typeFactory().create([['gaga', new AddressType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
+					expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','Address'));
 				});
 			});
 
