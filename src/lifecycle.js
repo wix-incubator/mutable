@@ -45,9 +45,7 @@ export function makeDirtyable(Type){
 				}
 				this.__lifecycleManager__ = lifecycleManager;
 				if (this.$dirtyableElementsIterator) {
-					this.$dirtyableElementsIterator(element => {
-						element.$setManager(lifecycleManager);
-					});
+					this.$dirtyableElementsIterator(setContainerManagerToElement);
 				}
 			} else {
 				MAILBOX.error('Attempt to set wrong type of lifecycle manager');
@@ -83,12 +81,7 @@ export function makeDirtyable(Type){
 		} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
 			// no cache, go recursive
 			if (this.$dirtyableElementsIterator) {
-				this.$dirtyableElementsIterator(element => {
-					let lastChange = element.$calcLastChange();
-					if (lastChange > this.__lastChange__) {
-						this.__lastChange__ = lastChange;
-					}
-				});
+				this.$dirtyableElementsIterator(setContainerLastChangeFromElement);
 			}
 			this.__cacheLockToken__ = this.$getManagerLockToken() || unlockedToken;
 		}
@@ -99,4 +92,16 @@ export function makeDirtyable(Type){
 		return this.$calcLastChange() >= r;
 	}
 
+}
+
+// functions to be used as callbacks to $dirtyableElementsIterator
+function setContainerManagerToElement(container, element){
+	element.$setManager(container.__lifecycleManager__);
+}
+
+function setContainerLastChangeFromElement(container, element){
+	let lastChange = element.$calcLastChange();
+	if (lastChange > container.__lastChange__) {
+		container.__lastChange__ = lastChange;
+	}
 }

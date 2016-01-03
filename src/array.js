@@ -329,7 +329,7 @@ class _Array extends BaseType {
 	$dirtyableElementsIterator(yielder){
 		for(let element of this.__value__){
 			if (element && _.isFunction(element.$calcLastChange)){
-				yielder(element);
+				yielder(this, element);
 			}
 		}
 	}

@@ -67,7 +67,7 @@ function getDirtyableElementsIterator(spec){
 		for(let c of complex){
 			let k = this.__value__[c];
 			if (k){
-				yielder(k);
+				yielder(this, k);
 			}
 		}
 	}

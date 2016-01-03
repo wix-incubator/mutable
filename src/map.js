@@ -133,7 +133,6 @@ class _Map extends BaseType {
 					break;
 				default:
 					MAILBOX.error(`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`);
-
 			}
 		}
 	};
@@ -188,12 +187,12 @@ class _Map extends BaseType {
 	$dirtyableElementsIterator(yielder) {
 		for (let key of this.__value__.keys()) {
 			if (key && _.isFunction(key.$calcLastChange)) {
-				yielder(key);
+				yielder(this, key);
 			}
 		}
 		for (let value of this.__value__.values()) {
 			if (value && _.isFunction(value.$calcLastChange)) {
-				yielder(value);
+				yielder(this, value);
 			}
 		}
 	}
