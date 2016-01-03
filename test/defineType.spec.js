@@ -251,12 +251,10 @@ describe('defining', () => {
 					});
 				});
 				it('should report error when null key is added',function(){
-					expect(() => typeFactory().create([[null, 'gaga']])).to.report(
-						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
+					expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','null'));
 				});
 				it('should report error when null key is added',function(){
-					expect(() => typeFactory().create([[5, null]])).to.report(
-						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
+					expect(() => typeFactory().create([[5, null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','null'));
 				});
 				it('should report error when unallowed primitive key is added',function(){
 					expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','number'));
@@ -284,13 +282,10 @@ describe('defining', () => {
 				}
 				typeCompatibilityTest(typeFactory);
 				it('should report error when null key is added',function(){
-					expect(() => typeFactory().create([[null, 'gaga']])).to.report(
-						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
+					expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','null'));
 				});
-				it('should report error when null key is added',function(){
-					expect(() => typeFactory().create([[new UserType(), null]])).to.report(
-						new Report('error', 'Typorama.validation', 'Cannot assign null value to a type which is not defined as nullable.')); // todo nadavify
-				});
+				it('should report error when null value is added',function(){
+					expect(() => typeFactory().create([[new UserType(), null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','null'));
 				it('should report error when unallowed primitive key is added',function(){
 					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','string'));
 				});

@@ -4,7 +4,7 @@ const MAILBOX = getMailBox('Typorama.validation');
 import {getReadableValueTypeName} from './utils'
 
 function misMatchMessage(errorContext, expected,recieved,overridepath, template){
-	var expectedMessage = template==='key'? 'expected key of type' : 'expected type'
+	var expectedMessage = template? `expected ${template} of type` : 'expected type';
 	return `${errorContext.entryPoint}: "${overridepath||errorContext.path}" ${expectedMessage} ${expected.id || expected} but got ${getReadableValueTypeName(recieved)}`
 }
 export function reportNullError(errorContext,type, template){

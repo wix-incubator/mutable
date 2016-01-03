@@ -82,7 +82,7 @@ class _Map extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes.value);
-			reportMisMatchError(errorContext,allowedTypes,value);
+			reportMisMatchError(errorContext,allowedTypes,value, null, 'value');
 		} else {
 			return result;
 		}
@@ -119,7 +119,7 @@ class _Map extends BaseType {
 		if (!options || !options.subTypes || !options.subTypes.key || !options.subTypes.value) {
 			return {path:'',message:`Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`}
 		} else {
-			return generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldDefinitionError,'key')|| generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldDefinitionError);
+			return generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldDefinitionError,'key')|| generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldDefinitionError, 'value');
 		}
 	}
 	static of(key, value) {
