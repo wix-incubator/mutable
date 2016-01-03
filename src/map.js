@@ -116,6 +116,10 @@ class _Map extends BaseType {
 	}
 
 	static reportDefinitionErrors(options){
+		if(options.definitionError)
+		{
+			return options.definitionError;
+		}
 		if (!options || !options.subTypes || !options.subTypes.key || !options.subTypes.value) {
 			return {path:'',message:`Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`}
 		} else {
@@ -123,27 +127,24 @@ class _Map extends BaseType {
 		}
 	}
 	static of(key, value) {
-		if (key && value) {
-			return this.withDefault(undefined, undefined, {subTypes: {key, value}});
-		} else {
-			// error. build most appropriate message
-			switch (arguments.length){
-				case 0:
-					MAILBOX.error('Missing types for map. Use Map<SomeType, SomeType>');
-					break;
-				case 1:
-					key = generics.normalizeTypes(key);
-					MAILBOX.error(`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`);
-					break;
-				case 2:
-					key = generics.normalizeTypes(key);
-					value = generics.normalizeTypes(value);
-					MAILBOX.error(`Illegal key type for map : Map${generics.toString(key, value)}`);
-					break;
-				default:
-					MAILBOX.error(`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`);
-			}
+		var definitionError;
+		switch (arguments.length){
+			case 0:
+				definitionError = {path:'',message:'Missing types for map. Use Map<SomeType, SomeType>'};
+				break;
+			case 1:
+				key = generics.normalizeTypes(key);
+				definitionError = {path:'',message:`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`};
+				break;
+			case 2:
+				key = generics.normalizeTypes(key);
+				value = generics.normalizeTypes(value);
+				break;
+			default:
+				definitionError = {path:'',message:`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`};
 		}
+		return this.withDefault(undefined, undefined, {subTypes: {key, value},definitionError:definitionError});
+
 	};
 
 	constructor(value=[], options={subTypes:{}} , errorContext=null) {
@@ -154,6 +155,7 @@ class _Map extends BaseType {
 
 		const report = _Map.reportDefinitionErrors(options);
 		if(report){
+
 			MAILBOX.error('Map constructor: '+ report.path +report.message);
 		} else {
 			options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
