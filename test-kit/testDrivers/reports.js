@@ -32,3 +32,5 @@ export function ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR(path,fieldType,passedTyp
 export function ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR(path,keyType,passedType){
 	return {level:'error',params:`Map constructor error: "${path}" expected key of type ${keyType} but got ${passedType}`}
 }
+
+export const arrow = String.fromCharCode(10144);

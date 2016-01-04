@@ -11,7 +11,8 @@ import * as generics      from './genericTypes';
 import {
 	validateAndWrap,
 	validateNullValue,
-	reportMisMatchError}    from './validation';
+	reportMisMatchError,
+	arrow}    from './validation';
 
 
 const MAILBOX = getMailBox('Typorama.Map');
@@ -121,27 +122,37 @@ class _Map extends BaseType {
 			return options.definitionError;
 		}
 		if (!options || !options.subTypes || !options.subTypes.key || !options.subTypes.value) {
-			return {path:'',message:`Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`}
+			return {path:arrow+'Map',message:`Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`}
 		} else {
-			return generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldDefinitionError,'key')|| generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldDefinitionError, 'value');
+			var keyError = generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldDefinitionError,'key')
+			var valueTypeError = generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldDefinitionError, 'value')
+			if(keyError){
+				var valueTypeStr = valueTypeError ? 'value' : generics.toUnwrappedString(options.subTypes.value);
+				return {path:`Map<${keyError.path || arrow+generics.toUnwrappedString(options.subTypes.key)},${valueTypeStr}`,message:keyError.message};
+			}else if(valueTypeError){
+				var keyTypeStr =  generics.toUnwrappedString(options.subTypes.key);
+				return {path:`Map<${keyTypeStr},${valueTypeError.path|| arrow+generics.toUnwrappedString(options.subTypes.value)}>`,message:valueTypeError.message};
+			}
 		}
 	}
 	static of(key, value) {
 		var definitionError;
 		switch (arguments.length){
 			case 0:
-				definitionError = {path:'',message:'Missing types for map. Use Map<SomeType, SomeType>'};
+				definitionError = {path:arrow+'Map',message:'Missing types for map. Use Map<SomeType, SomeType>'};
 				break;
 			case 1:
 				key = generics.normalizeTypes(key);
-				definitionError = {path:'',message:`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`};
+				definitionError = {path:`Map<${generics.toUnwrappedString(key)},${arrow}value>`,message:`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`};
 				break;
 			case 2:
 				key = generics.normalizeTypes(key);
 				value = generics.normalizeTypes(value);
 				break;
 			default:
-				definitionError = {path:'',message:`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`};
+				key = generics.normalizeTypes(key);
+				value = generics.normalizeTypes(value);
+				definitionError = {path:`Map<${generics.toUnwrappedString(key)},${generics.toUnwrappedString(value)},${arrow}unallowed>`,message:`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`};
 		}
 		return this.withDefault(undefined, undefined, {subTypes: {key, value},definitionError:definitionError});
 
@@ -150,13 +161,13 @@ class _Map extends BaseType {
 	constructor(value=[], options={subTypes:{}} , errorContext=null) {
 		if(!errorContext){
 			errorContext  = BaseType.createErrorContext('Map constructor error','error');
-			errorContext.path = 'Map'+generics.toString(options.subTypes.key,options.subTypes.value)
+			errorContext.path = 'Map'+generics.toString(options.subTypes.key,options.subTypes.value);
 		}
 
 		const report = _Map.reportDefinitionErrors(options);
 		if(report){
 
-			MAILBOX.error('Map constructor: '+ report.path +report.message);
+			MAILBOX.error('Map constructor: "'+ report.path+'" ' +report.message);
 		} else {
 			options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
 			options.subTypes.value = generics.normalizeTypes(options.subTypes.value);

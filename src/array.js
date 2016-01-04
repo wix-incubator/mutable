@@ -3,14 +3,15 @@ import defineType         from './defineType';
 import {
 	validateAndWrap,
 	validateNullValue,
-	reportMisMatchError}    from './validation';
+	reportMisMatchError,
+	arrow}    from './validation';
 import {getValueTypeName} from './utils';
 import BaseType           from './BaseType';
 import Number             from './number';
 import * as generics      from './genericTypes';
 import {getMailBox}       from 'gopostal';
 
-const MAILBOX = getMailBox('Typorama.Array');
+const MAILBOX = getMailBox('Typorama.List');
 
 class _Array extends BaseType {
 
@@ -90,9 +91,17 @@ class _Array extends BaseType {
 		if(!options || !options.subTypes){
 			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
 		} else {
-			return generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldDefinitionError);
+			var error =  generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldDefinitionError);
+			if(error){
+				return {
+					path:`<${error.path}>`,
+					message: error.message
+
+				}
+			}
 		}
 	}
+
 
 	constructor(value=[], options={}, errorContext) {
 		if(!errorContext){
@@ -353,7 +362,7 @@ class _Array extends BaseType {
 	}
 }
 
-export default defineType('Array',{
+export default defineType('List',{
 	spec: function() {
 		return {
 			length: Number.withDefault(0)

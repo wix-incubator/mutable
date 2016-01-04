@@ -15,6 +15,7 @@ export function reportMisMatchError(errorContext,type,value,overridepath,templat
 }
 
 
+
 export function optionalSetManager(itemValue, lifeCycle) {
 	if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
 		itemValue.$setManager(lifeCycle);
@@ -71,6 +72,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, errorContext,errorT
 	reportMisMatchError(errorContext, type, itemValue,null,errorTemplate);
 	return type.create();
 }
+export const arrow = String.fromCharCode(10144);
 
 export default {
 	isAssignableFrom

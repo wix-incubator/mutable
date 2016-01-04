@@ -6,7 +6,7 @@ import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
 import {Report} from 'gopostal/dist/test-kit/testDrivers';
-import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD} from '../test-kit/testDrivers/reports'
+import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD,arrow} from '../test-kit/testDrivers/reports'
 
 
 function typeCompatibilityTest(typeFactory){
@@ -128,7 +128,7 @@ describe('defining', () => {
 							zagzag: Typorama.Array
 						})
 					});
-				}).to.report(ERROR_MISSING_GENERICS('invalid.zagzag'));
+				}).to.report(ERROR_MISSING_GENERICS(`invalid.zagzag`));
 			});
 			it('should throw error if field subtypes are invalid', function(){
 				expect(() => {
@@ -137,7 +137,7 @@ describe('defining', () => {
 							zagzag: Typorama.Array.of(Typorama.String,function(){})
 						})
 					});
-				}).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag<1>'));
+				}).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<string|${arrow}subtype>`));
 			});
 			it('should throw error if field subtypes dont include generics info', function(){
 				expect(() => {
@@ -146,22 +146,22 @@ describe('defining', () => {
 							zagzag: Typorama.Array.of(Typorama.Array)
 						})
 					});
-				}).to.report(ERROR_MISSING_GENERICS('invalid.zagzag<0>'));
+				}).to.report(ERROR_MISSING_GENERICS(`invalid.zagzag<${arrow}List>`));
 			});
 
-			xit('should throw error if field subtypes have invalid generics info', function(){
+			it('should throw error if field subtypes have invalid generics info', function(){
 				expect(() => {
 					Typorama.define('invalid', {
 						spec: () => ({
 							zagzag: Typorama.Array.of(Typorama.Array.of(function(){}))
 						})
 					});
-				}).to.report(ERROR_MISSING_GENERICS('invalid.zagzag<0<0>>'));
+				}).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<${arrow}List>`));
 			});
 
 		});
 
-	});
+	});//Type definition error: "invalid.zagzag:List<string|⚠subtype⚠>" must be a primitive type or extend core3.Type
 
 	describe('type with default value', function(){
 		typeCompatibilityTest(() => Type1.withDefault({foo: 'im special!'}));
@@ -216,6 +216,11 @@ describe('defining', () => {
 		});
 
 
+
+//List constructor: \"->List\" Untyped Lists are not supported please state type of list item in the format core3.List<string>
+//Type constructor: \"Product.->zagzag" Untyped Lists are not supported please state type of list item in the format core3.List<string>
+//Type constructor: \"Product.zagzag<->0>" must be core 3 type
+// Map constructor: \"Map<List<->List>, List<string>\" Untyped Lists are not supported please state type of list item in the format core3.List<string>
 		describe("a map type",() => {
 
 			describe('with default value', () => {
@@ -224,16 +229,16 @@ describe('defining', () => {
 			describe("with missing sub-types",()=>{
 				it('should report error when instantiating vanilla Map', () => {
 					var inValidMapType = Typorama.Map;
-					expect(()=>new inValidMapType()).to.report(new Report('error', 'Typorama.Map', 'Map constructor: Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>'));
+					expect(()=>new inValidMapType()).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
 				});
 				it('should report error when defining Map with zero types', () => {
-					expect(()=>{let map = Typorama.Map.of();new map()}).to.report(new Report('error', 'Typorama.Map', 'Map constructor: Missing types for map. Use Map<SomeType, SomeType>'));
+					expect(()=>{let map = Typorama.Map.of();new map()}).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));
 				});
 				it('should report error when defining Map with one type', () => {
-					expect(()=>{let map = Typorama.Map.of(Typorama.Number);new map()}).to.report(new Report('error', 'Typorama.Map', 'Map constructor: Wrong number of types for map. Instead of Map<number> Use Map<string, number>'));
+					expect(()=>{let map = Typorama.Map.of(Typorama.Number);new map()}).to.report('Map constructor: "Map<number,➠value>" Wrong number of types for map. Instead of Map<number> Use Map<string, number>');
 				});
-				xit('should report error when defining Map with invalid subtype', () => {
-					expect(()=>{let map = Typorama.Map.of(Typorama.String, Typorama.Array);new map()}).to.report(new Report('error', 'Typorama.Map', 'Map constructor: "Map<string,List>" Untyped Lists are not supported please state types of key and value in the format core3.List<string, string>'));
+				it('should report error when defining Map with invalid subtype', () => {
+					expect(()=>{let map = Typorama.Map.of(Typorama.String, Typorama.Array);new map()}).to.report(new Report('error', 'Typorama.Map', 'Map constructor: "Map<string,➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
 				});
 			});
 
@@ -349,7 +354,7 @@ describe('defining', () => {
 			describe("with no sub-types",()=>{
 				it('should report error when instantiating', () => {
 					var inValidArrType = Typorama.Array;
-					expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.Array', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+					expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.List', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
 				});
 			});
 			describe('with complex element sub-type', () => {

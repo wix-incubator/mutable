@@ -4,7 +4,7 @@
 
 import _                  from 'lodash';
 import {getMailBox}       from 'gopostal';
-
+import {arrow} from './validation';
 
 const MAILBOX = getMailBox('Typorama.genericTypes');
 
@@ -31,18 +31,47 @@ export function getMatchingType(subTypes, val){
 
 export function doOnType(subTypes, action){
 	return subTypes && (
-		(typeof subTypes === 'function' && action(subTypes)) ||
+		(typeof subTypes === 'function' && action(subTypes,0)) ||
 		mapFirst(subTypes, (...args) => args[0] && typeof args[0] === 'function' && action(...args)));
 }
+function getTypeName(type){
+	return type.id || 'subtitle'
+}
 
+function mapOrOne(funcOrArr,iteratorFunc){
+	if(_.isFunction(funcOrArr) ||  _.isPlainObject(funcOrArr)){
+		return iteratorFunc(funcOrArr,0)
+	}else{
+		return _.map(funcOrArr,iteratorFunc)
+	}
+}
 
 export function reportDefinitionErrors(subTypes, reportFieldError,template){
-	return doOnType(subTypes, (type, key='0') => {
-		const error  = reportFieldError(type,template);
+	if(_.isPlainObject(subTypes)){
+		//prevalidated
+		return null;
+	}
+
+
+	var subtypes = mapOrOne(subTypes,(subtype)=>(subtype && subtype.id)||'subtype');
+
+	return doOnType(subTypes, (type,index) => {
+		const error = reportFieldError(type,template);
 		if(error){
-			return {path:`<${key}${error.path}>`,message:error.message};
+			var path;
+			if(_.isArray(subtypes)){
+				var withArrow = subtypes.slice();
+				withArrow[index] = arrow + withArrow[index];
+				path = withArrow.join('|');
+			}else {
+				path = arrow+subtypes;
+			}
+			return {
+				message:error.message,
+				path:path
+			}
 		}
-	});
+	})
 }
 
 /**
@@ -51,11 +80,16 @@ export function reportDefinitionErrors(subTypes, reportFieldError,template){
  */
 export function toString(...subTypesArgs){
 	return '<' +
-		subTypesArgs.map(subTypes =>
-			(typeof subTypes === 'function' && subTypes.type.id) ||
-			(subTypes && Object.keys(subTypes).join('|'))
-		).join(', ') +
+		subTypesArgs.map(toUnwrappedString).join(', ') +
 		'>';
+}
+
+
+export function toUnwrappedString(subTypes){
+	return 	(typeof subTypes === 'function' && subTypes.type.id) || (subTypes && Object.keys(subTypes).join('|'))
+}
+export function unnormalizedArraytoUnwrappedString(subTypes){
+	return 	(typeof subTypes === 'function' && (subTypes.type.id || 'subtype')) || (subTypes && _.forEach(subTypes,unnormalizedArraytoUnwrappedString))
 }
 
 
