@@ -68,7 +68,7 @@ describe('Array', function() {
 			it("report correct path for field type mismatch in deep field", function() {
 				var aList = aVeryCompositeContainerArray([{}, {}]);
 				expect(() => aList.push({}, {child1: {user: { age: "666" }}}))
-					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('push', 'List<VeryCompositeContainer>[3]VeryCompositeContainer.child1.user.age','number','string'));
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('push', 'List<VeryCompositeContainer>[3].child1.user.age','number','string'));
 			});
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
 		});
@@ -98,7 +98,7 @@ describe('Array', function() {
 			it("report correct path for field type mismatch in deep field", function() {
 				var aList = aVeryCompositeContainerArray([{}, {}]);
 				expect(() => aList.set(1, {child1: {user: { age: "666" }}}))
-					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('set', 'List<VeryCompositeContainer>VeryCompositeContainer.child1.user.age','number','string'));
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('set', 'List<VeryCompositeContainer>.child1.user.age','number','string'));
 			});
 
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
@@ -148,7 +148,7 @@ describe('Array', function() {
 			it("report correct path for field type mismatch in deep field", function() {
 				var aList = aVeryCompositeContainerArray([{}, {}]);
 				expect(() => aList.unshift({}, {child1: {user: { age: "666" }}}))
-					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('unshift', 'List<VeryCompositeContainer>[1]VeryCompositeContainer.child1.user.age','number','string'));
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('unshift', 'List<VeryCompositeContainer>[1].child1.user.age','number','string'));
 			});
 
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.unshift(elemFactory(), elemFactory()), 'unshift');

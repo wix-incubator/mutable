@@ -80,7 +80,7 @@ describe('Array', function() {
 			it("report correct path for field type mismatch in deep field", function() {
 				var numberList = aVeryCompositeContainerArray([{},{},{},{}]);
 				expect(() => numberList.splice(2,1,{}, {child1: {user: { age: "666" }}}))
-					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('splice', 'List<VeryCompositeContainer>[3]VeryCompositeContainer.child1.user.age','number','string'));
+					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('splice', 'List<VeryCompositeContainer>[3].child1.user.age','number','string'));
 			});
 			lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
 		});

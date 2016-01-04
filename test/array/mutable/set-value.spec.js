@@ -147,7 +147,7 @@ describe('setValue', function () {
 		it("report correct path for field type mismatch in deep field", function() {
 			var aList = aVeryCompositeContainerArray([{}, {}]);
 			expect(() => aList.setValue([{}, {child1: {user: { age: "666" }}}]))
-				.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('setValue', 'List<VeryCompositeContainer>[1]VeryCompositeContainer.child1.user.age','number','string'));
+				.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('setValue', 'List<VeryCompositeContainer>[1].child1.user.age','number','string'));
 		});
 	})
 

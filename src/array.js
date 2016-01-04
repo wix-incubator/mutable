@@ -68,7 +68,6 @@ class _Array extends BaseType {
 	static _wrapSingleItem(value, options, lifeCycle,errorContext) {
 		var result = generics.doOnType(options.subTypes, type => {
 			if(type.validateType(value) || type.allowPlainVal(value)){
-				errorContext.path += type.type.id;
 				return validateAndWrap(value, type, lifeCycle,errorContext);
 			}
 		});
