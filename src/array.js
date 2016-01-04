@@ -2,14 +2,16 @@ import _                  from 'lodash';
 import defineType         from './defineType';
 import {
 	validateAndWrap,
-	validateNullValue}    from './validation';
+	validateNullValue,
+	reportMisMatchError,
+	arrow}    from './validation';
 import {getValueTypeName} from './utils';
 import BaseType           from './BaseType';
 import Number             from './number';
 import * as generics      from './genericTypes';
 import {getMailBox}       from 'gopostal';
 
-const MAILBOX = getMailBox('Typorama.Array');
+const MAILBOX = getMailBox('Typorama.List');
 
 class _Array extends BaseType {
 
@@ -40,11 +42,11 @@ class _Array extends BaseType {
 		return Array.isArray(val) || validateNullValue(this, val);
 	}
 
-	static wrapValue(value, spec, options) {
+	static wrapValue(value, spec, options,errorContext) {
 		if(BaseType.validateType(value)) {
 			if (value.__value__.map) {
 				return value.__value__.map((itemValue) => {
-					return this._wrapSingleItem(itemValue, options);
+					return this._wrapSingleItem(itemValue, options,null,errorContext);
 				}, this);
 			} else {
 				MAILBOX.error('Unmet typorama type requirement.')
@@ -53,15 +55,25 @@ class _Array extends BaseType {
 			MAILBOX.error('Unmet array type requirement.');
 		}
 
-		return value.map((itemValue) => {
-			return this._wrapSingleItem(itemValue, options);
+		return value.map((itemValue,itemIndex) => {
+
+			return this._wrapSingleItem(itemValue, options,null,{
+				level:errorContext.level,
+				entryPoint:errorContext.entryPoint,
+				path:errorContext.path+'['+itemIndex+']'
+			});
 		}, this);
 	}
 
-	static _wrapSingleItem(value, options, lifeCycle) {
-		var result = generics.doOnType(options.subTypes, type => validateAndWrap(value, type, lifeCycle));
+	static _wrapSingleItem(value, options, lifeCycle,errorContext) {
+		var result = generics.doOnType(options.subTypes, type => {
+			if(type.validateType(value) || type.allowPlainVal(value)){
+				return validateAndWrap(value, type, lifeCycle,errorContext);
+			}
+		});
 		if(null === result || undefined === result) {
-		MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Array of type '+ generics.toString(options.subTypes));
+			var allowedTypes = generics.toString(options.subTypes);
+			reportMisMatchError(errorContext,allowedTypes,value);
 		} else {
 			return result;
 		}
@@ -75,21 +87,41 @@ class _Array extends BaseType {
 		return this.withDefault(undefined, undefined, { subTypes });
 	};
 
-	static reportDefinitionErrors(value, options){
+	static reportDefinitionErrors(options){
 		if(!options || !options.subTypes){
 			return {path:'',message:`Untyped Lists are not supported please state type of list item in the format core3.List<string>`}
 		} else {
-			return generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldError);
+			var error =  generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldDefinitionError);
+			if(error){
+				return {
+					path:`<${error.path}>`,
+					message: error.message
+
+				}
+			}
 		}
 	}
 
-	constructor(value=[], options={}) {
-		const report = _Array.reportDefinitionErrors(value, options);
+
+	static createErrorContext(entryPoint,level, options){
+		options = options || this.options || this.__options__;
+		return {
+			level,
+			entryPoint,
+			path:'List'+generics.toString(generics.normalizeTypes(options.subTypes))
+		}
+	}
+
+	constructor(value=[], options={}, errorContext) {
+		if(!errorContext){
+			errorContext = _Array.createErrorContext('List constructor error', 'error', options);
+		}
+		const report = _Array.reportDefinitionErrors(options);
         if(report){
 			MAILBOX.error('List constructor: '+report.message);
         }
 		options.subTypes = generics.normalizeTypes(options.subTypes);
-		super(value, options);
+		super(value, options,errorContext);
 	}
 
 	toJSON(recursive = true) {
@@ -141,7 +173,7 @@ class _Array extends BaseType {
 			if(this.__value__.length === 0) {
 				return undefined;
 			}
-			return this.constructor._wrapSingleItem(this.__value__.pop(), this.__options__);
+			return this.__value__.pop();
 		} else {
 			return null;
 		}
@@ -151,7 +183,11 @@ class _Array extends BaseType {
 		if(this.$setDirty()){
 			return Array.prototype.push.apply(
 				this.__value__,
-				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
+				newItems.map((item, idx) => {
+					let errorContext = this.constructor.createErrorContext('List push error','error', this.__options__);
+					errorContext.path += `[${this.__value__.length + idx}]`;
+					return this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__, errorContext);
+				})
 			);
 		} else {
 			return null;
@@ -169,7 +205,7 @@ class _Array extends BaseType {
 
 	shift() {
 		if(this.$setDirty()){
-			return this.constructor._wrapSingleItem(this.__value__.shift(), this.__options__);
+			return this.__value__.shift();
 		} else {
 			return null;
 		}
@@ -186,8 +222,10 @@ class _Array extends BaseType {
 	splice(index, removeCount, ...addedItems) {
 		if(this.$setDirty()){
 			var spliceParams = [index, removeCount];
-			addedItems.forEach(function (newItem) {
-				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__,this.__lifecycleManager__))
+			addedItems.forEach(function (newItem, idx) {
+				let errorContext = this.constructor.createErrorContext('List splice error','error', this.__options__);
+				errorContext.path += `[${index + idx}]`;
+				spliceParams.push(this.constructor._wrapSingleItem(newItem, this.__options__,this.__lifecycleManager__, errorContext))
 			}.bind(this));
 			return this.__value__.splice.apply(this.__value__, spliceParams);
 			//return this.__value__.push(this.constructor._wrapSingleItem(newItem, this.__isReadOnly__, this.__options__));
@@ -200,7 +238,11 @@ class _Array extends BaseType {
 		if(this.$setDirty()){
 			return Array.prototype.unshift.apply(
 				this.__value__,
-				newItems.map((item) => this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__))
+				newItems.map((item, idx) => {
+					let errorContext = this.constructor.createErrorContext('List unshift error','error', this.__options__);
+					errorContext.path += `[${idx}]`;
+					return this.constructor._wrapSingleItem(item, this.__options__,this.__lifecycleManager__, errorContext);
+				})
 			);
 		} else {
 			return null;
@@ -209,7 +251,9 @@ class _Array extends BaseType {
 
 	set(index, element) {
 		if(this.$setDirty()){
-			return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__,this.__lifecycleManager__);
+
+			let errorContext = this.constructor.createErrorContext('List set error','error', this.__options__);
+			return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__,this.__lifecycleManager__, errorContext);
 		} else {
 			return null;
 		}
@@ -293,7 +337,7 @@ class _Array extends BaseType {
 	filter(fn, ctx) {
 		return this.__lodashProxyWrap__('filter',this.__getLodashIterateeWrapper__(fn), ctx);
 	}
-	setValue(newValue) {
+	setValue(newValue, errorContext) {
 		var changed = false;
 		if(newValue instanceof _Array) {
 			newValue = newValue.__getValueArr__();
@@ -306,9 +350,11 @@ class _Array extends BaseType {
 				changed = true;
 				this.__value__.splice(newValue.length, lengthDiff);
 			}
-			_.forEach(newValue, (itemValue, idx) => {
 
-				var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__);
+			_.forEach(newValue, (itemValue, idx) => {
+				let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List setValue error','error', this.__options__);
+				errorContext.path += `[${idx}]`;
+				var newItemVal = this.constructor._wrapSingleItem(itemValue,this.__options__,this.__lifecycleManager__, errorContext);
 				changed = changed || newItemVal!= this.__value__[idx];
 
 				this.__value__[idx] = newItemVal;
@@ -329,13 +375,13 @@ class _Array extends BaseType {
 	$dirtyableElementsIterator(yielder){
 		for(let element of this.__value__){
 			if (element && _.isFunction(element.$calcLastChange)){
-				yielder(element);
+				yielder(this, element);
 			}
 		}
 	}
 }
 
-export default defineType('Array',{
+export default defineType('List',{
 	spec: function() {
 		return {
 			length: Number.withDefault(0)

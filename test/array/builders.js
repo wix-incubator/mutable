@@ -16,6 +16,12 @@ var UserWithAddressType = aDataTypeWithSpec({
 	address: AddressType
 }, 'UserWithAddress');
 
+
+var VeryCompositeContainer = aDataTypeWithSpec({
+	child1: UserWithAddressType
+}, 'VeryCompositeContainer');
+
+
 function aStringArray(optionalArr) {
 	return Typorama.Array.of(Typorama.String).create(optionalArr || ["John", "Paul", "George", "Ringo"]);
 }
@@ -32,4 +38,8 @@ function aUserArray(optionalArr) {
 	return Typorama.Array.of(UserType).create(optionalArr || [{},{name:'yossi'}]);
 }
 
-export default  {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray, anEmptyArray,aUserArray}
+function aVeryCompositeContainerArray(optionalArr) {
+	return Typorama.Array.of(VeryCompositeContainer).create(optionalArr || [{},{child1:{user:{name:'yossi'}}}]);
+}
+
+export default  {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray, anEmptyArray,aUserArray, aVeryCompositeContainerArray}

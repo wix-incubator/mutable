@@ -2,7 +2,7 @@ import _                  from "lodash";
 import BaseType           from "./BaseType";
 import {whenDebugMode}           from "./utils";
 import PrimitiveBase      from './PrimitiveBase';
-import {isAssignableFrom} from "./validation"
+import {isAssignableFrom,validateNullValue,reportNullError,reportMisMatchError} from "./validation"
 import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
@@ -11,20 +11,21 @@ const MAILBOX = getMailBox('Typorama.define');
 
 function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	ParentType = ParentType || BaseType;
-	var Type = TypeConstructor || function Type(value, options){
-			ParentType.call(this, value, options);
+	var Type = TypeConstructor || function Type(value, options,eventContext){
+			ParentType.call(this, value, options, eventContext);
 		};
 
-	Type.validate      = Type.validate      || ParentType.validate;
-	Type.validateType  = Type.validateType  || ParentType.validateType;
-	Type.allowPlainVal = Type.allowPlainVal || ParentType.allowPlainVal;
-	Type.defaults      = Type.defaults      || ParentType.defaults;
-	Type.withDefault   = Type.withDefault   || ParentType.withDefault;
-	Type.reportDefinitionErrors   = Type.reportDefinitionErrors   || ParentType.reportDefinitionErrors;
-	Type.reportSetValueErrors   = Type.reportSetValueErrors   || ParentType.reportSetValueErrors;
-	Type.reportSetErrors   = Type.reportSetErrors   || ParentType.reportSetErrors;
-	Type.nullable      = Type.nullable      || ParentType.nullable;
-	Type.create        = Type.create        || ParentType.create;
+    Type.validate      = Type.validate      || ParentType.validate;
+    Type.validateType  = Type.validateType  || ParentType.validateType;
+    Type.allowPlainVal = Type.allowPlainVal || ParentType.allowPlainVal;
+    Type.defaults      = Type.defaults      || ParentType.defaults;
+    Type.withDefault   = Type.withDefault   || ParentType.withDefault;
+    Type.createErrorContext   = Type.createErrorContext   || ParentType.createErrorContext;
+    Type.reportDefinitionErrors   = Type.reportDefinitionErrors   || ParentType.reportDefinitionErrors;
+    Type.reportSetValueErrors   = Type.reportSetValueErrors   || ParentType.reportSetValueErrors;
+    Type.reportSetErrors   = Type.reportSetErrors   || ParentType.reportSetErrors;
+    Type.nullable      = Type.nullable      || ParentType.nullable;
+    Type.create        = Type.create        || ParentType.create;
 	Type.wrapValue     = Type.wrapValue     || ParentType.wrapValue;
 	Type.cloneValue    = Type.cloneValue    || ParentType.cloneValue;
 
@@ -67,7 +68,7 @@ function getDirtyableElementsIterator(spec){
 		for(let c of complex){
 			let k = this.__value__[c];
 			if (k){
-				yielder(k);
+				yielder(this, k);
 			}
 		}
 	}
@@ -77,16 +78,28 @@ function generateFieldsOn(obj, fieldsDefinition) {
 	_.forEach(fieldsDefinition, function(fieldDef, fieldName) {
 		whenDebugMode(function(){
 			var error;
-			var myPath = `${obj.constructor.id}.${fieldName}`;
+			var errorContext = BaseType.createErrorContext(`Type definition error`,'fatal');
+			var path = `${obj.constructor.id}.${fieldName}`;
 			if(obj[fieldName]) {
-				error = {message:`is a reserved field.`,path:''}
+				error = `is a reserved field.`;
 			}else{
-				error  = BaseType.reportFieldError(fieldDef);
+				var err = BaseType.reportFieldDefinitionError(fieldDef);
+				if(err){
+
+					error  = err.message;
+					if(err.path){
+						path = path +err.path
+					}
+				}
 			}
 
 			if(error){
-				var fullPath = error.path ? myPath+error.path : myPath;
-				MAILBOX.fatal(`Type definition error: "${fullPath}" ${error.message}`)
+				MAILBOX.fatal(`Type definition error: "${path}" ${error}`);
+				return;
+			}
+			error = fieldDef.type.reportSetValueErrors(fieldDef.defaults(),fieldDef.options);
+			if(error){
+				reportMisMatchError(errorContext,fieldDef,fieldDef.defaults(),path);
 			}
 		});
 

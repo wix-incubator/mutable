@@ -1,10 +1,11 @@
-import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, UserWithAddressType} from '../builders';
+import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerArray} from '../builders';
 import {LifeCycleManager, revision} from '../../../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../../../test-kit/testDrivers/index';
 import Typorama from '../../../src';
 import {expect} from 'chai';
 import {either} from '../../../src/genericTypes';
 import lifeCycleAsserter from '../lifecycle.js';
+import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/testDrivers/reports'
 
 describe('setValue', function () {
 	lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.setValue([elemFactory(), elemFactory()]), 'setValue');
@@ -141,6 +142,12 @@ describe('setValue', function () {
 
 			expect(mixedList.at(0).__lifecycleManager__).to.be.eql(mockManager);
 
+		});
+
+		it("report correct path for field type mismatch in deep field", function() {
+			var aList = aVeryCompositeContainerArray([{}, {}]);
+			expect(() => aList.setValue([{}, {child1: {user: { age: "666" }}}]))
+				.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('setValue', 'List<VeryCompositeContainer>[1].child1.user.age','number','string'));
 		});
 	})
 

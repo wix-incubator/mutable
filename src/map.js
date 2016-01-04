@@ -10,7 +10,9 @@ import String             from './string';
 import * as generics      from './genericTypes';
 import {
 	validateAndWrap,
-	validateNullValue}    from './validation';
+	validateNullValue,
+	reportMisMatchError,
+	arrow}    from './validation';
 
 
 const MAILBOX = getMailBox('Typorama.Map');
@@ -59,100 +61,124 @@ class _Map extends BaseType {
 		return false;
 	}
 
-	static _wrapKey(key, options, lifeCycle) {
-		var result = generics.doOnType(options.subTypes.key, type => validateAndWrap(key, type, lifeCycle));
+	static _wrapEntryKey(key, options, lifeCycle, errorContext) {
+		var result = generics.doOnType(options.subTypes.key, type => {
+			if(type.validateType(key) || type.allowPlainVal(key)){
+				return validateAndWrap(key, type, lifeCycle,errorContext);
+			}
+		});
 		if(null === result || undefined === result) {
-			MAILBOX.error('Illegal key '+key+' of type '+getValueTypeName(key)+' for Map of type '+ generics.toString(options.subTypes.key, options.subTypes.value));
+			var allowedTypes = generics.toString(options.subTypes.key);
+			reportMisMatchError(errorContext,allowedTypes,key,null,'key');
 		} else {
 			return result;
 		}
 	}
 
-	static _wrapValue(value, options, lifeCycle) {
-		var result = generics.doOnType(options.subTypes.value, type => validateAndWrap(value, type, lifeCycle));
+	static _wrapEntryValue(value, options, lifeCycle, errorContext) {
+		var result = generics.doOnType(options.subTypes.value, type => {
+			if(type.validateType(value) || type.allowPlainVal(value)){
+				return validateAndWrap(value, type, lifeCycle,errorContext);
+			}
+		});
 		if(null === result || undefined === result) {
-			MAILBOX.error('Illegal value '+value+' of type '+getValueTypeName(value)+' for Map of type '+ generics.toString(options.subTypes.key, options.subTypes.value));
+			var allowedTypes = generics.toString(options.subTypes.value);
+			reportMisMatchError(errorContext,allowedTypes,value, null, 'value');
 		} else {
 			return result;
 		}
 	}
 
-	static _wrapIterable(iterable, options, lifeCycle) {
+	static _wrapIterable(iterable, options, lifeCycle, errorContext) {
 		var result = new Map();
 		for (let [key,value] of iterable) {
-			key = this._wrapKey(key, options, lifeCycle);
-			value = this._wrapValue(value, options, lifeCycle);
+			key = this._wrapEntryKey(key, options, lifeCycle, errorContext);
+			value = this._wrapEntryValue(value, options, lifeCycle, errorContext);
 			result.set(key, value);
 		}
 		return result;
 	}
 
-	static wrapValue(value, spec, options) {
+	static wrapValue(value, spec, options, errorContext) {
 		if(BaseType.validateType(value)) {
 			if (value.__value__ instanceof Map) {
-				return this._wrapIterable(value.__value__, options);
+				return this._wrapIterable(value.__value__, options, null, errorContext);
 			} else {
 				MAILBOX.error('Strange typorama Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
 			}
 		}
 		if(isIterable(value)){
-			return this._wrapIterable(value, options);
+			return this._wrapIterable(value, options, null,errorContext);
 		}
 		if (value instanceof Object && options && options.subTypes && generics.getMatchingType(options.subTypes.key, '')){
-			return this._wrapIterable(entries(value), options);
+			return this._wrapIterable(entries(value), options, null, errorContext);
 		}
 		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
 	}
 
-	static reportDefinitionErrors(value, options){
-		if (!options || !options.subTypes || !options.subTypes.key || !options.subTypes.value) {
-			return {path:'',message:`Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`}
-		} else {
-			return generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldError) ||
-				generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldError);
+	static reportDefinitionErrors(options){
+		if(options.definitionError)
+		{
+			return options.definitionError;
 		}
-	}
-
-	static of(key, value) {
-		if (key && value) {
-			return this.withDefault(undefined, undefined, {subTypes: {key, value}});
+		if (!options || !options.subTypes || !options.subTypes.key || !options.subTypes.value) {
+			return {path:arrow+'Map',message:`Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`}
 		} else {
-			// error. build most appropriate message
-			switch (arguments.length){
-				case 0:
-					MAILBOX.error('Missing types for map. Use Map<SomeType, SomeType>');
-					break;
-				case 1:
-					key = generics.normalizeTypes(key);
-					MAILBOX.error(`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`);
-					break;
-				case 2:
-					key = generics.normalizeTypes(key);
-					value = generics.normalizeTypes(value);
-					MAILBOX.error(`Illegal key type for map : Map${generics.toString(key, value)}`);
-					break;
-				default:
-					MAILBOX.error(`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`);
-
+			var keyError = generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldDefinitionError,'key')
+			var valueTypeError = generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldDefinitionError, 'value')
+			if(keyError){
+				var valueTypeStr = valueTypeError ? 'value' : generics.toUnwrappedString(options.subTypes.value);
+				return {path:`Map<${keyError.path || arrow+generics.toUnwrappedString(options.subTypes.key)},${valueTypeStr}`,message:keyError.message};
+			}else if(valueTypeError){
+				var keyTypeStr =  generics.toUnwrappedString(options.subTypes.key);
+				return {path:`Map<${keyTypeStr},${valueTypeError.path|| arrow+generics.toUnwrappedString(options.subTypes.value)}>`,message:valueTypeError.message};
 			}
 		}
+	}
+	static of(key, value) {
+		var definitionError;
+		switch (arguments.length){
+			case 0:
+				definitionError = {path:arrow+'Map',message:'Missing types for map. Use Map<SomeType, SomeType>'};
+				break;
+			case 1:
+				key = generics.normalizeTypes(key);
+				definitionError = {path:`Map<${generics.toUnwrappedString(key)},${arrow}value>`,message:`Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}`};
+				break;
+			case 2:
+				key = generics.normalizeTypes(key);
+				value = generics.normalizeTypes(value);
+				break;
+			default:
+				key = generics.normalizeTypes(key);
+				value = generics.normalizeTypes(value);
+				definitionError = {path:`Map<${generics.toUnwrappedString(key)},${generics.toUnwrappedString(value)},${arrow}unallowed>`,message:`Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>`};
+		}
+		return this.withDefault(undefined, undefined, {subTypes: {key, value},definitionError:definitionError});
+
 	};
 
-	constructor(value=[], options={}) {
-		const report = _Map.reportDefinitionErrors(value, options);
+	constructor(value=[], options={subTypes:{}} , errorContext=null) {
+		if(!errorContext){
+			errorContext  = BaseType.createErrorContext('Map constructor error','error');
+			errorContext.path = 'Map'+generics.toString(options.subTypes.key,options.subTypes.value);
+		}
+
+		const report = _Map.reportDefinitionErrors(options);
 		if(report){
-			MAILBOX.error('Map constructor: '+report.message);
+
+			MAILBOX.error('Map constructor: "'+ report.path+'" ' +report.message);
 		} else {
 			options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
 			options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
 		}
-		super(value, options);
+		super(value, options,errorContext);
 	}
 
 	set(key, value) {
 		if(this.$setDirty()){
-			key = this.constructor._wrapKey(key, this.__options__, this.__lifecycleManager__);
-			value = this.constructor._wrapValue(value, this.__options__, this.__lifecycleManager__);
+			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__);
+			value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__);
 			this.__value__.set(key, value);
 		}
 		return this;
@@ -188,12 +214,12 @@ class _Map extends BaseType {
 	$dirtyableElementsIterator(yielder) {
 		for (let key of this.__value__.keys()) {
 			if (key && _.isFunction(key.$calcLastChange)) {
-				yielder(key);
+				yielder(this, key);
 			}
 		}
 		for (let value of this.__value__.values()) {
 			if (value && _.isFunction(value.$calcLastChange)) {
-				yielder(value);
+				yielder(this, value);
 			}
 		}
 	}

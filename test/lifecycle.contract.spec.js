@@ -44,7 +44,7 @@ export function lifecycleContract(){
 
 function setContainedElements(context) {
 	var elements = [];
-	context.container.$dirtyableElementsIterator(e => elements.push(e));
+	context.container.$dirtyableElementsIterator((c, e) => elements.push(e));
 	context.containedElements = _.intersection(context.allElements, elements);
 }
 
