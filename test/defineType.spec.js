@@ -149,7 +149,7 @@ describe('defining', () => {
 				}).to.report(ERROR_MISSING_GENERICS(`invalid.zagzag<${arrow}List>`));
 			});
 
-			it.only('should throw error if field subtypes have invalid generics info', function(){
+			it('should throw error if field subtypes have invalid generics info', function(){
 				expect(() => {
 					Typorama.define('invalid', {
 						spec: () => ({
