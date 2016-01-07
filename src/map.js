@@ -175,6 +175,19 @@ class _Map extends BaseType {
 		super(value, options,errorContext);
 	}
 
+	clear() {
+		if(this.$setDirty()) {
+			this.__value__.clear();
+		}
+	}
+
+	delete(key) {
+		if(this.$setDirty()) {
+			return !! this.__value__.delete(key);
+		}
+		return false;
+	}
+
 	set(key, value) {
 		if(this.$setDirty()){
 			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__);
@@ -186,7 +199,7 @@ class _Map extends BaseType {
 
 	get(key) {
 		var item = this.__value__.get(key);
-		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+		return (typeof item.$asReadOnly === 'function' && this.__isReadOnly__) ? item.$asReadOnly() : item;
 	}
 
 	$getElements(){
