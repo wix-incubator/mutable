@@ -1,9 +1,9 @@
 import Typorama from '../../src';
 import {expect} from 'chai';
 import {either} from '../../src/genericTypes';
-import builders from './builders';
+import b from './builders';
 
-builders = builders.asReadOnly();
+let builders = b.asReadOnly();
 
 describe('Array', function() {
 	describe('read-only instance', function() {
