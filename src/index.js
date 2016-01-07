@@ -13,6 +13,7 @@ import validation from "./validation";
 import { LifeCycleManager , revision} from "./lifecycle";
 import {either} from './genericTypes';
 import Map from './map';
+import PropsBase from './props-base';
 
 export default {
 	validation,
@@ -38,5 +39,6 @@ export default {
 	// Stubs used only for declarations:
 	Enum: {},
 	GenericEnum: {},
-	Map
+	Map,
+	PropsBase
 };
