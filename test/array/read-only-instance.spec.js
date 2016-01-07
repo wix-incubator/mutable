@@ -70,7 +70,7 @@ describe('Array', function() {
 				expect(numberList.at(lengthBeforePush)).to.equal(undefined);
 			});
 			it('pop', function () {
-				var numberList = builders.aNumberArray([[5]]);
+				var numberList = builders.aNumberArray([5]);
 				var lengthBeforePop = numberList.length;
 
 				var item = numberList.pop();
@@ -83,14 +83,14 @@ describe('Array', function() {
 				var numberList = builders.aNumberArray();
 				var lengthBeforeUnshift = numberList.length;
 
-				var newLength = numberList.unshift(3);
+				var newLength = numberList.unshift(953);
 
 				expect(newLength).to.be.null;
 				expect(numberList.length).to.equal(lengthBeforeUnshift);
-				expect(numberList.at(0)).to.equal(undefined);
+				expect(numberList.at(0)).to.equal(builders.aNumberArray().at(0));
 			});
 			it('shift', function () {
-				var numberList = builders.aNumberArray([[5]]);
+				var numberList = builders.aNumberArray([5]);
 				var lengthBeforePop = numberList.length;
 
 				var item = numberList.pop();
