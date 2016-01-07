@@ -56,8 +56,3 @@ export function getReadableValueTypeName(value){
 	}
 	return typeof value;
 }
-
-export function whenDebugMode(func){
-	func();
-}
-

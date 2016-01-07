@@ -17,7 +17,7 @@ describe('setValue', function () {
 		var rev = revision.read();
 		numberList.setValue([1]);
 
-		expect(numberList.$isDirty(rev)).to.beFalse;
+		expect(numberList.$isDirty(rev)).to.be.false;
 	});
 
 	it("accepts a vanilla JS array", function () {

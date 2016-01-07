@@ -26,6 +26,20 @@ export function isAssignableFrom(toType, type) {
 	return type && toType.type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
 }
 
+/**
+ * checks if one instance matches another instance's type and schema values
+ * (not-symetric)
+ * @param origin first instance to match, also defines the data schema
+ * @param other other instance to match
+ * @return true iff all other is assignable to origin's type and matches all it's fields
+ */
+export function isDataMatching(origin, other){
+	return !!(origin === other || (!origin && !other) ||
+		(_.isString(origin) && _.isString(other) && origin.localeCompare(other) === 0) ||
+		(_.isObject(origin) && origin.constructor && origin.constructor.type && validateNotNullValue(origin.constructor.type, other) &&
+		Object.keys(origin.constructor._spec).every( fieldName => isDataMatching(origin[fieldName], other[fieldName]))));
+}
+
 export function isNullable(type){
 	return type.options && type.options.nullable;
 }

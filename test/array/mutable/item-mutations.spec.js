@@ -131,9 +131,9 @@ describe('Array', function() {
 			it('should return the length of the array', function () {
 				var numberList = aNumberArray();
 
-				var valueRemoved = numberList.unshift();
+				var newLength = numberList.unshift();
 
-				expect(numberList.length).to.equal(valueRemoved, 'Did not return the proper array.length');
+				expect(numberList.length).to.equal(newLength, 'Did not return the proper array.length');
 			});
 
 			it('should add an element to the array', function () {
@@ -143,6 +143,7 @@ describe('Array', function() {
 				numberList.unshift(5);
 
 				expect(numberList.length).to.equal(lengthBeforeUnshift + 1);
+				expect(numberList.at(0)).to.equal(5);
 			});
 
 			it("report correct path for field type mismatch in deep field", function() {
