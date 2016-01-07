@@ -2,19 +2,19 @@ import _               from 'lodash';
 import config          from './typoramaConfiguration';
 import {makeDirtyable} from './lifecycle';
 import PrimitiveBase   from './PrimitiveBase';
-import {getFieldDef,getReadableValueTypeName,whenDebugMode}   from './utils';
+import {getFieldDef,getReadableValueTypeName}   from './utils';
 import {
 	validateAndWrap,
 	optionalSetManager,
 	isAssignableFrom,
 	validateNullValue,
 	validateValue,
-	reportNullError} from "./validation";
+	reportNullError,
+	isDataMatching}    from "./validation";
 
 import {getMailBox}    from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.BaseType');
-const ERROR = {};
 
 function createReadOnly(source){
     var readOnlyInstance = Object.create(source);
@@ -217,6 +217,9 @@ export default class BaseType extends PrimitiveBase {
 	getRuntimeId(){
 		this.___id___ = this.___id___ || generateId();
 		return this.___id___;
+	}
+	matches(other){
+		return isDataMatching(this, other);
 	}
 }
 

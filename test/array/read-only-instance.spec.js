@@ -1,32 +1,31 @@
 import Typorama from '../../src';
 import {expect} from 'chai';
 import {either} from '../../src/genericTypes';
-import {aNumberArray, aStringArray, aUserArray, UserType, AddressType, UserWithAddressType} from './builders';
+import b from './builders';
+
+let builders = b.asReadOnly();
 
 describe('Array', function() {
 	describe('read-only instance', function() {
 
 		it('Should have default length', function() {
-			var numberList = aNumberArray([1, 2, 3]).$asReadOnly();
+			var numberList = builders.aNumberArray([1, 2, 3]);
 			expect(numberList.length).to.equal(3);
 		});
 
 		it('Should keep the source instance not readOnly', function() {
 			// this is because the readonly instance used to have a bug in which it changed the original item value while wrapping it
-			var numberList = aNumberArray();
+			var numberList = builders.aNumberArray();
 
-			numberList.$asReadOnly();
 			numberList.setValue([5,6]);
 
 			expect(numberList.toJSON()).to.eql([5,6]);
 		});
 
 		it('Should be created once for each data instance', function() {
-			var numberList = aNumberArray();
-			var roInstance1 = numberList.$asReadOnly();
-			var roInstance2 = numberList.$asReadOnly();
+			var numberList = builders.aNumberArray().$asReadWrite();
 
-			expect(roInstance1).to.equal(roInstance2);
+			expect(numberList.$asReadOnly()).to.equal(numberList.$asReadOnly());
 		});
 
 		describe("with global freeze config", function(){
@@ -40,7 +39,7 @@ describe('Array', function() {
 			});
 
 			it("should throw error on unknown field setter", function(){
-				var names = aStringArray().$asReadOnly();
+				var names = builders.aStringArray();
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
@@ -49,85 +48,82 @@ describe('Array', function() {
 
 		});
 
-		describe('at', function() {
+		describe('__value__', function() {
+			it('should be synced with the readonly', function () {
+				var readOnly = builders.aUserArray();
+				var arr = readOnly.$asReadWrite();
 
-			it('Should return a number for native immutable Typorama.Number', function() {
-				expect(aNumberArray().$asReadOnly().at(0)).to.equal(1);
+				arr.setValue([builders.UserType.defaults()]);
+
+				expect(arr.__value__).to.equal(readOnly.__value__);
 			});
-
-			it('Should return a string for native immutable Typorama.String', function() {
-				expect(aStringArray().$asReadOnly().at(0)).to.equal('John');
-			});
-
-			it('Should return wrapped item that passes the test() of their type', function() {
-				expect(aNumberArray().$asReadOnly().__options__.subTypes.validate(aNumberArray().$asReadOnly().at(0))).to.beTrue;
-			});
-
-			it('Should return a typed item for mutable data (like custom types)', function() {
-				var arr = Typorama.Array.of(UserType).create([{name: 'avi', age: 12}]).$asReadOnly();
-				expect(arr.at(0)).to.be.instanceof(UserType);
-			});
-
-			it('Should return a typed item form multiple types if there is _type field', function() {
-				var data = [
-					{_type:'User',  name: 'avi', age: 12},
-					{_type:'Address', name: 'avi', age: 12}
-				];
-				var arr = Typorama.Array.of(either(UserType, AddressType)).create(data).$asReadOnly();
-				expect(arr.at(0)).to.be.instanceof(UserType);
-				expect(arr.at(1)).to.be.instanceof(AddressType);
-			});
-
-			it('Should not modify inner complex data', function() {
-				var userDefaultName = UserWithAddressType.getFieldsSpec().user.defaults().name;
-				var arrComplexType = Typorama.Array.of(UserWithAddressType).create([{}, {}, {}]).$asReadOnly();
-
-				var elem = arrComplexType.at(1);
-
-				elem.user.name = 'modified user name';
-				expect(elem.user.name).to.equal(userDefaultName);
-			});
-
-			it('Should handle multi level array', function() {
-				var arrComplexType = Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create([[{}], [{}], [{}]]).$asReadOnly();
-
-				var userWithAddress = arrComplexType.at(0).at(0);
-				expect(userWithAddress).to.be.instanceof(UserWithAddressType);
-
-				userWithAddress.user.name = 'you got a new name';
-				expect(userWithAddress.user.name).to.equal('');
-			});
-
-
-			it('should keep read only item as read only', function() {
-				var readOnlyData = new UserWithAddressType().$asReadOnly();
-				var arrComplexType = Typorama.Array.of(UserWithAddressType).create([readOnlyData]);
-
-				var readOnlyItemData = arrComplexType.at(0);
-				readOnlyItemData.user.name = 'you got a new name';
-
-				expect(readOnlyItemData).to.eql(readOnlyData);
-			});
-
 		});
-
-		describe('push',function() {
-			it('should not modify an array ', function() {
-				var numberList = aNumberArray().$asReadOnly();
+		describe('should not be modified by', function () {
+			it('push',function() {
+				var numberList = builders.aNumberArray();
 				var lengthBeforePush = numberList.length;
 
 				var newIndex = numberList.push(3);
 
 				expect(newIndex).to.be.null;
 				expect(numberList.length).to.equal(lengthBeforePush);
-				expect(numberList.at(2)).to.equal(undefined);
+				expect(numberList.at(lengthBeforePush)).to.equal(undefined);
+			});
+			it('pop', function () {
+				var numberList = builders.aNumberArray([5]);
+				var lengthBeforePop = numberList.length;
 
-			})
-		});
+				var item = numberList.pop();
 
-		describe('splice',function() {
-			it('should not modify an array ', function() {
-				var numberList = aNumberArray().$asReadOnly();
+				expect(item).to.be.null;
+				expect(numberList.length).to.equal(lengthBeforePop);
+				expect(numberList.at(0)).to.equal(5);
+			});
+			it('unshift',function() {
+				var numberList = builders.aNumberArray();
+				var lengthBeforeUnshift = numberList.length;
+
+				var newLength = numberList.unshift(953);
+
+				expect(newLength).to.be.null;
+				expect(numberList.length).to.equal(lengthBeforeUnshift);
+				expect(numberList.at(0)).to.equal(builders.aNumberArray().at(0));
+			});
+			it('shift', function () {
+				var numberList = builders.aNumberArray([5]);
+				var lengthBeforePop = numberList.length;
+
+				var item = numberList.pop();
+
+				expect(item).to.be.null;
+				expect(numberList.length).to.equal(lengthBeforePop);
+				expect(numberList.at(0)).to.equal(5);
+			});
+
+			it('set', function () {
+				var numberList = builders.aNumberArray([5]);
+				var result = numberList.set(0,3);
+				expect(result).to.be.null;
+				expect(numberList.at(0)).to.equal(5);
+			});
+
+			it('reverse', function () {
+				var numberList = builders.aNumberArray();
+				numberList.reverse();
+
+				for (var i = 0; i < numberList.length; i++) {
+					expect(numberList.at(i)).to.equal(builders.aNumberArray().at(i));
+				}
+			});
+
+			it('sort', function () {
+				var numberArray = builders.aNumberArray([40, 1, 5, 200]);
+				numberArray.sort();
+				expect(numberArray).to.eql(builders.aNumberArray([40, 1, 5, 200]));
+			});
+
+			it('splice',function() {
+				var numberList = builders.aNumberArray();
 				var lengthBeforeSplice = numberList.length;
 
 				var removedItems = numberList.splice(0, 1, 17);
@@ -136,54 +132,6 @@ describe('Array', function() {
 				expect(numberList.length).to.equal(lengthBeforeSplice);
 				expect(numberList.at(0)).to.equal(1);
 				expect(numberList.at(1)).to.equal(2);
-			})
-		});
-
-		describe('views',function(){
-			it('slice should return mutable version',function(){
-				var arr = aUserArray();
-				var readOnly = arr.$asReadOnly();
-
-				var arr = readOnly.slice();
-
-				expect(arr.$isReadOnly()).to.equal(false);
-				expect(arr.at(0).$isReadOnly()).to.equal(true);
-			});
-			it('concat should return mutable version',function(){
-				var arr = aUserArray();
-				var readOnly = arr.$asReadOnly();
-
-				var arr = readOnly.concat();
-
-				expect(arr.$isReadOnly()).to.equal(false);
-				expect(arr.at(0).$isReadOnly()).to.equal(true);
-			});
-		});
-
-		describe('__value__', function() {
-			it('should be synced with the readonly', function () {
-				var arr = aUserArray();
-				var readOnly = arr.$asReadOnly();
-
-				arr.setValue([UserType.defaults()]);
-
-				expect(arr.__value__).to.equal(readOnly.__value__);
-			});
-
-			//TODO @baraki wrote this and I'm not sure what it's supposed to do
-			xit('should fail', function(){
-				var Type = Typorama.define('Type',{
-					spec: function(){
-						return {
-							items: Typorama.Array.of(UserType)
-						};
-					}
-				});
-				var type = new Type();
-				var readOnly = type.$asReadOnly();
-				type.setValue({items: Typorama.Array.of(UserType).create([UserType.defaults(), UserType.defaults()]) });
-				var items = readOnly.items;
-				expect(items.__value__).to.eql(['hello', 'world'])
 			});
 		});
 	});

@@ -172,8 +172,6 @@ define(['lodash', './inherit'], function(_, inherit) {
 
     BaseType.Immutable = function ImmutableType(source) {
         inherit.defineGetSetProp(this, '__source__', source, false);
-        //        this.__source__ = source;
-        if (source.__source__) debugger;
     };
 
     BaseType.Immutable.prototype = {

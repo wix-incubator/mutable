@@ -140,12 +140,19 @@ class _Array extends BaseType {
 		return valueArray;
 	}
 
-	__getLodashIterateeWrapper__(iteratee){
-
+	__getLodashIterateeWrapper__(iteratee , allowObj){
 		if (_.isFunction(iteratee)) {
 			var typoramaArr = this;
 			return function (item, index) {
 				return iteratee.call(this, item, index, typoramaArr);
+			}
+		} else if (allowObj && _.isObject(iteratee)){
+			if (!iteratee.constructor || !iteratee.constructor.type){
+				iteratee = this.constructor._wrapSingleItem(iteratee, this.__options__, null);
+			}
+			return function wrappedObjMatchIterator(element){
+				// TODO add matches implementation in List and Map
+				return iteratee.matches(element);
 			}
 		} else {
 			return iteratee;
@@ -266,7 +273,7 @@ class _Array extends BaseType {
 	}
 
 	concat(...addedArrays) {
-		return this.__wrapArr__(Array.prototype.concat.apply(this.__getValueArr__(), addedArrays.map((array) => array.__getValueArr__ ? array.__getValueArr__()  :array)));
+		return this.__wrapArr__(this.__getValueArr__().concat(...addedArrays.map((array) => array.__getValueArr__ ? array.__getValueArr__()  :array)));
 	}
 
 	join(separator = ',') {
@@ -305,38 +312,38 @@ class _Array extends BaseType {
 
 	// Iteration methods
 
-	forEach(fn, ctx){
-		this.__lodashProxy__('forEach',this.__getLodashIterateeWrapper__(fn), ctx);
+	forEach(iteratee, ctx){
+		this.__lodashProxy__('forEach',this.__getLodashIterateeWrapper__(iteratee, false), ctx);
 	}
 
-	find(fn, ctx){
-		return this.__lodashProxy__('find',this.__getLodashIterateeWrapper__(fn), ctx);
+	find(predicate, ctx){
+		return this.__lodashProxy__('find',this.__getLodashIterateeWrapper__(predicate, true), ctx);
 	}
 
-	findIndex(fn, ctx){
-		return this.__lodashProxy__('findIndex',this.__getLodashIterateeWrapper__(fn), ctx);
+	findIndex(predicate, ctx){
+		return this.__lodashProxy__('findIndex',this.__getLodashIterateeWrapper__(predicate, true), ctx);
 	}
 
-	map(fn, ctx) {
-		return this.__lodashProxy__('map',this.__getLodashIterateeWrapper__(fn), ctx);
+	map(iteratee, ctx) {
+		return this.__lodashProxy__('map',this.__getLodashIterateeWrapper__(iteratee, true), ctx);
 	}
 
 	reduce(...args) {
-		var newValue = _.reduce.apply(_, [this.__getValueArr__(), ...args]);
-		return newValue;
+		return _.reduce(this.__getValueArr__(), ...args);
 	}
 
 	every(fn, ctx) {
-		return this.__lodashProxy__('every',this.__getLodashIterateeWrapper__(fn), ctx);
+		return this.__lodashProxy__('every',this.__getLodashIterateeWrapper__(fn, true), ctx);
 	}
 
 	some(fn, ctx) {
-		return this.__lodashProxy__('some',this.__getLodashIterateeWrapper__(fn), ctx);
+		return this.__lodashProxy__('some',this.__getLodashIterateeWrapper__(fn, true), ctx);
 	}
 
 	filter(fn, ctx) {
-		return this.__lodashProxyWrap__('filter',this.__getLodashIterateeWrapper__(fn), ctx);
+		return this.__lodashProxyWrap__('filter',this.__getLodashIterateeWrapper__(fn, true), ctx);
 	}
+
 	setValue(newValue, errorContext) {
 		var changed = false;
 		if(newValue instanceof _Array) {
