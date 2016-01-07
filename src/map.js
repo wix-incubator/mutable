@@ -23,7 +23,15 @@ function entries(obj) {
 }
 
 function safeAsReadOnly (item) {
-	return (item.$asReadOnly) ? item.$asReadOnly() : item;
+	return (item && typeof item.$asReadOnly === 'function') ? item.$asReadOnly() : item;
+}
+
+function safeAsReadOnlyOrArr(item){
+	if (_.isArray(item)) {
+		return item.map(safeAsReadOnlyOrArr);
+	} else {
+		return safeAsReadOnly(item);
+	}
 }
 
 function isIterable(value) {
@@ -158,6 +166,13 @@ class _Map extends BaseType {
 
 	};
 
+	__exposeInner__(item){
+		if (this.__isReadOnly__) {
+			return safeAsReadOnlyOrArr(item);
+		}
+		return item;
+	}
+
 	constructor(value=[], options={subTypes:{}} , errorContext=null) {
 		if(!errorContext){
 			errorContext  = BaseType.createErrorContext('Map constructor error','error');
@@ -202,6 +217,23 @@ class _Map extends BaseType {
 		return (typeof item.$asReadOnly === 'function' && this.__isReadOnly__) ? item.$asReadOnly() : item;
 	}
 
+	entries(){
+		var innerIterator = this.__value__.entries();
+
+		return {
+			next : () => {
+				var innerNext = innerIterator.next();
+				if (innerNext.done){
+					return innerNext;
+				}
+				return {
+					done: false,
+					value : this.__exposeInner__(innerNext.value)
+				};
+			}
+		};
+	}
+
 	$getElements(){
 		let result = [];
 		for (let [key,value] of this.__value__.entries()) {
@@ -213,8 +245,8 @@ class _Map extends BaseType {
 	toJSON(recursive = true) {
 		let result = [];
 		for (let [key,value] of this.__value__.entries()) {
-			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : key;
-			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : value;
+			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
+			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
 			result.push([key,value]);
 		}
 		return result;

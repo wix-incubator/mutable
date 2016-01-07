@@ -5,7 +5,7 @@ import builders from '../builders';
 import lifeCycleAsserter from '../lifecycle.js';
 
 function testReadFunctionality(builders, isReadonly) {
-	describe('.size', function () {
+	describe('size', function () {
 		it('should reflect number of entries in map', function () {
 			var numbers = builders.aNumberMap({1: 1, 2: 2, 3: 3});
 			expect(numbers.size).to.equal(3);
@@ -61,6 +61,40 @@ function testReadFunctionality(builders, isReadonly) {
 		});
 	});
 
+	describe('toJSON', function () {
+		it('should return entries json array by default', ()  => {
+			var userA = new builders.UserType({age:1000});
+			var userB = new builders.UserType({age:1001});
+			var map = builders.aUserTypeMap([[userA, userB], [userB, userA]]);
+
+			expect(map.toJSON()).to.eql([
+				[userA.toJSON(), userB.toJSON()],
+				[userB.toJSON(), userA.toJSON()]
+			]);
+		});
+		it('should return entries array if not recursive', ()  => {
+			var userA = new builders.UserType({age:1000});
+			var userB = new builders.UserType({age:1001});
+			var map = builders.aUserTypeMap([[userA, userB], [userB, userA]]);
+
+
+			expect(map.toJSON(false)[0][0]).to.equal(userA);
+			expect(map.toJSON(false)[0][1]).to.equal(userB);
+			expect(map.toJSON(false)[1][0]).to.equal(userB);
+			expect(map.toJSON(false)[1][1]).to.equal(userA);
+		});
+		if (isReadonly){
+			it('should expose read only entries', ()  => {
+				var userA = new builders.UserType({age:1000});
+				var userB = new builders.UserType({age:1001});
+				var map = builders.aUserTypeMap([[userA, userB]]);
+
+				expect(map.toJSON(false)[0][0].$isReadOnly(), 'key is readOnly').to.equal(true);
+				expect(map.toJSON(false)[0][1].$isReadOnly(), 'value is readonly').to.equal(true);
+			});
+		}
+	});
+
 	describe('clear', function () {
 		if (isReadonly){
 			it('should not change map', ()  => {
@@ -102,6 +136,9 @@ function testReadFunctionality(builders, isReadonly) {
 				var map = builders.aUserTypeMap();
 				map.set(userA, userA).set(userB, userA).set(userA, userB);
 
+				// es6 vaguely defines order of elements in map.
+				// if order definition breaks, consider using chai-things plugin for matching regardless of order
+				// http://chaijs.com/plugins/chai-things
 				expect(map.toJSON(false)).to.eql([[userA, userB], [userB, userA]]);
 			});
 			lifeCycleAsserter.assertMutatorContract(
@@ -160,6 +197,30 @@ function testReadFunctionality(builders, isReadonly) {
 				(map, elemFactory) => map.delete(map.toJSON()[0][0]), 'delete');
 		}
 	});
+	describe('entries', function() {
+		it('should return an iterator over the map elements', () => {
+			var iterator = builders.aNumberMap({a: 1, b:2}).entries();
+			var elem = iterator.next();
+			expect(elem.done).to.eql(false);
+			expect(elem.value).to.eql(['a', 1]);
+			elem = iterator.next();
+			expect(elem.done).to.eql(false);
+			expect(elem.value).to.eql(['b', 2]);
+			elem = iterator.next();
+			expect(elem.done).to.eql(true);
+		});
+		if (isReadonly){
+			it('should expose read only entries', ()  => {
+				var userA = new builders.UserType({age:1000});
+				var userB = new builders.UserType({age:1001});
+				var element = builders.aUserTypeMap([[userA, userB]]).entries().next();
+
+				expect(element.value[0].$isReadOnly(), 'key is readOnly').to.equal(true);
+				expect(element.value[1].$isReadOnly(), 'value is readonly').to.equal(true);
+			});
+		}
+	});
+
 }
 
 
