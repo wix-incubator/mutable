@@ -282,6 +282,26 @@ function testReadFunctionality(builders, isReadonly) {
 				expect(element.value.$isReadOnly(), 'value is readOnly').to.equal(isReadonly);
 			});
 		});
+		describe('Symbol.iterator', () => {
+			it('should return an iterator over the map elements', () => {
+				var iterator = builders.aNumberMap({a: 1, b:2})[Symbol.iterator]();
+				var elem = iterator.next();
+				expect(elem.done).to.eql(false);
+				expect(elem.value).to.eql(['a', 1]);
+				elem = iterator.next();
+				expect(elem.done).to.eql(false);
+				expect(elem.value).to.eql(['b', 2]);
+				elem = iterator.next();
+				expect(elem.done).to.eql(true);
+			});
+
+			it('should expose '+typeOfObj(isReadonly)+' entries', ()  => {
+				var element = usersMap[Symbol.iterator]().next();
+
+				expect(element.value[0].$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
+				expect(element.value[1].$isReadOnly(), 'value is readonly').to.equal(isReadonly);
+			});
+		});
 	});
 }
 

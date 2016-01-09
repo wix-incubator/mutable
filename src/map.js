@@ -249,6 +249,10 @@ class _Map extends BaseType {
 		return this.__wrapIterator__(this.__value__.values());
 	}
 
+	[Symbol.iterator](){
+		return this.__wrapIterator__(this.__value__[Symbol.iterator]());
+	}
+
 	forEach(callback, thisArg){
 		if (thisArg){
 			callback = callback.bind(thisArg);
