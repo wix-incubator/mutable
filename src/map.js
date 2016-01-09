@@ -166,13 +166,6 @@ class _Map extends BaseType {
 
 	};
 
-	__exposeInner__(item){
-		if (this.__isReadOnly__) {
-			return safeAsReadOnlyOrArr(item);
-		}
-		return item;
-	}
-
 	constructor(value=[], options={subTypes:{}} , errorContext=null) {
 		if(!errorContext){
 			errorContext  = BaseType.createErrorContext('Map constructor error','error');
@@ -188,6 +181,28 @@ class _Map extends BaseType {
 			options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
 		}
 		super(value, options,errorContext);
+	}
+
+	__exposeInner__(item){
+		if (this.__isReadOnly__) {
+			return safeAsReadOnlyOrArr(item);
+		}
+		return item;
+	}
+
+	__wrapIterator__(innerIterator) {
+		return {
+			next: () => {
+				var innerNext = innerIterator.next();
+				if (innerNext.done) {
+					return innerNext;
+				}
+				return {
+					done: false,
+					value: this.__exposeInner__(innerNext.value)
+				};
+			}
+		};
 	}
 
 	clear() {
@@ -213,25 +228,34 @@ class _Map extends BaseType {
 	}
 
 	get(key) {
-		var item = this.__value__.get(key);
-		return (typeof item.$asReadOnly === 'function' && this.__isReadOnly__) ? item.$asReadOnly() : item;
+		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		return this.__exposeInner__(this.__value__.get(key));
+	}
+
+	has(key) {
+		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		return !! this.__value__.has(key);
 	}
 
 	entries(){
-		var innerIterator = this.__value__.entries();
+		return this.__wrapIterator__(this.__value__.entries());
+	}
 
-		return {
-			next : () => {
-				var innerNext = innerIterator.next();
-				if (innerNext.done){
-					return innerNext;
-				}
-				return {
-					done: false,
-					value : this.__exposeInner__(innerNext.value)
-				};
-			}
-		};
+	keys(){
+		return this.__wrapIterator__(this.__value__.keys());
+	}
+
+	values(){
+		return this.__wrapIterator__(this.__value__.values());
+	}
+
+	forEach(callback, thisArg){
+		if (thisArg){
+			callback = callback.bind(thisArg);
+		}
+		this.__value__.forEach((value, key) => {
+			callback(this.__exposeInner__(value), this.__exposeInner__(key), this);
+		}, thisArg);
 	}
 
 	$getElements(){

@@ -254,8 +254,8 @@ describe('defining', () => {
 						var map = typeFactory().create({'foo': {address:'gaga'}});
 
 						expect(map.get('foo')).to.be.instanceOf(AddressType);
-						expect(map.get('foo').code).to.eql(10);
-						expect(map.get('foo').address).to.eql('gaga');
+						expect(map.get('foo').code).to.equal(10);
+						expect(map.get('foo').address).to.equal('gaga');
 					});
 				});
 				it('should report error when null key is added',function(){
@@ -329,8 +329,8 @@ describe('defining', () => {
 					});
 					it('should keep typorama objects passed to it that fit its subtypes', function() {
 						var mixedMap = typeFactory().create([[newUser, newUser],[newUser2, newAddress]]);
-						expect(mixedMap.get(newUser)).to.eql(newUser);
-						expect(mixedMap.get(newUser2)).to.eql(newAddress);
+						expect(mixedMap.get(newUser)).to.equal(newUser);
+						expect(mixedMap.get(newUser2)).to.equal(newAddress);
 					});
 					it('should allow setting data with json and should default to first type, ', function() {
 						var map = typeFactory().create([[newUser, {someKey:'gaga'}]]);
@@ -339,11 +339,11 @@ describe('defining', () => {
 					it('should use _type field to detect which subtype to use when setting data with json, ', function() {
 						var map = typeFactory().create([[newUser, {_type: AddressType.id, address:'gaga'}]]);
 						expect(map.get(newUser)).to.be.instanceOf(AddressType);
-						expect(map.get(newUser).address).to.eql('gaga');
+						expect(map.get(newUser).address).to.equal('gaga');
 					});
 					it('should detect primitives', function() {
 						var mixedMap = typeFactory().create([[newUser, 'gaga']]);
-						expect(mixedMap.get(newUser)).to.be.eql('gaga');
+						expect(mixedMap.get(newUser)).to.be.equal('gaga');
 					});
 				});
 			});
