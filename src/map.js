@@ -23,7 +23,15 @@ function entries(obj) {
 }
 
 function safeAsReadOnly (item) {
-	return (item.$asReadOnly) ? item.$asReadOnly() : item;
+	return (item && typeof item.$asReadOnly === 'function') ? item.$asReadOnly() : item;
+}
+
+function safeAsReadOnlyOrArr(item){
+	if (_.isArray(item)) {
+		return item.map(safeAsReadOnlyOrArr);
+	} else {
+		return safeAsReadOnly(item);
+	}
 }
 
 function isIterable(value) {
@@ -175,6 +183,41 @@ class _Map extends BaseType {
 		super(value, options,errorContext);
 	}
 
+	__exposeInner__(item){
+		if (this.__isReadOnly__) {
+			return safeAsReadOnlyOrArr(item);
+		}
+		return item;
+	}
+
+	__wrapIterator__(innerIterator) {
+		return {
+			next: () => {
+				var innerNext = innerIterator.next();
+				if (innerNext.done) {
+					return innerNext;
+				}
+				return {
+					done: false,
+					value: this.__exposeInner__(innerNext.value)
+				};
+			}
+		};
+	}
+
+	clear() {
+		if(this.$setDirty()) {
+			this.__value__.clear();
+		}
+	}
+
+	delete(key) {
+		if(this.$setDirty()) {
+			return !! this.__value__.delete(key);
+		}
+		return false;
+	}
+
 	set(key, value) {
 		if(this.$setDirty()){
 			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__);
@@ -185,8 +228,34 @@ class _Map extends BaseType {
 	}
 
 	get(key) {
-		var item = this.__value__.get(key);
-		return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		return this.__exposeInner__(this.__value__.get(key));
+	}
+
+	has(key) {
+		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		return !! this.__value__.has(key);
+	}
+
+	entries(){
+		return this.__wrapIterator__(this.__value__.entries());
+	}
+
+	keys(){
+		return this.__wrapIterator__(this.__value__.keys());
+	}
+
+	values(){
+		return this.__wrapIterator__(this.__value__.values());
+	}
+
+	forEach(callback, thisArg){
+		if (thisArg){
+			callback = callback.bind(thisArg);
+		}
+		this.__value__.forEach((value, key) => {
+			callback(this.__exposeInner__(value), this.__exposeInner__(key), this);
+		}, thisArg);
 	}
 
 	$getElements(){
@@ -200,8 +269,8 @@ class _Map extends BaseType {
 	toJSON(recursive = true) {
 		let result = [];
 		for (let [key,value] of this.__value__.entries()) {
-			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : key;
-			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : value;
+			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
+			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
 			result.push([key,value]);
 		}
 		return result;
