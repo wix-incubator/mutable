@@ -190,19 +190,13 @@ class _Map extends BaseType {
 		return item;
 	}
 
+	// for now due to transpiler es6 support we just return an array
 	__wrapIterator__(innerIterator) {
-		return {
-			next: () => {
-				var innerNext = innerIterator.next();
-				if (innerNext.done) {
-					return innerNext;
-				}
-				return {
-					done: false,
-					value: this.__exposeInner__(innerNext.value)
-				};
-			}
-		};
+		const resultArr = [];
+		for (let e of innerIterator){
+			resultArr.push(e);
+		}
+		return this.__isReadOnly__? resultArr.map(safeAsReadOnlyOrArr) : resultArr;
 	}
 
 	clear() {
@@ -247,10 +241,6 @@ class _Map extends BaseType {
 
 	values(){
 		return this.__wrapIterator__(this.__value__.values());
-	}
-
-	[Symbol.iterator](){
-		return this.__wrapIterator__(this.__value__[Symbol.iterator]());
 	}
 
 	forEach(callback, thisArg){

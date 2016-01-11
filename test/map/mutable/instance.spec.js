@@ -143,23 +143,16 @@ function testReadFunctionality(builders, isReadonly) {
 			}
 		});
 		describe('entries',() => {
-			it('should return an iterator over the map elements', () => {
-				var iterator = builders.aNumberMap({a: 1, b:2}).entries();
-				var elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql(['a', 1]);
-				elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql(['b', 2]);
-				elem = iterator.next();
-				expect(elem.done).to.eql(true);
+			it('should return an array of the map elements', () => {
+				var array = builders.aNumberMap({a: 1, b:2}).entries();
+				expect(array).to.eql([['a', 1], ['b', 2]]);
 			});
 
 			it('should expose '+typeOfObj(isReadonly)+' entries', ()  => {
-				var element = usersMap.entries().next();
+				var element = usersMap.entries()[0];
 
-				expect(element.value[0].$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
-				expect(element.value[1].$isReadOnly(), 'value is readonly').to.equal(isReadonly);
+				expect(element[0].$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
+				expect(element[1].$isReadOnly(), 'value is readonly').to.equal(isReadonly);
 			});
 		});
 
@@ -208,22 +201,15 @@ function testReadFunctionality(builders, isReadonly) {
 		});
 
 		describe('keys',() => {
-			it('should return an iterator over the map keys', () => {
-				var iterator = builders.aNumberMap({a: 1, b:2}).keys();
-				var elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql('a');
-				elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql('b');
-				elem = iterator.next();
-				expect(elem.done).to.eql(true);
+			it('should return an array of the map keys', () => {
+				var array = builders.aNumberMap({a: 1, b:2}).keys();
+				expect(array).to.eql(['a', 'b']);
 			});
 
 			it('should expose '+typeOfObj(isReadonly)+' keys', ()  => {
-				var element = usersMap.keys().next();
+				var element = usersMap.keys()[0];
 
-				expect(element.value.$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
+				expect(element.$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
 			});
 		});
 
@@ -264,42 +250,15 @@ function testReadFunctionality(builders, isReadonly) {
 		});
 
 		describe('values',() => {
-			it('should return an iterator over the map values', () => {
-				var iterator = builders.aNumberMap({a: 1, b:2}).values();
-				var elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql(1);
-				elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql(2);
-				elem = iterator.next();
-				expect(elem.done).to.eql(true);
+			it('should return an array of the map values', () => {
+				var array = builders.aNumberMap({a: 1, b:2}).values();
+				expect(array).to.eql([1, 2]);
 			});
 
 			it('should expose '+typeOfObj(isReadonly)+' values', ()  => {
-				var element = usersMap.values().next();
+				var element = usersMap.values()[0];
 
-				expect(element.value.$isReadOnly(), 'value is readOnly').to.equal(isReadonly);
-			});
-		});
-		describe('Symbol.iterator', () => {
-			it('should return an iterator over the map elements', () => {
-				var iterator = builders.aNumberMap({a: 1, b:2})[Symbol.iterator]();
-				var elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql(['a', 1]);
-				elem = iterator.next();
-				expect(elem.done).to.eql(false);
-				expect(elem.value).to.eql(['b', 2]);
-				elem = iterator.next();
-				expect(elem.done).to.eql(true);
-			});
-
-			it('should expose '+typeOfObj(isReadonly)+' entries', ()  => {
-				var element = usersMap[Symbol.iterator]().next();
-
-				expect(element.value[0].$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
-				expect(element.value[1].$isReadOnly(), 'value is readonly').to.equal(isReadonly);
+				expect(element.$isReadOnly(), 'value is readOnly').to.equal(isReadonly);
 			});
 		});
 	});
