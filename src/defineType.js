@@ -1,7 +1,7 @@
 import _                  from "lodash";
 import BaseType           from "./BaseType";
 import PrimitiveBase      from './PrimitiveBase';
-import {isAssignableFrom,validateNullValue,reportNullError,reportMisMatchError} from "./validation"
+import {isAssignableFrom,validateNullValue,misMatchMessage} from "./validation"
 import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
@@ -97,7 +97,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
 		}
 		error = fieldDef.type.reportSetValueErrors(fieldDef.defaults(),fieldDef.options);
 		if(error){
-			reportMisMatchError(errorContext,fieldDef,fieldDef.defaults(),path);
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,fieldDef,fieldDef.defaults(),path));
 		}
 
 		Object.defineProperty(obj, fieldName, {

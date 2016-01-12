@@ -11,7 +11,7 @@ import * as generics      from './genericTypes';
 import {
 	validateAndWrap,
 	validateNullValue,
-	reportMisMatchError,
+	misMatchMessage,
 	arrow}    from './validation';
 
 
@@ -77,7 +77,7 @@ class _Map extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes.key);
-			reportMisMatchError(errorContext,allowedTypes,key,null,'key');
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,allowedTypes,key,null,'key'));
 		} else {
 			return result;
 		}
@@ -91,7 +91,7 @@ class _Map extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes.value);
-			reportMisMatchError(errorContext,allowedTypes,value, null, 'value');
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,allowedTypes,value,null,'value'));
 		} else {
 			return result;
 		}
