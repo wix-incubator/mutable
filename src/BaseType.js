@@ -215,8 +215,15 @@ export default class BaseType extends PrimitiveBase {
         }, {});
     }
 	getRuntimeId(){
-		this.___id___ = this.___id___ || generateId();
-		return this.___id___;
+		if(this.__id__!==undefined){
+			return this.__id__;
+		}
+		if(this.__isReadOnly__){
+			return this.__readWriteInstance__.getRuntimeId();
+		}else{
+			this.__id__ = generateId();
+			return this.__id__;
+		}
 	}
 	matches(other){
 		return isDataMatching(this, other);

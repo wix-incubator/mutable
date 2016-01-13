@@ -201,6 +201,7 @@ describe('Custom data', function() {
 					var sourceData = {numOfHeads: 2};
 					var instance = new UserType(sourceData);
 					var instance2 = new UserType(sourceData);
+					expect(instance.getRuntimeId()).to.equal(instance.getRuntimeId());
 					expect(instance.getRuntimeId()).not.to.equal(instance2.getRuntimeId());
 				});
 			});
@@ -536,6 +537,12 @@ describe('Custom data', function() {
 				var instance = new UserType(sourceData);
 				var readOnly = instance.$asReadOnly();
 				expect(instance.getRuntimeId()).to.equal(readOnly.getRuntimeId());
+			});
+			it('no matter the reading order', function() {
+				var sourceData = {numOfHeads: 2};
+				var instance = new UserType(sourceData);
+				var readOnly = instance.$asReadOnly();
+				expect(readOnly.getRuntimeId()).to.equal(instance.getRuntimeId());
 			});
 		});
 		describe("with global freeze config", function(){
