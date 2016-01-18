@@ -1,6 +1,6 @@
 {
   "private": false,
-  "publishConfig": {
+  "publishConfig": { 
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
