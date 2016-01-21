@@ -1,6 +1,7 @@
 /**
  * Created by amira on 29/12/15.
  */
+import _                  from 'lodash';
 import defineType         from './defineType';
 import {getMailBox}       from 'gopostal';
 import BaseType           from './BaseType';
@@ -36,7 +37,6 @@ function safeAsReadOnlyOrArr(item){
 
 function isIterable(value) {
 	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === "function");
-
 }
 
 class _Map extends BaseType {
@@ -49,7 +49,8 @@ class _Map extends BaseType {
 
 	static _allowIterable(iterable, options){
 		for (let [key,value] of iterable) {
-			if(!generics.getMatchingType(options.subTypes.key, key) || ! generics.getMatchingType(options.subTypes.value, value)){
+			if(options && options.subTypes &&
+				(!generics.getMatchingType(options.subTypes.key, key) || !generics.getMatchingType(options.subTypes.value, value))){
 				return false;
 			}
 		}
