@@ -1,6 +1,7 @@
 /**
  * Created by amira on 29/12/15.
  */
+import _                  from 'lodash';
 import defineType         from './defineType';
 import {getMailBox}       from 'gopostal';
 import BaseType           from './BaseType';
@@ -36,7 +37,10 @@ function safeAsReadOnlyOrArr(item){
 
 function isIterable(value) {
 	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === "function");
+}
 
+function isTypeConpatibleWithPlainJsonObject(options) {
+	return !! (options && options.subTypes && generics.getMatchingType(options.subTypes.key, ''));
 }
 
 class _Map extends BaseType {
@@ -49,7 +53,8 @@ class _Map extends BaseType {
 
 	static _allowIterable(iterable, options){
 		for (let [key,value] of iterable) {
-			if(!generics.getMatchingType(options.subTypes.key, key) || ! generics.getMatchingType(options.subTypes.value, value)){
+			if(options && options.subTypes &&
+				(!generics.getMatchingType(options.subTypes.key, key) || !generics.getMatchingType(options.subTypes.value, value))){
 				return false;
 			}
 		}
@@ -118,7 +123,7 @@ class _Map extends BaseType {
 		if(isIterable(value)){
 			return this._wrapIterable(value, options, null,errorContext);
 		}
-		if (value instanceof Object && options && options.subTypes && generics.getMatchingType(options.subTypes.key, '')){
+		if (value instanceof Object && isTypeConpatibleWithPlainJsonObject(options)){
 			return this._wrapIterable(entries(value), options, null, errorContext);
 		}
 		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
@@ -262,12 +267,15 @@ class _Map extends BaseType {
 
 	toJSON(recursive = true) {
 		let result = [];
+		//debugger;
+		let allStringKeys = isTypeConpatibleWithPlainJsonObject(this.__options__);
 		for (let [key,value] of this.__value__.entries()) {
 			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
 			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
 			result.push([key,value]);
+			allStringKeys &= typeof key === 'string';
 		}
-		return result;
+		return allStringKeys ? _.zipObject(result) : result;
 	}
 
 	/**
