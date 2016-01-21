@@ -65,7 +65,7 @@ function testReadFunctionality(builders, isReadonly) {
 
 		describe('toJSON', () => {
 			it('should return entries json array by default', ()  => {
-				expect(usersMap.toJSON()).to.eql([
+				expect(usersMap.toJSON(), JSON.stringify(usersMap.toJSON())).to.eql([
 					[userA.toJSON(), userB.toJSON()],
 					[userB.toJSON(), userA.toJSON()]
 				]);
@@ -80,20 +80,36 @@ function testReadFunctionality(builders, isReadonly) {
 				expect(usersMap.toJSON(false)[0][0].$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
 				expect(usersMap.toJSON(false)[0][1].$isReadOnly(), 'value is readonly').to.equal(isReadonly);
 			});
+			it('should return object if all keys are strings', () => {
+				const jsonModel = {'one':1, 'two':2, 'three':3};
+				var numbersMap = builders.aNumberMap(jsonModel);
+				expect(numbersMap.toJSON()).to.eql(jsonModel);
+			});
+			it('should return empty object if empty and supports string keys', () => {
+				const jsonModel = {};
+				var numbersMap = builders.aNumberMap(jsonModel);
+				expect(numbersMap.toJSON()).to.eql(jsonModel);
+			});
+			it('should return empty array if empty and does not support string keys', () => {
+				const jsonModel = [];
+				let map = builders.aUserTypeMap(jsonModel);
+				expect(map.toJSON()).to.eql(jsonModel);
+			});
 		});
 
 		describe('clear', () => {
 			if (isReadonly){
 				it('should not change map', ()  => {
-					var numbers = builders.aNumberMap({a: 1});
+					const jsonModel = {a: 1};
+					var numbers = builders.aNumberMap(jsonModel);
 					numbers.clear();
-					expect(numbers.toJSON()).to.eql([['a', 1]]);
+					expect(numbers.toJSON()).to.eql(jsonModel);
 				});
 			} else {
 				it('should remove all elements', ()  => {
 					var numbers = builders.aNumberMap({a: 1});
 					numbers.clear();
-					expect(numbers.toJSON()).to.eql([]);
+					expect(numbers.toJSON()).to.eql({});
 				});
 			}
 		});
@@ -101,9 +117,10 @@ function testReadFunctionality(builders, isReadonly) {
 		describe('delete',() => {
 			describe('when called with non-existing key', () => {
 				it('should not change map ', ()  => {
-					var numbers = builders.aNumberMap({a: 1});
+					const jsonModel = {a: 1};
+					var numbers = builders.aNumberMap(jsonModel);
 					numbers.delete('b');
-					expect(numbers.toJSON()).to.eql([['a', 1]]);
+					expect(numbers.toJSON()).to.eql(jsonModel);
 				});
 				it('should return false', ()  => {
 					var numbers = builders.aNumberMap({a: 1});
@@ -113,9 +130,10 @@ function testReadFunctionality(builders, isReadonly) {
 			describe('when called with existing key', () => {
 				if (isReadonly) {
 					it('should not change map', ()  => {
-						var numbers = builders.aNumberMap({a: 1});
+						const jsonModel = {a: 1};
+						var numbers = builders.aNumberMap(jsonModel);
 						numbers.delete('a');
-						expect(numbers.toJSON()).to.eql([['a', 1]]);
+						expect(numbers.toJSON()).to.eql(jsonModel);
 					});
 					it('should return false', () => {
 						var numbers = builders.aNumberMap({a: 5});
@@ -125,7 +143,7 @@ function testReadFunctionality(builders, isReadonly) {
 					it('should remove matching element', ()  => {
 						var numbers = builders.aNumberMap({a: 1});
 						numbers.delete('a');
-						expect(numbers.toJSON()).to.eql([]);
+						expect(numbers.toJSON()).to.eql({});
 					});
 					it('should support a typorama object as an argument', ()  => {
 						usersMap.delete(userA);
@@ -216,21 +234,22 @@ function testReadFunctionality(builders, isReadonly) {
 		describe('set', () => {
 			if (isReadonly) {
 				it('should not change map', ()  => {
-					var numbers = builders.aNumberMap({a: 1});
+					const jsonModel = {a: 1};
+					var numbers = builders.aNumberMap(jsonModel);
 					numbers.set('a', 5);
 					numbers.set('b', 5);
-					expect(numbers.toJSON()).to.eql([['a', 1]]);
+					expect(numbers.toJSON()).to.eql(jsonModel);
 				});
 			} else {
 				it('should replace an existing element', ()  => {
 					var numbers = builders.aNumberMap({a: 1});
 					numbers.set('a', 5);
-					expect(numbers.toJSON()).to.eql([['a', 5]]);
+					expect(numbers.toJSON()).to.eql({a: 5});
 				});
 				it('should add an element if none exists', ()  => {
 					var numbers = builders.aNumberMap();
 					numbers.set('a', 42);
-					expect(numbers.toJSON()).to.eql([['a', 42]]);
+					expect(numbers.toJSON()).to.eql({a: 42});
 				});
 				it('should support a typorama object as an argument', ()  => {
 					usersMap.set(userA, userA).set(userB, userA).set(userA, userB);
