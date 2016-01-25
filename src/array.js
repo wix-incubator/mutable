@@ -3,7 +3,7 @@ import defineType         from './defineType';
 import {
 	validateAndWrap,
 	validateNullValue,
-	reportMisMatchError,
+	misMatchMessage,
 	arrow}    from './validation';
 import {getValueTypeName} from './utils';
 import BaseType           from './BaseType';
@@ -73,7 +73,7 @@ class _Array extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes);
-			reportMisMatchError(errorContext,allowedTypes,value);
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,allowedTypes,value));
 		} else {
 			return result;
 		}
