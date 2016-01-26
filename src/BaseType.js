@@ -9,7 +9,6 @@ import {
 	isAssignableFrom,
 	validateNullValue,
 	validateValue,
-	reportNullError,
 	isDataMatching}    from "./validation";
 
 import {getMailBox}    from 'gopostal';
