@@ -14,8 +14,6 @@ export function reportMisMatchError(errorContext,type,value,overridepath,templat
 	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,value,overridepath,template))
 }
 
-
-
 export function optionalSetManager(itemValue, lifeCycle) {
 	if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
 		itemValue.$setManager(lifeCycle);
