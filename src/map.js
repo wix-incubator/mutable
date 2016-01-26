@@ -171,10 +171,18 @@ class _Map extends BaseType {
 
 	};
 
+
+	static createErrorContext(entryPoint, level, options){
+		return {
+			entryPoint,
+			level,
+			path:'Map'+generics.toString(options.subTypes.key,options.subTypes.value)
+		}
+	}
+
 	constructor(value=[], options={subTypes:{}} , errorContext=null) {
 		if(!errorContext){
-			errorContext  = BaseType.createErrorContext('Map constructor error','error');
-			errorContext.path = 'Map'+generics.toString(options.subTypes.key,options.subTypes.value);
+			errorContext  = _Map.createErrorContext('Map constructor error','error', options);
 		}
 
 		const report = _Map.reportDefinitionErrors(options);
@@ -212,6 +220,8 @@ class _Map extends BaseType {
 
 	delete(key) {
 		if(this.$setDirty()) {
+			let errorContext = this.constructor.createErrorContext('Map delete error','error', this.__options__);
+			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
 			return !! this.__value__.delete(key);
 		}
 		return false;
@@ -219,20 +229,23 @@ class _Map extends BaseType {
 
 	set(key, value) {
 		if(this.$setDirty()){
-			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__);
-			value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__);
+			let errorContext = this.constructor.createErrorContext('Map set error','error', this.__options__);
+			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
+			value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__, errorContext);
 			this.__value__.set(key, value);
 		}
 		return this;
 	}
 
 	get(key) {
-		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		let errorContext = this.constructor.createErrorContext('Map get error','error', this.__options__);
+		key = this.constructor._wrapEntryKey(key, this.__options__, null, errorContext);
 		return this.__exposeInner__(this.__value__.get(key));
 	}
 
 	has(key) {
-		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		let errorContext = this.constructor.createErrorContext('Map has error','error', this.__options__);
+		key = this.constructor._wrapEntryKey(key, this.__options__, null, errorContext);
 		return !! this.__value__.has(key);
 	}
 
