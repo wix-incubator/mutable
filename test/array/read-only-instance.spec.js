@@ -133,6 +133,19 @@ describe('Array', function() {
 				expect(numberList.at(0)).to.equal(1);
 				expect(numberList.at(1)).to.equal(2);
 			});
+            
+            it('slice',function(){
+				var numberList = builders.aNumberArray([1, 2, 3, 4, 5]);
+				var lengthBeforeSlice = numberList.length;
+
+				var slicedArray = numberList.slice(3);
+                var emptySlice = numberList.slice(0,0);
+
+                expect(numberList.length).to.equal(lengthBeforeSlice);
+				expect(slicedArray.at(0)).to.equal(4);
+				expect(slicedArray.at(1)).to.equal(5);
+                expect(emptySlice.length).to.equal(0);
+            })
 		});
 	});
 });
