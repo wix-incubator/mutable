@@ -281,11 +281,7 @@ class _Array extends BaseType {
 	}
 
 	slice(begin, end) {
-		if(end) {
-			return this.__wrapArr__(this.__getValueArr__().slice(begin, end));
-		} else {
-			return this.__wrapArr__(this.__getValueArr__().slice(begin));
-		}
+        return this.__wrapArr__(this.__getValueArr__().slice(begin, end));
 	}
 
 	toString(){
