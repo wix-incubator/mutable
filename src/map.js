@@ -283,7 +283,7 @@ class _Map extends BaseType {
 		let allStringKeys = isTypeConpatibleWithPlainJsonObject(this.__options__);
 		for (let [key,value] of this.__value__.entries()) {
 			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
-            value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
+			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
 			result.push([key,value]);
 			allStringKeys = (allStringKeys && typeof key === 'string');
 		}
