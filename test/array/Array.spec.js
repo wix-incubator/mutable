@@ -2,7 +2,6 @@ import Typorama from '../../src';
 import {LifeCycleManager, revision} from '../../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
 import {expect} from 'chai';
-import _ from 'lodash';
 import {lifecycleContract} from '../lifecycle.contract.spec.js';
 import sinon from 'sinon';
 import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from './builders';
