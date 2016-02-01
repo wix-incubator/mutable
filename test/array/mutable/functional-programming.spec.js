@@ -22,7 +22,10 @@ function testViewFunctionality(builders, isReadonly) {
 				expect(newList).to.eql([11, 12]);
 			});
 
-			it('matches property value to thisArg', function () {
+            // lodash 4.x's map (which we use) no longer does this (or excepts a ctx)
+            // instead, they now only support using _.bind(fn, ctx) when calling it
+            // one can use ((v) => v.age === 11) instead
+			xit('matches property value to thisArg', function () {
 				var newList = usersList.map('age', 11);
 
 				// Take a property and return an array
