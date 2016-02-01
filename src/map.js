@@ -287,7 +287,7 @@ class _Map extends BaseType {
 			result.push([key,value]);
 			allStringKeys = (allStringKeys && typeof key === 'string');
 		}
-		return allStringKeys ? _.fromPairs(result) : result;
+		return allStringKeys ? _.zipObject(result) : result;
 	}
 
 	/**
