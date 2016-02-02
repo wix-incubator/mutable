@@ -33,7 +33,7 @@ module.exports = {
 			{
 				test    : /\.js$/,
 				exclude : /node_modules/,
-				loader  : 'babel-loader?loose=all'
+				loader  : 'babel-loader'
 			}
 		],
 		noParse: /\.min\.js$/
