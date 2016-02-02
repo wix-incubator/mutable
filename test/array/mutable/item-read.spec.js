@@ -1,4 +1,4 @@
-import builders from '../builders';
+import * as builders from '../builders';
 import {expect} from 'chai';
 import {either} from '../../../src/genericTypes'
 

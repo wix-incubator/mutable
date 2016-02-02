@@ -1,6 +1,6 @@
 import Typorama from '../../../src';
 import {expect} from 'chai';
-import builders from '../builders';
+import * as builders from '../builders';
 import {either} from '../../../src/genericTypes'
 
 function testViewFunctionality(builders, isReadonly) {
