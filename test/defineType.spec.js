@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Typorama from '../src';
 import {isAssignableFrom} from '../src/validation';
 import {either} from '../src/genericTypes';

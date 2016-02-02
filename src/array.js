@@ -131,12 +131,26 @@ class _Array extends BaseType {
 	}
 
 	__lodashProxyWrap__(key, fn, ctx){
-		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
+		if (!_.isUndefined(ctx)){
+			if (_.isFunction(fn) ) {
+				fn = _.bind(fn, ctx);
+			} else {
+				fn = _.matchesProperty(fn, ctx);
+			}
+		}
+		var valueArray = _[key](this.__getValueArr__(), fn);
 		return this.__wrapArr__(valueArray);
 	}
 
 	__lodashProxy__(key, fn, ctx){
-		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
+		if (!_.isUndefined(ctx)){
+			if (_.isFunction(fn) ) {
+				fn = _.bind(fn, ctx);
+			} else {
+				fn = _.matchesProperty(fn, ctx);
+			}
+		}
+        var valueArray = _[key](this.__getValueArr__(), fn);
 		return valueArray;
 	}
 

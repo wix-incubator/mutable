@@ -14,7 +14,7 @@ export function optionalSetManager(itemValue, lifeCycle) {
 }
 
 export function isAssignableFrom(toType, type) {
-	return type && toType.type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
+	return type && toType.type && (type.id === toType.type.id || (type.ancestors && _.includes(type.ancestors, toType.type.id)));
 }
 
 /**
