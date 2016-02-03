@@ -36,12 +36,7 @@ export function makeDirtyable(Type){
 // called when a new lifecycle manager is introduced to this object
 	Type.prototype.$setManager = function $setManager(lifecycleManager) {
 		if (lifecycleManager) {
-			if (this.__isReadOnly__) {
-				MAILBOX.error('Attempt to set lifecycle manager on a read-only instance');
-			} else if (lifecycleManager instanceof LifeCycleManager) {
-				if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager) {
-					MAILBOX.error('Attempt to set lifecycle manager on a read-write instance with another manager already set');
-				}
+			if (lifecycleManager instanceof LifeCycleManager) {
 				this.__lifecycleManager__ = lifecycleManager;
 				if (this.$dirtyableElementsIterator) {
 					this.$dirtyableElementsIterator(setContainerManagerToElement);
