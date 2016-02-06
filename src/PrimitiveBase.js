@@ -30,7 +30,7 @@ class PrimitiveBase {
         return NullableType;
     }
 	static cloneValue(value){
-		return _.cloneDeep(value);
+		return value;
 	}
     static withDefault(defaults, validate, options) {
        var NewType = cloneType(this);
@@ -42,6 +42,7 @@ class PrimitiveBase {
 		}
 
        if(defaults !== undefined) {
+		   NewType.defaults = () => defaults;
            if(defaults === null) {
 			   NewType.defaults = () => null;
            } else if(_.isFunction(defaults)) {
