@@ -43,13 +43,13 @@ class PrimitiveBase {
 
        if(defaults !== undefined) {
 		   NewType.defaults = () => defaults;
-           //if(defaults === null) {
-			//   NewType.defaults = () => null;
-           //} else if(_.isFunction(defaults)) {
-           //    NewType.defaults = () => defaults;
-           //} else {
-           //    NewType.defaults = () => NewType.cloneValue(defaults);
-           //}
+           if(defaults === null) {
+			   NewType.defaults = () => null;
+           } else if(_.isFunction(defaults)) {
+               NewType.defaults = () => defaults;
+           } else {
+               NewType.defaults = () => NewType.cloneValue(defaults);
+           }
        }
        return NewType;
    }
