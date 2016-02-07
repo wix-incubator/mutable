@@ -18,7 +18,7 @@ export function getMatchingType(subTypes, val){
 	return doOnType(subTypes, type =>
 		(typeof type.validateType === 'function' && type.validateType(val)) ||
 		(typeof type.allowPlainVal === 'function' && type.type.allowPlainVal(val))
-		? type : null
+		? type : undefined
 	);
 }
 
