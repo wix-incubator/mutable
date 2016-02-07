@@ -2,7 +2,6 @@
  * Created by amira on 1/4/15.
  */
 
-import _ from 'lodash';
 import Typorama from '../src';
 import { aDataTypeWithSpec } from '../test-kit/testDrivers/index';
 import { expect, err } from 'chai';

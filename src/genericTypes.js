@@ -9,13 +9,6 @@ import {arrow} from './validation';
 const MAILBOX = getMailBox('Typorama.genericTypes');
 
 /**
- * map each value in a collection and return the first not-falsy result
- */
-function mapFirst(collection, mapper) {
-	return _(collection).map(mapper).filter().first();
-}
-
-/**
  * try to match a type to a value
  * @param subTypes either a type or a collection of types
  * @param instance null, typorama or plain value instance to match
@@ -29,11 +22,28 @@ export function getMatchingType(subTypes, val){
 	);
 }
 
+/**
+ * do an action on the generic type and return the result.
+ * if the generic type represents a union, do the action on each type in the union and return the first result that is not undefined
+ */
 export function doOnType(subTypes, action){
-	return subTypes && (
-		(typeof subTypes === 'function' && action(subTypes,0)) ||
-		mapFirst(subTypes, (...args) => args[0] && typeof args[0] === 'function' && action(...args)));
+	if (subTypes){
+		if (typeof subTypes === 'function') {
+			return action(subTypes, 0);
+		} else {
+			for (let key in subTypes) {
+				let type = subTypes.hasOwnProperty(key) && subTypes[key];
+				if (typeof type === 'function') {
+					let result = action(type, key);
+					if (result !== undefined) {
+						return result;
+					}
+				}
+			}
+		}
+	}
 }
+
 function getTypeName(type){
 	return type.id || 'subtitle'
 }

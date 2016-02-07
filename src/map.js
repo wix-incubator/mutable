@@ -1,6 +1,7 @@
 /**
  * Created by amira on 29/12/15.
  */
+import _                  from 'lodash';
 import defineType         from './defineType';
 import {getMailBox}       from 'gopostal';
 import BaseType           from './BaseType';
@@ -11,7 +12,7 @@ import * as generics      from './genericTypes';
 import {
 	validateAndWrap,
 	validateNullValue,
-	reportMisMatchError,
+	misMatchMessage,
 	arrow}    from './validation';
 
 
@@ -36,7 +37,10 @@ function safeAsReadOnlyOrArr(item){
 
 function isIterable(value) {
 	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === "function");
+}
 
+function isTypeConpatibleWithPlainJsonObject(options) {
+	return !! (options && options.subTypes && generics.getMatchingType(options.subTypes.key, ''));
 }
 
 class _Map extends BaseType {
@@ -49,7 +53,8 @@ class _Map extends BaseType {
 
 	static _allowIterable(iterable, options){
 		for (let [key,value] of iterable) {
-			if(!generics.getMatchingType(options.subTypes.key, key) || ! generics.getMatchingType(options.subTypes.value, value)){
+			if(options && options.subTypes &&
+				(!generics.getMatchingType(options.subTypes.key, key) || !generics.getMatchingType(options.subTypes.value, value))){
 				return false;
 			}
 		}
@@ -75,7 +80,7 @@ class _Map extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes.key);
-			reportMisMatchError(errorContext,allowedTypes,key,null,'key');
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,allowedTypes,key,null,'key'));
 		} else {
 			return result;
 		}
@@ -91,7 +96,7 @@ class _Map extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes.value);
-			reportMisMatchError(errorContext,allowedTypes,value, null, 'value');
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,allowedTypes,value,null,'value'));
 		} else {
 			return result;
 		}
@@ -107,6 +112,13 @@ class _Map extends BaseType {
 		return result;
 	}
 
+	static validate(value) {
+		if (BaseType.validateType(value)) {
+			return value.__value__ instanceof Map;
+		}
+		return isIterable(value) || value instanceof Object;
+	}
+
 	static wrapValue(value, spec, options, errorContext) {
 		if(BaseType.validateType(value)) {
 			if (value.__value__ instanceof Map) {
@@ -118,7 +130,7 @@ class _Map extends BaseType {
 		if(isIterable(value)){
 			return this._wrapIterable(value, options, null,errorContext);
 		}
-		if (value instanceof Object && options && options.subTypes && generics.getMatchingType(options.subTypes.key, '')){
+		if (value instanceof Object && isTypeConpatibleWithPlainJsonObject(options)){
 			return this._wrapIterable(entries(value), options, null, errorContext);
 		}
 		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
@@ -143,6 +155,7 @@ class _Map extends BaseType {
 			}
 		}
 	}
+
 	static of(key, value) {
 		var definitionError;
 		switch (arguments.length){
@@ -166,10 +179,18 @@ class _Map extends BaseType {
 
 	};
 
+
+	static createErrorContext(entryPoint, level, options){
+		return {
+			entryPoint,
+			level,
+			path:'Map'+generics.toString(options.subTypes.key,options.subTypes.value)
+		}
+	}
+
 	constructor(value=[], options={subTypes:{}} , errorContext=null) {
 		if(!errorContext){
-			errorContext  = BaseType.createErrorContext('Map constructor error','error');
-			errorContext.path = 'Map'+generics.toString(options.subTypes.key,options.subTypes.value);
+			errorContext  = _Map.createErrorContext('Map constructor error','error', options);
 		}
 
 		const report = _Map.reportDefinitionErrors(options);
@@ -207,6 +228,8 @@ class _Map extends BaseType {
 
 	delete(key) {
 		if(this.$setDirty()) {
+			let errorContext = this.constructor.createErrorContext('Map delete error','error', this.__options__);
+			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
 			return !! this.__value__.delete(key);
 		}
 		return false;
@@ -214,20 +237,23 @@ class _Map extends BaseType {
 
 	set(key, value) {
 		if(this.$setDirty()){
-			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__);
-			value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__);
+			let errorContext = this.constructor.createErrorContext('Map set error','error', this.__options__);
+			key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
+			value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__, errorContext);
 			this.__value__.set(key, value);
 		}
 		return this;
 	}
 
 	get(key) {
-		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		let errorContext = this.constructor.createErrorContext('Map get error','error', this.__options__);
+		key = this.constructor._wrapEntryKey(key, this.__options__, null, errorContext);
 		return this.__exposeInner__(this.__value__.get(key));
 	}
 
 	has(key) {
-		key = this.constructor._wrapEntryKey(key, this.__options__, null);
+		let errorContext = this.constructor.createErrorContext('Map has error','error', this.__options__);
+		key = this.constructor._wrapEntryKey(key, this.__options__, null, errorContext);
 		return !! this.__value__.has(key);
 	}
 
@@ -262,12 +288,14 @@ class _Map extends BaseType {
 
 	toJSON(recursive = true) {
 		let result = [];
+		let allStringKeys = isTypeConpatibleWithPlainJsonObject(this.__options__);
 		for (let [key,value] of this.__value__.entries()) {
 			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
 			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
 			result.push([key,value]);
+			allStringKeys = (allStringKeys && typeof key === 'string');
 		}
-		return result;
+		return allStringKeys ? _.zipObject(result) : result;
 	}
 
 	/**

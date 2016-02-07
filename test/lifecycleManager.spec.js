@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import {expect, err} from 'chai';
 import sinon from 'sinon';
 import Typorama from "../src";

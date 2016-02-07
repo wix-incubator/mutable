@@ -3,7 +3,7 @@ import defineType         from './defineType';
 import {
 	validateAndWrap,
 	validateNullValue,
-	reportMisMatchError,
+	misMatchMessage,
 	arrow}    from './validation';
 import {getValueTypeName} from './utils';
 import BaseType           from './BaseType';
@@ -73,7 +73,7 @@ class _Array extends BaseType {
 		});
 		if(null === result || undefined === result) {
 			var allowedTypes = generics.toString(options.subTypes);
-			reportMisMatchError(errorContext,allowedTypes,value);
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,allowedTypes,value));
 		} else {
 			return result;
 		}
@@ -131,12 +131,26 @@ class _Array extends BaseType {
 	}
 
 	__lodashProxyWrap__(key, fn, ctx){
-		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
+		if (!_.isUndefined(ctx)){
+			if (_.isFunction(fn) ) {
+				fn = _.bind(fn, ctx);
+			} else {
+				fn = _.matchesProperty(fn, ctx);
+			}
+		}
+		var valueArray = _[key](this.__getValueArr__(), fn);
 		return this.__wrapArr__(valueArray);
 	}
 
 	__lodashProxy__(key, fn, ctx){
-		var valueArray = _[key](this.__getValueArr__(), fn, ctx);
+		if (!_.isUndefined(ctx)){
+			if (_.isFunction(fn) ) {
+				fn = _.bind(fn, ctx);
+			} else {
+				fn = _.matchesProperty(fn, ctx);
+			}
+		}
+        var valueArray = _[key](this.__getValueArr__(), fn);
 		return valueArray;
 	}
 
@@ -281,11 +295,7 @@ class _Array extends BaseType {
 	}
 
 	slice(begin, end) {
-		if(end) {
-			return this.__wrapArr__(this.__getValueArr__().slice(begin, end));
-		} else {
-			return this.__wrapArr__(this.__getValueArr__().slice(begin));
-		}
+        return this.__wrapArr__(this.__getValueArr__().slice(begin, end));
 	}
 
 	toString(){

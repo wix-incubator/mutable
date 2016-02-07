@@ -3,19 +3,10 @@ import {getMailBox} from 'gopostal';
 const MAILBOX = getMailBox('Typorama.validation');
 import {getReadableValueTypeName} from './utils'
 
-function misMatchMessage(errorContext, expected,recieved,overridepath, template){
+export function misMatchMessage(errorContext, expected,recieved,overridepath, template){
 	var expectedMessage = template? `expected ${template} of type` : 'expected type';
 	return `${errorContext.entryPoint}: "${overridepath||errorContext.path}" ${expectedMessage} ${expected.id || expected} but got ${getReadableValueTypeName(recieved)}`
 }
-export function reportNullError(errorContext,type, template){
-	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,null, template))
-}
-export function reportMisMatchError(errorContext,type,value,overridepath,template){
-	MAILBOX[errorContext.level](misMatchMessage(errorContext,type,value,overridepath,template))
-}
-
-
-
 export function optionalSetManager(itemValue, lifeCycle) {
 	if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
 		itemValue.$setManager(lifeCycle);
@@ -23,7 +14,7 @@ export function optionalSetManager(itemValue, lifeCycle) {
 }
 
 export function isAssignableFrom(toType, type) {
-	return type && toType.type && (type.id === toType.type.id || (type.ancestors && _.contains(type.ancestors, toType.type.id)));
+	return type && toType.type && (type.id === toType.type.id || (type.ancestors && _.includes(type.ancestors, toType.type.id)));
 }
 
 /**
@@ -69,7 +60,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, errorContext,errorT
 		if(isNullable(type)) {
 			return itemValue;
 		} else {
-			reportNullError(errorContext,type,errorTemplate);
+			MAILBOX.post(errorContext.level, misMatchMessage(errorContext,type,null, errorTemplate));
 			return type.defaults();
 		}
 	}
@@ -83,7 +74,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, errorContext,errorT
 		}
 		return newItem;
 	}
-	reportMisMatchError(errorContext, type, itemValue,null,errorTemplate);
+	MAILBOX.post(errorContext.level, misMatchMessage(errorContext,type,itemValue,null,errorTemplate));
 	return type.create();
 }
 export const arrow = String.fromCharCode(10144);
