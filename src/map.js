@@ -57,12 +57,12 @@ class _Map extends BaseType {
 	}
 
 	static allowPlainVal(value){
-		if(validateNullValue(this, val)){
+		if(validateNullValue(this, value)){
 			return true;
 		} else if(isIterable(value)){
-			return this._allowIterable(value, this.options);
+			return _Map._allowIterable(value, this.options);
 		} else if(value instanceof Object && options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
-			return this._allowIterable(entries(value), this.options);
+			return _Map._allowIterable(entries(value), this.options);
 		}
 		return false;
 	}
@@ -82,6 +82,8 @@ class _Map extends BaseType {
 	}
 
 	static _wrapEntryValue(value, options, lifeCycle, errorContext) {
+		debugger;
+
 		var result = generics.doOnType(options.subTypes.value, type => {
 			if(type.validateType(value) || type.allowPlainVal(value)){
 				return validateAndWrap(value, type, lifeCycle,errorContext);
