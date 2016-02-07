@@ -112,6 +112,13 @@ class _Map extends BaseType {
 		return result;
 	}
 
+	static validate(value) {
+		if (BaseType.validateType(value)) {
+			return value.__value__ instanceof Map;
+		}
+		return isIterable(value) || value instanceof Object;
+	}
+
 	static wrapValue(value, spec, options, errorContext) {
 		if(BaseType.validateType(value)) {
 			if (value.__value__ instanceof Map) {
@@ -148,6 +155,7 @@ class _Map extends BaseType {
 			}
 		}
 	}
+
 	static of(key, value) {
 		var definitionError;
 		switch (arguments.length){
