@@ -347,6 +347,24 @@ describe('defining', () => {
 					});
 				});
 			});
+			describe('with primitive key sub-type and union of generic values sub-type', () => {
+				function typeFactory() {
+					return Typorama.Map.of(Typorama.String, either(Typorama.Map.of(Typorama.String,Typorama.String), Typorama.Map.of(Typorama.String,Typorama.Number)));
+				}
+				typeCompatibilityTest(typeFactory);
+				describe("instantiation",function(){
+					it('should keep typorama objects passed to it that fit its subtypes', function() {
+						var mixedMap = typeFactory().create([['foo', ['bar', 'baz']],['foo2', ['bar2', 2]]]);
+						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
+						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
+					});
+					it('should allow setting data with json', function() {
+						var map = typeFactory().create({foo:{bar:'baz'}, foo2:{bar2:2}});
+						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
+						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
+					});
+				});
+			});
 		});
 
 		describe("an array type",() => {
