@@ -355,12 +355,12 @@ describe('defining', () => {
 				typeCompatibilityTest(typeFactory);
 				describe("instantiation",function(){
 					it('should allow setting data with array', function() {
-						var mixedMap = typeFactory().create([['foo', ['bar', 'baz']],['foo2', ['bar2', 2]]]);
+						var mixedMap = typeFactory().create([['foo', [['bar', 'baz']]],['foo2', [['bar2', 2]]]]);
 						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
 						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
 					});
 					it('should allow setting data with json', function() {
-						var map = typeFactory().create({foo:{bar:'baz'}, foo2:{bar2:2}});
+						var mixedMap = typeFactory().create({foo:{bar:'baz'}, foo2:{bar2:2}});
 						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
 						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
 					});
