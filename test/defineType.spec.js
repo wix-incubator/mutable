@@ -347,13 +347,15 @@ describe('defining', () => {
 					});
 				});
 			});
-			describe('with primitive key sub-type and union of generic values sub-type', () => {
+			describe('with value type that is a union of maps', () => {
 				function typeFactory() {
-					return Typorama.Map.of(Typorama.String, either(Typorama.Map.of(Typorama.String,Typorama.String), Typorama.Map.of(Typorama.String,Typorama.Number)));
+					return Typorama.Map.of(Typorama.String,
+										   either(Typorama.Map.of(Typorama.String,Typorama.String),
+											   Typorama.Map.of(Typorama.String,Typorama.Number)));
 				}
 				typeCompatibilityTest(typeFactory);
 				describe("instantiation",function(){
-					it('should keep typorama objects passed to it that fit its subtypes', function() {
+					it('should allow setting data with array', function() {
 						var mixedMap = typeFactory().create([['foo', ['bar', 'baz']],['foo2', ['bar2', 2]]]);
 						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
 						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);

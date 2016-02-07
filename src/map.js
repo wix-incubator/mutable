@@ -57,13 +57,11 @@ class _Map extends BaseType {
 	}
 
 	static allowPlainVal(value){
-		if (super.allowPlainVal(value)){
+		if(validateNullValue(this, val)){
 			return true;
-		}
-		if(isIterable(value)){
+		} else if(isIterable(value)){
 			return this._allowIterable(value, this.options);
-		}
-		if (value instanceof Object && options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
+		} else if(value instanceof Object && options && options.subTypes && generics.doOnType(options.subTypes.key, type => type === String)){
 			return this._allowIterable(entries(value), this.options);
 		}
 		return false;
