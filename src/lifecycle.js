@@ -31,7 +31,7 @@ export class LifeCycleManager{
 	}
 }
 
-var unlockedToken = {};
+var unlockedToken = "don't cache $calcLastChange()";
 
 export function makeDirtyable(Type){
 // add a default dirty state for all objects
@@ -41,7 +41,9 @@ export function makeDirtyable(Type){
 // called when a new lifecycle manager is introduced to this object
 	Type.prototype.$setManager = function $setManager(lifecycleManager) {
 		if (lifecycleManager) {
-			if (lifecycleManager instanceof LifeCycleManager) {
+			if(this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager){
+				MAILBOX.error('Moving mutable private state instances between containers');
+			} else if (lifecycleManager instanceof LifeCycleManager) {
 				this.__lifecycleManager__ = lifecycleManager;
 				if (this.$dirtyableElementsIterator) {
 					this.$dirtyableElementsIterator(setContainerManagerToElement);

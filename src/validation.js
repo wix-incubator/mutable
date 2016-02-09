@@ -57,7 +57,7 @@ export function validateAndWrap(itemValue, type,  lifeCycle, errorContext,errorT
 			return itemValue;
 		} else {
 			MAILBOX.post(errorContext.level, misMatchMessage(errorContext, type, null, errorTemplate));
-			itemValue = type.defaults();
+			return type.defaults();
 		}
 	}
 	if (!type.validateType(itemValue)) {
