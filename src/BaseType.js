@@ -1,11 +1,11 @@
 import _               from 'lodash';
 import config          from './typoramaConfiguration';
-import {makeDirtyable} from './lifecycle';
+import {makeDirtyable,
+	optionalSetManager} from './lifecycle';
 import PrimitiveBase   from './PrimitiveBase';
 import {getFieldDef,getReadableValueTypeName}   from './utils';
 import {
 	validateAndWrap,
-	optionalSetManager,
 	isAssignableFrom,
 	validateNullValue,
 	validateValue,

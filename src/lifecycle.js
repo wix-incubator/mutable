@@ -2,6 +2,11 @@ import {getMailBox} from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.lifecycle');
 
+export function optionalSetManager(itemValue, lifeCycle) {
+	if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
+		itemValue.$setManager(lifeCycle);
+	}
+}
 
 export let revision = {
 	__count__ : 1,
@@ -90,7 +95,7 @@ export function makeDirtyable(Type){
 
 // functions to be used as callbacks to $dirtyableElementsIterator
 function setContainerManagerToElement(container, element){
-	element.$setManager(container.__lifecycleManager__);
+	optionalSetManager(element, container.__lifecycleManager__);
 }
 
 function setContainerLastChangeFromElement(container, element){
