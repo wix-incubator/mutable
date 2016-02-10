@@ -9,9 +9,8 @@ import {revision} from '../src/lifecycle';
 
 describe('Enum Type', function() {
 
-	it('exists as a stub on the typorama object', function () {
-		expect(Typorama.Enum).to.be.a("object");
-		expect(Typorama.GenericEnum).to.be.a("object");
+	it('exists on the typorama object', function () {
+		expect(Typorama.EnumBase).to.be.a("function");
 	});
 
     describe("instantiation", function() {
@@ -28,9 +27,19 @@ describe('Enum Type', function() {
             }).to.report({level : /error/});
         });
 
-        it("enum extends PrimitiveType", function() {
+        it("enum extends EnumBase", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            expect(Ape.chimp).to.be.instanceof(Typorama.PrimitiveBase);
+            expect(Ape.chimp).to.be.instanceof(Typorama.EnumBase);
+        });
+
+        it("enum field can be generic by being EnumBase", function() {
+            debugger;
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var TestType = aDataTypeWithSpec({
+                ape: Typorama.EnumBase
+            });
+            var tt = TestType.create({ ape: Ape.chimp });
+            expect(tt.ape).to.be.equal(Ape.chimp);
         });
 
         it("enum can be initialized", function() {
@@ -86,8 +95,8 @@ describe('Enum Type', function() {
 
         it("members can have number value", function() {
             var Ape = Typorama.defineEnum({ chimp: 0, gorilla: 1 });
-            expect(0 + Ape.chimp).to.be.equal(0);
-            expect(0 + Ape.gorilla).to.be.equal(1);
+            expect(Ape.chimp.value).to.be.equal(0);
+            expect(Ape.gorilla.value).to.be.equal(1);
         });
 
         it("members can have object values", function() {
