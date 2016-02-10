@@ -5,7 +5,7 @@ import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
 import {Report} from 'gopostal/dist/test-kit/testDrivers';
-import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD,arrow} from '../test-kit/testDrivers/reports'
+import {ERROR_OVERRIDE_FIELD,ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD,arrow} from '../test-kit/testDrivers/reports'
 
 
 function typeCompatibilityTest(typeFactory){
@@ -117,6 +117,51 @@ describe('defining', () => {
 					})
 				});
 			}).to.report(ERROR_RESERVED_FIELD('invalid.$asReadOnly'));
+		});
+
+		describe('type with inheritance', function(){
+			const StringList = Typorama.List.of(Typorama.String);
+			var TypeWithTitles;
+			var TypeWithInheritance;
+
+			before('define types',function(){
+				TypeWithTitles = Typorama.define('TypeWithTitles', {
+					spec: () => ({
+						titles: StringList
+					})
+				});
+				TypeWithInheritance = Typorama.define('TypeWithInheritance', {
+					spec: () => ({
+						subTitles: StringList
+					})
+				},TypeWithTitles);
+			});
+			it('should throw error if fields intersect', function(){
+
+				expect(()=>{Typorama.define('TypeWithBrokenInheritance', {
+					spec: () => ({
+						titles: StringList
+					})
+				},TypeWithTitles)}).to.throw(ERROR_OVERRIDE_FIELD('TypeWithBrokenInheritance.titles','TypeWithTitles'));
+			});
+
+			it('spec should include all fields', function(){
+				expect(TypeWithInheritance.getFieldsSpec()).to.eql({
+					titles:StringList,
+					subTitles:StringList
+				})
+			});
+
+			it('should include default values for all fields', function(){
+
+			});
+			it('should include getters setters for all fields', function(){
+
+			});
+			it('should be dirtified when any field is changed', function(){
+
+			});
+
 		});
 
 		describe('type with generic field', function(){

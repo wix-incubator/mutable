@@ -38,13 +38,16 @@ function defineType(id, typeDefinition, ParentType, TypeConstructor){
 		Type.ancestors             = ParentType.id === 'BaseType' ? [ParentType.id] : ParentType.ancestors.slice();
 	}
 
+	var typeSelfSpec = typeDefinition.spec(Type);
+
 	Type.id                                        = id;
 	Type.type                                      = Type;
+	Type._spec                                     = generateSpec(Type,typeSelfSpec,ParentType);
+	///xxxxx
 	Type.getFieldsSpec                             = typeDefinition.spec.bind(null, Type);
-	Type._spec                                     = typeDefinition.spec(Type);
 	Type.prototype.$dirtyableElementsIterator      = Type.prototype.$dirtyableElementsIterator || getDirtyableElementsIterator(Type._spec);
 
-	generateFieldsOn(Type.prototype, Type._spec);
+	generateFieldsOn(Type.prototype, typeSelfSpec);
 
 	return Type;
 };
@@ -52,6 +55,22 @@ function defineType(id, typeDefinition, ParentType, TypeConstructor){
 defineType.oldImpl = function(id, typeDefinition, TypeConstructor){
 	return defineType(id, typeDefinition, undefined, TypeConstructor);
 };
+
+
+function generateSpec(Type, spec,ParentType){
+	var baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
+	_.forEach(spec,(field, fieldName)=>{
+		if(baseSpec[fieldName]){
+			var path = `${Type.id}.${fieldName}`;
+			var superName = ParentType.id;
+			MAILBOX.fatal(`Type definition error: "${path}" already exist on super ${superName}`);
+		}else{
+			baseSpec[fieldName] = field;
+		}
+	});
+	return baseSpec;
+
+}
 
 export default defineType;
 
