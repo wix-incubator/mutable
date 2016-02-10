@@ -5,6 +5,12 @@ import * as gopostal from 'gopostal';
 
 const MAILBOX = gopostal.getMailBox('Typorama.defineEnum');
 
+export class EnumBase extends PrimitiveBase {
+	static allowPlainVal(v) { return true; }
+	static create(v) { return v; }
+}
+EnumBase.prototype.constructor.type = EnumBase;
+
 function createEnumMember(key, value, proto) {
 
 	var member = Object.create(proto);
@@ -29,9 +35,9 @@ function convertToObject(def){
 	return tdef;
 }
 
-function defineEnum(def) {
+export function defineEnum(def) {
 
-	var EnumType = function(initValue) {
+	var EnumType = function EnumType(initValue) {
 		var key = _.findKey(def, value => value === initValue);
 		if(EnumType[key]){
 			return EnumType[key];
@@ -39,7 +45,7 @@ function defineEnum(def) {
 		MAILBOX.error(`Enum[${Object.keys(def)}] must be initialized with value.`);
 	};
 
-	EnumType.prototype = Object.create(PrimitiveBase.prototype);
+	EnumType.prototype = Object.create(EnumBase.prototype);
 	EnumType.prototype.constructor = EnumType;
 
 	EnumType.prototype.toJSON = function(){
@@ -93,5 +99,3 @@ function defineEnum(def) {
 
 	return EnumType;
 }
-
-export default defineEnum;
