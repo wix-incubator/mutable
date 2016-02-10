@@ -2,11 +2,10 @@ import _                  from "lodash";
 import BaseType           from "./BaseType";
 import PrimitiveBase      from './PrimitiveBase';
 import {isAssignableFrom,validateNullValue,misMatchMessage} from "./validation"
+import {generateClassId} from "./utils"
 import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
-
-
 
 function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	ParentType = ParentType || BaseType;
@@ -38,25 +37,53 @@ function defineType(id, typeDefinition, ParentType, TypeConstructor){
 		Type.ancestors             = ParentType.id === 'BaseType' ? [ParentType.id] : ParentType.ancestors.slice();
 	}
 
-	Type.id                                        = id;
-	Type.type                                      = Type;
-	Type.getFieldsSpec                             = typeDefinition.spec.bind(null, Type);
-	Type._spec                                     = typeDefinition.spec(Type);
-	Type.prototype.$dirtyableElementsIterator      = Type.prototype.$dirtyableElementsIterator || getDirtyableElementsIterator(Type._spec);
+	Type.id = id;
+	Type.uniqueId = generateClassId();
+	Type.type = Type;
+	Type._spec = {};
 
-	generateFieldsOn(Type.prototype, Type._spec);
+	var typeSelfSpec = typeDefinition.spec(Type);
+	Object.keys(typeSelfSpec).forEach(function(fieldId){
+		Type._spec[fieldId] = typeSelfSpec[fieldId];
+	});
+	var fullSpec = generateSpec(id, typeSelfSpec, ParentType);
+	Object.keys(fullSpec).forEach(function(fieldId){
+		Type._spec[fieldId] = fullSpec[fieldId];
+	});
+
+	Type.getFieldsSpec                        = () => { return _.clone(fullSpec) };
+	Type.prototype.$dirtyableElementsIterator = getDirtyableElementsIterator(typeSelfSpec, Type.prototype.$dirtyableElementsIterator);
+
+	generateFieldsOn(Type.prototype, typeSelfSpec);
 
 	return Type;
-};
+}
 
 defineType.oldImpl = function(id, typeDefinition, TypeConstructor){
 	return defineType(id, typeDefinition, undefined, TypeConstructor);
 };
 
+
+function generateSpec(TypeId, spec,ParentType){
+	var baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
+	_.forEach(spec,(field, fieldName)=>{
+		if(baseSpec[fieldName]){
+			var path = `${TypeId}.${fieldName}`;
+			var superName = ParentType.id;
+			//MAILBOX.fatal(`Type definition error: "${path}" already exist on super ${superName}`);
+			throw new Error(`Type definition error: "${path}" already exist on super ${superName}`);
+		}else{
+			baseSpec[fieldName] = field;
+		}
+	});
+	return baseSpec;
+
+}
+
 export default defineType;
 
 
-function getDirtyableElementsIterator(spec){
+function getDirtyableElementsIterator(spec, superIterator){
 	var complex = [];
 	for(var k in spec){
 		if(spec[k] && spec[k]._spec) {
@@ -70,6 +97,7 @@ function getDirtyableElementsIterator(spec){
 				yielder(this, k);
 			}
 		}
+		superIterator && superIterator.call(this, yielder);
 	}
 }
 

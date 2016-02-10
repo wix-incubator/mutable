@@ -33,7 +33,6 @@ describe('Enum Type', function() {
         });
 
         it("enum field can be generic by being EnumBase", function() {
-            debugger;
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({
                 ape: Typorama.EnumBase

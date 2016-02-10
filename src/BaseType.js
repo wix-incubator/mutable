@@ -29,21 +29,29 @@ function generateId(){
 	return dataCounter++;
 }
 
-
 export default class BaseType extends PrimitiveBase {
 
     static create(value, options, errorContext) {
         return new this(value, options, errorContext);
     }
 
-	static defaults() {
-        var spec = this._spec;
-        var args = arguments;
-        return Object.keys(this._spec).reduce(function (val, key) {
-            var fieldSpec = spec[key];
-            val[key] = fieldSpec.defaults.apply(fieldSpec, args);
-            return val;
-        }, {});
+	static defaults(circularFlags='') {
+        const spec = this._spec;
+		const circularFlagsNextLevel = (circularFlags ? circularFlags : ';') + this.uniqueId + ';';
+        //var args = arguments;
+		const isCircular = ~circularFlags.indexOf(';' + this.uniqueId + ';');
+		if(isCircular) {
+			if(!this.options || !this.options.nullable) {
+				console.warn('DEFAULT CYRCULAR DATA! resolving value as null - please add better error/warning'); // ToDo: add a proper warning through gopostal
+			}
+			return null;
+		} else {
+			return Object.keys(this._spec).reduce(function (val, key) {
+					var fieldSpec = spec[key];
+					val[key] = fieldSpec.defaults.call(fieldSpec, circularFlagsNextLevel);
+				return val;
+			}, {});
+		}
     }
 
 	static cloneValue(value){

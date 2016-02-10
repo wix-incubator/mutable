@@ -3,6 +3,7 @@ import _ from 'lodash';
 const clonedMembers = [
 	//every type have a type and id
 	'id',
+	'uniqueId',
 	'type',
 	//PrimitiveBase
 	'create',
@@ -18,6 +19,11 @@ const clonedMembers = [
 	'cloneValue',
 	'_spec'
 ];
+
+var ClassesCounter=0;
+export function generateClassId(){
+	return ClassesCounter++;
+}
 
 export function cloneType(TypeToClone){
 	function Type(value, options,errorContext) {
