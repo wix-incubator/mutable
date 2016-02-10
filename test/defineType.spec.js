@@ -236,6 +236,29 @@ describe('defining', () => {
 				}).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<${arrow}List>`));
 			});
 
+			it('should allow fields of the same type', function(){
+				const NodeType = Typorama.define('Node', {
+					spec: (Node) => ({
+						children: Typorama.List.of(Node),
+						parent: Node.nullable()
+					})
+				});
+
+				const node = new NodeType();
+
+				expect(node.toJSON()).to.eql({children:[],parent:null});
+
+				node.parent = new NodeType();
+
+				expect(node.toJSON()).to.eql({children:[],parent:{children:[],parent:null}});
+
+				node.children.push(new NodeType());
+
+				expect(node.toJSON()).to.eql({children:[{children:[],parent:null}],parent:{children:[],parent:null}});
+			});
+
+			it.skip('report circular default data', function(){/* ToDo */});
+
 		});
 
 	});//Type definition error: "invalid.zagzag:List<string|⚠subtype⚠>" must be a primitive type or extend core3.Type

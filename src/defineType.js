@@ -2,11 +2,10 @@ import _                  from "lodash";
 import BaseType           from "./BaseType";
 import PrimitiveBase      from './PrimitiveBase';
 import {isAssignableFrom,validateNullValue,misMatchMessage} from "./validation"
+import {generateClassId} from "./utils"
 import {getMailBox}       from 'gopostal';
 
 const MAILBOX = getMailBox('Typorama.define');
-
-
 
 function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	ParentType = ParentType || BaseType;
@@ -38,14 +37,22 @@ function defineType(id, typeDefinition, ParentType, TypeConstructor){
 		Type.ancestors             = ParentType.id === 'BaseType' ? [ParentType.id] : ParentType.ancestors.slice();
 	}
 
-	var typeSelfSpec = typeDefinition.spec(Type);
-	const spec = generateSpec(id,typeSelfSpec,ParentType);
+	Type.id = id;
+	Type.uniqueId = generateClassId();
+	Type.type = Type;
+	Type._spec = {};
 
-	Type.id                                        = id;
-	Type.type                                      = Type;
-	Type._spec                                     = spec;
-	Type.getFieldsSpec                             = () => { return _.clone(spec) };
-	Type.prototype.$dirtyableElementsIterator      = getDirtyableElementsIterator(typeSelfSpec, Type.prototype.$dirtyableElementsIterator);
+	var typeSelfSpec = typeDefinition.spec(Type);
+	Object.keys(typeSelfSpec).forEach(function(fieldId){
+		Type._spec[fieldId] = typeSelfSpec[fieldId];
+	});
+	var fullSpec = generateSpec(id, typeSelfSpec, ParentType);
+	Object.keys(fullSpec).forEach(function(fieldId){
+		Type._spec[fieldId] = fullSpec[fieldId];
+	});
+
+	Type.getFieldsSpec                        = () => { return _.clone(fullSpec) };
+	Type.prototype.$dirtyableElementsIterator = getDirtyableElementsIterator(typeSelfSpec, Type.prototype.$dirtyableElementsIterator);
 
 	generateFieldsOn(Type.prototype, typeSelfSpec);
 
