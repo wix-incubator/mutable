@@ -1,5 +1,6 @@
 import Typorama from '../src';
 import {isAssignableFrom} from '../src/validation';
+import {revision} from '../src/lifecycle';
 import {either} from '../src/genericTypes';
 import {expect, err} from 'chai';
 import Type1 from './type1';
@@ -136,8 +137,8 @@ describe('defining', () => {
 					})
 				},TypeWithTitles);
 			});
-			it('should throw error if fields intersect', function(){
 
+			it('should throw error if fields intersect', function(){
 				expect(()=>{Typorama.define('TypeWithBrokenInheritance', {
 					spec: () => ({
 						titles: StringList
@@ -153,13 +154,45 @@ describe('defining', () => {
 			});
 
 			it('should include default values for all fields', function(){
-
+				expect(TypeWithInheritance.defaults()).to.eql({
+					titles:[],
+					subTitles:[]
+				});
 			});
+
 			it('should include getters setters for all fields', function(){
+				const dataItem = new TypeWithInheritance();
 
+				expect(dataItem.titles.length).to.equal(0);
+				dataItem.titles.push('cell0');
+				expect(dataItem.titles.at(0)).to.equal('cell0');
+				expect(dataItem.subTitles.length).to.equal(0);
+				dataItem.subTitles.push('cell0');
+				expect(dataItem.subTitles.at(0)).to.equal('cell0');
 			});
-			it('should be dirtified when any field is changed', function(){
 
+			it('should be dirtified when any field from super type is changed', function(){
+				const dataItem = new TypeWithInheritance();
+				revision.advance();
+				let rev = revision.read();
+
+				expect(dataItem.$isDirty(rev)).to.equal(false);
+
+				dataItem.titles.push('something');
+
+				expect(dataItem.$isDirty(rev)).to.equal(true);
+			});
+
+			it('should be dirtified when any field from type definition is changed', function(){
+				const dataItem = new TypeWithInheritance();
+				revision.advance();
+				let rev = revision.read();
+
+				expect(dataItem.$isDirty(rev)).to.equal(false);
+
+				dataItem.subTitles.push('something');
+
+				expect(dataItem.$isDirty(rev)).to.equal(true);
 			});
 
 		});

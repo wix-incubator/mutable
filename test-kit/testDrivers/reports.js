@@ -18,7 +18,7 @@ export function ERROR_MISSING_GENERICS(path){
 	return {level:'fatal',params:`Type definition error: "${path}" ${untypedList}`};
 }
 export function ERROR_RESERVED_FIELD(path){
-	return {level:'fatal',params:`Type definition error: "${path}" ${reserved} `};
+	return {level:'fatal',params:`Type definition error: "${path}" ${reserved}`};
 }
 export function ERROR_OVERRIDE_FIELD(path,superName){
 	return `Type definition error: "${path}" already exist on super ${superName}`;

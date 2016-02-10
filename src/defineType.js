@@ -39,31 +39,32 @@ function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	}
 
 	var typeSelfSpec = typeDefinition.spec(Type);
+	const spec = generateSpec(id,typeSelfSpec,ParentType);
 
 	Type.id                                        = id;
 	Type.type                                      = Type;
-	Type._spec                                     = generateSpec(Type,typeSelfSpec,ParentType);
-	///xxxxx
-	Type.getFieldsSpec                             = typeDefinition.spec.bind(null, Type);
-	Type.prototype.$dirtyableElementsIterator      = Type.prototype.$dirtyableElementsIterator || getDirtyableElementsIterator(Type._spec);
+	Type._spec                                     = spec;
+	Type.getFieldsSpec                             = () => { return _.clone(spec) };
+	Type.prototype.$dirtyableElementsIterator      = getDirtyableElementsIterator(typeSelfSpec, Type.prototype.$dirtyableElementsIterator);
 
 	generateFieldsOn(Type.prototype, typeSelfSpec);
 
 	return Type;
-};
+}
 
 defineType.oldImpl = function(id, typeDefinition, TypeConstructor){
 	return defineType(id, typeDefinition, undefined, TypeConstructor);
 };
 
 
-function generateSpec(Type, spec,ParentType){
+function generateSpec(TypeId, spec,ParentType){
 	var baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
 	_.forEach(spec,(field, fieldName)=>{
 		if(baseSpec[fieldName]){
-			var path = `${Type.id}.${fieldName}`;
+			var path = `${TypeId}.${fieldName}`;
 			var superName = ParentType.id;
-			MAILBOX.fatal(`Type definition error: "${path}" already exist on super ${superName}`);
+			//MAILBOX.fatal(`Type definition error: "${path}" already exist on super ${superName}`);
+			throw new Error(`Type definition error: "${path}" already exist on super ${superName}`);
 		}else{
 			baseSpec[fieldName] = field;
 		}
@@ -75,7 +76,7 @@ function generateSpec(Type, spec,ParentType){
 export default defineType;
 
 
-function getDirtyableElementsIterator(spec){
+function getDirtyableElementsIterator(spec, superIterator){
 	var complex = [];
 	for(var k in spec){
 		if(spec[k] && spec[k]._spec) {
@@ -89,6 +90,7 @@ function getDirtyableElementsIterator(spec){
 				yielder(this, k);
 			}
 		}
+		superIterator && superIterator.call(this, yielder);
 	}
 }
 
