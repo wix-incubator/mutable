@@ -37,12 +37,12 @@ export default class BaseType extends PrimitiveBase {
 
 	static defaults(circularFlags='') {
         const spec = this._spec;
-		const circularFlagsNextLevel = (circularFlags ? circularFlags : '') + this.uniqueId + ';';
+		const circularFlagsNextLevel = (circularFlags ? circularFlags : ';') + this.uniqueId + ';';
         //var args = arguments;
-		const isCircular = ~circularFlags.indexOf( this.uniqueId + ';');
+		const isCircular = ~circularFlags.indexOf(';' + this.uniqueId + ';');
 		if(isCircular) {
 			if(!this.options || !this.options.nullable) {
-				console.warn('CYRCULAR DATA! - please add better error/warning'); // ToDo: add a proper warning through gopostal
+				console.warn('DEFAULT CYRCULAR DATA! resolving value as null - please add better error/warning'); // ToDo: add a proper warning through gopostal
 			}
 			return null;
 		} else {
