@@ -17,8 +17,8 @@ const MAILBOX = getMailBox('Typorama.genericTypes');
 export function getMatchingType(subTypes, val){
 	return doOnType(subTypes, type =>
 		(typeof type.validateType === 'function' && type.validateType(val)) ||
-		(typeof type.allowPlainVal === 'function' && type.type.allowPlainVal(val))
-		? type : null
+		(typeof type.allowPlainVal === 'function' && type.allowPlainVal(val))
+		? type : undefined
 	);
 }
 
@@ -45,7 +45,12 @@ export function doOnType(subTypes, action){
 }
 
 function getTypeName(type){
-	return type.id || 'subtitle'
+	let result = type.id || type.name;
+	if (type.options && type.options.subTypes){
+		let genericSubtypesArr = Object.keys(type.options.subTypes).map(k=>type.options.subTypes[k]);
+		result = result + toString(...genericSubtypesArr);
+	}
+	return result;
 }
 
 function mapOrOne(funcOrArr,iteratorFunc){
@@ -113,7 +118,7 @@ export function unnormalizedArraytoUnwrappedString(subTypes){
 export function normalizeTypes(subTypes){
 	if(subTypes && subTypes.union) {
 		subTypes = subTypes.reduce(function (subTypes, type) {
-			subTypes[type.id || type.name] = type;
+			subTypes[getTypeName(type)] = type;
 			return subTypes;
 		}, {});
 	}
