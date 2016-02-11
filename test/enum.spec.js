@@ -39,9 +39,22 @@ describe('Enum Type', function() {
                 ape: Typorama.EnumBase
             });
             var tt = TestType.create({ ape: Ape.chimp });
-            expect(tt.ape).to.be.equal(Dog.poodle);
-            tt = TestType.create({ ape: Dog.poodle });
             expect(tt.ape).to.be.equal(Ape.chimp);
+            tt = TestType.create({ ape: Dog.poodle });
+            expect(tt.ape).to.be.equal(Dog.poodle);
+        });
+
+        it("generic enum has static validate method", function() {
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            expect(Typorama.EnumBase.validate(Ape.chimp)).to.be.ok;
+            expect(Typorama.EnumBase.validate("sugar booger")).to.not.be.ok;
+        });
+
+        it("enum validate method only allows own instance", function() {
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            expect(Ape.validate(Ape.chimp)).to.be.ok;
+            var Dog = Typorama.defineEnum(["poodle", "lab"]);
+            expect(Ape.validate(Dog.poodle)).to.not.be.ok;
         });
 
         it("enum can be initialized", function() {
