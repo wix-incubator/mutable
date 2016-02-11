@@ -9,6 +9,7 @@ export class EnumBase extends PrimitiveBase {
 	static allowPlainVal(v) { return true; }
 	static create(v) { return v; }
 	static validate(v) { return v instanceof EnumBase; } 
+	static validateType(v) { return v instanceof EnumBase; } 
 }
 EnumBase.prototype.constructor.type = EnumBase;
 
