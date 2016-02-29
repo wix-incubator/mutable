@@ -48,7 +48,7 @@ export class LifeCycleManager{
 export function makeDirtyable(Type){
 // add a default dirty state for all objects
 	Type.prototype.__lastChange__ = 1;
-	Type.prototype.__cacheRevision__ = 1;
+	Type.prototype.__cacheRevision__ = 0;
 
 // called when a new lifecycle manager is introduced to this object
 	Type.prototype.$setManager = function $setManager(lifecycleManager) {
