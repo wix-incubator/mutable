@@ -31,12 +31,11 @@ export class LifeCycleManager{
 	}
 }
 
-var unlockedToken = "don't cache $calcLastChange()";
 
 export function makeDirtyable(Type){
 // add a default dirty state for all objects
 	Type.prototype.__lastChange__ = 1;
-	Type.prototype.__cacheLockToken__ = unlockedToken;
+	Type.prototype.__cacheLockToken__ = 0;
 
 // called when a new lifecycle manager is introduced to this object
 	Type.prototype.$setManager = function $setManager(lifecycleManager) {
@@ -79,12 +78,12 @@ export function makeDirtyable(Type){
 	Type.prototype.$calcLastChange = function $calcLastChange() {
 		if (this.$isReadOnly()){
 			return this.$asReadWrite().$calcLastChange();
-		} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
+		} else if (revision.read() > this.__cacheLockToken__){
 			// no cache, go recursive
 			if (this.$dirtyableElementsIterator) {
 				this.$dirtyableElementsIterator(setContainerLastChangeFromElement);
 			}
-			this.__cacheLockToken__ = this.$getManagerLockToken() || unlockedToken;
+			this.__cacheLockToken__ = revision.read();
 		}
 		return this.__lastChange__;
 	};
