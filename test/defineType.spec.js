@@ -178,6 +178,9 @@ describe('defining', () => {
 
 				expect(dataItem.$isDirty(rev)).to.equal(false);
 
+				revision.advance();
+				rev = revision.read();
+
 				dataItem.titles.push('something');
 
 				expect(dataItem.$isDirty(rev)).to.equal(true);
@@ -189,6 +192,9 @@ describe('defining', () => {
 				let rev = revision.read();
 
 				expect(dataItem.$isDirty(rev)).to.equal(false);
+
+				revision.advance();
+				rev = revision.read();
 
 				dataItem.subTitles.push('something');
 

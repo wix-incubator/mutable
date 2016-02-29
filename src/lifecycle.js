@@ -17,18 +17,18 @@ export let revision = {
 export class LifeCycleManager{
 
 	constructor(){
-		this.__cacheToken__ = Math.random() + 1;
+		this.__validCacheRevision__ = revision.read();
 	}
 
 	onChange(){}
 
 	$setDirty(){
-		this.__cacheToken__ = Math.random() + 1;
+		this.__validCacheRevision__ = revision.read();
 		this.onChange();
 	}
 
-	$getCacheToken(){
-		return this.__cacheToken__;
+	$getValidCacheRevision(){
+		return this.__validCacheRevision__;
 	}
 
 	allowChange(){
@@ -44,12 +44,11 @@ export class LifeCycleManager{
 	}
 }
 
-var noCacheToken = "don't cache $calcLastChange()";
 
 export function makeDirtyable(Type){
 // add a default dirty state for all objects
 	Type.prototype.__lastChange__ = 1;
-	Type.prototype.__cacheToken__ = noCacheToken;
+	Type.prototype.__cacheRevision__ = 1;
 
 // called when a new lifecycle manager is introduced to this object
 	Type.prototype.$setManager = function $setManager(lifecycleManager) {
@@ -67,8 +66,8 @@ export function makeDirtyable(Type){
 		}
 	};
 
-	Type.prototype.$getManagerCacheToken = function $getManagerCacheToken() {
-		return this.__lifecycleManager__ && this.__lifecycleManager__.$getCacheToken();
+	Type.prototype.$getValidCacheRevision = function $getValidCacheRevision() {
+		return this.__lifecycleManager__? this.__lifecycleManager__.$getValidCacheRevision() : revision.read();
 	};
 
 // used by $setDirty to determine if changes are allowed to the dirty flag
@@ -92,12 +91,12 @@ export function makeDirtyable(Type){
 	Type.prototype.$calcLastChange = function $calcLastChange() {
 		if (this.$isReadOnly()){
 			return this.$asReadWrite().$calcLastChange();
-		} else if (this.$getManagerCacheToken() !== this.__cacheToken__){
+		} else if (this.$getValidCacheRevision() > this.__cacheRevision__){
 			// no cache, go recursive
 			if (this.$dirtyableElementsIterator) {
 				this.$dirtyableElementsIterator(setContainerLastChangeFromElement);
 			}
-			this.__cacheToken__ = this.$getManagerCacheToken() || noCacheToken;
+			this.__cacheRevision__ = revision.read();
 		}
 		return this.__lastChange__;
 	};
