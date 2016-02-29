@@ -11,12 +11,25 @@ export function optionalSetManager(itemValue, lifeCycle) {
 export let revision = {
 	__count__ : 1,
 	read : function(){return this.__count__;},
-	advance : function(){ this.__count__++;},
+	advance : function(){ this.__count__++;}
 };
 
 export class LifeCycleManager{
 
+	constructor(){
+		this.__cacheToken__ = Math.random() + 1;
+	}
+
 	onChange(){}
+
+	$setDirty(){
+		this.__cacheToken__ = Math.random() + 1;
+		this.onChange();
+	}
+
+	$getCacheToken(){
+		return this.__cacheToken__;
+	}
 
 	allowChange(){
 		delete this.__lockToken__;
@@ -31,12 +44,12 @@ export class LifeCycleManager{
 	}
 }
 
-var unlockedToken = "don't cache $calcLastChange()";
+var noCacheToken = "don't cache $calcLastChange()";
 
 export function makeDirtyable(Type){
 // add a default dirty state for all objects
 	Type.prototype.__lastChange__ = 1;
-	Type.prototype.__cacheLockToken__ = unlockedToken;
+	Type.prototype.__cacheToken__ = noCacheToken;
 
 // called when a new lifecycle manager is introduced to this object
 	Type.prototype.$setManager = function $setManager(lifecycleManager) {
@@ -54,13 +67,13 @@ export function makeDirtyable(Type){
 		}
 	};
 
-	Type.prototype.$getManagerLockToken = function $getManagerLockToken() {
-		return this.__lifecycleManager__ && this.__lifecycleManager__.$getLockToken();
+	Type.prototype.$getManagerCacheToken = function $getManagerCacheToken() {
+		return this.__lifecycleManager__ && this.__lifecycleManager__.$getCacheToken();
 	};
 
 // used by $setDirty to determine if changes are allowed to the dirty flag
 	Type.prototype.$isDirtyable = function $isDirtyable() {
-		return !this.__isReadOnly__  && !this.$getManagerLockToken();
+		return !this.__isReadOnly__  && (!this.__lifecycleManager__ || !this.__lifecycleManager__.$getLockToken());
 	};
 
 // called when a change has been made to this object directly or after changes are paused
@@ -68,7 +81,7 @@ export function makeDirtyable(Type){
 		if (this.$isDirtyable()){
 			this.__lastChange__ = revision.read();
 			if (this.__lifecycleManager__) {
-				this.__lifecycleManager__.onChange();
+				this.__lifecycleManager__.$setDirty();
 			}
 			return true;
 		}
@@ -79,12 +92,12 @@ export function makeDirtyable(Type){
 	Type.prototype.$calcLastChange = function $calcLastChange() {
 		if (this.$isReadOnly()){
 			return this.$asReadWrite().$calcLastChange();
-		} else if (this.$getManagerLockToken() !== this.__cacheLockToken__){
+		} else if (this.$getManagerCacheToken() !== this.__cacheToken__){
 			// no cache, go recursive
 			if (this.$dirtyableElementsIterator) {
 				this.$dirtyableElementsIterator(setContainerLastChangeFromElement);
 			}
-			this.__cacheLockToken__ = this.$getManagerLockToken() || unlockedToken;
+			this.__cacheToken__ = this.$getManagerCacheToken() || noCacheToken;
 		}
 		return this.__lastChange__;
 	};
