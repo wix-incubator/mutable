@@ -5,7 +5,7 @@ import {either} from '../src/genericTypes';
 import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
-import {Report} from 'gopostal/dist/test-kit/testDrivers';
+import {Report} from 'escalate/dist/test-kit/testDrivers';
 import {ERROR_OVERRIDE_FIELD,ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD,arrow} from '../test-kit/testDrivers/reports'
 
 

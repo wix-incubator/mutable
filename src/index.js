@@ -14,8 +14,6 @@ import { LifeCycleManager , revision} from "./lifecycle";
 import {either} from './genericTypes';
 import Map from './map';
 import PropsBase from './props-base';
-import {config as gopostalConfig} from 'gopostal';
-
 
 export default {
 	validation,

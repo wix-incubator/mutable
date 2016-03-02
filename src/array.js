@@ -9,7 +9,7 @@ import {getValueTypeName} from './utils';
 import BaseType           from './BaseType';
 import Number             from './number';
 import * as generics      from './genericTypes';
-import {getMailBox}       from 'gopostal';
+import {getMailBox}       from 'escalate';
 
 const MAILBOX = getMailBox('Typorama.List');
 

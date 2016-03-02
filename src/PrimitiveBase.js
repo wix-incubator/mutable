@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {getMailBox} from 'gopostal';
+import {getMailBox} from 'escalate';
 import {cloneType,getReadableValueTypeName} from './utils';
 import {validateNullValue} from "./validation";
 

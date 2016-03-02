@@ -3,7 +3,7 @@ import BaseType           from "./BaseType";
 import PrimitiveBase      from './PrimitiveBase';
 import {isAssignableFrom,validateNullValue,misMatchMessage} from "./validation"
 import {generateClassId} from "./utils"
-import {getMailBox}       from 'gopostal';
+import {getMailBox}       from 'escalate';
 
 const MAILBOX = getMailBox('Typorama.define');
 
