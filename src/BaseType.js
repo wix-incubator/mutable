@@ -11,7 +11,7 @@ import {
 	validateValue,
 	isDataMatching}    from "./validation";
 
-import {getMailBox}    from 'gopostal';
+import {getMailBox}    from 'escalate';
 
 const MAILBOX = getMailBox('Typorama.BaseType');
 
@@ -42,7 +42,7 @@ export default class BaseType extends PrimitiveBase {
 		const isCircular = ~circularFlags.indexOf(';' + this.uniqueId + ';');
 		if(isCircular) {
 			if(!this.options || !this.options.nullable) {
-				console.warn('DEFAULT CYRCULAR DATA! resolving value as null - please add better error/warning'); // ToDo: add a proper warning through gopostal
+				console.warn('DEFAULT CYRCULAR DATA! resolving value as null - please add better error/warning'); // ToDo: add a proper warning through escalate
 			}
 			return null;
 		} else {

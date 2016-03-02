@@ -3,7 +3,7 @@
  */
 import _                  from 'lodash';
 import defineType         from './defineType';
-import {getMailBox}       from 'gopostal';
+import {getMailBox}       from 'escalate';
 import BaseType           from './BaseType';
 import {getValueTypeName} from './utils';
 import Number             from './number';

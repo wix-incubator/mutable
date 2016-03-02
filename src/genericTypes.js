@@ -3,7 +3,7 @@
  */
 
 import _                  from 'lodash';
-import {getMailBox}       from 'gopostal';
+import {getMailBox}       from 'escalate';
 import {arrow} from './validation';
 
 const MAILBOX = getMailBox('Typorama.genericTypes');

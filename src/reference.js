@@ -1,7 +1,7 @@
 import BaseType from "./BaseType";
 import DefineType from "./defineType";
 import { validateAndWrap, validateNullValue } from "./validation";
-import {getMailBox}       from 'gopostal';
+import {getMailBox}       from 'escalate';
 import _ from "lodash";
 
 const MAILBOX = getMailBox('Typorama.Reference');

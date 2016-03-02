@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {getMailBox} from 'gopostal';
+import {getMailBox} from 'escalate';
 const MAILBOX = getMailBox('Typorama.validation');
 import {getReadableValueTypeName} from './utils'
 import {optionalSetManager} from './lifecycle'

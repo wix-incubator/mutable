@@ -48,6 +48,6 @@
   },
   "dependencies": {
     "lodash": "3.10.1",
-    "gopostal": "0.0.64"
+    "escalate": "0.0.65"
   }
 }

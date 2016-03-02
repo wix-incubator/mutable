@@ -1,4 +1,4 @@
-import {getMailBox} from 'gopostal';
+import {getMailBox} from 'escalate';
 
 const MAILBOX = getMailBox('Typorama.lifecycle');
 

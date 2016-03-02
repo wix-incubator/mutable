@@ -1,15 +1,15 @@
 import _ from "lodash";
 import BaseType from './BaseType';
 import PrimitiveBase from './PrimitiveBase';
-import * as gopostal from 'gopostal';
+import * as escalate from 'escalate';
 
-const MAILBOX = gopostal.getMailBox('Typorama.defineEnum');
+const MAILBOX = escalate.getMailBox('Typorama.defineEnum');
 
 export class EnumBase extends PrimitiveBase {
 	static allowPlainVal(v) { return true; }
 	static create(v) { return v; }
-	static validate(v) { return v == null || v instanceof EnumBase; } 
-	static validateType(v) { return v == null || v instanceof EnumBase; } 
+	static validate(v) { return v == null || v instanceof EnumBase; }
+	static validateType(v) { return v == null || v instanceof EnumBase; }
 }
 EnumBase.prototype.constructor.type = EnumBase;
 
