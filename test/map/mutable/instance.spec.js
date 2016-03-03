@@ -3,14 +3,16 @@ import {expect} from 'chai';
 import sinon from 'sinon';
 import builders from '../builders';
 import lifeCycleAsserter from '../lifecycle.js';
+import {revision} from '../../../src/lifecycle.js';
 
 function testReadFunctionality(builders, isReadonly) {
 	describe(typeOfObj(isReadonly) +' instance', () => {
-		var userA, userB, usersMap;
+		var userA, userB, usersMap, usersMapInitialState;
 		beforeEach('init example data', () => {
 			userA = new builders.UserType({age:1000});
 			userB = new builders.UserType({age:1001});
-			usersMap = builders.aUserTypeMap([[userA, userB], [userB, userA]]);
+			usersMapInitialState = [[userA, userB], [userB, userA]];
+			usersMap = builders.aUserTypeMap(usersMapInitialState);
 		});
 
 		describe("with global freeze config", () => {
@@ -279,6 +281,38 @@ function testReadFunctionality(builders, isReadonly) {
 
 				expect(element.$isReadOnly(), 'value is readOnly').to.equal(isReadonly);
 			});
+		});
+
+		describe('setValue',() => {
+
+			it('should not get dirty if values are not changed', function () {
+				revision.advance();
+				var rev = revision.read();
+				usersMap.setValue(usersMapInitialState);
+
+				expect(usersMap.$isDirty(rev)).to.be.false;
+			});
+			if (isReadonly){
+
+			} else {
+				describe('with a subset of the previous state', () => {
+					let newValue, changeRevision;
+					beforeEach('change value', () => {
+						newValue = [[userA, userB]];
+						revision.advance();
+						changeRevision = revision.read();
+						usersMap.setValue(newValue);
+					});
+					it('should only leave the new state', function () {
+						expect(usersMap.values()).to.eql(newValue);
+					});
+					it('should set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.true;
+					});
+				});
+				lifeCycleAsserter.assertMutatorContract(
+					(map, elemFactory) => map.setValue([[elemFactory(), elemFactory()]]), 'setValue');
+			}
 		});
 	});
 }

@@ -126,7 +126,7 @@ class _Map extends BaseType {
 			}
 		}
 		if(isIterable(value)){
-			return this._wrapIterable(value, options, null,errorContext);
+			return this._wrapIterable(value, options, null, errorContext);
 		}
 		if (value instanceof Object && isTypeConpatibleWithPlainJsonObject(options)){
 			return this._wrapIterable(entries(value), options, null, errorContext);
@@ -182,7 +182,7 @@ class _Map extends BaseType {
 		return {
 			entryPoint,
 			level,
-			path:'Map'+generics.toString(options.subTypes.key,options.subTypes.value)
+			path:'Map'+generics.toString(options.subTypes.key, options.subTypes.value)
 		}
 	}
 
@@ -200,6 +200,23 @@ class _Map extends BaseType {
 			options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
 		}
 		super(value, options,errorContext);
+	}
+
+	// shallow merge native javascript data into the map
+	setValue(newValue, errorContext = null){
+		if (this.$isDirtyable()) {
+			errorContext = errorContext || this.constructor.createErrorContext('Map setValue error','error', this.__options__);
+			newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
+			let changed = false;
+			newValue.forEach((val, key) => {
+				changed = changed || (this.__value__.get(key) !== val);
+			});
+			if (changed){
+				this.__value__ = newValue;
+				this.$setDirty();
+			}
+			return changed;
+		}
 	}
 
 	__exposeInner__(item){

@@ -157,15 +157,15 @@ export default class BaseType extends PrimitiveBase {
     setValue(newValue,errorContext = null){
         if (this.$isDirtyable()) {
             var changed = false;
-			errorContext = errorContext || this.constructor.createErrorContext('SetValue error','error');
+			errorContext = errorContext || this.constructor.createErrorContext('setValue error','error');
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
                     var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
 						{
-							level:errorContext.level,entryPoint:
-							errorContext.entryPoint,path:
-							errorContext.path+'.'+fieldName
+							level: errorContext.level,
+							entryPoint: errorContext.entryPoint,
+							path: errorContext.path+'.'+fieldName
 						});
                     if(this.__value__[fieldName] !== newVal){
                         changed = true;
