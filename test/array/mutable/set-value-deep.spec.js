@@ -32,5 +32,16 @@ function complexSubTypeTests() {
 		expect(mixedList.at(0)).to.equal(newUser);
 		expect(mixedList.at(1)).to.equal(newAddress);
 	});
+
+	//it('should replace item for mismatch', function () {
+	//	var newUser = new UserType();
+	//	var newAddress = new AddressType();
+	//	var mixedList = Typorama.Array.of(either(UserType, AddressType)).create([newUser, newAddress]);
+    //
+	//	mixedList.setValueDeep([{_type: ,age:65}, {code:999}]);
+    //
+	//	expect(mixedList.at(0)).to.equal(newUser);
+	//	expect(mixedList.at(1)).to.equal(newAddress);
+	//});
 }
 modifyTestSuite('setValueDeep', { complexSubTypeTests });

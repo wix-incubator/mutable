@@ -288,6 +288,7 @@ function testReadFunctionality(builders, isReadonly) {
 			it('should not get dirty if values are not changed', function () {
 				revision.advance();
 				var rev = revision.read();
+
 				usersMap.setValue(usersMapInitialState);
 
 				expect(usersMap.$isDirty(rev)).to.be.false;
@@ -295,16 +296,16 @@ function testReadFunctionality(builders, isReadonly) {
 			if (isReadonly){
 
 			} else {
-				describe('with a subset of the previous state', () => {
+				describe('with a new state', () => {
 					let newValue, changeRevision;
 					beforeEach('change value', () => {
-						newValue = [[userA, userB]];
+						newValue = [[userA, userB], [userB, userB]];
 						revision.advance();
 						changeRevision = revision.read();
 						usersMap.setValue(newValue);
 					});
 					it('should only leave the new state', function () {
-						expect(usersMap.values()).to.eql(newValue);
+						expect(usersMap.entries()).to.eql(newValue);
 					});
 					it('should set map as dirty', function () {
 						expect(usersMap.$isDirty(changeRevision)).to.be.true;

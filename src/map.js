@@ -204,19 +204,25 @@ class _Map extends BaseType {
 
 	// shallow merge native javascript data into the map
 	setValue(newValue, errorContext = null){
+		let changed = false;
 		if (this.$isDirtyable()) {
 			errorContext = errorContext || this.constructor.createErrorContext('Map setValue error','error', this.__options__);
 			newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
-			let changed = false;
 			newValue.forEach((val, key) => {
 				changed = changed || (this.__value__.get(key) !== val);
 			});
+			if(!changed) {
+				this.__value__.forEach((val, key) => {
+					changed = changed || (newValue.get(key) !== val);
+				});
+			}
+
 			if (changed){
 				this.__value__ = newValue;
 				this.$setDirty();
 			}
-			return changed;
 		}
+		return changed;
 	}
 
 	__exposeInner__(item){
