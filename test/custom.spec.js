@@ -304,11 +304,11 @@ describe('Custom data', function() {
 			describe('with json input',function(){
 				it('should set all values from an incoming JSON according to schema', function() {
 					var instance = new UserType({address: '21 jump street'});
+
 					instance[setterName]({name: 'zaphod', age: 42});
 
 					expect(instance.name).to.equal('zaphod');
 					expect(instance.age).to.equal(42);
-					expect(instance.address).to.equal('21 jump street');
 				});
 
 				it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
@@ -427,7 +427,48 @@ describe('Custom data', function() {
 
 				expect(instance.$isDirty(rev)).to.equal(true);
 			});
+
 		});
+		describe('mergeValueWithDefaults', function(){
+			valueSetterSuite('mergeValueWithDefaults');
+			it('should create new child if child is read only', function() {
+				var childInstance = new UserType({name: 'zaphod', age: 42});
+
+				var instance = new UserWithChildType({child:childInstance.$asReadOnly()});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.mergeValueWithDefaults({child:{name:'zagzag'}});
+
+				expect(childInstance).to.not.be.equal(instance.child);
+				expect(instance.$isDirty(rev)).to.equal(true);
+			});
+			it('complex children props should be set to default if not specified', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+
+				instance.mergeValueWithDefaults({child:{age:1}});
+
+				expect(instance.child.name).to.be.equal('leon');
+			});
+			it('should not invalidate item if child has not changed', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.mergeValueWithDefaults({child:{name:'zagzag'}});
+
+				expect(instance.$isDirty(rev)).to.equal(false);
+			});
+			it('should invalidate if child has changed', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.mergeValueWithDefaults({child:{name:'not zagzag'}});
+
+				expect(instance.$isDirty(rev)).to.equal(true);
+			});
+		})
 		describe("with global freeze config", function(){
 
 			before("set global freeze configuration", function(){
