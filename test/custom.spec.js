@@ -339,24 +339,7 @@ describe('Custom data', function() {
 					expect(instance.$isDirty(rev)).to.be.equal(false);
 				});
 
-				it('should create new data objects for nested complex types', function() {
-					var instance = new UserWithChildType();
-					var childInstance = instance.child;
-					instance[setterName]({child:{}});
 
-					expect(childInstance).to.not.be.equal(instance.child);
-				});
-
-				it("should not allow values of wrong type", function() {
-					var user = new UserType();
-					expect(() => {return user[setterName]({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
-				});
-
-				it("report correct path if setting values of wrong type", function() {
-					var container = new VeryCompositeContainer();
-					expect(() => {return container[setterName]({child1: {child: { age: "666" }}})})
-						.to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age','number','string'));
-				});
 
 				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj[setterName]({child: elemFactory()}), setterName+' which assigns to element field');
 			});
@@ -381,8 +364,67 @@ describe('Custom data', function() {
 		}
 		describe('setValue', function() {
 			valueSetterSuite('setValue');
-		});
+			it('should create new data objects for nested complex types', function() {
+				var instance = new UserWithChildType();
+				var childInstance = instance.child;
+				instance.setValue({child:{}});
 
+				expect(childInstance).to.not.be.equal(instance.child);
+			});
+			it("should not allow values of wrong type", function() {
+				var user = new UserType();
+				expect(() => {return user.setValue({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
+			});
+
+			it("report correct path if setting values of wrong type", function() {
+				var container = new VeryCompositeContainer();
+				expect(() => {return container.setValue({child1: {child: { age: "666" }}})})
+					.to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age','number','string'));
+			});
+		});
+		describe('mergeValue', function() {
+			valueSetterSuite('mergeValue');
+			it('should reuse data objects for nested complex types', function() {
+				var instance = new UserWithChildType();
+				var childInstance = instance.child;
+				instance.mergeValue({child:{}});
+
+				expect(childInstance).to.be.equal(instance.child);
+			});
+			it('complex children props should not be set if not specified', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				instance.mergeValue({child:{age:1}});
+
+				expect(instance.child.name).to.be.equal('zagzag');
+			});
+			it('should not invalidate item if child has not changed', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.mergeValue({child:{name:'zagzag'}});
+
+				expect(instance.$isDirty(rev)).to.equal(false);
+			});
+			it('should not invalidate item if child has not changed', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.mergeValue({child:{name:'zagzag'}});
+
+				expect(instance.$isDirty(rev)).to.equal(false);
+			});
+			it('should not invalidate if child has changed', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.mergeValue({child:{name:'not zagzag'}});
+
+				expect(instance.$isDirty(rev)).to.equal(true);
+			});
+		});
 		describe("with global freeze config", function(){
 
 			before("set global freeze configuration", function(){
