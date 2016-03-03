@@ -300,11 +300,11 @@ describe('Custom data', function() {
 			lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 		});
 
-		describe('setValue', function() {
+		function valueSetterSuite (setterName){
 			describe('with json input',function(){
 				it('should set all values from an incoming JSON according to schema', function() {
 					var instance = new UserType({address: '21 jump street'});
-					instance.setValue({name: 'zaphod', age: 42});
+					instance[setterName]({name: 'zaphod', age: 42});
 
 					expect(instance.name).to.equal('zaphod');
 					expect(instance.age).to.equal(42);
@@ -314,7 +314,7 @@ describe('Custom data', function() {
 				it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
 					var instance = new UserType();
 					var wrapped = {name: 'zaphod'};
-					instance.setValue(wrapped);
+					instance[setterName](wrapped);
 
 					wrapped.name = 'ford';
 
@@ -324,7 +324,7 @@ describe('Custom data', function() {
 				it('should ignore fields that appear in the passed object but not in the type schema', function() {
 					var instance = new UserType();
 
-					instance.setValue({numOfHeads: 2});
+					instance[setterName]({numOfHeads: 2});
 
 					expect(instance.numOfHeads).to.be.undefined;
 				});
@@ -332,44 +332,55 @@ describe('Custom data', function() {
 				it('should not invalidate if fields havnt changed', function() {
 					var instance = new UserWithChildType();
 					var instance2 = new UserType();
-					instance.setValue({child:instance2});
+					instance[setterName]({child:instance2});
 					revision.advance();
 					var rev = revision.read();
-					instance.setValue({child:instance2});
+					instance[setterName]({child:instance2});
 					expect(instance.$isDirty(rev)).to.be.equal(false);
+				});
+
+				it('should create new data objects for nested complex types', function() {
+					var instance = new UserWithChildType();
+					var childInstance = instance.child;
+					instance[setterName]({child:{}});
+
+					expect(childInstance).to.not.be.equal(instance.child);
 				});
 
 				it("should not allow values of wrong type", function() {
 					var user = new UserType();
-					expect(() => {return user.setValue({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
+					expect(() => {return user[setterName]({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
 				});
 
 				it("report correct path if setting values of wrong type", function() {
 					var container = new VeryCompositeContainer();
-					expect(() => {return container.setValue({child1: {child: { age: "666" }}})})
+					expect(() => {return container[setterName]({child1: {child: { age: "666" }}})})
 						.to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age','number','string'));
 				});
 
-				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
+				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj[setterName]({child: elemFactory()}), setterName+' which assigns to element field');
 			});
 			describe('with typorama input',function(){
 				it('should set replace all values from an incoming object with typorama fields according to schema', function() {
 					var instance = new UserWithChildType();
 					var childInstance = new UserType({name: 'zaphod', age: 42});
-					instance.setValue({child: childInstance});
+					instance[setterName]({child: childInstance});
 
 					expect(instance.child).to.equal(childInstance);
 				});
 				it('should not invalidate if child instance hasnt is the same one', function() {
 					var instance = new UserWithChildType();
 					var childInstance = new UserType({name: 'zaphod', age: 42});
-					instance.setValue({child: childInstance});
+					instance[setterName]({child: childInstance});
 					revision.advance();
 					var rev = revision.read();
-					instance.setValue({child: childInstance});
+					instance[setterName]({child: childInstance});
 					expect(instance.$isDirty(rev)).to.equal(false);
 				});
 			})
+		}
+		describe('setValue', function() {
+			valueSetterSuite('setValue');
 		});
 
 		describe("with global freeze config", function(){
