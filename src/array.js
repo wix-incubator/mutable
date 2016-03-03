@@ -360,7 +360,6 @@ class _Array extends BaseType {
 			newValue = newValue.__getValueArr__();
 		}
 		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
 			var lengthDiff = this.__value__.length - newValue.length;
 			if (lengthDiff > 0){
 				// current array is longer than newValue, fill the excess cells with undefined
@@ -379,6 +378,35 @@ class _Array extends BaseType {
 			});
 			if(changed){
 				this.$setDirty();
+			}
+			this.__value__.length = newValue.length;
+		}
+		return changed;
+	}
+
+	mergeValue(newValue, errorContext=null){
+		var changed = false;
+		if(newValue instanceof _Array) {
+			newValue = newValue.__getValueArr__();
+		}
+
+		if(_.isArray(newValue)) {
+			changed = this.length !== newValue.length;
+			let assignIndex = 0;
+			_.forEach(newValue, (itemValue, newValIndex) => {
+				let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List mergeValue error','error', this.__options__);
+				if(this.length <= assignIndex){
+					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+				} else if(this.__value__[newValIndex].mergeValue && !BaseType.validateType(itemValue)) {
+					changed = this.__value__[newValIndex].mergeValue(itemValue) || changed;
+				} else {
+					changed = changed || itemValue !== this.__value__[assignIndex];
+					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+				}
+				assignIndex++;
+			});
+			if(changed) {
+				this.$setDirty(true);
 			}
 			this.__value__.length = newValue.length;
 		}
