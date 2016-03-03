@@ -13,11 +13,11 @@ function complexSubTypeTests() {
 		var address = new AddressType({address: 'gaga'});
 		var mixedList = Typorama.Array.of(AddressType).create([address]);
 
-		mixedList.mergeValue([{code: 5}]);
+		mixedList.setValueDeep([{code: 5}]);
 
 		expect(mixedList.at(0)).to.be.instanceOf(AddressType);
 		expect(mixedList.at(0).code).to.be.eql(5);
-		expect(mixedList.at(0).address).to.be.eql('gaga');
+		expect(mixedList.at(0).address).to.be.eql('');
 		expect(mixedList.at(0)).to.be.equal(address);
 	});
 
@@ -27,10 +27,10 @@ function complexSubTypeTests() {
 		var mixedList = Typorama.Array.of(either(UserType, AddressType)).create([newUser, newAddress]);
 
 
-		mixedList.mergeValue([{age:65}, {code:999}]);
+		mixedList.setValueDeep([{age:65}, {code:999}]);
 
 		expect(mixedList.at(0)).to.equal(newUser);
 		expect(mixedList.at(1)).to.equal(newAddress);
 	});
 }
-modifyTestSuite('mergeValue', { complexSubTypeTests });
+modifyTestSuite('setValueDeep', { complexSubTypeTests });

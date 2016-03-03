@@ -127,7 +127,6 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 				mixedList[command]([{code: 5}]);
 
 				expect(mixedList.at(0).__lifecycleManager__).to.be.eql(mockManager);
-
 			});
 
 			complexSubTypeTests && complexSubTypeTests()
