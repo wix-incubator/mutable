@@ -48,6 +48,6 @@
   },
   "dependencies": {
     "lodash": "3.10.1",
-    "escalate": "0.0.67"
+    "escalate": "0.0.68"
   }
 }
