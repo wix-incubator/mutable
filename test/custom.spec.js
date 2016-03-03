@@ -382,30 +382,9 @@ describe('Custom data', function() {
 					.to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age','number','string'));
 			});
 		});
-		describe('mergeValue', function() {
-			valueSetterSuite('mergeValue');
-			it('should reuse data objects for nested complex types', function() {
-				var instance = new UserWithChildType();
-				var childInstance = instance.child;
-				instance.mergeValue({child:{}});
 
-				expect(childInstance).to.be.equal(instance.child);
-			});
-			it('complex children props should not be set if not specified', function() {
-				var instance = new UserWithChildType({child:{name:'zagzag'}});
-				instance.mergeValue({child:{age:1}});
-
-				expect(instance.child.name).to.be.equal('zagzag');
-			});
-			it('should not invalidate item if child has not changed', function() {
-				var instance = new UserWithChildType({child:{name:'zagzag'}});
-				revision.advance();
-				var rev = revision.read();
-
-				instance.mergeValue({child:{name:'zagzag'}});
-
-				expect(instance.$isDirty(rev)).to.equal(false);
-			});
+		describe('setValueDeep', function(){
+			valueSetterSuite('setValueDeep');
 			it('should create new child if child is read only', function() {
 				var childInstance = new UserType({name: 'zaphod', age: 42});
 
@@ -413,32 +392,7 @@ describe('Custom data', function() {
 				revision.advance();
 				var rev = revision.read();
 
-				instance.mergeValue({child:{name:'zagzag'}});
-
-				expect(childInstance).to.not.be.equal(instance.child);
-				expect(instance.$isDirty(rev)).to.equal(true);
-			});
-			it('should invalidate if child has changed', function() {
-				var instance = new UserWithChildType({child:{name:'zagzag'}});
-				revision.advance();
-				var rev = revision.read();
-
-				instance.mergeValue({child:{name:'not zagzag'}});
-
-				expect(instance.$isDirty(rev)).to.equal(true);
-			});
-
-		});
-		describe('mergeValueWithDefaults', function(){
-			valueSetterSuite('mergeValueWithDefaults');
-			it('should create new child if child is read only', function() {
-				var childInstance = new UserType({name: 'zaphod', age: 42});
-
-				var instance = new UserWithChildType({child:childInstance.$asReadOnly()});
-				revision.advance();
-				var rev = revision.read();
-
-				instance.mergeValueWithDefaults({child:{name:'zagzag'}});
+				instance.setValueDeep({child:{name:'zagzag'}});
 
 				expect(childInstance).to.not.be.equal(instance.child);
 				expect(instance.$isDirty(rev)).to.equal(true);
@@ -446,7 +400,7 @@ describe('Custom data', function() {
 			it('complex children props should be set to default if not specified', function() {
 				var instance = new UserWithChildType({child:{name:'zagzag'}});
 
-				instance.mergeValueWithDefaults({child:{age:1}});
+				instance.setValueDeep({child:{age:1}});
 
 				expect(instance.child.name).to.be.equal('leon');
 			});
@@ -455,7 +409,7 @@ describe('Custom data', function() {
 				revision.advance();
 				var rev = revision.read();
 
-				instance.mergeValueWithDefaults({child:{name:'zagzag'}});
+				instance.setValueDeep({child:{name:'zagzag'}});
 
 				expect(instance.$isDirty(rev)).to.equal(false);
 			});
@@ -464,7 +418,7 @@ describe('Custom data', function() {
 				revision.advance();
 				var rev = revision.read();
 
-				instance.mergeValueWithDefaults({child:{name:'not zagzag'}});
+				instance.setValueDeep({child:{name:'not zagzag'}});
 
 				expect(instance.$isDirty(rev)).to.equal(true);
 			});
