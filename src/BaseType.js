@@ -188,7 +188,16 @@ export default class BaseType extends PrimitiveBase {
 				if (fieldSpec) {
 					if (this.__value__[fieldName].mergeValue && !BaseType.validateType(fieldValue)) {
 						// recursion call
-						changed = this.__value__[fieldName].mergeValue(fieldValue, errorContext) || changed;
+						if(this.__value__[fieldName].$isReadOnly()){
+							this.__value__[fieldName] = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
+								{
+									level:errorContext.level,entryPoint:
+									errorContext.entryPoint,path:errorContext.path+'.'+fieldName
+								});
+							changed = true;
+						}else{
+							changed = this.__value__[fieldName].mergeValue(fieldValue, errorContext) || changed;
+						}
 					} else {
 						// end recursion, assign value (if applicable)
 						changed = this.$assignField(fieldName, fieldValue) || changed;

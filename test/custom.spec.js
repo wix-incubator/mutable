@@ -406,16 +406,19 @@ describe('Custom data', function() {
 
 				expect(instance.$isDirty(rev)).to.equal(false);
 			});
-			it('should not invalidate item if child has not changed', function() {
-				var instance = new UserWithChildType({child:{name:'zagzag'}});
+			it('should create new child if child is read only', function() {
+				var childInstance = new UserType({name: 'zaphod', age: 42});
+
+				var instance = new UserWithChildType({child:childInstance.$asReadOnly()});
 				revision.advance();
 				var rev = revision.read();
 
 				instance.mergeValue({child:{name:'zagzag'}});
 
-				expect(instance.$isDirty(rev)).to.equal(false);
+				expect(childInstance).to.not.be.equal(instance.child);
+				expect(instance.$isDirty(rev)).to.equal(true);
 			});
-			it('should not invalidate if child has changed', function() {
+			it('should invalidate if child has changed', function() {
 				var instance = new UserWithChildType({child:{name:'zagzag'}});
 				revision.advance();
 				var rev = revision.read();
