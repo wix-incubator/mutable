@@ -6,6 +6,9 @@ import lifeCycleAsserter from '../lifecycle.js';
 import {revision} from '../../../src/lifecycle.js';
 
 function testReadFunctionality(builders, isReadonly) {
+	function getNewUsers(usersIterable){
+		return Array.from(usersIterable).map(e=>new builders.UserType(e));
+	}
 	describe(typeOfObj(isReadonly) +' instance', () => {
 		var userA, userB, usersMap, usersMapInitialState;
 		beforeEach('init example data', () => {
@@ -285,35 +288,92 @@ function testReadFunctionality(builders, isReadonly) {
 
 		describe('setValue',() => {
 
-			it('should not get dirty if values are not changed', function () {
+			it('with same state should not change or get dirty if values are not changed', function () {
 				revision.advance();
 				var rev = revision.read();
 
 				usersMap.setValue(usersMapInitialState);
-
+				expect(Array.from(usersMap.__value__.entries()), 'entries array').to.eql(usersMapInitialState);
 				expect(usersMap.$isDirty(rev)).to.be.false;
 			});
-			if (isReadonly){
-
-			} else {
-				describe('with a new state', () => {
-					let newValue, changeRevision;
-					beforeEach('change value', () => {
-						newValue = [[userA, userB], [userB, userB]];
-						revision.advance();
-						changeRevision = revision.read();
-						usersMap.setValue(newValue);
+			describe('with a new state', () => {
+				let newValue, changeRevision;
+				beforeEach('change value', () => {
+					newValue = [[userA, userB], [userB, userB]];
+					revision.advance();
+					changeRevision = revision.read();
+					usersMap.setValue(newValue);
+				});
+				if (isReadonly){
+					it('should not change', function () {
+						expect(Array.from(usersMap.__value__.entries()), 'entries array').to.eql(usersMapInitialState);
 					});
+					it('should not set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.false;
+					});
+				} else {
 					it('should only leave the new state', function () {
 						expect(usersMap.entries()).to.eql(newValue);
 					});
 					it('should set map as dirty', function () {
 						expect(usersMap.$isDirty(changeRevision)).to.be.true;
 					});
+					lifeCycleAsserter.assertMutatorContract(
+						(map, elemFactory) => map.setValue([[elemFactory(), elemFactory()]]), 'setValue');
+				}
+			});
+
+		});
+		describe('setValueDeep',() => {
+
+			it('with same state should not change or get dirty if values are not changed', function () {
+				revision.advance();
+				var rev = revision.read();
+
+				usersMap.setValueDeep(usersMapInitialState);
+				expect(Array.from(usersMap.__value__.entries()), 'entries array').to.eql(usersMapInitialState);
+				expect(usersMap.$isDirty(rev)).to.be.false;
+			});
+			describe('with a new state', () => {
+				let userC, newValue, changeRevision;
+				beforeEach('change value', () => {
+					userC = new builders.UserType({name:'katanka'});
+
+					newValue = [[userA, userB], [userB, userC], [userC, userA]];
+					revision.advance();
+					changeRevision = revision.read();
+					usersMap.setValueDeep(newValue);
 				});
-				lifeCycleAsserter.assertMutatorContract(
-					(map, elemFactory) => map.setValue([[elemFactory(), elemFactory()]]), 'setValue');
-			}
+				if (isReadonly){
+					it('should not change', function () {
+						expect(Array.from(usersMap.__value__.entries()), 'entries array').to.eql(usersMapInitialState);
+					});
+					it('should not set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.false;
+					});
+				} else {
+					it('should change data of map to new state', function () {
+						expect(usersMap.size).to.eql(3);
+						expect(getNewUsers(usersMap.values()), 'values of map')
+							.to.eql(getNewUsers(new Map(newValue).values()));
+						expect(getNewUsers(usersMap.keys()), 'data of keys of map')
+							.to.eql(getNewUsers(Array.from(new Map(newValue).keys())));
+					});
+					it('should not replace instances of existing mappings', function () {
+						expect(usersMap.get(userA)).to.equal(userB);
+						expect(usersMap.get(userB)).to.equal(userA);
+					});
+					it('should add new mappings if missing', function () {
+						expect(usersMap.get(userC)).to.equal(userA);
+					});
+					it('should set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.true;
+					});
+					lifeCycleAsserter.assertMutatorContract(
+						(map, elemFactory) => map.setValueDeep([[elemFactory(), elemFactory()]]), 'setValueDeep');
+				}
+			});
+
 		});
 	});
 }

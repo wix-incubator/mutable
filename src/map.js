@@ -225,6 +225,36 @@ class _Map extends BaseType {
 		return changed;
 	}
 
+// deep merge native javascript data into the map
+	setValueDeep(newValue, errorContext = null){
+		let changed = false;
+		if (this.$isDirtyable()) {
+			errorContext = errorContext || this.constructor.createErrorContext('Map setValue error','error', this.__options__);
+			newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
+			newValue.forEach((val, key) => {
+				let oldVal = this.__value__.get(key);
+				if(oldVal !== val){
+					changed = true;
+					if (oldVal && typeof oldVal.setValueDeep === 'function') {
+						oldVal.setValueDeep(val);
+					} else {
+						this.__value__.set(key, val);
+					}
+				}
+			});
+			// AFAIK we want to delete anything that is not in the new value
+			this.__value__.forEach((val, key) => {
+				if (newValue.get(key) === undefined){
+					changed = true;
+					this.__value__.delete(key);
+				}
+			});
+			if (changed){
+				this.$setDirty();
+			}
+		}
+		return changed;
+	}
 	__exposeInner__(item){
 		if (this.__isReadOnly__) {
 			return safeAsReadOnlyOrArr(item);
