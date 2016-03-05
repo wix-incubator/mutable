@@ -395,12 +395,18 @@ class _Array extends BaseType {
 			let assignIndex = 0;
 			_.forEach(newValue, (itemValue, newValIndex) => {
 				let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error','error', this.__options__);
+				const currentItem = this.__value__[assignIndex];
 				if(this.length <= assignIndex){
 					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-				} else if(this.__value__[newValIndex].setValueDeep && !BaseType.validateType(itemValue)) {
-					changed = this.__value__[newValIndex].setValueDeep(itemValue) || changed;
+				} else if(currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
+					if(currentItem.constructor.allowPlainVal(itemValue)){
+						changed = currentItem.setValueDeep(itemValue) || changed;
+					} else {
+						changed = true;
+						this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+					}
 				} else {
-					changed = changed || itemValue !== this.__value__[assignIndex];
+					changed = changed || itemValue !== currentItem;
 					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
 				}
 				assignIndex++;
