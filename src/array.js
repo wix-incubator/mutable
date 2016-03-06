@@ -396,7 +396,11 @@ class _Array extends BaseType {
 			let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error','error', this.__options__);
 			_.forEach(newValue, (itemValue, newValIndex) => {
 				const currentItem = this.__value__[assignIndex];
-				if(this.length <= assignIndex){
+				const isPassedArrayLength = this.length <= assignIndex;
+				if(!isPassedArrayLength && !currentItem){
+					throw new Error('List setValueDeep() is not implemented for null cells yet');
+				}
+				if(isPassedArrayLength){
 					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
 				} else if(currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
 					if(currentItem.constructor.allowPlainVal(itemValue)){
