@@ -23,6 +23,15 @@ function entries(obj) {
 	return Object.keys(obj).map((key)=>[key, obj[key]]);
 }
 
+function mapEntries(map){
+	if (typeof map.entries === 'function'){
+		return map.entries();
+	}
+	let entries = [];
+	map.forEach((v,k) => entries.push([k,v]));
+	return entries;
+}
+
 function safeAsReadOnly (item) {
 	return (item && typeof item.$asReadOnly === 'function') ? item.$asReadOnly() : item;
 }
@@ -309,7 +318,7 @@ class _Map extends BaseType {
 	}
 
 	entries(){
-		return this.__wrapIterator__(this.__value__.entries());
+		return this.__wrapIterator__(mapEntries(this.__value__));
 	}
 
 	keys(){
@@ -331,7 +340,7 @@ class _Map extends BaseType {
 
 	$getElements(){
 		let result = [];
-		for (let [key,value] of this.__value__.entries()) {
+		for (let [key,value] of mapEntries(this.__value__)) {
 			result.push(key,value);
 		}
 		return result;
@@ -340,7 +349,7 @@ class _Map extends BaseType {
 	toJSON(recursive = true) {
 		let result = [];
 		let allStringKeys = isTypeConpatibleWithPlainJsonObject(this.__options__);
-		for (let [key,value] of this.__value__.entries()) {
+		for (let [key,value] of mapEntries(this.__value__)) {
 			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
 			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
 			result.push([key,value]);

@@ -9,3 +9,8 @@ chai.use(sinonChai);
 
 var context = require.context('./', true, /.+\.spec\.js?$/);
 context.keys().forEach(context);
+
+
+//let glob = require('glob');
+//let files = glob.sync(__dirname +'/**/*.spec.js');
+//files.forEach(require);
