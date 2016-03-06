@@ -393,8 +393,8 @@ class _Array extends BaseType {
 		if(_.isArray(newValue)) {
 			changed = this.length !== newValue.length;
 			let assignIndex = 0;
+			let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error','error', this.__options__);
 			_.forEach(newValue, (itemValue, newValIndex) => {
-				let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error','error', this.__options__);
 				const currentItem = this.__value__[assignIndex];
 				if(this.length <= assignIndex){
 					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
