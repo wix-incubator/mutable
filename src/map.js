@@ -22,13 +22,6 @@ const MAILBOX = getMailBox('Typorama.Map');
 function entries(obj) {
 	return Object.keys(obj).map((key)=>[key, obj[key]]);
 }
-function iterable2Arr(iterable){
-	let arr = [];
-	for (let entry of iterable) {
-		arr.push(entry);
-	}
-	return arr;
-}
 function mapEntries(map){
 	if (typeof map.entries === 'function'){
 		return map.entries();
