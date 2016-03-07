@@ -11,7 +11,7 @@ export function aUserTypeMap(optionalMap) {
 }
 
 export function aUnionTypeMap(optionalMap) {
-	return Typorama.Map.of(Typorama.String, Typorama.either(Typorama.Number, UserType)).create(optionalMap || []);
+	return Typorama.Map.of(Typorama.String, Typorama.either(CheeseType, UserType)).create(optionalMap || []);
 }
 
 export const UserType = aDataTypeWithSpec({

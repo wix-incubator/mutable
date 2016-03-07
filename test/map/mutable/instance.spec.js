@@ -7,7 +7,7 @@ import {revision} from '../../../src/lifecycle.js';
 import _ from 'lodash';
 var hasSymbols = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol';
 
-function mapEntries(map){
+function mapEntries(map) {
 	let entries = [];
 	map.forEach((v,k) => entries.push([k,v]));
 	return entries;
@@ -383,7 +383,7 @@ function testReadFunctionality(builders, isReadonly) {
 						expect(getNewUsers(usersMap.values()), 'values of map')
 							.to.eql(getNewUsers(new Map(newValue).values()));
 						expect(getNewUsers(usersMap.keys()), 'data of keys of map')
-							.to.eql(getNewUsers(arrFromIterable(new Map(newValue).keys())));
+							.to.eql(getNewUsers(new Map(newValue).keys()));
 					});
 					it('should not replace instances of existing mappings', function () {
 						expect(usersMap.get(userA)).to.equal(userB);
@@ -399,21 +399,59 @@ function testReadFunctionality(builders, isReadonly) {
 						(map, elemFactory) => map.setValueDeep([[elemFactory(), elemFactory()]]), 'setValueDeep');
 				}
 			});
-			describe('on a map with union type value', () => {
-				let userC, newValue, changeRevision;
-				beforeEach('change value', () => {
-					userC = new builders.UserType({name:'katanka'});
+			if (!isReadonly) {
+				describe('on a map with union type value', () => {
+					let map, cheese, oldValue, newValue, changeRevision;
+					beforeEach('change value', () => {
+						cheese = new builders.CheeseType({name: 'brie'});
 
-					newValue = [[userA, userB], [userB, userC], [userC, userA]];
-					revision.advance();
-					changeRevision = revision.read();
-					usersMap.setValueDeep(newValue);
+						oldValue = [['a', userA], ['b', userB], ['c', userB]];
+						newValue = [['a', userA], ['b', cheese]];
+						map = builders.aUnionTypeMap(oldValue);
+
+						revision.advance();
+						changeRevision = revision.read();
+					});
+					it('should change data of map to new state', function () {
+						map.setValueDeep(newValue);
+						expect(map.size).to.eql(2);
+						expect(getNewUsers(map.values()), 'values of map')
+							.to.eql(getNewUsers(new Map(newValue).values()));
+						expect(arrFromIterable(map.keys()), 'data of keys of map').to.eql(['a', 'b']);
+					});
+					it('should not replace instances of existing mappings', function () {
+						map.setValueDeep(newValue);
+						expect(map.get('a')).to.equal(userA);
+						expect(map.get('b')).to.equal(cheese);
+					});
+					it('should remove new mappings if missing from new value', function () {
+						map.setValueDeep(newValue);
+						expect(map.get('c')).to.be.undefined;
+					});
+					it('should set map as dirty', function () {
+						map.setValueDeep(newValue);
+						expect(map.$isDirty(changeRevision)).to.be.true;
+					});
 				});
-			});
-				// look at custom.spec.js for setValue deep tests
-			// if child is read only, create new instance
-			// if child not read only should reuse values when getting json arguments
-			// test with union types: different type for same key should recreate item.
+				it('should create new value if value is read only', function() {
+					userA = new builders.UserType({name: 'zaphod', age: 42}).$asReadOnly();
+					let map = builders.aUnionTypeMap([['a', userA]]);
+					revision.advance();
+					var rev = revision.read();
+
+					map.setValueDeep([['a', {child:{name:'zagzag'}}]]);
+
+					expect(userA).to.not.equal(map.get('a'));
+					expect(map.$isDirty(rev)).to.equal(true);
+				});
+				it('complex children props should be set to default if not specified', function() {
+					let map = builders.aUnionTypeMap([['a', {name:'zagzag'}]]);
+
+					map.setValueDeep([['a', {age:1}]]);
+
+					expect(map.get('a').name).to.equal(new builders.UserType().name);
+				});
+			}
 		});
 	});
 }

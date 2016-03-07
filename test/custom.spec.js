@@ -386,9 +386,9 @@ describe('Custom data', function() {
 		describe('setValueDeep', function(){
 			valueSetterSuite('setValueDeep');
 			it('should create new child if child is read only', function() {
-				var childInstance = new UserType({name: 'zaphod', age: 42});
+				var childInstance = new UserType({name: 'zaphod', age: 42}).$asReadOnly();
 
-				var instance = new UserWithChildType({child:childInstance.$asReadOnly()});
+				var instance = new UserWithChildType({child:childInstance});
 				revision.advance();
 				var rev = revision.read();
 
