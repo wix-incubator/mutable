@@ -22,6 +22,21 @@ const MAILBOX = getMailBox('Typorama.Map');
 function entries(obj) {
 	return Object.keys(obj).map((key)=>[key, obj[key]]);
 }
+function iterable2Arr(iterable){
+	let arr = [];
+	for (let entry of iterable) {
+		arr.push(entry);
+	}
+	return arr;
+}
+function mapEntries(map){
+	if (typeof map.entries === 'function'){
+		return map.entries();
+	}
+	let entries = [];
+	map.forEach((v,k) => entries.push([k,v]));
+	return entries;
+}
 
 function safeAsReadOnly (item) {
 	return (item && typeof item.$asReadOnly === 'function') ? item.$asReadOnly() : item;
@@ -39,7 +54,7 @@ function isIterable(value) {
 	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === "function");
 }
 
-function isTypeConpatibleWithPlainJsonObject(options) {
+function isTypeCompatibleWithPlainJsonObject(options) {
 	return !! (options && options.subTypes && generics.getMatchingType(options.subTypes.key, ''));
 }
 
@@ -126,9 +141,9 @@ class _Map extends BaseType {
 			}
 		}
 		if(isIterable(value)){
-			return this._wrapIterable(value, options, null,errorContext);
+			return this._wrapIterable(value, options, null, errorContext);
 		}
-		if (value instanceof Object && isTypeConpatibleWithPlainJsonObject(options)){
+		if (value instanceof Object && isTypeCompatibleWithPlainJsonObject(options)){
 			return this._wrapIterable(entries(value), options, null, errorContext);
 		}
 		MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
@@ -182,7 +197,7 @@ class _Map extends BaseType {
 		return {
 			entryPoint,
 			level,
-			path:'Map'+generics.toString(options.subTypes.key,options.subTypes.value)
+			path:'Map'+generics.toString(options.subTypes.key, options.subTypes.value)
 		}
 	}
 
@@ -202,6 +217,81 @@ class _Map extends BaseType {
 		super(value, options,errorContext);
 	}
 
+	// shallow merge native javascript data into the map
+	setValue(newValue, errorContext = null){
+		let changed = false;
+		if (this.$isDirtyable()) {
+			errorContext = errorContext || this.constructor.createErrorContext('Map setValue error','error', this.__options__);
+			newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
+			newValue.forEach((val, key) => {
+				changed = changed || (this.__value__.get(key) !== val);
+			});
+			if(!changed) {
+				this.__value__.forEach((val, key) => {
+					changed = changed || (newValue.get(key) !== val);
+				});
+			}
+
+			if (changed){
+				this.__value__ = newValue;
+				this.$setDirty();
+			}
+		}
+		return changed;
+	}
+
+// deep merge native javascript data into the map
+	setValueDeep(newValue, errorContext = null){
+		let changed = false;
+		if (this.$isDirtyable()) {
+			errorContext = errorContext || this.constructor.createErrorContext('Map setValue error','error', this.__options__);
+			// normalize newValue
+			if(BaseType.validateType(newValue)) {
+				if (newValue.__value__ instanceof Map) {
+					newValue = mapEntries(newValue.__value__);
+				} else {
+					MAILBOX.error('Strange typorama Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
+				}
+			} else if(isIterable(newValue)){
+				newValue = iterable2Arr(newValue);
+			} else if (newValue instanceof Object && isTypeCompatibleWithPlainJsonObject(this.__options__)){
+				newValue = entries(newValue);
+			} else {
+				MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(newValue));
+			}
+			// newValue is now array of [key, val] arrays
+			var result = new Map();
+			newValue.forEach(([key, val]) => {
+				let oldVal = this.__value__.get(key);
+				if(oldVal === val) {
+					val = oldVal;
+				} else {
+					if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
+						(oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
+						changed = oldVal.setValueDeep(val) || changed;
+						val = oldVal;
+					} else {
+						key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
+						val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
+						changed = true;
+					}
+				}
+				result.set(key, val);
+			});
+			if (!changed) {
+				this.__value__.forEach((val, key) => {
+					if (result.get(key) === undefined) {
+						changed = true;
+					}
+				});
+			}
+			if (changed){
+				this.__value__ = result;
+				this.$setDirty();
+			}
+		}
+		return changed;
+	}
 	__exposeInner__(item){
 		if (this.__isReadOnly__) {
 			return safeAsReadOnlyOrArr(item);
@@ -256,7 +346,7 @@ class _Map extends BaseType {
 	}
 
 	entries(){
-		return this.__wrapIterator__(this.__value__.entries());
+		return this.__wrapIterator__(mapEntries(this.__value__));
 	}
 
 	keys(){
@@ -278,7 +368,7 @@ class _Map extends BaseType {
 
 	$getElements(){
 		let result = [];
-		for (let [key,value] of this.__value__.entries()) {
+		for (let [key,value] of mapEntries(this.__value__)) {
 			result.push(key,value);
 		}
 		return result;
@@ -286,8 +376,8 @@ class _Map extends BaseType {
 
 	toJSON(recursive = true) {
 		let result = [];
-		let allStringKeys = isTypeConpatibleWithPlainJsonObject(this.__options__);
-		for (let [key,value] of this.__value__.entries()) {
+		let allStringKeys = isTypeCompatibleWithPlainJsonObject(this.__options__);
+		for (let [key,value] of mapEntries(this.__value__)) {
 			key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
 			value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
 			result.push([key,value]);

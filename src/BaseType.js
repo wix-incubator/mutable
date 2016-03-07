@@ -157,15 +157,15 @@ export default class BaseType extends PrimitiveBase {
     setValue(newValue,errorContext = null){
         if (this.$isDirtyable()) {
             var changed = false;
-			errorContext = errorContext || this.constructor.createErrorContext('SetValue error','error');
+			errorContext = errorContext || this.constructor.createErrorContext('setValue error','error');
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
                     var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
 						{
-							level:errorContext.level,entryPoint:
-							errorContext.entryPoint,path:
-							errorContext.path+'.'+fieldName
+							level: errorContext.level,
+							entryPoint: errorContext.entryPoint,
+							path: errorContext.path+'.'+fieldName
 						});
                     if(this.__value__[fieldName] !== newVal){
                         changed = true;
@@ -177,6 +177,42 @@ export default class BaseType extends PrimitiveBase {
             return changed;
         }
     }
+
+	// merge native javascript data into the object, add defaults when missing fields
+	// this method traverses the input recursively until it reaches typorama values (then it sets them)
+	setValueDeep(newValue, errorContext = null){
+		if (this.$isDirtyable()) {
+			var changed = false;
+			errorContext = errorContext || this.constructor.createErrorContext('setValueDeep error','error');
+			_.forEach(this.constructor._spec, (fieldSpec, fieldName) => {
+				var fieldValue = (newValue[fieldName]!==undefined) ? newValue[fieldName] : fieldSpec.defaults();
+				if (fieldSpec) {
+					if (this.__value__[fieldName].setValueDeep && !BaseType.validateType(fieldValue)) {
+						// recursion call
+						if(this.__value__[fieldName].$isReadOnly()){
+							this.__value__[fieldName] = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
+								{
+									level:errorContext.level,entryPoint:
+								errorContext.entryPoint,path:errorContext.path+'.'+fieldName
+								});
+							changed = true;
+						}else{
+							changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
+						}
+					} else {
+						// end recursion, assign value (if applicable)
+						changed = this.$assignField(fieldName, fieldValue) || changed;
+					}
+				}
+			});
+			if(changed)
+			{
+				this.$setDirty(true);
+			}
+			return changed;
+		}
+	}
+
 
     // validates and assigns input to field.
     // will report error for undefined fields

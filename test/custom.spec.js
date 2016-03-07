@@ -300,21 +300,21 @@ describe('Custom data', function() {
 			lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
 		});
 
-		describe('setValue', function() {
+		function valueSetterSuite (setterName){
 			describe('with json input',function(){
 				it('should set all values from an incoming JSON according to schema', function() {
 					var instance = new UserType({address: '21 jump street'});
-					instance.setValue({name: 'zaphod', age: 42});
+
+					instance[setterName]({name: 'zaphod', age: 42});
 
 					expect(instance.name).to.equal('zaphod');
 					expect(instance.age).to.equal(42);
-					expect(instance.address).to.equal('21 jump street');
 				});
 
 				it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
 					var instance = new UserType();
 					var wrapped = {name: 'zaphod'};
-					instance.setValue(wrapped);
+					instance[setterName](wrapped);
 
 					wrapped.name = 'ford';
 
@@ -324,7 +324,7 @@ describe('Custom data', function() {
 				it('should ignore fields that appear in the passed object but not in the type schema', function() {
 					var instance = new UserType();
 
-					instance.setValue({numOfHeads: 2});
+					instance[setterName]({numOfHeads: 2});
 
 					expect(instance.numOfHeads).to.be.undefined;
 				});
@@ -332,46 +332,97 @@ describe('Custom data', function() {
 				it('should not invalidate if fields havnt changed', function() {
 					var instance = new UserWithChildType();
 					var instance2 = new UserType();
-					instance.setValue({child:instance2});
+					instance[setterName]({child:instance2});
 					revision.advance();
 					var rev = revision.read();
-					instance.setValue({child:instance2});
+					instance[setterName]({child:instance2});
 					expect(instance.$isDirty(rev)).to.be.equal(false);
 				});
 
-				it("should not allow values of wrong type", function() {
-					var user = new UserType();
-					expect(() => {return user.setValue({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
-				});
 
-				it("report correct path if setting values of wrong type", function() {
-					var container = new VeryCompositeContainer();
-					expect(() => {return container.setValue({child1: {child: { age: "666" }}})})
-						.to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age','number','string'));
-				});
 
-				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.setValue({child: elemFactory()}), 'setValue which assigns to element field');
+				lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj[setterName]({child: elemFactory()}), setterName+' which assigns to element field');
 			});
 			describe('with typorama input',function(){
 				it('should set replace all values from an incoming object with typorama fields according to schema', function() {
 					var instance = new UserWithChildType();
 					var childInstance = new UserType({name: 'zaphod', age: 42});
-					instance.setValue({child: childInstance});
+					instance[setterName]({child: childInstance});
 
 					expect(instance.child).to.equal(childInstance);
 				});
 				it('should not invalidate if child instance hasnt is the same one', function() {
 					var instance = new UserWithChildType();
 					var childInstance = new UserType({name: 'zaphod', age: 42});
-					instance.setValue({child: childInstance});
+					instance[setterName]({child: childInstance});
 					revision.advance();
 					var rev = revision.read();
-					instance.setValue({child: childInstance});
+					instance[setterName]({child: childInstance});
 					expect(instance.$isDirty(rev)).to.equal(false);
 				});
 			})
+		}
+		describe('setValue', function() {
+			valueSetterSuite('setValue');
+			it('should create new data objects for nested complex types', function() {
+				var instance = new UserWithChildType();
+				var childInstance = instance.child;
+				instance.setValue({child:{}});
+
+				expect(childInstance).to.not.be.equal(instance.child);
+			});
+			it("should not allow values of wrong type", function() {
+				var user = new UserType();
+				expect(() => {return user.setValue({ age: "666" })}).to.report(ERROR_IN_SET_VALUE('User.age','number','string'));
+			});
+
+			it("report correct path if setting values of wrong type", function() {
+				var container = new VeryCompositeContainer();
+				expect(() => {return container.setValue({child1: {child: { age: "666" }}})})
+					.to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age','number','string'));
+			});
 		});
 
+		describe('setValueDeep', function(){
+			valueSetterSuite('setValueDeep');
+			it('should create new child if child is read only', function() {
+				var childInstance = new UserType({name: 'zaphod', age: 42}).$asReadOnly();
+
+				var instance = new UserWithChildType({child:childInstance});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.setValueDeep({child:{name:'zagzag'}});
+
+				expect(childInstance).to.not.be.equal(instance.child);
+				expect(instance.$isDirty(rev)).to.equal(true);
+			});
+			it('complex children props should be set to default if not specified', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+
+				instance.setValueDeep({child:{age:1}});
+
+				expect(instance.child.name).to.be.equal('leon');
+			});
+			it('should not invalidate item if child has not changed', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.setValueDeep({child:{name:'zagzag'}});
+
+				expect(instance.$isDirty(rev)).to.equal(false);
+			});
+			it('should invalidate if child has changed', function() {
+				var instance = new UserWithChildType({child:{name:'zagzag'}});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.setValueDeep({child:{name:'not zagzag'}});
+
+				expect(instance.$isDirty(rev)).to.equal(true);
+			});
+		})
 		describe("with global freeze config", function(){
 
 			before("set global freeze configuration", function(){
