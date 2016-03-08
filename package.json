@@ -36,7 +36,7 @@
     "karma-teamcity-reporter": "0.2.1",
     "mocha": "2.4.5",
     "mocha-loader": "0.7.1",
-    "mocha-env-reporter": "1.0.1",
+    "mocha-env-reporter": "1.0.2",
     "react": "0.14.7",
     "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
     "sinon-chai": "2.8.0",
