@@ -187,9 +187,9 @@ export default class BaseType extends PrimitiveBase {
 			_.forEach(this.constructor._spec, (fieldSpec, fieldName) => {
 				var fieldValue = (newValue[fieldName]!==undefined) ? newValue[fieldName] : fieldSpec.defaults();
 				if (fieldSpec) {
-					if (this.__value__[fieldName].setValueDeep && !BaseType.validateType(fieldValue)) {
+					if (this.__value__[fieldName]===null || (this.__value__[fieldName].setValueDeep && !BaseType.validateType(fieldValue))) {
 						// recursion call
-						if(this.__value__[fieldName].$isReadOnly()){
+						if(this.__value__[fieldName] ===null || this.__value__[fieldName].$isReadOnly()){
 							this.__value__[fieldName] = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
 								{
 									level:errorContext.level,entryPoint:
