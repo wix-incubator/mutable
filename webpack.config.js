@@ -6,7 +6,7 @@ module.exports = {
 		'typorama'              : [	'./src' ],
 		'test-kit'              : [ './test-kit' ],
 		'test'                  : ['./test'],
-		'webtest'                  : ['mocha!./test'],
+		'webtest'               : ['mocha!./test'],
 		'examples/ReactGallery' : [ './examples/ReactGallery' ],
 		'examples/benchmark'    : [ './examples/benchmark' ],
 	},
