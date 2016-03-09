@@ -18,6 +18,11 @@ var UserWithChildType = aDataTypeWithSpec({
 	child: UserType.withDefault({name: 'bobi', age: 13})
 }, 'UserWithChildType');
 
+var UserWithNullableChildType = aDataTypeWithSpec({
+	name: Typorama.String.withDefault('leon'),
+	child: UserType.nullable().withDefault(null)
+}, 'UserWithChildType');
+
 var CompositeContainer = aDataTypeWithSpec({
 	name: Typorama.String.withDefault('leon'),
 	child1: UserType,
@@ -395,6 +400,16 @@ describe('Custom data', function() {
 				instance.setValueDeep({child:{name:'zagzag'}});
 
 				expect(childInstance).to.not.be.equal(instance.child);
+				expect(instance.$isDirty(rev)).to.equal(true);
+			});
+			it('should create new child if child is null', function() {
+
+				var instance = new UserWithNullableChildType({child:null});
+				revision.advance();
+				var rev = revision.read();
+
+				instance.setValueDeep({child:{name:'zagzag'}});
+
 				expect(instance.$isDirty(rev)).to.equal(true);
 			});
 			it('complex children props should be set to default if not specified', function() {

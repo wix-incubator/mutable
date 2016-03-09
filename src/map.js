@@ -22,13 +22,6 @@ const MAILBOX = getMailBox('Typorama.Map');
 function entries(obj) {
 	return Object.keys(obj).map((key)=>[key, obj[key]]);
 }
-function iterable2Arr(iterable){
-	let arr = [];
-	for (let entry of iterable) {
-		arr.push(entry);
-	}
-	return arr;
-}
 function mapEntries(map){
 	if (typeof map.entries === 'function'){
 		return map.entries();
@@ -240,47 +233,58 @@ class _Map extends BaseType {
 		return changed;
 	}
 
-// deep merge native javascript data into the map
-	setValueDeep(newValue, errorContext = null){
+	__setValueDeepHandler__(result, key, val, errorContext){
+		let oldVal = this.__value__.get(key);
 		let changed = false;
+		if(oldVal === val) {
+			val = oldVal;
+		} else {
+			if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
+				(oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
+				changed = oldVal.setValueDeep(val);
+				val = oldVal;
+			} else {
+				key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
+				val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
+				changed = true;
+			}
+		}
+		result.set(key, val);
+		return changed;
+	}
+
+// deep merge native javascript data into the map
+	setValueDeep(newValue, errorContext = null) {
+		let result, changed = false;
 		if (this.$isDirtyable()) {
 			errorContext = errorContext || this.constructor.createErrorContext('Map setValue error','error', this.__options__);
-			// normalize newValue
+			// TODO this code has the same structure as wrapValue, combine both together
 			if(BaseType.validateType(newValue)) {
 				if (newValue.__value__ instanceof Map) {
-					newValue = mapEntries(newValue.__value__);
+					result = new Map();
+					newValue.__value__.forEach((val, key) => {
+						changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
+					});
 				} else {
 					MAILBOX.error('Strange typorama Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
 				}
 			} else if(isIterable(newValue)){
-				newValue = iterable2Arr(newValue);
+				result = new Map();
+				for (let [key, val] of newValue) {
+					changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
+				}
 			} else if (newValue instanceof Object && isTypeCompatibleWithPlainJsonObject(this.__options__)){
-				newValue = entries(newValue);
+				result = new Map();
+				Object.keys(newValue).map((key)=>{
+					changed = this.__setValueDeepHandler__(result, key, newValue[key], errorContext) || changed;
+				});
 			} else {
 				MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(newValue));
 			}
 			// newValue is now array of [key, val] arrays
-			var result = new Map();
-			newValue.forEach(([key, val]) => {
-				let oldVal = this.__value__.get(key);
-				if(oldVal === val) {
-					val = oldVal;
-				} else {
-					if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
-						(oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
-						changed = oldVal.setValueDeep(val) || changed;
-						val = oldVal;
-					} else {
-						key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
-						val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
-						changed = true;
-					}
-				}
-				result.set(key, val);
-			});
 			if (!changed) {
 				this.__value__.forEach((val, key) => {
-					if (result.get(key) === undefined) {
+					if (!changed && result.get(key) === undefined) {
 						changed = true;
 					}
 				});
