@@ -1,4 +1,0 @@
-{
-  "presets": [ "es2015-loose", "react" ],
-  "plugins": [ "transform-es2015-modules-umd", "transform-class-properties" ]
-}
