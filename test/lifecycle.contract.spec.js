@@ -9,15 +9,23 @@ import {LifeCycleManager, revision} from '../src/lifecycle';
  **/
 export function lifecycleContract(){
     var contexts = [];
-    return {
-        addFixture :(containerFactory, elementFactory, description) => {
-            var context = {
-                description : description,
-                dirtyableElements: !!elementFactory().$isDirty
-            };
-            setFactoriesInFixture(context, containerFactory, elementFactory);
-            addFixtureSetup(context);
-            contexts.push(context);
+	function addFixture(description, elementFactory, containerFactory) {
+		var context = {
+			description: description,
+			dirtyableElements: !!elementFactory().$isDirty,
+			readOnlyElements: elementFactory().$isReadOnly && elementFactory().$isReadOnly()
+		};
+		setFactoriesInFixture(context, containerFactory, elementFactory);
+		addFixtureSetup(context);
+		contexts.push(context);
+		return context;
+	}
+	return {
+		addFixture :(containerFactory, elementFactory, description) => {
+            let context = addFixture(description, elementFactory, containerFactory);
+			if (context.dirtyableElements){
+				addFixture(description + ' (readonly elements)', () => elementFactory().$asReadOnly(), containerFactory);
+			}
         },
         assertMutatorContract: (mutator, description) => {
             contexts.forEach((context) => {
@@ -264,12 +272,13 @@ function testIsDirty(context){
                 expect(_.some(context.containedElements, '$setDirty.called'), '$setDirty called on element(s)').to.be.false;
             });
             it("(when $setDirty not called and an element is dirty) returns true", function () {
-                context.containedElements[0].$setDirty();
+                context.containedElements[0].$asReadWrite().$setDirty();
                 var dirty = context.container.$isDirty(context.beginRev);
                 expect(dirty, 'container dirty flag').to.be.true;
             });
+
             it("(when $setDirty not called and manager forbids changes) for the second time returns true without checking elements", function () {
-                context.containedElements[0].$setDirty();
+				context.containedElements[0].$asReadWrite().$setDirty();
                 context.container.$setManager(context.lifecycleManager);
                 context.lifecycleManager.forbidChange();
                 context.container.$isDirty(context.beginRev);
@@ -291,20 +300,17 @@ function testCalcLastChange(context){
 
 			it('should update the cache on the readWrite container', function(){
 				var startRev = context.container.__lastChange__;
-
 				var readOnly = context.container.$asReadOnly();
 
 				revision.advance();
 				expect(context.container.__lastChange__).to.equal(startRev);
 
-				context.containedElements[0].$setDirty();
+				context.containedElements[0].$asReadWrite().$setDirty();
 
 				readOnly.$calcLastChange();
 
-				expect(context.container.__lastChange__).to.equal(revision.read());
-				expect(readOnly.__lastChange__).to.equal(revision.read())
-
-
+				expect(context.container.__lastChange__, "context.container.__lastChange__").to.equal(revision.read());
+				expect(readOnly.__lastChange__, "readOnly.__lastChange__").to.equal(revision.read());
 			});
 
 		}
@@ -313,30 +319,37 @@ function testCalcLastChange(context){
 }
 
 function testSetManager(context) {
-    describe('calling $setManager on ' + context.description, function () {
-        context.setup();
-        it('with existing different manager reports error', function () {
-            context.container.__lifecycleManager__ = new LifeCycleManager();
-            var manager = new LifeCycleManager();
-            expect(() => context.container.$setManager(manager)).to.report({level : /error/});
-        });
-        it('when no existing manager changes the manager field', function () {
-            var manager = new LifeCycleManager();
-            context.container.$setManager(manager);
-            expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
-            if (context.dirtyableElements) {
-                expect(_.every(context.containedElements, '$setManager.called'), 'elements $setManager called').to.be.true;
-                expect(_.every(context.containedElements, (e) => e.$setManager.alwaysCalledWithExactly(manager)), "elements $setManager called with manager").to.be.true;
-            }
-            context.container.$setManager(manager);
-            expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
-        });
-        it('in readonly form reports an error', function () {
-            var manager = new LifeCycleManager();
-            expect(() => context.container.$asReadOnly().$setManager(manager)).to.report({level : /error/});
-        });
-        it('with invalid type reports an error', function () {
-            expect(() => context.container.$setManager({})).to.report({level : /error/});
-        });
-    });
+	describe('calling $setManager on ' + context.description, function () {
+		context.setup();
+		it('with existing different manager does not change the manager and reports error', function () {
+			var manager = context.container.__lifecycleManager__ = new LifeCycleManager();
+			expect(() => context.container.$setManager(new LifeCycleManager())).to.report({level : /error/});
+			expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
+		});
+		it('when no existing manager changes the manager field', function () {
+			var manager = new LifeCycleManager();
+			context.container.$setManager(manager);
+			expect(context.container.__lifecycleManager__, 'container manager').to.equal(manager);
+		});
+		if (context.readOnlyElements) {
+			it('when no existing manager does not change the manager field of child elements', function () {
+				expect(() => context.container.$setManager(new LifeCycleManager())).not.to.report({level : /error/});
+				expect(_.some(context.containedElements, '$setManager.called'), 'no elements $setManager called').to.be.false;
+			});
+		} else if (context.dirtyableElements){
+			it('when no existing manager changes the manager field of child elements', function () {
+				var manager = new LifeCycleManager();
+				context.container.$setManager(manager);
+				expect(_.every(context.containedElements, '$setManager.called'), 'elements $setManager called').to.be.true;
+				expect(_.every(context.containedElements, (e) => e.$setManager.alwaysCalledWithExactly(manager)), "elements $setManager called with manager").to.be.true;
+			});
+		}
+		it('in readonly form does not report an error', function () {
+			var manager = new LifeCycleManager();
+			expect(() => context.container.$asReadOnly().$setManager(manager)).to.not.report({level : /error/});
+		});
+		it('with invalid type reports an error', function () {
+			expect(() => context.container.$setManager({})).to.report({level : /error/});
+		});
+	});
 }

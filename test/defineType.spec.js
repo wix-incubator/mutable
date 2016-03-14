@@ -1,11 +1,12 @@
 import Typorama from '../src';
 import {isAssignableFrom} from '../src/validation';
+import {revision} from '../src/lifecycle';
 import {either} from '../src/genericTypes';
 import {expect, err} from 'chai';
 import Type1 from './type1';
 import Type2 from './type2';
-import {Report} from 'gopostal/dist/test-kit/testDrivers';
-import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD,arrow} from '../test-kit/testDrivers/reports'
+import {Report} from 'escalate/dist/test-kit/testDrivers';
+import {ERROR_OVERRIDE_FIELD,ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD,arrow} from '../test-kit/testDrivers/reports'
 
 
 function typeCompatibilityTest(typeFactory){
@@ -119,6 +120,89 @@ describe('defining', () => {
 			}).to.report(ERROR_RESERVED_FIELD('invalid.$asReadOnly'));
 		});
 
+		describe('type with inheritance', function(){
+			const StringList = Typorama.List.of(Typorama.String);
+			var TypeWithTitles;
+			var TypeWithInheritance;
+
+			before('define types',function(){
+				TypeWithTitles = Typorama.define('TypeWithTitles', {
+					spec: () => ({
+						titles: StringList
+					})
+				});
+				TypeWithInheritance = Typorama.define('TypeWithInheritance', {
+					spec: () => ({
+						subTitles: StringList
+					})
+				},TypeWithTitles);
+			});
+
+			it('should throw error if fields intersect', function(){
+				expect(()=>{Typorama.define('TypeWithBrokenInheritance', {
+					spec: () => ({
+						titles: StringList
+					})
+				},TypeWithTitles)}).to.throw(ERROR_OVERRIDE_FIELD('TypeWithBrokenInheritance.titles','TypeWithTitles'));
+			});
+
+			it('spec should include all fields', function(){
+				expect(TypeWithInheritance.getFieldsSpec()).to.eql({
+					titles:StringList,
+					subTitles:StringList
+				})
+			});
+
+			it('should include default values for all fields', function(){
+				expect(TypeWithInheritance.defaults()).to.eql({
+					titles:[],
+					subTitles:[]
+				});
+			});
+
+			it('should include getters setters for all fields', function(){
+				const dataItem = new TypeWithInheritance();
+
+				expect(dataItem.titles.length).to.equal(0);
+				dataItem.titles.push('cell0');
+				expect(dataItem.titles.at(0)).to.equal('cell0');
+				expect(dataItem.subTitles.length).to.equal(0);
+				dataItem.subTitles.push('cell0');
+				expect(dataItem.subTitles.at(0)).to.equal('cell0');
+			});
+
+			it('should be dirtified when any field from super type is changed', function(){
+				const dataItem = new TypeWithInheritance();
+				revision.advance();
+				let rev = revision.read();
+
+				expect(dataItem.$isDirty(rev)).to.equal(false);
+
+				revision.advance();
+				rev = revision.read();
+
+				dataItem.titles.push('something');
+
+				expect(dataItem.$isDirty(rev)).to.equal(true);
+			});
+
+			it('should be dirtified when any field from type definition is changed', function(){
+				const dataItem = new TypeWithInheritance();
+				revision.advance();
+				let rev = revision.read();
+
+				expect(dataItem.$isDirty(rev)).to.equal(false);
+
+				revision.advance();
+				rev = revision.read();
+
+				dataItem.subTitles.push('something');
+
+				expect(dataItem.$isDirty(rev)).to.equal(true);
+			});
+
+		});
+
 		describe('type with generic field', function(){
 			it('should throw error if field doesnt include generics info', function(){
 				expect(() => {
@@ -157,6 +241,29 @@ describe('defining', () => {
 					});
 				}).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<${arrow}List>`));
 			});
+
+			it('should allow fields of the same type', function(){
+				const NodeType = Typorama.define('Node', {
+					spec: (Node) => ({
+						children: Typorama.List.of(Node),
+						parent: Node.nullable()
+					})
+				});
+
+				const node = new NodeType();
+
+				expect(node.toJSON()).to.eql({children:[],parent:null});
+
+				node.parent = new NodeType();
+
+				expect(node.toJSON()).to.eql({children:[],parent:{children:[],parent:null}});
+
+				node.children.push(new NodeType());
+
+				expect(node.toJSON()).to.eql({children:[{children:[],parent:null}],parent:{children:[],parent:null}});
+			});
+
+			it.skip('report circular default data', function(){/* ToDo */});
 
 		});
 
@@ -343,6 +450,26 @@ describe('defining', () => {
 					it('should detect primitives', function() {
 						var mixedMap = typeFactory().create([[newUser, 'gaga']]);
 						expect(mixedMap.get(newUser)).to.be.equal('gaga');
+					});
+				});
+			});
+			describe('with value type that is a union of maps', () => {
+				function typeFactory() {
+					return Typorama.Map.of(Typorama.String,
+										   either(Typorama.Map.of(Typorama.String,Typorama.String),
+											   Typorama.Map.of(Typorama.String,Typorama.Number)));
+				}
+				typeCompatibilityTest(typeFactory);
+				describe("instantiation",function(){
+					it('should allow setting data with array', function() {
+						var mixedMap = typeFactory().create([['foo', [['bar', 'baz']]],['foo2', [['bar2', 2]]]]);
+						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
+						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
+					});
+					it('should allow setting data with json', function() {
+						var mixedMap = typeFactory().create({foo:{bar:'baz'}, foo2:{bar2:2}});
+						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
+						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
 					});
 				});
 			});

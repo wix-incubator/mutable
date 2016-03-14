@@ -8,7 +8,7 @@ import Number from './number';
 import Array from './array';
 import Function from './function';
 import Reference from './reference';
-import defineEnum from "./defineEnum";
+import { defineEnum, EnumBase } from "./defineEnum";
 import validation from "./validation";
 import { LifeCycleManager , revision} from "./lifecycle";
 import {either} from './genericTypes';
@@ -31,14 +31,13 @@ export default {
     LifeCycleManager,
     either,
     revision,
+    EnumBase,
 
     // This is temporarily alias included for backward compatibility.
     // In the future, Array should be renamed to List entirely.
     List:Array,
 
 	// Stubs used only for declarations:
-	Enum: {},
-	GenericEnum: {},
 	Map,
 	PropsBase
 };

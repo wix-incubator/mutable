@@ -24,7 +24,7 @@ var GalleryItem = Typorama.define('GalleryItem', {
 var GalleryPropTypes = Typorama.define('GalleryProps', {
 	spec: function(ThisType) {
 		return {
-			items: Typorama.Array.of(GalleryItem).withDefault([GalleryItem.defaults(), GalleryItem.defaults(), GalleryItem.defaults()])
+			items: Typorama.List.of(GalleryItem).withDefault([GalleryItem.defaults(), GalleryItem.defaults(), GalleryItem.defaults()])
 		};
 	}
 });
@@ -34,7 +34,7 @@ var Gallery = React.createClass({
 	getDefaultProps: function() {
 		return GalleryPropTypes.defaults();
 	},
-	componentWillMount() {
+	componentWillMount: function() {
 
 		/*
 		   var props = new GalleryPropTypes(this.props);
@@ -71,7 +71,7 @@ var Gallery = React.createClass({
 
 var App = React.createClass({
 	componentDidMount: function() {
-		setInterval(this.setState.bind(this, {}), 3000)
+		setInterval(this.setState.bind(this, {}), 3000);
 	},
 	render: function() {
 		return <div>
@@ -81,4 +81,4 @@ var App = React.createClass({
 });
 
 
-React.render(<App/>, document.body)
+React.render(<App/>, document.body);

@@ -3,14 +3,45 @@ import {expect} from 'chai';
 import sinon from 'sinon';
 import builders from '../builders';
 import lifeCycleAsserter from '../lifecycle.js';
+import {revision} from '../../../src/lifecycle.js';
+import _ from 'lodash';
+var hasSymbols = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol';
+
+function mapEntries(map) {
+	let entries = [];
+	map.forEach((v,k) => entries.push([k,v]));
+	return entries;
+}
+
+function arrFromIterable(iterable) {
+	if (_.isArray(iterable)){
+		return iterable;
+	}
+	var iterator = (typeof iterable.next === 'function' && iterable) || (hasSymbols && iterable[Symbol.iterator]);
+	if (iterator && iterator.next) {
+		var result = [];
+		var item = iterator.next();
+		while (!item.done) {
+			result.push(item.value);
+			item = iterator.next();
+		}
+		return result;
+	}
+	debugger;
+	throw new Error('unknown argument type '+ JSON.stringify(iterable));
+}
 
 function testReadFunctionality(builders, isReadonly) {
+	function getNewUsers(usersIterable){
+		return arrFromIterable(usersIterable).map(e=>new builders.UserType(e));
+	}
 	describe(typeOfObj(isReadonly) +' instance', () => {
-		var userA, userB, usersMap;
+		var userA, userB, usersMap, usersMapInitialState;
 		beforeEach('init example data', () => {
 			userA = new builders.UserType({age:1000});
 			userB = new builders.UserType({age:1001});
-			usersMap = builders.aUserTypeMap([[userA, userB], [userB, userA]]);
+			usersMapInitialState = [[userA, userB], [userB, userA]];
+			usersMap = builders.aUserTypeMap(usersMapInitialState);
 		});
 
 		describe("with global freeze config", () => {
@@ -162,7 +193,7 @@ function testReadFunctionality(builders, isReadonly) {
 		});
 		describe('entries',() => {
 			it('should return an array of the map elements', () => {
-				var array = builders.aNumberMap({a: 1, b:2}).entries();
+				var array = mapEntries(builders.aNumberMap({a: 1, b:2}));
 				expect(array).to.eql([['a', 1], ['b', 2]]);
 			});
 
@@ -279,6 +310,148 @@ function testReadFunctionality(builders, isReadonly) {
 
 				expect(element.$isReadOnly(), 'value is readOnly').to.equal(isReadonly);
 			});
+		});
+
+		describe('setValue',() => {
+
+			it('with same state should not change or get dirty if values are not changed', function () {
+				revision.advance();
+				var rev = revision.read();
+
+				usersMap.setValue(usersMapInitialState);
+				expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+				expect(usersMap.$isDirty(rev)).to.be.false;
+			});
+			describe('with a new state', () => {
+				let newValue, changeRevision;
+				beforeEach('change value', () => {
+					newValue = [[userA, userB], [userB, userB]];
+					revision.advance();
+					changeRevision = revision.read();
+					usersMap.setValue(newValue);
+				});
+				if (isReadonly){
+					it('should not change', function () {
+						expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+					});
+					it('should not set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.false;
+					});
+				} else {
+					it('should only leave the new state', function () {
+						expect(usersMap.entries()).to.eql(newValue);
+					});
+					it('should set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.true;
+					});
+					lifeCycleAsserter.assertMutatorContract(
+						(map, elemFactory) => map.setValue([[elemFactory(), elemFactory()]]), 'setValue');
+				}
+			});
+
+		});
+		describe('setValueDeep',() => {
+
+			it('with same state should not change or get dirty if values are not changed', function () {
+				revision.advance();
+				var rev = revision.read();
+
+				usersMap.setValueDeep(usersMapInitialState);
+				expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+				expect(usersMap.$isDirty(rev)).to.be.false;
+			});
+			describe('with a new state', () => {
+				let userC, newValue, changeRevision;
+				beforeEach('change value', () => {
+					userC = new builders.UserType({name:'katanka'});
+
+					newValue = [[userA, userB], [userB, userC], [userC, userA]];
+					revision.advance();
+					changeRevision = revision.read();
+					usersMap.setValueDeep(newValue);
+				});
+				if (isReadonly){
+					it('should not change', function () {
+						expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+					});
+					it('should not set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.false;
+					});
+				} else {
+					it('should change data of map to new state', function () {
+						expect(usersMap.size).to.eql(3);
+						expect(getNewUsers(usersMap.values()), 'values of map')
+							.to.eql(getNewUsers(new Map(newValue).values()));
+						expect(getNewUsers(usersMap.keys()), 'data of keys of map')
+							.to.eql(getNewUsers(new Map(newValue).keys()));
+					});
+					it('should not replace instances of existing mappings', function () {
+						expect(usersMap.get(userA)).to.equal(userB);
+						expect(usersMap.get(userB)).to.equal(userA);
+					});
+					it('should add new mappings if missing', function () {
+						expect(usersMap.get(userC)).to.equal(userA);
+					});
+					it('should set map as dirty', function () {
+						expect(usersMap.$isDirty(changeRevision)).to.be.true;
+					});
+					lifeCycleAsserter.assertMutatorContract(
+						(map, elemFactory) => map.setValueDeep([[elemFactory(), elemFactory()]]), 'setValueDeep');
+				}
+			});
+			if (!isReadonly) {
+				describe('on a map with union type value', () => {
+					let map, cheese, oldValue, newValue, changeRevision;
+					beforeEach('change value', () => {
+						cheese = new builders.CheeseType({name: 'brie'});
+
+						oldValue = [['a', userA], ['b', userB], ['c', userB]];
+						newValue = [['a', userA], ['b', cheese]];
+						map = builders.aUnionTypeMap(oldValue);
+
+						revision.advance();
+						changeRevision = revision.read();
+					});
+					it('should change data of map to new state', function () {
+						map.setValueDeep(newValue);
+						expect(map.size).to.eql(2);
+						expect(getNewUsers(map.values()), 'values of map')
+							.to.eql(getNewUsers(new Map(newValue).values()));
+						expect(arrFromIterable(map.keys()), 'data of keys of map').to.eql(['a', 'b']);
+					});
+					it('should not replace instances of existing mappings', function () {
+						map.setValueDeep(newValue);
+						expect(map.get('a')).to.equal(userA);
+						expect(map.get('b')).to.equal(cheese);
+					});
+					it('should remove new mappings if missing from new value', function () {
+						map.setValueDeep(newValue);
+						expect(map.get('c')).to.be.undefined;
+					});
+					it('should set map as dirty', function () {
+						map.setValueDeep(newValue);
+						expect(map.$isDirty(changeRevision)).to.be.true;
+					});
+				});
+				it('should create new value if value is read only', function() {
+					userA = new builders.UserType({name: 'zaphod', age: 42}).$asReadOnly();
+					let map = builders.aUnionTypeMap([['a', userA]]);
+					revision.advance();
+					var rev = revision.read();
+
+					map.setValueDeep([['a', {child:{name:'zagzag'}}]]);
+
+					expect(userA).to.not.equal(map.get('a'));
+					expect(map.$isDirty(rev)).to.equal(true);
+				});
+				it('complex children props should be set to default if not specified', function() {
+					let map = builders.aUnionTypeMap([['a', {name:'zagzag'}]]);
+
+					map.setValueDeep([['a', {age:1}]]);
+
+					expect(map.get('a').name).to.equal(new builders.UserType().name);
+				});
+			}
 		});
 	});
 }

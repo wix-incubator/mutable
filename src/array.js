@@ -9,7 +9,7 @@ import {getValueTypeName} from './utils';
 import BaseType           from './BaseType';
 import Number             from './number';
 import * as generics      from './genericTypes';
-import {getMailBox}       from 'gopostal';
+import {getMailBox}       from 'escalate';
 
 const MAILBOX = getMailBox('Typorama.List');
 
@@ -360,7 +360,6 @@ class _Array extends BaseType {
 			newValue = newValue.__getValueArr__();
 		}
 		if(_.isArray(newValue)) {
-			//fix bug #33. reset the current array instead of replacing it;
 			var lengthDiff = this.__value__.length - newValue.length;
 			if (lengthDiff > 0){
 				// current array is longer than newValue, fill the excess cells with undefined
@@ -379,6 +378,45 @@ class _Array extends BaseType {
 			});
 			if(changed){
 				this.$setDirty();
+			}
+			this.__value__.length = newValue.length;
+		}
+		return changed;
+	}
+
+	setValueDeep(newValue, errorContext=null){
+		var changed = false;
+		if(newValue instanceof _Array) {
+			newValue = newValue.__getValueArr__();
+		}
+
+		if(_.isArray(newValue)) {
+			changed = this.length !== newValue.length;
+			let assignIndex = 0;
+			let errorContext = errorContext? _.clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error','error', this.__options__);
+			_.forEach(newValue, (itemValue, newValIndex) => {
+				const currentItem = this.__value__[assignIndex];
+				const isPassedArrayLength = this.length <= assignIndex;
+				if(!isPassedArrayLength && !currentItem){
+					throw new Error('List setValueDeep() is not implemented for null cells yet');
+				}
+				if(isPassedArrayLength){
+					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+				} else if(currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
+					if(currentItem.constructor.allowPlainVal(itemValue)){
+						changed = currentItem.setValueDeep(itemValue) || changed;
+					} else {
+						changed = true;
+						this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+					}
+				} else {
+					changed = changed || itemValue !== currentItem;
+					this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+				}
+				assignIndex++;
+			});
+			if(changed) {
+				this.$setDirty(true);
 			}
 			this.__value__.length = newValue.length;
 		}
