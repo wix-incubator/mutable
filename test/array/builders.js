@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 import Typorama from '../../src';
 import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
 import {either} from '../../src/genericTypes'
@@ -61,7 +61,7 @@ export function aVeryCompositeContainerArray(optionalArr) {
 }
 const exported = {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray, aNumberStringArray, anEmptyArray,aUserArray, aUserWithAddressTypeArray, aUserOrAddressArray, aVeryCompositeContainerArray, a2dUserWithAddressTypeArray};
 
-export function asReadOnly(){
+function asReadOnly(){
 	return _.mapValues(exported, prop => {
 		if (prop.id){			// typorama type
 			return prop;
@@ -70,3 +70,5 @@ export function asReadOnly(){
 		}
 	});
 }
+
+export default _.defaults(exported, {asReadOnly});

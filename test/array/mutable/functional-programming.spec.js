@@ -1,6 +1,6 @@
 import Typorama from '../../../src';
 import {expect} from 'chai';
-import * as builders from '../builders';
+import builders from '../builders';
 import sinon from 'sinon';
 import _ from 'lodash';
 function testViewFunctionality(builders, isReadonly) {

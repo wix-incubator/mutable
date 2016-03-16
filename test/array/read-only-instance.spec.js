@@ -1,7 +1,7 @@
 import Typorama from '../../src';
 import {expect} from 'chai';
 import {either} from '../../src/genericTypes';
-import * as b from './builders';
+import b from './builders';
 
 let builders = b.asReadOnly();
 
