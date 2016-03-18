@@ -10,10 +10,11 @@ import Function from './function';
 import Reference from './reference';
 import { defineEnum, EnumBase } from "./defineEnum";
 import validation from "./validation";
-import { LifeCycleManager , revision} from "./lifecycle";
+import { LifeCycleManager, revision} from "./lifecycle";
 import {either} from './genericTypes';
 import Map from './map';
 import PropsBase from './props-base';
+
 
 export default {
 	validation,
@@ -35,7 +36,34 @@ export default {
 
     // This is temporarily alias included for backward compatibility.
     // In the future, Array should be renamed to List entirely.
-    List:Array,
+    List: Array,
+
+	// Stubs used only for declarations:
+	Map,
+	PropsBase
+};
+
+export {
+	validation,
+	config,
+    define,
+    BaseType,
+	PrimitiveBase,
+    String,
+    Boolean,
+    Number,
+    Array,
+    Function,
+	Reference,
+    defineEnum,
+    LifeCycleManager,
+    either,
+    revision,
+    EnumBase,
+
+    // This is temporarily alias included for backward compatibility.
+    // In the future, Array should be renamed to List entirely.
+    Array as List,
 
 	// Stubs used only for declarations:
 	Map,
