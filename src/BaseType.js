@@ -128,7 +128,7 @@ export default class BaseType extends PrimitiveBase {
 		return root;
     }
 
-	static __reportMisMatch__
+	static __reportMisMatch__;
 
     constructor(value, options=null, errorContext=null){
         super(value);
