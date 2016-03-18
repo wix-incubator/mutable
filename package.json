@@ -33,7 +33,7 @@
     "karma": "0.13.22",
     "karma-chrome-launcher": "0.2.2",
     "karma-mocha": "0.2.2",
-    "karma-teamcity-reporter": "0.2.1",
+    "karma-teamcity-reporter": "0.2.2",
     "mocha": "2.4.5",
     "mocha-loader": "0.7.1",
     "mocha-env-reporter": "1.0.2",
