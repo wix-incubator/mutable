@@ -1,119 +1,121 @@
-import * as Typorama from '../../../src';
 import {expect} from 'chai';
-import builders from '../builders';
-import {either} from '../../../src/genericTypes'
+
+import * as Typorama from '../../../src';
+import * as builders from '../builders';
+
+const either = Typorama.either;
 
 function testViewFunctionality(builders, isReadonly) {
 
 	describe('join', function () {
-		it('should join all the elements of an array into a string with default separator', function () {
-			expect(builders.aStringArray(['a', 'b']).join()).to.equal("a,b");
+		it('should join all the elements of a List into a string with default separator', function () {
+			expect(builders.aStringList(['a', 'b']).join()).to.equal("a,b");
 		});
 
-		it('should join all the elements of an array into a string with custom separator', function () {
-			expect(builders.aStringArray(['a', 'b']).join('|')).to.equal("a|b");
+		it('should join all the elements of a List into a string with custom separator', function () {
+			expect(builders.aStringList(['a', 'b']).join('|')).to.equal("a|b");
 		});
 	});
 
 	describe('slice', function () {
-		it('creates a slice of array from start up to the end of the array. ', function () {
-			var numberArray = builders.aNumberArray([1, 2, 3]);
+		it('creates a slice of List from start up to the end of the List. ', function () {
+			var numberList = builders.aNumberList([1, 2, 3]);
 
-			var slicedArray = numberArray.slice(1, 3);
+			var slicedList = numberList.slice(1, 3);
 
-			expect(slicedArray.at(0)).to.eql(numberArray.at(1));
+			expect(slicedList.at(0)).to.eql(numberList.at(1));
 		});
 		it('should start from 0 if begin is omitted', function () {
-			var numberArray = builders.aNumberArray();
+			var numberList = builders.aNumberList();
 
-			var slicedArray = numberArray.slice();
+			var slicedList = numberList.slice();
 
-			expect(slicedArray).to.eql(numberArray.$asReadWrite());
+			expect(slicedList).to.eql(numberList.$asReadWrite());
 		});
 		it('should offset from the end, if passed a negative BEGIN value', function () {
-			var numberArray = builders.aNumberArray([1, 2, 3]);
+			var numberList = builders.aNumberList([1, 2, 3]);
 
-			var slicedArray = numberArray.slice(-(numberArray.length - 1));
+			var slicedList = numberList.slice(-(numberList.length - 1));
 
-			expect(slicedArray).to.eql(builders.aNumberArray([2, 3]).$asReadWrite());
+			expect(slicedList).to.eql(builders.aNumberList([2, 3]).$asReadWrite());
 		});
 		it('should offset from the end, if passed a negative END value', function () {
-			var numberArray = builders.aNumberArray([1, 2, 3]);
+			var numberList = builders.aNumberList([1, 2, 3]);
 
-			var slicedArray = numberArray.slice(0, -1);
+			var slicedList = numberList.slice(0, -1);
 
-			expect(slicedArray).to.eql(builders.aNumberArray([1, 2]).$asReadWrite());
+			expect(slicedList).to.eql(builders.aNumberList([1, 2]).$asReadWrite());
 		});
 		it('should return mutable List', function () {
-			var numberArray = builders.aNumberArray([1, 2, 3]);
+			var numberList = builders.aNumberList([1, 2, 3]);
 
-			var slicedArray = numberArray.slice();
+			var slicedList = numberList.slice();
 
-			expect(slicedArray.$isReadOnly()).to.be.false;
+			expect(slicedList.$isReadOnly()).to.be.false;
 		});
 		if (isReadonly){
 			it('should return list with read only elements', function () {
-				var arr = builders.aUserArray();
+				var arr = builders.aUserList();
 
-				var slicedArray = arr.slice();
+				var slicedList = arr.slice();
 
-				expect(slicedArray.at(0).$isReadOnly()).to.be.true;
+				expect(slicedList.at(0).$isReadOnly()).to.be.true;
 			});
 		}
 	});
 
 
 	describe('concat', function () {
-		it('should not alter the original array', function () {
-			var numberArray = builders.aNumberArray();
-			var oldArray = numberArray.concat();
+		it('should not alter the original List', function () {
+			var numberList = builders.aNumberList();
+			var oldList = numberList.concat();
 
-			numberArray.concat(1, 1);
+			numberList.concat(1, 1);
 
-			expect(numberArray.$asReadWrite()).to.eql(oldArray);
+			expect(numberList.$asReadWrite()).to.eql(oldList);
 		});
 
 		it('should return a mutable List', function () {
-			var numberArray = builders.aNumberArray();
+			var numberList = builders.aNumberList();
 
-			var concattedArray = numberArray.concat(1, 1);
+			var concattedList = numberList.concat(1, 1);
 
-			expect(concattedArray).to.be.instanceOf(Typorama.Array);
-			expect(concattedArray.$isReadOnly()).to.be.false;
+			expect(concattedList).to.be.instanceOf(Typorama.List);
+			expect(concattedList.$isReadOnly()).to.be.false;
 
 		});
 		if (isReadonly){
 			it('should return list with read only elements', function () {
-				var arr = builders.aUserArray();
+				var arr = builders.aUserList();
 
-				var concattedArray = arr.concat({});
+				var concattedList = arr.concat({});
 
-				expect(concattedArray.at(0).$isReadOnly()).to.be.true;
+				expect(concattedList.at(0).$isReadOnly()).to.be.true;
 			});
 		}
-		it('should be able to concat N arrays of the same type', function () {
-			var concatResult = builders.aNumberArray([1, 2]).concat(builders.aNumberArray([3, 4]), [5, 6]);
+		it('should be able to concat N Lists of the same type', function () {
+			var concatResult = builders.aNumberList([1, 2]).concat(builders.aNumberList([3, 4]), [5, 6]);
 
 			expect(concatResult.length).to.equal(6, 'Length check');
 			expect(concatResult.__value__).to.eql([1, 2, 3, 4, 5, 6], 'Equality test'); //TODO: create matcher.
 		});
 
-		it('should be able to concat N arrays of the different types', function () {
-			var mixedArray = builders.aNumberStringArray([1, '2']);
+		it('should be able to concat N Lists of the different types', function () {
+			var mixedList = builders.aNumberStringList([1, '2']);
 
-			var concatResult = mixedArray.concat(builders.aStringArray(['3', '4']), [5, 6]);
+			var concatResult = mixedList.concat(builders.aStringList(['3', '4']), [5, 6]);
 
 			expect(concatResult.length).to.equal(6, 'Length check');
 			expect(concatResult.__value__).to.eql([1, '2', '3', '4', 5, 6], 'Equality test'); //TODO: create matcher.
 		});
 
-		it('should allow subtypes allowed by all the different arrays', function () {
-			var mixedInstance = builders.aUserOrAddressArray([
+		it('should allow subtypes allowed by all the different Lists', function () {
+			var mixedInstance = builders.aUserOrAddressList([
 				{_type: builders.UserType.id},
 				{_type: builders.AddressType.id},
 				{}
 			]);
-			var userList = builders.aUserArray([{}]);
+			var userList = builders.aUserList([{}]);
 			var mixedList = [{_type: builders.UserType.id}, {_type: builders.AddressType.id}];
 
 			var concatResult = mixedInstance.concat(userList, mixedList);
@@ -130,20 +132,20 @@ function testViewFunctionality(builders, isReadonly) {
 
 
 	describe('toString', function () {
-		it('should take an array, and return a string', function () {
-			expect(builders.aStringArray(['a', 'b']).toString()).to.eql("a,b");
+		it('should take a List, and return a string', function () {
+			expect(builders.aStringList(['a', 'b']).toString()).to.eql("a,b");
 		});
 	});
 
 	describe('toJSON', function () {
-		it('should take a typorama array of primitives, and return a native js array of primitives', function () {
-			var arrA = builders.aStringArray(['a', 'b']);
+		it('should take a typorama List of primitives, and return a native js List of primitives', function () {
+			var arrA = builders.aStringList(['a', 'b']);
 
 			expect(arrA.toJSON(), 'toJSON() called').to.eql(['a', 'b']);
 			expect(arrA.toJSON(false), 'toJSON (non-recursive) called').to.eql(['a', 'b']);
 		});
-		it('should take a typorama array of custom types, and return a native js array of objects', function () {
-			var arrA = builders.aUserArray([{age: 11}, {age: 12}]);
+		it('should take a typorama List of custom types, and return a native js List of objects', function () {
+			var arrA = builders.aUserList([{age: 11}, {age: 12}]);
 
 			expect(arrA.toJSON(), 'toJSON() called').to.eql([{age: 11, name: new builders.UserType().name}, {
 				age: 12,
@@ -157,13 +159,13 @@ function testViewFunctionality(builders, isReadonly) {
 	describe('valueOf', function () {
 		it('should return the primitive value of the specified object', function () {
 			var wrapped = ['a', 'b'];
-			expect(builders.aStringArray(wrapped).valueOf()).to.eql(wrapped).and.to.be.instanceOf(Array);
+			expect(builders.aStringList(wrapped).valueOf()).to.eql(wrapped).and.to.be.instanceOf(Array);
 		});
 
 	});
 }
 
-describe('Array', function() {
+describe('List', function() {
 	describe('mutable instance', function() {
 		testViewFunctionality(builders, false);
 

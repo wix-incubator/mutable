@@ -1,10 +1,13 @@
-import * as Typorama from '../../../src';
 import {expect} from 'chai';
-import sinon from 'sinon';
-import builders from '../builders';
-import lifeCycleAsserter from '../lifecycle.js';
-import {revision} from '../../../src/lifecycle.js';
-import _ from 'lodash';
+import * as sinon from 'sinon';
+import * as _ from 'lodash';
+
+import * as Typorama from '../../../src';
+import * as builders from '../builders';
+import lifeCycleAsserter from '../lifecycle';
+
+const revision = Typorama.revision;
+
 var hasSymbols = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol';
 
 function mapEntries(map) {

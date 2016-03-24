@@ -6,14 +6,14 @@ define([
     './String',
     './Number',
     './Boolean',
-    './Array'
+    './List'
  ], function (
     EntityRepo,
     BaseType,
     inherit,
     StringType,
     NumberType,BooelanType,
-    ArrayType
+    ListType
 ) {
 
     var BaseTypes = {};
@@ -31,7 +31,7 @@ define([
     registerType('String', 'string', StringType);
     registerType('Number', 'number', NumberType);
     registerType('Boolean', 'boolean', BooelanType);
-    registerType('Array', 'array', ArrayType);
+    registerType('List', 'List', ListType);
 
     BaseTypes.$private = function(fn, meta){
         fn.$private = true;

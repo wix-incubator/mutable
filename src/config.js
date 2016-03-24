@@ -1,3 +1,3 @@
 export default {
-	freezeInstance:false
+    freezeInstance: false
 }

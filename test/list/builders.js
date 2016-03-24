@@ -1,7 +1,9 @@
 import * as _ from 'lodash';
+
 import * as Typorama from '../../src';
-import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
-import {either} from '../../src/genericTypes'
+import {aDataTypeWithSpec} from '../../test-kit/test-drivers';
+
+const either = Typorama.either;
 
 export var UserType = aDataTypeWithSpec({
 	name: Typorama.String.withDefault(''),
@@ -24,44 +26,46 @@ export var VeryCompositeContainer = aDataTypeWithSpec({
 }, 'VeryCompositeContainer');
 
 
-export function aStringArray(optionalArr) {
-	return Typorama.Array.of(Typorama.String).create(optionalArr || ["John", "Paul", "George", "Ringo"]);
+export function aStringList(optionalArr) {
+	return Typorama.List.of(Typorama.String).create(optionalArr || ["John", "Paul", "George", "Ringo"]);
 }
 
-export function aNumberArray(optionalArr) {
-	return Typorama.Array.of(Typorama.Number).create(optionalArr || [1,2]);
+export function aNumberList(optionalArr) {
+	return Typorama.List.of(Typorama.Number).create(optionalArr || [1,2]);
 }
 
-export function aNumberStringArray(optionalArr) {
-	return Typorama.Array.of(either(Typorama.Number, Typorama.String)).create(optionalArr || [1,'ho']);
+export function aNumberStringList(optionalArr) {
+	return Typorama.List.of(either(Typorama.Number, Typorama.String)).create(optionalArr || [1,'ho']);
 }
 
-export function anEmptyArray() {
-	return aNumberArray([]);
+export function anEmptyList() {
+	return aNumberList([]);
 }
 
-export function aUserArray(optionalArr) {
-	return Typorama.Array.of(UserType).create(optionalArr || [{},{name:'yossi'}]);
+export function aUserList(optionalArr) {
+	return Typorama.List.of(UserType).create(optionalArr || [{},{name:'yossi'}]);
 }
 
-export function aUserWithAddressTypeArray(optionalArr) {
-	return Typorama.Array.of(UserWithAddressType).create(optionalArr || [{},{name:'yossi'}]);
+export function aUserWithAddressTypeList(optionalArr) {
+	return Typorama.List.of(UserWithAddressType).create(optionalArr || [{},{name:'yossi'}]);
 }
 
-export function aUserOrAddressArray(optionalArr) {
-	return Typorama.Array.of(either(UserType, AddressType)).create(optionalArr || [{},{name:'yossi'}]);
+export function aUserOrAddressList(optionalArr) {
+	return Typorama.List.of(either(UserType, AddressType)).create(optionalArr || [{},{name:'yossi'}]);
 }
 
-export function a2dUserWithAddressTypeArray(optionalArr) {
-	return Typorama.Array.of(Typorama.Array.of(UserWithAddressType)).create(optionalArr || [[{}],[{name:'yossi'}]]);
+export function a2dUserWithAddressTypeList(optionalArr) {
+	return Typorama.List.of(Typorama.List.of(UserWithAddressType)).create(optionalArr || [[{}],[{name:'yossi'}]]);
 }
 
-export function aVeryCompositeContainerArray(optionalArr) {
-	return Typorama.Array.of(VeryCompositeContainer).create(optionalArr || [{},{child1:{user:{name:'yossi'}}}]);
+export function aVeryCompositeContainerList(optionalArr) {
+	return Typorama.List.of(VeryCompositeContainer).create(optionalArr || [{},{child1:{user:{name:'yossi'}}}]);
 }
-const exported = {UserType, AddressType, UserWithAddressType, aStringArray, aNumberArray, aNumberStringArray, anEmptyArray,aUserArray, aUserWithAddressTypeArray, aUserOrAddressArray, aVeryCompositeContainerArray, a2dUserWithAddressTypeArray};
 
-function asReadOnly(){
+const exported = {UserType, AddressType, UserWithAddressType, aStringList, aNumberList, aNumberStringList, anEmptyList, aUserList, aUserWithAddressTypeList, aUserOrAddressList, aVeryCompositeContainerList, a2dUserWithAddressTypeList};
+
+
+export function asReadOnly(){
 	return _.mapValues(exported, prop => {
 		if (prop.id){			// typorama type
 			return prop;
@@ -70,5 +74,3 @@ function asReadOnly(){
 		}
 	});
 }
-
-export default _.defaults(exported, {asReadOnly});

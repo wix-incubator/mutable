@@ -55,7 +55,7 @@ export function defineEnum(def) {
 		return this.value;
 	};
 
-	if(Array.isArray(def)) {
+	if(_.isArray(def)) {
 	    def = convertToObject(def);
 	}
 

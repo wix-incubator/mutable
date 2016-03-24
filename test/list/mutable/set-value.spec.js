@@ -1,18 +1,18 @@
-import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerArray} from '../builders';
-import {LifeCycleManager, revision} from '../../../src/lifecycle.js';
-import {aDataTypeWithSpec} from '../../../test-kit/testDrivers/index';
-import * as Typorama from '../../../src';
 import {expect} from 'chai';
-import {either} from '../../../src/genericTypes';
-import lifeCycleAsserter from '../lifecycle.js';
+
+import * as Typorama from '../../../src';
+import {LifeCycleManager, revision, either} from '../../../src';
+import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
+import {aDataTypeWithSpec} from '../../../test-kit/test-drivers';
+import lifeCycleAsserter from '../lifecycle';
 import modifyTestSuite from './modify-test-suite';
-import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/testDrivers/reports'
+import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports';
 
 
 function complexSubTypeTests() {
-	it('single subtype array should allow setting data with json', function () {
+	it('single subtype List should allow setting data with json', function () {
 		var address = new AddressType({address: 'gaga'});
-		var mixedList = Typorama.Array.of(AddressType).create([address]);
+		var mixedList = Typorama.List.of(AddressType).create([address]);
 
 		mixedList.setValue([{code: 5}]);
 
@@ -24,7 +24,7 @@ function complexSubTypeTests() {
 	});
 
 	it("report correct path for field type mismatch in deep field", function() {
-		var aList = aVeryCompositeContainerArray([{}, {}]);
+		var aList = aVeryCompositeContainerList([{}, {}]);
 		expect(() => aList.setValue([{}, {child1: {user: { age: "666" }}}]))
 			.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('setValue', 'List<VeryCompositeContainer>[1].child1.user.age','number','string'));
 	});

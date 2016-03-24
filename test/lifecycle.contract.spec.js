@@ -1,7 +1,8 @@
+const _ = require('lodash');
 import {expect} from 'chai';
-import _ from 'lodash';
-import sinon from 'sinon';
-import {LifeCycleManager, revision} from '../src/lifecycle';
+import * as sinon from 'sinon';
+
+import {LifeCycleManager, revision} from '../src';
 
 /**
  * this is a parameterized test suite specifically designed to test the dirtyable contract.

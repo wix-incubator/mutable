@@ -1,19 +1,20 @@
-import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerArray} from '../builders';
-import {LifeCycleManager, revision} from '../../../src/lifecycle.js';
-import {aDataTypeWithSpec} from '../../../test-kit/testDrivers/index';
-import * as Typorama from '../../../src';
 import {expect} from 'chai';
-import {either} from '../../../src/genericTypes';
-import lifeCycleAsserter from '../lifecycle.js';
-import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/testDrivers/reports'
+
+import * as Typorama from '../../../src';
+import {LifeCycleManager, revision} from '../../../src';
+import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
+import {aDataTypeWithSpec} from '../../../test-kit/test-drivers';
+import {either} from '../../../src/generic-types';
+import lifeCycleAsserter from '../lifecycle';
+import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
 
 export default function modifyTestSuite(command, { complexSubTypeTests }){
 
-	describe(`Array ${command}`, function () {
+	describe(`List ${command}`, function () {
 		lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr[command]([elemFactory(), elemFactory()]), command);
 
 		it('should not get dirty if values are not changed', function () {
-			var numberList = aNumberArray([1]);
+			var numberList = aNumberList([1]);
 			revision.advance();
 			var rev = revision.read();
 
@@ -22,8 +23,8 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 			expect(numberList.$isDirty(rev)).to.be.false;
 		});
 
-		it("accepts a vanilla JS array", function () {
-			var list = anEmptyArray();
+		it("accepts a vanilla JS List", function () {
+			var list = anEmptyList();
 
 			expect(list.length).to.equal(0);
 
@@ -38,13 +39,13 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 
 			function aTestType(values) {
 				var TestType = aDataTypeWithSpec({
-					names: Typorama.Array.of(Typorama.String).withDefault(values)
+					names: Typorama.List.of(Typorama.String).withDefault(values)
 				}, "TestType");
 
 				return new TestType();
 			}
 
-			it("with Typorama object containing Typorama array of string", function () {
+			it("with Typorama object containing Typorama List of string", function () {
 				var testType = aTestType(["Beyonce", "Rihanna"]);
 
 				expect(testType.names.length).to.equal(2);
@@ -52,7 +53,7 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 				expect(testType.names.at(1)).to.equal("Rihanna");
 
 				testType[command]({
-					names: aStringArray(["John", "Paul", "George"])
+					names: aStringList(["John", "Paul", "George"])
 				});
 
 				expect(testType.names.length).to.equal(3);
@@ -61,7 +62,7 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 				expect(testType.names.at(2)).to.equal("George");
 			});
 
-			it("with JSON object containg JSON array of string", function () {
+			it("with JSON object containg JSON List of string", function () {
 				var testType = aTestType(["Beyonce", "Rihanna"]);
 
 				testType[command]({names: ["John", "Paul", "George"]});
@@ -73,11 +74,11 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 			});
 		});
 
-		it("with JSON object containg empty array", function () {
+		it("with JSON object containg empty List", function () {
 			var TestType1 = aDataTypeWithSpec({ gaga: Typorama.String }, "TestType1");
 			var TestType2 = aDataTypeWithSpec({ baga: Typorama.String }, "TestType2");
 			var TestType3 = aDataTypeWithSpec({
-				gagot: Typorama.Array.of(TestType1, TestType2).withDefault([{}, {}])
+				gagot: Typorama.List.of(TestType1, TestType2).withDefault([{}, {}])
 			}, "TestType3");
 
 			var testObj = new TestType3();
@@ -88,14 +89,14 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 			expect(testObj.gagot.at(0)).to.equal(undefined);
 		});
 
-		it("with array with compatible but different options", function () {
+		it("with List with compatible but different options", function () {
 			var TestType1 = aDataTypeWithSpec({ gaga: Typorama.String }, "TestType1");
 			var TestType2 = aDataTypeWithSpec({ baga: Typorama.String }, "TestType2");
 			var TestType3 = aDataTypeWithSpec({
-				gagot: Typorama.Array.of(TestType1, TestType2).withDefault([{}, {}, {}])
+				gagot: Typorama.List.of(TestType1, TestType2).withDefault([{}, {}, {}])
 			}, "TestType3");
 			var TestType4 = aDataTypeWithSpec({
-				gagot: Typorama.Array.of(TestType2).withDefault([{}])
+				gagot: Typorama.List.of(TestType2).withDefault([{}])
 			}, "TestType3");
 			var testObj = new TestType3();
 			var test2Obj = new TestType4();
@@ -106,10 +107,10 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 			expect(testObj.gagot.length).to.equal(1);
 		});
 
-		describe('on an array with complex subtype', function () {
+		describe('on a List with complex subtype', function () {
 
 			it('should keep typorama objects passed to it that fit its subtypes', function () {
-				var mixedList = Typorama.Array.of(either(UserType, AddressType)).create([]);
+				var mixedList = Typorama.List.of(either(UserType, AddressType)).create([]);
 				var newUser = new UserType();
 				var newAddress = new AddressType();
 
@@ -121,7 +122,7 @@ export default function modifyTestSuite(command, { complexSubTypeTests }){
 
 			it('should set the new item lifecycle manager when creating new from JSON', function () {
 				var mockManager = new LifeCycleManager();
-				var mixedList = Typorama.Array.of(AddressType).create([]);
+				var mixedList = Typorama.List.of(AddressType).create([]);
 				mixedList.$setManager(mockManager);
 
 				mixedList[command]([{code: 5}]);

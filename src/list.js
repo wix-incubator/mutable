@@ -1,11 +1,12 @@
 import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
+
 import defineType from './define-type';
 import {validateAndWrap, validateNullValue,	misMatchMessage, arrow} from './validation';
 import {getValueTypeName} from './utils';
 import BaseType from './base-type';
 import Number from './number';
 import * as generics from './generic-types';
-import {getMailBox} from 'escalate';
 
 const MAILBOX = getMailBox('Typorama.List');
 
@@ -18,7 +19,7 @@ class _List extends BaseType {
 	static defaults() { return []; }
 
 	static cloneValue(value){
-		if(!Array.isArray(value)) { return []; }
+		if(!_.isArray(value)) { return []; }
 		return value.map((itemValue, index) => {
 			var Type = generics.getMatchingType(this.options.subTypes, itemValue);
 			if(!Type){
@@ -28,14 +29,14 @@ class _List extends BaseType {
 		});
 	}
 
-	static validate(value) { return Array.isArray(value); }
+	static validate(value) { return _.isArray(value); }
 
 	static validateType(value) {
 		return BaseType.validateType.call(this, value);
 	}
 
 	static allowPlainVal(val){
-		return Array.isArray(val) || validateNullValue(this, val);
+		return _.isArray(val) || validateNullValue(this, val);
 	}
 
 	static wrapValue(value, spec, options,errorContext) {
@@ -110,9 +111,9 @@ class _List extends BaseType {
 
 	constructor(value=[], options={}, errorContext) {
 		if(!errorContext){
-			errorContext = _Array.createErrorContext('List constructor error', 'error', options);
+			errorContext = _List.createErrorContext('List constructor error', 'error', options);
 		}
-		const report = _Array.reportDefinitionErrors(options);
+		const report = _List.reportDefinitionErrors(options);
         if(report){
 			MAILBOX.error('List constructor: '+report.message);
         }
@@ -352,7 +353,7 @@ class _List extends BaseType {
 
 	setValue(newValue, errorContext) {
 		var changed = false;
-		if(newValue instanceof _Array) {
+		if(newValue instanceof _List) {
 			newValue = newValue.__getValueArr__();
 		}
 		if(_.isArray(newValue)) {
@@ -382,7 +383,7 @@ class _List extends BaseType {
 
 	setValueDeep(newValue, errorContext=null){
 		var changed = false;
-		if(newValue instanceof _Array) {
+		if(newValue instanceof _List) {
 			newValue = newValue.__getValueArr__();
 		}
 

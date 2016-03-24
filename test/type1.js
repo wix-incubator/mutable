@@ -1,4 +1,4 @@
-import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
-import * as Typorama from '../src';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+import {String} from '../src';
 
-export default aDataTypeWithSpec({foo: Typorama.String});
+export default aDataTypeWithSpec({foo: String});

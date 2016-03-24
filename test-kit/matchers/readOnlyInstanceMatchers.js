@@ -1,5 +1,3 @@
-import * as Typorama from '../../src';
-
 export default function (chai, utils) {
     chai.Assertion.overwriteMethod('equal', function (_super) {
       return function typoramaEquality(expected) {

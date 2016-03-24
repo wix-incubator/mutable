@@ -1,11 +1,12 @@
-import * as Typorama from '../src';
-import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
-import {expect, err} from 'chai';
-import {revision} from '../src/lifecycle';
-import {lifecycleContract} from './lifecycle.contract.spec.js';
-import sinon from 'sinon';
-import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR,ERROR_IN_SET,ERROR_IN_SET_VALUE} from '../test-kit/testDrivers/reports'
+import * as sinon from 'sinon';
+import {expect} from 'chai';
 
+import * as Typorama from '../src';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+import {lifecycleContract} from './lifecycle.contract.spec';
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR,ERROR_IN_SET,ERROR_IN_SET_VALUE} from '../test-kit/test-drivers/reports'
+
+const revision = Typorama.revision;
 
 var UserType = aDataTypeWithSpec({
 	name: Typorama.String.withDefault('leon'),
@@ -127,9 +128,9 @@ describe('Custom data', function() {
 				expect(inst.name.name).to.be.equal("Lilo");
 			});
 
-			it("should not modify original array", function() {
+			it("should not modify original List", function() {
 				var CustomType = aDataTypeWithSpec({
-					names: Typorama.Array.of(Typorama.String)
+					names: Typorama.List.of(Typorama.String)
 				}, "CustomType");
 
 				var original = { names: [ "Lilo", "Stitch" ] };
@@ -137,9 +138,9 @@ describe('Custom data', function() {
 				expect(original).to.deep.equal({ names: [ "Lilo", "Stitch" ] });
 			});
 
-			it("should not keep references to original array", function() {
+			it("should not keep references to original List", function() {
 				var CustomType = aDataTypeWithSpec({
-					names: Typorama.Array.of(Typorama.String)
+					names: Typorama.List.of(Typorama.String)
 				}, "CustomType");
 				var original = { names: [ "Lilo", "Stitch" ] };
 				var inst = new CustomType(original);
@@ -229,8 +230,8 @@ describe('Custom data', function() {
 						image:{ src:'original.jpg' },
 						title:'original title'
 					}),
-					relatedProducts: Typorama.Array.of(ProductType),
-					stringAndNumbers: Typorama.Array.of([Typorama.String, Typorama.Number])
+					relatedProducts: Typorama.List.of(ProductType),
+					stringAndNumbers: Typorama.List.of([Typorama.String, Typorama.Number])
 				}, 'StateType');
 			});
 
@@ -258,7 +259,7 @@ describe('Custom data', function() {
 			//TODO: what to do?
 			xit('should not set data that has different options', function(){
 				var state = new StateType();
-				var booleanList = new (Typorama.Array.of(Typorama.Boolean))([]);
+				var booleanList = new (Typorama.List.of(Typorama.Boolean))([]);
 				var relatedProductsPrevRef = state.relatedProducts;
 				var stringAndNumbersPrevRef = state.stringAndNumbers;
 
@@ -271,8 +272,8 @@ describe('Custom data', function() {
 
 			it('should set data that has equivalent options', function(){
 				var state = new StateType();
-				var productList = new (Typorama.Array.of(ProductType))([]);
-				var stringAndNumbersList = new (Typorama.Array.of([Typorama.String, Typorama.Number]))([]);
+				var productList = new (Typorama.List.of(ProductType))([]);
+				var stringAndNumbersList = new (Typorama.List.of([Typorama.String, Typorama.Number]))([]);
 				var relatedProductsPrevRef = state.relatedProducts;
 				var stringAndNumbersPrevRef = state.stringAndNumbers;
 				state.relatedProducts = productList;

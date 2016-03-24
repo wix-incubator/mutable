@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
+
 import * as Typorama from '../../src';
-import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
+import {aDataTypeWithSpec} from '../../test-kit/test-drivers';
 
 export function aNumberMap(optionalMap) {
 	return Typorama.Map.of(Typorama.String, Typorama.Number).create(optionalMap || {});
@@ -26,7 +27,7 @@ export const CheeseType = aDataTypeWithSpec({
 
 const exported = {CheeseType, UserType, aNumberMap, aUserTypeMap, aUnionTypeMap};
 
-function asReadOnly(){
+export function asReadOnly(){
 	return _.mapValues(exported, prop => {
 		if (prop.id){			// typorama type
 			return prop;
@@ -35,5 +36,3 @@ function asReadOnly(){
 		}
 	});
 }
-
-export default _.defaults(exported, {asReadOnly});

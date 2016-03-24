@@ -1,6 +1,3 @@
-/**
- * Created by amira on 29/12/15.
- */
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 

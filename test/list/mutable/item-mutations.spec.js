@@ -1,16 +1,18 @@
-import * as Typorama from '../../../src';
-import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, aVeryCompositeContainerArray} from '../builders';
 import {expect} from 'chai';
-import {either} from '../../../src/genericTypes'
-import lifeCycleAsserter from '../lifecycle.js';
-import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/testDrivers/reports'
 
-describe('Array', function() {
+import * as Typorama from '../../../src';
+import {aNumberList, aStringList, anEmptyList, UserType, AddressType, aVeryCompositeContainerList} from '../builders';
+import lifeCycleAsserter from '../lifecycle';
+import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
+
+const either = Typorama.either;
+
+describe('List', function() {
 	describe('mutable instance', function() {
 
 		describe('pop', function () {
-			it('should remove the last element from an array', function () {
-				var numberList = aNumberArray();
+			it('should remove the last element from a List', function () {
+				var numberList = aNumberList();
 				var oldArr = numberList.concat();
 
 				var valueRemoved = numberList.pop();
@@ -19,8 +21,8 @@ describe('Array', function() {
 				expect(valueRemoved).to.equal(oldArr.at(oldArr.length - 1));
 			});
 
-			it('should return undefined if called on an empty array', function () {
-				var numberList = anEmptyArray();
+			it('should return undefined if called on an empty List', function () {
+				var numberList = anEmptyList();
 
 				var valueRemoved = numberList.pop();
 
@@ -32,8 +34,8 @@ describe('Array', function() {
 		});
 
 		describe('push', function () {
-			it('it should add a number to an array ', function () {
-				var numberList = aNumberArray([1, 2, 3, 4]);
+			it('it should add a number to a List ', function () {
+				var numberList = aNumberList([1, 2, 3, 4]);
 				var lengthBeforePush = numberList.length;
 
 				var newIndex = numberList.push(5);
@@ -43,13 +45,13 @@ describe('Array', function() {
 			});
 
 			it('should add a typed item for non-primitive data (like custom types)', function () {
-				var arr = Typorama.Array.of(UserType).create([]);
+				var arr = Typorama.List.of(UserType).create([]);
 				arr.push({});
 				expect(arr.at(0)).to.be.instanceOf(UserType);
 			});
 
 			it('should add a typed item form multiple types if there is _type field', function () {
-				var arr = Typorama.Array.of(either(UserType, AddressType)).create([]);
+				var arr = Typorama.List.of(either(UserType, AddressType)).create([]);
 				arr.push({_type: 'User'});
 				arr.push({_type: 'Address'});
 				expect(arr.at(0)).to.be.instanceOf(UserType);
@@ -57,7 +59,7 @@ describe('Array', function() {
 			});
 
 			it('should support push of multiple items', function () {
-				var numberList = aNumberArray([1, 2]);
+				var numberList = aNumberList([1, 2]);
 				numberList.push(3, 4);
 
 				expect(numberList.length).to.equal(4);
@@ -66,7 +68,7 @@ describe('Array', function() {
 			});
 
 			it("report correct path for field type mismatch in deep field", function() {
-				var aList = aVeryCompositeContainerArray([{}, {}]);
+				var aList = aVeryCompositeContainerList([{}, {}]);
 				expect(() => aList.push({}, {child1: {user: { age: "666" }}}))
 					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('push', 'List<VeryCompositeContainer>[3].child1.user.age','number','string'));
 			});
@@ -75,14 +77,14 @@ describe('Array', function() {
 
 		describe('set', function () {
 			it('should replace an existing element', ()  => {
-				var arr = aStringArray(['a']);
+				var arr = aStringList(['a']);
 
 				arr.set(0, 'b');
 
 				expect(arr.toJSON()).to.eql(['b']);
 			});
 			it('should add an element if none exists', ()  => {
-				var arr = anEmptyArray();
+				var arr = anEmptyList();
 
 				arr.set(0, 42);
 
@@ -90,13 +92,13 @@ describe('Array', function() {
 			});
 
 			it('should return the element', () => {
-				var arr = aStringArray(['a']);
+				var arr = aStringList(['a']);
 
 				expect(arr.set(0, 'b')).to.eql('b');
 			});
 
 			it("report correct path for field type mismatch in deep field", function() {
-				var aList = aVeryCompositeContainerArray([{}, {}]);
+				var aList = aVeryCompositeContainerList([{}, {}]);
 				expect(() => aList.set(1, {child1: {user: { age: "666" }}}))
 					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('set', 'List<VeryCompositeContainer>.child1.user.age','number','string'));
 			});
@@ -105,17 +107,17 @@ describe('Array', function() {
 		});
 
 		describe('shift', function () {
-			it('should return the first element from the array', function () {
-				var numberList = aNumberArray();
-				var arrayBeforeShift = numberList.concat();
+			it('should return the first element from the List', function () {
+				var numberList = aNumberList();
+				var ListBeforeShift = numberList.concat();
 
 				var valueRemoved = numberList.shift();
 
-				expect(arrayBeforeShift.at(0)).to.equal(valueRemoved);
+				expect(ListBeforeShift.at(0)).to.equal(valueRemoved);
 			});
 
-			it('should remove an element from the array', function () {
-				var numberList = aNumberArray();
+			it('should remove an element from the List', function () {
+				var numberList = aNumberList();
 				var lengthBeforeShift = numberList.length;
 
 				numberList.shift();
@@ -128,16 +130,16 @@ describe('Array', function() {
 
 
 		describe('unshift', function () {
-			it('should return the length of the array', function () {
-				var numberList = aNumberArray();
+			it('should return the length of the List', function () {
+				var numberList = aNumberList();
 
 				var newLength = numberList.unshift();
 
-				expect(numberList.length).to.equal(newLength, 'Did not return the proper array.length');
+				expect(numberList.length).to.equal(newLength, 'Did not return the proper List.length');
 			});
 
-			it('should add an element to the array', function () {
-				var numberList = aNumberArray();
+			it('should add an element to the List', function () {
+				var numberList = aNumberList();
 				var lengthBeforeUnshift = numberList.length;
 
 				numberList.unshift(5);
@@ -147,7 +149,7 @@ describe('Array', function() {
 			});
 
 			it("report correct path for field type mismatch in deep field", function() {
-				var aList = aVeryCompositeContainerArray([{}, {}]);
+				var aList = aVeryCompositeContainerList([{}, {}]);
 				expect(() => aList.unshift({}, {child1: {user: { age: "666" }}}))
 					.to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('unshift', 'List<VeryCompositeContainer>[1].child1.user.age','number','string'));
 			});

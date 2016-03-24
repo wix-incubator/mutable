@@ -1,11 +1,8 @@
-/**
- * Created by amira on 1/4/15.
- */
+import * as sinon from 'sinon';
+import {expect} from 'chai';
 
-import { cloneType } from '../src/utils';
-import { aDataTypeWithSpec } from '../test-kit/testDrivers/index';
-import { expect, err } from 'chai';
-import sinon from 'sinon';
+import {cloneType} from '../src/utils';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
 describe('utils', function() {
 

@@ -1,21 +1,21 @@
-import * as Typorama from '../../src';
 import {expect} from 'chai';
-import {either} from '../../src/genericTypes';
-import b from './builders';
 
-let builders = b.asReadOnly();
+import * as Typorama from '../../src';
+import * as b from './builders';
 
-describe('Array', function() {
+const builders = b.asReadOnly();
+
+describe('List', function() {
 	describe('read-only instance', function() {
 
 		it('Should have default length', function() {
-			var numberList = builders.aNumberArray([1, 2, 3]);
+			var numberList = builders.aNumberList([1, 2, 3]);
 			expect(numberList.length).to.equal(3);
 		});
 
 		it('Should keep the source instance not readOnly', function() {
 			// this is because the readonly instance used to have a bug in which it changed the original item value while wrapping it
-			var numberList = builders.aNumberArray();
+			var numberList = builders.aNumberList();
 
 			numberList.setValue([5,6]);
 
@@ -23,7 +23,7 @@ describe('Array', function() {
 		});
 
 		it('Should be created once for each data instance', function() {
-			var numberList = builders.aNumberArray().$asReadWrite();
+			var numberList = builders.aNumberList().$asReadWrite();
 
 			expect(numberList.$asReadOnly()).to.equal(numberList.$asReadOnly());
 		});
@@ -39,7 +39,7 @@ describe('Array', function() {
 			});
 
 			it("should throw error on unknown field setter", function(){
-				var names = builders.aStringArray();
+				var names = builders.aStringList();
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
@@ -50,7 +50,7 @@ describe('Array', function() {
 
 		describe('__value__', function() {
 			it('should be synced with the readonly', function () {
-				var readOnly = builders.aUserArray();
+				var readOnly = builders.aUserList();
 				var arr = readOnly.$asReadWrite();
 
 				arr.setValue([builders.UserType.defaults()]);
@@ -60,7 +60,7 @@ describe('Array', function() {
 		});
 		describe('should not be modified by', function () {
 			it('push',function() {
-				var numberList = builders.aNumberArray();
+				var numberList = builders.aNumberList();
 				var lengthBeforePush = numberList.length;
 
 				var newIndex = numberList.push(3);
@@ -70,7 +70,7 @@ describe('Array', function() {
 				expect(numberList.at(lengthBeforePush)).to.equal(undefined);
 			});
 			it('pop', function () {
-				var numberList = builders.aNumberArray([5]);
+				var numberList = builders.aNumberList([5]);
 				var lengthBeforePop = numberList.length;
 
 				var item = numberList.pop();
@@ -80,17 +80,17 @@ describe('Array', function() {
 				expect(numberList.at(0)).to.equal(5);
 			});
 			it('unshift',function() {
-				var numberList = builders.aNumberArray();
+				var numberList = builders.aNumberList();
 				var lengthBeforeUnshift = numberList.length;
 
 				var newLength = numberList.unshift(953);
 
 				expect(newLength).to.be.null;
 				expect(numberList.length).to.equal(lengthBeforeUnshift);
-				expect(numberList.at(0)).to.equal(builders.aNumberArray().at(0));
+				expect(numberList.at(0)).to.equal(builders.aNumberList().at(0));
 			});
 			it('shift', function () {
-				var numberList = builders.aNumberArray([5]);
+				var numberList = builders.aNumberList([5]);
 				var lengthBeforePop = numberList.length;
 
 				var item = numberList.pop();
@@ -101,29 +101,29 @@ describe('Array', function() {
 			});
 
 			it('set', function () {
-				var numberList = builders.aNumberArray([5]);
+				var numberList = builders.aNumberList([5]);
 				var result = numberList.set(0,3);
 				expect(result).to.be.null;
 				expect(numberList.at(0)).to.equal(5);
 			});
 
 			it('reverse', function () {
-				var numberList = builders.aNumberArray();
+				var numberList = builders.aNumberList();
 				numberList.reverse();
 
 				for (var i = 0; i < numberList.length; i++) {
-					expect(numberList.at(i)).to.equal(builders.aNumberArray().at(i));
+					expect(numberList.at(i)).to.equal(builders.aNumberList().at(i));
 				}
 			});
 
 			it('sort', function () {
-				var numberArray = builders.aNumberArray([40, 1, 5, 200]);
-				numberArray.sort();
-				expect(numberArray).to.eql(builders.aNumberArray([40, 1, 5, 200]));
+				var numberList = builders.aNumberList([40, 1, 5, 200]);
+				numberList.sort();
+				expect(numberList).to.eql(builders.aNumberList([40, 1, 5, 200]));
 			});
 
 			it('splice',function() {
-				var numberList = builders.aNumberArray();
+				var numberList = builders.aNumberList();
 				var lengthBeforeSplice = numberList.length;
 
 				var removedItems = numberList.splice(0, 1, 17);
@@ -135,15 +135,15 @@ describe('Array', function() {
 			});
             
             it('slice',function(){
-				var numberList = builders.aNumberArray([1, 2, 3, 4, 5]);
+				var numberList = builders.aNumberList([1, 2, 3, 4, 5]);
 				var lengthBeforeSlice = numberList.length;
 
-				var slicedArray = numberList.slice(3);
+				var slicedList = numberList.slice(3);
                 var emptySlice = numberList.slice(0,0);
 
                 expect(numberList.length).to.equal(lengthBeforeSlice);
-				expect(slicedArray.at(0)).to.equal(4);
-				expect(slicedArray.at(1)).to.equal(5);
+				expect(slicedList.at(0)).to.equal(4);
+				expect(slicedList.at(1)).to.equal(5);
                 expect(emptySlice.length).to.equal(0);
             })
 		});
