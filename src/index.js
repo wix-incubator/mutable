@@ -1,43 +1,16 @@
-import config from './typoramaConfiguration';
-import define from './defineType';
-import BaseType from './BaseType';
-import PrimitiveBase from './PrimitiveBase';
-import String from './string';
-import Boolean from './boolean';
-import Number from './number';
-import Array from './array';
-import Function from './function';
-import Reference from './reference';
-import { defineEnum, EnumBase } from "./defineEnum";
-import validation from "./validation";
-import { LifeCycleManager, revision} from "./lifecycle";
-import {either} from './genericTypes';
-import Map from './map';
-import PropsBase from './props-base';
-
-export {
-	validation,
-	config,
-    define,
-    BaseType,
-	PrimitiveBase,
-    String,
-    Boolean,
-    Number,
-    Array,
-    Function,
-	Reference,
-    defineEnum,
-    LifeCycleManager,
-    either,
-    revision,
-    EnumBase,
-
-    // This is temporarily alias included for backward compatibility.
-    // In the future, Array should be renamed to List entirely.
-    Array as List,
-
-	// Stubs used only for declarations:
-	Map,
-	PropsBase
-};
+export {default as config} from './typoramaConfiguration';
+export {default as define} from './defineType';
+export {default as BaseType} from './BaseType';
+export {default as PrimitiveBase} from './PrimitiveBase';
+export {default as String} from './string';
+export {default as Boolean} from './boolean';
+export {default as Number} from './number';
+export {default as List} from './list';
+export {default as Function} from './function';
+export {default as Reference} from './reference';
+export {defineEnum, EnumBase} from "./defineEnum";
+import {default as validation} from "./validation";
+export {LifeCycleManager, revision} from "./lifecycle";
+export {either} from './genericTypes';
+export {default as Map} from './map';
+export {default as PropsBase} from './props-base';
