@@ -1,4 +1,4 @@
-import Typorama from '../../src';
+import * as Typorama from '../../src';
 import {LifeCycleManager, revision} from '../../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
 import {expect} from 'chai';

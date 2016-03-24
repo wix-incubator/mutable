@@ -2,7 +2,7 @@
  * Created by amira on 1/4/15.
  */
 
-import Typorama from '../src';
+import * as Typorama from '../src';
 import { aDataTypeWithSpec } from '../test-kit/testDrivers/index';
 import { expect, err } from 'chai';
 import {revision} from '../src/lifecycle';

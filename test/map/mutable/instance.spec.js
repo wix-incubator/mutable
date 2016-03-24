@@ -1,4 +1,4 @@
-import Typorama from '../../../src';
+import * as Typorama from '../../../src';
 import {expect} from 'chai';
 import sinon from 'sinon';
 import builders from '../builders';

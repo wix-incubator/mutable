@@ -1,4 +1,4 @@
-import Typorama from '../src';
+import * as Typorama from '../src';
 import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
 import {expect, err} from 'chai';
 import {revision} from '../src/lifecycle';

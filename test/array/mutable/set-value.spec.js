@@ -1,7 +1,7 @@
 import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerArray} from '../builders';
 import {LifeCycleManager, revision} from '../../../src/lifecycle.js';
 import {aDataTypeWithSpec} from '../../../test-kit/testDrivers/index';
-import Typorama from '../../../src';
+import * as Typorama from '../../../src';
 import {expect} from 'chai';
 import {either} from '../../../src/genericTypes';
 import lifeCycleAsserter from '../lifecycle.js';

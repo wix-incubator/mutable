@@ -1,7 +1,7 @@
 /**
  * Created by amira on 26/1/16.
  */
-import Typorama from '../../src';
+import * as Typorama from '../../src';
 import {expect} from 'chai';
 import sinon from 'sinon';
 import builders from './builders';

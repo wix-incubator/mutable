@@ -1,5 +1,5 @@
 import {lifecycleContract} from '../lifecycle.contract.spec.js';
-import Typorama from '../../src';
+import * as Typorama from '../../src';
 import {UserType} from './builders';
 
 var lifeCycleAsserter = lifecycleContract();

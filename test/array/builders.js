@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import Typorama from '../../src';
+import * as Typorama from '../../src';
 import {aDataTypeWithSpec} from '../../test-kit/testDrivers/index';
 import {either} from '../../src/genericTypes'
 

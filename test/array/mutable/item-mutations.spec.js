@@ -1,4 +1,4 @@
-import Typorama from '../../../src';
+import * as Typorama from '../../../src';
 import {aNumberArray, aStringArray, anEmptyArray, UserType, AddressType, aVeryCompositeContainerArray} from '../builders';
 import {expect} from 'chai';
 import {either} from '../../../src/genericTypes'

@@ -4,7 +4,7 @@
 import testKit from "../test-kit";
 import { expect, err } from 'chai';
 import sinon from 'sinon';
-import Typorama from '../src';
+import * as Typorama from '../src';
 
 function defineRef(def, id){
 	return Typorama.define(id || 'unnamedRefType', {

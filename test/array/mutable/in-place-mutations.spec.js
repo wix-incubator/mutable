@@ -1,4 +1,4 @@
-import Typorama from '../../../src';
+import * as Typorama from '../../../src';
 import {aNumberArray, aStringArray, aVeryCompositeContainerArray, UserType} from '../builders';
 import {expect} from 'chai';
 import lifeCycleAsserter from '../lifecycle.js';

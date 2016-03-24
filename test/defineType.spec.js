@@ -1,4 +1,4 @@
-import Typorama from '../src';
+import * as Typorama from '../src';
 import {isAssignableFrom} from '../src/validation';
 import {revision} from '../src/lifecycle';
 import {either} from '../src/genericTypes';
