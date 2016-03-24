@@ -36,7 +36,7 @@
     "chai": "3.5.0",
     "immutable": "3.7.6",
     "karma": "0.13.22",
-    "karma-chrome-launcher": "0.2.2",
+    "karma-chrome-launcher": "0.2.3",
     "karma-mocha": "0.2.2",
     "karma-teamcity-reporter": "0.2.2",
     "mocha": "2.4.5",
