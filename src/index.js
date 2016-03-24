@@ -15,34 +15,6 @@ import {either} from './genericTypes';
 import Map from './map';
 import PropsBase from './props-base';
 
-
-export default {
-	validation,
-	config,
-    define,
-    BaseType,
-	PrimitiveBase,
-    String,
-    Boolean,
-    Number,
-    Array,
-    Function,
-	Reference,
-    defineEnum,
-    LifeCycleManager,
-    either,
-    revision,
-    EnumBase,
-
-    // This is temporarily alias included for backward compatibility.
-    // In the future, Array should be renamed to List entirely.
-    List: Array,
-
-	// Stubs used only for declarations:
-	Map,
-	PropsBase
-};
-
 export {
 	validation,
 	config,
