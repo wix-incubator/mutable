@@ -26,7 +26,7 @@ var TestType = defineType({
             w : 0,
             h : 0,
             bg : "",
-            children : new BaseTypes.array(owner, [], { subTypes:[TestType] })
+            children : new BaseTypes.List(owner, [], { subTypes:[TestType] })
         };
     },
 //    defaultProps: function(owner){
@@ -37,7 +37,7 @@ var TestType = defineType({
 //            w : new BaseTypes.number(owner, 0),
 //            h : new BaseTypes.number(owner, 0),
 //            bg : new BaseTypes.string(owner, 1000),
-//            children : new BaseTypes.array(owner, [], { subTypes:[TestType] })
+//            children : new BaseTypes.List(owner, [], { subTypes:[TestType] })
 //        };
 //    },
     imports: []

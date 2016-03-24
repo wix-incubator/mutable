@@ -130,7 +130,7 @@ var TyporamaTestType = Typorama.define('test', {
             h: Typorama.Number,
             key: Typorama.String,
             bg: Typorama.String,
-            children: Typorama.Array.of(ThisType)
+            children: Typorama.List.of(ThisType)
         }
     }
 });
