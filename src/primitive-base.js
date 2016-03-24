@@ -1,7 +1,7 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-import {cloneType,getReadableValueTypeName} from './utils';
-import {validateNullValue} from "./validation";
+import {cloneType, getReadableValueTypeName} from './utils';
+import {validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Typorama.PrimitiveBase');
 
@@ -17,7 +17,7 @@ function reportErrorInternal(value,options,allowPlain,allowInstance){
 	}
 }
 
-class PrimitiveBase {
+export default class PrimitiveBase {
 	static create(){}
 	static defaults(){}
 	static validate(value){}
@@ -63,8 +63,4 @@ class PrimitiveBase {
 	static reportSetErrors(value,options){
 		return reportErrorInternal.call(this,value,options,false,true);
 	}
-
-
 }
-
-export default PrimitiveBase;

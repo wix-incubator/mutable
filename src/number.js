@@ -1,8 +1,8 @@
-import PrimitiveBase from "./PrimitiveBase";
-import {validateNullValue} from "./validation";
+import PrimitiveBase from './primitive-base';
+import {validateNullValue} from './validation';
 
 export default class _Number extends PrimitiveBase{
-	
+
 	static create(v){
 		if(validateNullValue(this, v)){
 			return v;

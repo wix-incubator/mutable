@@ -1,8 +1,9 @@
-import BaseType from "./BaseType";
-import DefineType from "./defineType";
-import { validateAndWrap, validateNullValue } from "./validation";
-import {getMailBox}       from 'escalate';
-import _ from "lodash";
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
+
+import BaseType from './base-type';
+import defineType from './define-type';
+import {validateAndWrap, validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Typorama.Reference');
 
@@ -33,11 +34,8 @@ class _Reference extends BaseType {
 	static cloneValue(value){ return value; }
 }
 
-var Reference = DefineType('Reference', {
+export default defineType('Reference', {
 	spec: function(Reference) {
 		return {};
 	}
 }, null, _Reference);
-
-
-export default Reference;

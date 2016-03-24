@@ -1,19 +1,15 @@
-import _                  from 'lodash';
-import defineType         from './defineType';
-import {
-	validateAndWrap,
-	validateNullValue,
-	misMatchMessage,
-	arrow}    from './validation';
+import * as _ from 'lodash';
+import defineType from './define-type';
+import {validateAndWrap, validateNullValue,	misMatchMessage, arrow} from './validation';
 import {getValueTypeName} from './utils';
-import BaseType           from './BaseType';
-import Number             from './number';
-import * as generics      from './genericTypes';
-import {getMailBox}       from 'escalate';
+import BaseType from './base-type';
+import Number from './number';
+import * as generics from './generic-types';
+import {getMailBox} from 'escalate';
 
 const MAILBOX = getMailBox('Typorama.List');
 
-class _Array extends BaseType {
+class _List extends BaseType {
 
 	static withDefault(){
 		return BaseType.withDefault.apply(this, arguments);
@@ -26,7 +22,7 @@ class _Array extends BaseType {
 		return value.map((itemValue, index) => {
 			var Type = generics.getMatchingType(this.options.subTypes, itemValue);
 			if(!Type){
-				throw new Error("cloneValue error: no type found for index " + index)
+				throw new Error('cloneValue error: no type found for index ' + index)
 			}
 			return Type.cloneValue(itemValue);
 		});
@@ -442,4 +438,4 @@ export default defineType('List',{
 			length: Number.withDefault(0)
 		};
 	}
-}, null, _Array);
+}, null, _List);

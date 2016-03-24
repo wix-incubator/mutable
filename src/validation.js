@@ -1,8 +1,10 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
+
+import {getReadableValueTypeName} from './utils';
+import {optionalSetManager} from './lifecycle';
+
 const MAILBOX = getMailBox('Typorama.validation');
-import {getReadableValueTypeName} from './utils'
-import {optionalSetManager} from './lifecycle'
 
 export function misMatchMessage(errorContext, expected,recieved,overridepath, template){
 	var expectedMessage = template? `expected ${template} of type` : 'expected type';

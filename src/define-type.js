@@ -1,13 +1,14 @@
-import _                  from "lodash";
-import BaseType           from "./BaseType";
-import PrimitiveBase      from './PrimitiveBase';
-import {isAssignableFrom,validateNullValue,misMatchMessage} from "./validation"
-import {generateClassId} from "./utils"
-import {getMailBox}       from 'escalate';
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
+
+import BaseType from './base-type';
+import PrimitiveBase from './primitive-base';
+import {isAssignableFrom, validateNullValue, misMatchMessage} from './validation';
+import {generateClassId} from './utils';
 
 const MAILBOX = getMailBox('Typorama.define');
 
-function defineType(id, typeDefinition, ParentType, TypeConstructor){
+export default function defineType(id, typeDefinition, ParentType, TypeConstructor){
 	ParentType = ParentType || BaseType;
 	var Type = TypeConstructor || function Type(value, options,eventContext){
 			ParentType.call(this, value, options, eventContext);
@@ -70,8 +71,8 @@ function generateSpec(TypeId, spec,ParentType){
 		if(baseSpec[fieldName]){
 			var path = `${TypeId}.${fieldName}`;
 			var superName = ParentType.id;
-			//MAILBOX.fatal(`Type definition error: "${path}" already exist on super ${superName}`);
-			throw new Error(`Type definition error: "${path}" already exist on super ${superName}`);
+			//MAILBOX.fatal(`Type definition error: "${path}" already exists on super ${superName}`);
+			throw new Error(`Type definition error: "${path}" already exists on super ${superName}`);
 		}else{
 			baseSpec[fieldName] = field;
 		}
@@ -79,9 +80,6 @@ function generateSpec(TypeId, spec,ParentType){
 	return baseSpec;
 
 }
-
-export default defineType;
-
 
 function getDirtyableElementsIterator(spec, superIterator){
 	var complex = [];
@@ -144,7 +142,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
 					}
 				} else {
 					// todo:warn hook
-					console.warn(`Attemt to override readonly value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
+					console.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
 				}
 			},
 			enumerable:true,
@@ -152,5 +150,3 @@ function generateFieldsOn(obj, fieldsDefinition) {
 		});
 	});
 }
-
-

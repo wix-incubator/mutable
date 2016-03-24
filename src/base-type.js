@@ -1,17 +1,11 @@
-import _               from 'lodash';
-import config          from './typoramaConfiguration';
-import {makeDirtyable,
-	optionalSetManager} from './lifecycle';
-import PrimitiveBase   from './PrimitiveBase';
-import {getFieldDef,getReadableValueTypeName}   from './utils';
-import {
-	validateAndWrap,
-	isAssignableFrom,
-	validateNullValue,
-	validateValue,
-	isDataMatching}    from "./validation";
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
 
-import {getMailBox}    from 'escalate';
+import config from './config';
+import {makeDirtyable, optionalSetManager} from './lifecycle';
+import PrimitiveBase from './primitive-base';
+import {getFieldDef,getReadableValueTypeName}   from './utils';
+import {validateAndWrap, isAssignableFrom, validateNullValue, validateValue, isDataMatching} from './validation';
 
 const MAILBOX = getMailBox('Typorama.BaseType');
 
@@ -68,7 +62,7 @@ export default class BaseType extends PrimitiveBase {
 
 	static reportFieldDefinitionError(fieldDef,template){
 		if (!fieldDef || !fieldDef.type || !(fieldDef.type.prototype instanceof PrimitiveBase)) {
-			return {message:`must be a primitive type or extend core3.Type`,path:""};
+			return {message:`must be a primitive type or extend core3.Type`,path:''};
 		}
 		return fieldDef.type.reportDefinitionErrors(fieldDef.options);
 	}
@@ -127,8 +121,6 @@ export default class BaseType extends PrimitiveBase {
 		});
 		return root;
     }
-
-	static __reportMisMatch__;
 
     constructor(value, options=null, errorContext=null){
         super(value);

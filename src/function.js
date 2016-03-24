@@ -1,5 +1,5 @@
-import PrimitiveBase from "./PrimitiveBase"
-import {validateNullValue} from "./validation"
+import PrimitiveBase from './primitive-base';
+import {validateNullValue} from './validation';
 
 function noop() {};
 
@@ -24,10 +24,8 @@ export default class _Function extends PrimitiveBase{
         super(value);
     	return _Function.validate(value) ? value : noop;
     }
-
 }
 
 _Function.id = 'function';
 _Function.type = _Function;
 //_Function.create = Object;
-

@@ -2,8 +2,8 @@
  * Created by amira on 30/12/15.
  */
 
-import _                  from 'lodash';
-import {getMailBox}       from 'escalate';
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
 import {arrow} from './validation';
 
 const MAILBOX = getMailBox('Typorama.genericTypes');

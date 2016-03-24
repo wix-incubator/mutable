@@ -1,6 +1,5 @@
-import PrimitiveBase from "./PrimitiveBase"
-import {validateNullValue} from "./validation"
-
+import PrimitiveBase from './primitive-base';
+import {validateNullValue} from './validation';
 
 export default class _Boolean extends PrimitiveBase{
 	static create(v){
