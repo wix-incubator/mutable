@@ -1,11 +1,11 @@
-import _ from 'lodash';
-import Typorama from '../src';
-import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
-import {expect, err} from 'chai';
-import {revision} from '../src/lifecycle';
-import {lifecycleContract} from './lifecycle.contract.spec.js';
-import sinon from 'sinon';
-import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR,ERROR_IN_SET,ERROR_IN_SET_VALUE,ERROR_IN_DEFAULT_VALUES} from '../test-kit/testDrivers/reports'
+import * as _ from 'lodash';
+import * as sinon from 'sinon';
+import {expect} from 'chai';
+
+import * as Typorama from '../src';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+import {lifecycleContract} from './lifecycle.contract.spec';
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR,ERROR_IN_SET,ERROR_IN_SET_VALUE,ERROR_IN_DEFAULT_VALUES} from '../test-kit/test-drivers/reports';
 
 describe('Nullable custom type initialize', function(){
 

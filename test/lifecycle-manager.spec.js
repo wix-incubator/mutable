@@ -1,6 +1,7 @@
-import {expect, err} from 'chai';
-import sinon from 'sinon';
-import Typorama from "../src";
+import * as sinon from 'sinon';
+import {expect} from 'chai';
+
+import * as Typorama from "../src";
 
 describe('LifecycleManager', function() {
 	var lifecycleManager;

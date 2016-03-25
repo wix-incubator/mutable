@@ -3,7 +3,7 @@ import React from 'react'
 import Immutable from 'immutable'
 import core3Data from './core3data'
 
-import Typorama from '../../../src'
+import * as Typorama from '../../../src'
 
 window.count = 0;
 window.renderEmpty = false;
@@ -130,7 +130,7 @@ var TyporamaTestType = Typorama.define('test', {
             h: Typorama.Number,
             key: Typorama.String,
             bg: Typorama.String,
-            children: Typorama.Array.of(ThisType)
+            children: Typorama.List.of(ThisType)
         }
     }
 });

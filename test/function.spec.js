@@ -1,4 +1,4 @@
-import Typorama from '../src';
+import * as Typorama from '../src';
 import {expect} from 'chai';
 
 describe('Function data', function() {

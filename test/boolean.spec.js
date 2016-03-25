@@ -1,18 +1,11 @@
-/**
- * Created by amira on 1/4/15.
- */
+import {expect} from 'chai';
 
-import Typorama from '../src';
-import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
-import {expect, err} from 'chai';
-
-
+import * as Typorama from '../src';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
 describe('Boolean Type', function() {
 
     var Boolean = Typorama.Boolean;
-
-
 
     describe('js value is strictly boolean', function() {
 

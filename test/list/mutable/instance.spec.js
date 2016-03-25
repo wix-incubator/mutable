@@ -1,13 +1,14 @@
-import Typorama from '../../../src';
+import * as sinon from 'sinon';
 import {expect} from 'chai';
-import sinon from 'sinon';
-import {aNumberArray, aStringArray, UserType, AddressType, UserWithAddressType} from '../builders';
 
-describe('Array', function() {
+import * as Typorama from '../../../src';
+import {aNumberList, aStringList, UserType, AddressType, UserWithAddressType} from '../builders';
+
+describe('List', function() {
 	describe('mutable instance', function() {
 
 		it('Should have default length', function() {
-			var numberList = aNumberArray([1, 2, 3]);
+			var numberList = aNumberList([1, 2, 3]);
 			expect(numberList.length).to.equal(3);
 		});
 
@@ -22,7 +23,7 @@ describe('Array', function() {
 			});
 
 			it("should throw error on unknown field setter", function(){
-				var names = aStringArray();
+				var names = aStringList();
 
 				expect(function(){
 					names[4] = "there is no 4 - only at()";
@@ -38,7 +39,7 @@ describe('Array', function() {
 					spec: function() {
 						return {
 							title: Typorama.String,
-							users: Typorama.Array.of(UserType)
+							users: Typorama.List.of(UserType)
 						};
 					}
 				});
@@ -47,7 +48,7 @@ describe('Array', function() {
 			it('Should be modified from json ', function() {
 				var groupData = new GroupType();
 
-				groupData.users = Typorama.Array.of(UserType).create([
+				groupData.users = Typorama.List.of(UserType).create([
 					{'name':'tom', 'age':25},
 					{'name':'omri', 'age':35}
 				]);

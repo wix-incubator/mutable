@@ -1,10 +1,8 @@
-/**
- * Created by idoro on 11/3/2015.
- */
+import * as sinon from 'sinon';
+import {expect} from 'chai';
+
 import testKit from "../test-kit";
-import { expect, err } from 'chai';
-import sinon from 'sinon';
-import Typorama from '../src';
+import * as Typorama from '../src';
 
 function defineRef(def, id){
 	return Typorama.define(id || 'unnamedRefType', {
@@ -70,7 +68,7 @@ describe("reference type", function() {
 		it('should keep the original value reference (from defaults of complex list)', function(){
 			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
 			var defaultInputRef = { age:30 };
-			var listOfRef = Typorama.Array.of(RefType).withDefault([defaultInputRef]);
+			var listOfRef = Typorama.List.of(RefType).withDefault([defaultInputRef]);
 
 			var listIns = new listOfRef();
 
@@ -81,7 +79,7 @@ describe("reference type", function() {
 			var MyClass = function(){ this.age = 35; };
 			var RefType = defineRef({ age:Typorama.Number }, 'MyRefType');
 			var defaultInputRef = new MyClass();
-			var listOfRef = Typorama.Array.of(RefType);
+			var listOfRef = Typorama.List.of(RefType);
 
 			var listIns = new listOfRef([defaultInputRef]);
 

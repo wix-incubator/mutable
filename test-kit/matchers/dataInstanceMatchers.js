@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import Typorama from '../../src';
+import * as _ from 'lodash';
 
 export default function (chai, utils) {
 

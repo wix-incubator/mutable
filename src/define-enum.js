@@ -1,9 +1,10 @@
-import _ from "lodash";
-import BaseType from './BaseType';
-import PrimitiveBase from './PrimitiveBase';
-import * as escalate from 'escalate';
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
 
-const MAILBOX = escalate.getMailBox('Typorama.defineEnum');
+import BaseType from './base-type';
+import PrimitiveBase from './primitive-base';
+
+const MAILBOX = getMailBox('Typorama.defineEnum');
 
 export class EnumBase extends PrimitiveBase {
 	static allowPlainVal(v) { return true; }
@@ -54,7 +55,7 @@ export function defineEnum(def) {
 		return this.value;
 	};
 
-	if(Array.isArray(def)) {
+	if(_.isArray(def)) {
 	    def = convertToObject(def);
 	}
 

@@ -1,7 +1,5 @@
 
-import lifeCycleAsserter from './lifecycle.js';
-
-
+import lifeCycleAsserter from './lifecycle';
 
 describe('Map', function() {
 
@@ -10,4 +8,5 @@ describe('Map', function() {
 	});
 
 });
+
 require('./mutable/instance.spec');

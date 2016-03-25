@@ -1,4 +1,4 @@
-import Typorama from '../../src';
+import * as Typorama from '../../src';
 
 export default function (chai, utils) {
 

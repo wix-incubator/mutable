@@ -1,10 +1,11 @@
-import Typorama from '../src';
-import {aDataTypeWithSpec} from '../test-kit/testDrivers/index';
-import {expect, err} from 'chai';
-import {revision} from '../src/lifecycle';
-import {lifecycleContract} from './lifecycle.contract.spec.js';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
+import {expect} from 'chai';
 
+import * as Typorama from '../src';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+import {lifecycleContract} from './lifecycle.contract.spec';
+
+const revision = Typorama.revision;
 describe('promitive defaults', function(){
 
 	it('null function', function(){

@@ -1,11 +1,9 @@
-/**
- * Created by amira on 26/1/16.
- */
-import Typorama from '../../src';
+import * as sinon from 'sinon';
 import {expect} from 'chai';
-import sinon from 'sinon';
-import builders from './builders';
-import {ERROR_KEY_MISMATCH_IN_MAP_METHOD, ERROR_VALUE_MISMATCH_IN_MAP_METHOD} from '../../test-kit/testDrivers/reports'
+
+import * as Typorama from '../../src';
+import * as builders from './builders';
+import {ERROR_KEY_MISMATCH_IN_MAP_METHOD, ERROR_VALUE_MISMATCH_IN_MAP_METHOD} from '../../test-kit/test-drivers/reports'
 
 describe('Map with string key type', function() {
 	it('reports correct error in bad parameter type to get method', function() {

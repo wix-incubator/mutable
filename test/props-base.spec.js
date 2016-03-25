@@ -1,8 +1,9 @@
-import { expect } from 'chai';
-import typorama from '../src';
+import {expect} from 'chai';
 
-describe('typorama.PropsBase', function () {
+import * as Typorama from '../src';
+
+describe('Typorama.PropsBase', function () {
 	it('is defined as stub', function () {
-		expect(typorama.PropsBase).to.be.a('function');
+		expect(Typorama.PropsBase).to.be.a('function');
 	});
 });

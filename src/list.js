@@ -1,19 +1,16 @@
-import _                  from 'lodash';
-import defineType         from './defineType';
-import {
-	validateAndWrap,
-	validateNullValue,
-	misMatchMessage,
-	arrow}    from './validation';
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
+
+import defineType from './define-type';
+import {validateAndWrap, validateNullValue,	misMatchMessage, arrow} from './validation';
 import {getValueTypeName} from './utils';
-import BaseType           from './BaseType';
-import Number             from './number';
-import * as generics      from './genericTypes';
-import {getMailBox}       from 'escalate';
+import BaseType from './base-type';
+import Number from './number';
+import * as generics from './generic-types';
 
 const MAILBOX = getMailBox('Typorama.List');
 
-class _Array extends BaseType {
+class _List extends BaseType {
 
 	static withDefault(){
 		return BaseType.withDefault.apply(this, arguments);
@@ -22,24 +19,24 @@ class _Array extends BaseType {
 	static defaults() { return []; }
 
 	static cloneValue(value){
-		if(!Array.isArray(value)) { return []; }
+		if(!_.isArray(value)) { return []; }
 		return value.map((itemValue, index) => {
 			var Type = generics.getMatchingType(this.options.subTypes, itemValue);
 			if(!Type){
-				throw new Error("cloneValue error: no type found for index " + index)
+				throw new Error('cloneValue error: no type found for index ' + index)
 			}
 			return Type.cloneValue(itemValue);
 		});
 	}
 
-	static validate(value) { return Array.isArray(value); }
+	static validate(value) { return _.isArray(value); }
 
 	static validateType(value) {
 		return BaseType.validateType.call(this, value);
 	}
 
 	static allowPlainVal(val){
-		return Array.isArray(val) || validateNullValue(this, val);
+		return _.isArray(val) || validateNullValue(this, val);
 	}
 
 	static wrapValue(value, spec, options,errorContext) {
@@ -114,9 +111,9 @@ class _Array extends BaseType {
 
 	constructor(value=[], options={}, errorContext) {
 		if(!errorContext){
-			errorContext = _Array.createErrorContext('List constructor error', 'error', options);
+			errorContext = _List.createErrorContext('List constructor error', 'error', options);
 		}
-		const report = _Array.reportDefinitionErrors(options);
+		const report = _List.reportDefinitionErrors(options);
         if(report){
 			MAILBOX.error('List constructor: '+report.message);
         }
@@ -356,7 +353,7 @@ class _Array extends BaseType {
 
 	setValue(newValue, errorContext) {
 		var changed = false;
-		if(newValue instanceof _Array) {
+		if(newValue instanceof _List) {
 			newValue = newValue.__getValueArr__();
 		}
 		if(_.isArray(newValue)) {
@@ -386,7 +383,7 @@ class _Array extends BaseType {
 
 	setValueDeep(newValue, errorContext=null){
 		var changed = false;
-		if(newValue instanceof _Array) {
+		if(newValue instanceof _List) {
 			newValue = newValue.__getValueArr__();
 		}
 
@@ -442,4 +439,4 @@ export default defineType('List',{
 			length: Number.withDefault(0)
 		};
 	}
-}, null, _Array);
+}, null, _List);

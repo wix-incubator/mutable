@@ -1,20 +1,13 @@
-/**
- * Created by amira on 29/12/15.
- */
-import _                  from 'lodash';
-import defineType         from './defineType';
-import {getMailBox}       from 'escalate';
-import BaseType           from './BaseType';
-import {getValueTypeName} from './utils';
-import Number             from './number';
-import String             from './string';
-import * as generics      from './genericTypes';
-import {
-	validateAndWrap,
-	validateNullValue,
-	misMatchMessage,
-	arrow}    from './validation';
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
 
+import defineType from './define-type';
+import BaseType from './base-type';
+import {getValueTypeName} from './utils';
+import Number from './number';
+import String from './string';
+import * as generics from './generic-types';
+import {validateAndWrap, validateNullValue,	misMatchMessage, arrow} from './validation';
 
 const MAILBOX = getMailBox('Typorama.Map');
 
@@ -44,7 +37,7 @@ function safeAsReadOnlyOrArr(item){
 }
 
 function isIterable(value) {
-	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === "function");
+	return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === 'function');
 }
 
 function isTypeCompatibleWithPlainJsonObject(options) {
@@ -201,8 +194,7 @@ class _Map extends BaseType {
 
 		const report = _Map.reportDefinitionErrors(options);
 		if(report){
-
-			MAILBOX.error('Map constructor: "'+ report.path+'" ' +report.message);
+			MAILBOX.error(`Map constructor: "${report.path}" ${report.message}`);
 		} else {
 			options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
 			options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
@@ -415,4 +407,3 @@ export default defineType('Map',{
 		};
 	}
 }, null, _Map);
-

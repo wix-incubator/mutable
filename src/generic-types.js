@@ -1,9 +1,5 @@
-/**
- * Created by amira on 30/12/15.
- */
-
-import _                  from 'lodash';
-import {getMailBox}       from 'escalate';
+import * as _ from 'lodash';
+import {getMailBox} from 'escalate';
 import {arrow} from './validation';
 
 const MAILBOX = getMailBox('Typorama.genericTypes');
@@ -103,6 +99,7 @@ export function toString(...subTypesArgs){
 export function toUnwrappedString(subTypes){
 	return 	(typeof subTypes === 'function' && subTypes.type.id) || (subTypes && Object.keys(subTypes).join('|'))
 }
+
 export function unnormalizedArraytoUnwrappedString(subTypes){
 	return 	(typeof subTypes === 'function' && (subTypes.type.id || 'subtype')) || (subTypes && _.forEach(subTypes,unnormalizedArraytoUnwrappedString))
 }

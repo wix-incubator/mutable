@@ -1,11 +1,9 @@
-/**
- * Created by amira on 1/4/15.
- */
+import {expect} from 'chai';
 
-import Typorama from '../src';
-import { aDataTypeWithSpec } from '../test-kit/testDrivers/index';
-import { expect, err } from 'chai';
-import {revision} from '../src/lifecycle';
+import * as Typorama from '../src';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+
+const revision = Typorama.revision;
 
 describe('Enum Type', function() {
 

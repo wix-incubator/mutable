@@ -67,7 +67,7 @@ define(['lodash', './BaseType', './CustomType','./BaseTypes', './inherit', './En
         typeLogicDef.__fields__ = [];
         _.forEach(fieldsDef, function(field, fieldName){
             typeLogicDef.__fields__.push(fieldName);
-            if(field instanceof CustomType || field instanceof BaseTypes.array || field.__returnValue__){
+            if(field instanceof CustomType || field instanceof BaseTypes.List || field.__returnValue__){
                 Object.defineProperty(typeLogicDef, fieldName, {
                     get: function(){ checkFieldValueExist(this, fieldName); return this.__value__[fieldName] },
                     set: function(newVal){

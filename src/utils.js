@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 const clonedMembers = [
 	//every type have a type and id

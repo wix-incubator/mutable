@@ -1,5 +1,5 @@
-import PrimitiveBase from "./PrimitiveBase"
-import {validateNullValue} from "./validation"
+import PrimitiveBase from './primitive-base';
+import {validateNullValue} from './validation';
 
 export default class _String extends PrimitiveBase{
 	
