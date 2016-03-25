@@ -8,7 +8,7 @@ export {default as Number} from './number';
 export {default as List} from './list';
 export {default as Function} from './function';
 export {default as Reference} from './reference';
-import {default as validation} from './validation';
+export {default as validation} from './validation';
 export {default as Map} from './map';
 export {default as PropsBase} from './props-base';
 export {LifeCycleManager, revision} from './lifecycle';
