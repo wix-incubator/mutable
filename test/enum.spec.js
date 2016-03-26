@@ -7,9 +7,9 @@ const revision = Typorama.revision;
 
 describe('Enum Type', function() {
 
-	it('exists on the typorama object', function () {
-		expect(Typorama.EnumBase).to.be.a("function");
-	});
+    it('exists on the typorama object', function() {
+        expect(Typorama.EnumBase).to.be.a("function");
+    });
 
     describe("instantiation", function() {
 
@@ -22,7 +22,7 @@ describe('Enum Type', function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
             expect(function() {
                 new Ape();
-            }).to.report({level : /error/});
+            }).to.report({ level: /error/ });
         });
 
         it("enum extends EnumBase", function() {
@@ -61,11 +61,11 @@ describe('Enum Type', function() {
             expect(ape).to.be.equal(Ape.chimp);
         });
 
-		it("should return value string for toString()", function() {
-			var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-			expect(Ape.chimp.toString()).to.be.equal("chimp");
-			expect(Ape.gorilla.toString()).to.be.equal("gorilla");
-		});
+        it("should return value string for toString()", function() {
+            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            expect(Ape.chimp.toString()).to.be.equal("chimp");
+            expect(Ape.gorilla.toString()).to.be.equal("gorilla");
+        });
 
         it("enum can be initialized as member in a custom type", function() {
             var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
@@ -138,67 +138,67 @@ describe('Enum Type', function() {
             expect(Ape.chimp.key).to.be.equal("chimp");
         });
 
-		it("should return current value", function() {
-			var ImageSizing = Typorama.defineEnum({
-				NONE: null,
-				COVER: "cover",
-				CONTAIN: "contain"
-			});
+        it("should return current value", function() {
+            var ImageSizing = Typorama.defineEnum({
+                NONE: null,
+                COVER: "cover",
+                CONTAIN: "contain"
+            });
 
-			expect(ImageSizing.NONE.toJSON()).to.be.null;
-			expect(ImageSizing.COVER.toJSON()).to.be.equal("cover");
-			expect(ImageSizing.CONTAIN.toJSON()).to.be.equal("contain");
-		});
+            expect(ImageSizing.NONE.toJSON()).to.be.null;
+            expect(ImageSizing.COVER.toJSON()).to.be.equal("cover");
+            expect(ImageSizing.CONTAIN.toJSON()).to.be.equal("contain");
+        });
 
-		it("should initiate from value string", function() {
-			var ImageSizing = Typorama.defineEnum({
-				NONE: null,
-				COVER: "cover",
-				CONTAIN: "contain"
-			});
+        it("should initiate from value string", function() {
+            var ImageSizing = Typorama.defineEnum({
+                NONE: null,
+                COVER: "cover",
+                CONTAIN: "contain"
+            });
 
-			var enumIns = ImageSizing.create(ImageSizing.COVER.toJSON());
+            var enumIns = ImageSizing.create(ImageSizing.COVER.toJSON());
 
-			expect(enumIns).to.be.equal(ImageSizing.COVER);
-		});
+            expect(enumIns).to.be.equal(ImageSizing.COVER);
+        });
 
-		it("should initiate from value string as part of complex data", function() {
-			var ImageSizing = Typorama.defineEnum({
-				NONE: null,
-				COVER: "cover",
-				CONTAIN: "contain"
-			});
+        it("should initiate from value string as part of complex data", function() {
+            var ImageSizing = Typorama.defineEnum({
+                NONE: null,
+                COVER: "cover",
+                CONTAIN: "contain"
+            });
 
-			var Complex = aDataTypeWithSpec({
-				size: ImageSizing
-			}, 'User');
+            var Complex = aDataTypeWithSpec({
+                size: ImageSizing
+            }, 'User');
 
-			var complex = new Complex({ size:"cover" });
+            var complex = new Complex({ size: "cover" });
 
-			expect(complex.size).to.be.equal(ImageSizing.COVER);
-		});
+            expect(complex.size).to.be.equal(ImageSizing.COVER);
+        });
 
-		it("should initiate from default value as part of complex data when no initial value is provided", function() {
-			var ImageSizing = Typorama.defineEnum({
-				NONE: null,
-				COVER: "cover",
-				CONTAIN: "contain"
-			});
-			var Complex = aDataTypeWithSpec({
-				size: ImageSizing.withDefault(ImageSizing.CONTAIN)
-			}, 'User');
+        it("should initiate from default value as part of complex data when no initial value is provided", function() {
+            var ImageSizing = Typorama.defineEnum({
+                NONE: null,
+                COVER: "cover",
+                CONTAIN: "contain"
+            });
+            var Complex = aDataTypeWithSpec({
+                size: ImageSizing.withDefault(ImageSizing.CONTAIN)
+            }, 'User');
 
-			var complex = new Complex({ size:"contain" });
+            var complex = new Complex({ size: "contain" });
 
-			expect(complex.size).to.be.equal(ImageSizing.CONTAIN);
-		});
+            expect(complex.size).to.be.equal(ImageSizing.CONTAIN);
+        });
 
-		it("should not be dirtyable", function(){
-			var ImageSizing = Typorama.defineEnum(["A", "B"]);
-			expect(ImageSizing.$isDirtyable).to.not.be.defined;
-			expect(ImageSizing.A.$isDirtyable).to.not.be.defined;
-			expect(ImageSizing.B.$isDirtyable).to.not.be.defined;
-		});
+        it("should not be dirtyable", function() {
+            var ImageSizing = Typorama.defineEnum(["A", "B"]);
+            expect(ImageSizing.$isDirtyable).to.not.be.defined;
+            expect(ImageSizing.A.$isDirtyable).to.not.be.defined;
+            expect(ImageSizing.B.$isDirtyable).to.not.be.defined;
+        });
 
     });
 });

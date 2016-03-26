@@ -1,8 +1,8 @@
 import * as Typorama from '../../src';
 
-export default function (chai, utils) {
+export default function(chai, utils) {
 
-    chai.Assertion.addMethod("field", function (name) {
+    chai.Assertion.addMethod("field", function(name) {
         var Type = this._obj;
 
         this.assert(
@@ -27,7 +27,7 @@ export default function (chai, utils) {
             true
         );
 
-        return new TypeFieldAssertion({spec, name});
+        return new TypeFieldAssertion({ spec, name });
     });
 
     class TypeFieldAssertion extends chai.Assertion {

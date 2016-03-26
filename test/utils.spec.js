@@ -10,14 +10,14 @@ describe('utils', function() {
 
         it("should merge origin type options with constructor options", function() {
             var MockType = {
-				options:{a:true},
-				create:sinon.stub()
-			};
-			var CloneType = cloneType(MockType);
+                options: { a: true },
+                create: sinon.stub()
+            };
+            var CloneType = cloneType(MockType);
 
-			new CloneType("value", {b:false});
+            new CloneType("value", { b: false });
 
-			expect(MockType.create).to.have.been.calledWith("value", {a:true,b:false});
+            expect(MockType.create).to.have.been.calledWith("value", { a: true, b: false });
 
         });
 

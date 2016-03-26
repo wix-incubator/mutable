@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
 
-export default function (chai, utils) {
+export default function(chai, utils) {
 
-    chai.Assertion.addProperty("dataInstance", function(){
+    chai.Assertion.addProperty("dataInstance", function() {
         var instance = this._obj;
         return new DataInstanceAssertion(instance);
     });
 
     class DataInstanceAssertion extends chai.Assertion {
 
-        fields(expectFunction){
+        fields(expectFunction) {
             var instance = this._obj;
             var fieldsSpec = instance.constructor.getFieldsSpec();
 
@@ -28,7 +28,7 @@ export default function (chai, utils) {
 
     class DataInstanceFieldAssertion extends chai.Assertion {
 
-        defaultValue(){
+        defaultValue() {
             var field = this._obj;
             var defaultValue = field.spec.defaults();
 
