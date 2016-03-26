@@ -12,13 +12,13 @@ describe('Type matchers', () => {
         });
 
         it('should reject types that do not have the requested field', () => {
-            expect(function(){
+            expect(function() {
                 expect(UserType).to.have.field('noSuchField');
             }).to.throw('expected a Type with a field noSuchField');
         });
 
         it('should reject objects that are not data types', () => {
-            expect(function(){
+            expect(function() {
                 expect({}).to.have.field('');
             }).to.throw('expected a Type but got {}');
         });

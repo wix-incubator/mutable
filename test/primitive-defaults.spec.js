@@ -6,61 +6,61 @@ import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import {lifecycleContract} from './lifecycle.contract.spec';
 
 const revision = Typorama.revision;
-describe('promitive defaults', function(){
+describe('promitive defaults', function() {
 
-	it('null function', function(){
-		var Type = Typorama.Function.nullable().withDefault(null);
-		var value = Type();
-		expect(value).to.equal(null);
-	});
+    it('null function', function() {
+        var Type = Typorama.Function.nullable().withDefault(null);
+        var value = Type();
+        expect(value).to.equal(null);
+    });
 
-	it('null string', function(){
-		var Type = Typorama.String.nullable().withDefault(null);
-		var value = Type();
-		expect(value).to.equal(null);
-	});
-
-
-	it('null boolean', function(){
-		var Type = Typorama.Boolean.nullable().withDefault(null);
-		var value = Type();
-		expect(value).to.equal(null);
-	});
+    it('null string', function() {
+        var Type = Typorama.String.nullable().withDefault(null);
+        var value = Type();
+        expect(value).to.equal(null);
+    });
 
 
-	it('null number', function(){
-		var Type = Typorama.Number.nullable().withDefault(null);
-		var value = Type();
-		expect(value).to.equal(null);
-	});
-
-///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
-
-	it('function', function(){
-		var Type = Typorama.Function.withDefault(function(){return 'abc'});
-		var value = Type();
-		expect(value()).to.equal('abc');
-	});
-
-	it('string', function(){
-		var Type = Typorama.String.withDefault('abc');
-		var value = Type();
-		expect(value).to.equal('abc');
-	});
+    it('null boolean', function() {
+        var Type = Typorama.Boolean.nullable().withDefault(null);
+        var value = Type();
+        expect(value).to.equal(null);
+    });
 
 
-	it('boolean', function(){
-		var Type = Typorama.Boolean.withDefault(true);
-		var value = Type();
-		expect(value).to.equal(true);
-	});
+    it('null number', function() {
+        var Type = Typorama.Number.nullable().withDefault(null);
+        var value = Type();
+        expect(value).to.equal(null);
+    });
+
+    ///////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
+
+    it('function', function() {
+        var Type = Typorama.Function.withDefault(function() { return 'abc' });
+        var value = Type();
+        expect(value()).to.equal('abc');
+    });
+
+    it('string', function() {
+        var Type = Typorama.String.withDefault('abc');
+        var value = Type();
+        expect(value).to.equal('abc');
+    });
 
 
-	it('number', function(){
-		var Type = Typorama.Number.withDefault(123);
-		var value = Type();
-		expect(value).to.equal(123);
-	});
+    it('boolean', function() {
+        var Type = Typorama.Boolean.withDefault(true);
+        var value = Type();
+        expect(value).to.equal(true);
+    });
+
+
+    it('number', function() {
+        var Type = Typorama.Number.withDefault(123);
+        var value = Type();
+        expect(value).to.equal(123);
+    });
 
 });

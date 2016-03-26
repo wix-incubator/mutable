@@ -39,13 +39,13 @@ describe('Boolean Type', function() {
         var BooleanValues;
         var booleans;
         before(() => {
-			BooleanValues = aDataTypeWithSpec({
-				yes: Typorama.Boolean.withDefault(1),
-				no: Typorama.Boolean.withDefault(0)
-			}, 'BooleanValues');
+            BooleanValues = aDataTypeWithSpec({
+                yes: Typorama.Boolean.withDefault(1),
+                no: Typorama.Boolean.withDefault(0)
+            }, 'BooleanValues');
 
-			booleans = new BooleanValues()
-		});
+            booleans = new BooleanValues()
+        });
 
         it('should resolve to javascript boolean', function() {
             expect(booleans.yes).to.be.a('boolean');
@@ -60,9 +60,8 @@ describe('Boolean Type', function() {
 
         it('should be equal to different creation methods', function() {
             // equals means ===
-            expect(booleans).to.eql(new BooleanValues({yes : true, no : false}));
-            expect(booleans).to.eql(new BooleanValues({yes : 'fff', no : ''}));
+            expect(booleans).to.eql(new BooleanValues({ yes: true, no: false }));
+            expect(booleans).to.eql(new BooleanValues({ yes: 'fff', no: '' }));
         });
     });
-
 });

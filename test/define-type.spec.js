@@ -6,321 +6,321 @@ import {isAssignableFrom} from '../src/validation';
 import {either} from '../src/generic-types';
 import Type1 from './type1';
 import Type2 from './type2';
-import {ERROR_OVERRIDE_FIELD,ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR,ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR,ERROR_IN_DEFAULT_VALUES,ERROR_IN_FIELD_TYPE,ERROR_MISSING_GENERICS,ERROR_RESERVED_FIELD,arrow} from '../test-kit/test-drivers/reports'
+import {ERROR_OVERRIDE_FIELD, ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR, ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
 
 const revision = Typorama.revision;
 
-function typeCompatibilityTest(typeFactory){
-	describe('should be compatible', () => {
-		it('with itself', () => {
-			var type = typeFactory();
-			expect(type.type).to.satisfy(isAssignableFrom.bind(null, type));
-		});
-		it('with instances of itself', () => {
-			var type = typeFactory();
-			var instance = new type();
-			expect(instance).to.satisfy(type.validateType.bind(type));
-		});
-		it('with instance of same schema', () => {
-			var type1 = typeFactory();
-			var type2 = typeFactory();
-			var instance = new type1();
-			expect(instance).to.satisfy(type2.validateType.bind(type2));
-		});
-		it('with types of same schema', () => {
-			var type1 = typeFactory();
-			var type2 = typeFactory();
-			expect(type1.type).to.satisfy(isAssignableFrom.bind(null, type2));
-		});
-	});
+function typeCompatibilityTest(typeFactory) {
+    describe('should be compatible', () => {
+        it('with itself', () => {
+            var type = typeFactory();
+            expect(type.type).to.satisfy(isAssignableFrom.bind(null, type));
+        });
+        it('with instances of itself', () => {
+            var type = typeFactory();
+            var instance = new type();
+            expect(instance).to.satisfy(type.validateType.bind(type));
+        });
+        it('with instance of same schema', () => {
+            var type1 = typeFactory();
+            var type2 = typeFactory();
+            var instance = new type1();
+            expect(instance).to.satisfy(type2.validateType.bind(type2));
+        });
+        it('with types of same schema', () => {
+            var type1 = typeFactory();
+            var type2 = typeFactory();
+            expect(type1.type).to.satisfy(isAssignableFrom.bind(null, type2));
+        });
+    });
 }
 
 describe('defining', () => {
 
-	describe('String with default value', () => {
-		// fixme #187
-		// typeCompatibilityTest(() => Typorama.String.withDefault('im special!'));
-	});
+    describe('String with default value', () => {
+        // fixme #187
+        // typeCompatibilityTest(() => Typorama.String.withDefault('im special!'));
+    });
 
-	describe('Number with default value', () => {
-		// fixme #187
-		// typeCompatibilityTest(() => Typorama.Number.withDefault(6));
-	});
+    describe('Number with default value', () => {
+        // fixme #187
+        // typeCompatibilityTest(() => Typorama.Number.withDefault(6));
+    });
 
-	describe('Boolean with default value', () => {
-		// fixme #187
-		// typeCompatibilityTest(() => Typorama.Boolean.withDefault(true));
-	});
-
-
-	describe('a basic type', () => {
-
-		typeCompatibilityTest(() => Type2);
-		describe('that is isomorphic to another type', () => {
-			it('should result in two compatible types', () => {
-				new Type2(new Type1({foo: "bar"}));
-				expect(() => new Type2(new Type1({foo: "bar"}))).not.to.report({level : /warn|error|fatal/});
-			})
-		});
-
-		it('should allow defining types with primitive fields', function () {
-			var primitives = Typorama.define('primitives', {
-				spec: () => ({
-					name: Typorama.String.withDefault('leon'),
-					child1: Typorama.String,
-					child2: Typorama.String
-				})
-			});
-			expect(new primitives().name).to.equal('leon');
-		});
-
-		it('should allow defining types with custom fields', function () {
-			var primitives = Typorama.define('primitives', {
-				spec: () => ({
-					name: Typorama.String.withDefault('leon'),
-					child1: Typorama.String,
-					child2: Typorama.String
-				})
-			});
-			var composite = Typorama.define('composite', {
-				spec: () => ({
-					child: primitives
-				})
-			});
-			expect(new composite().child.name).to.equal('leon');
-		});
-
-		it('should report error if field type is not valid', function () {
-			expect(function () {
-				Typorama.define('invalid', {
-					spec: () => ({
-						zagzag: {}
-					})
-				});
-			}).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
-		});
+    describe('Boolean with default value', () => {
+        // fixme #187
+        // typeCompatibilityTest(() => Typorama.Boolean.withDefault(true));
+    });
 
 
-		it('should report error if field type is missing', function () {
-			expect(function () {
-				Typorama.define('invalid', {
-					spec: () => ({
-						zagzag: null
-					})
-				});
-			}).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
-		});
+    describe('a basic type', () => {
 
-		it('should report error for reserved keys', function() { // ToDo: change to fields that start with $ and __
-			expect(() => {
-				Typorama.define('invalid', {
-					spec: () => ({
-						$asReadOnly: Typorama.String
-					})
-				});
-			}).to.report(ERROR_RESERVED_FIELD('invalid.$asReadOnly'));
-		});
+        typeCompatibilityTest(() => Type2);
+        describe('that is isomorphic to another type', () => {
+            it('should result in two compatible types', () => {
+                new Type2(new Type1({ foo: "bar" }));
+                expect(() => new Type2(new Type1({ foo: "bar" }))).not.to.report({ level: /warn|error|fatal/ });
+            })
+        });
 
-		describe('type with inheritance', function(){
-			const StringList = Typorama.List.of(Typorama.String);
-			var TypeWithTitles;
-			var TypeWithInheritance;
+        it('should allow defining types with primitive fields', function() {
+            var primitives = Typorama.define('primitives', {
+                spec: () => ({
+                    name: Typorama.String.withDefault('leon'),
+                    child1: Typorama.String,
+                    child2: Typorama.String
+                })
+            });
+            expect(new primitives().name).to.equal('leon');
+        });
 
-			before('define types',function(){
-				TypeWithTitles = Typorama.define('TypeWithTitles', {
-					spec: () => ({
-						titles: StringList
-					})
-				});
-				TypeWithInheritance = Typorama.define('TypeWithInheritance', {
-					spec: () => ({
-						subTitles: StringList
-					})
-				},TypeWithTitles);
-			});
+        it('should allow defining types with custom fields', function() {
+            var primitives = Typorama.define('primitives', {
+                spec: () => ({
+                    name: Typorama.String.withDefault('leon'),
+                    child1: Typorama.String,
+                    child2: Typorama.String
+                })
+            });
+            var composite = Typorama.define('composite', {
+                spec: () => ({
+                    child: primitives
+                })
+            });
+            expect(new composite().child.name).to.equal('leon');
+        });
 
-			it('should throw error if fields intersect', function(){
-				expect(()=>{Typorama.define('TypeWithBrokenInheritance', {
-					spec: () => ({
-						titles: StringList
-					})
-				},TypeWithTitles)}).to.throw(ERROR_OVERRIDE_FIELD('TypeWithBrokenInheritance.titles','TypeWithTitles'));
-			});
+        it('should report error if field type is not valid', function() {
+            expect(function() {
+                Typorama.define('invalid', {
+                    spec: () => ({
+                        zagzag: {}
+                    })
+                });
+            }).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
+        });
 
-			it('spec should include all fields', function(){
-				expect(TypeWithInheritance.getFieldsSpec()).to.eql({
-					titles:StringList,
-					subTitles:StringList
-				})
-			});
 
-			it('should include default values for all fields', function(){
-				expect(TypeWithInheritance.defaults()).to.eql({
-					titles:[],
-					subTitles:[]
-				});
-			});
+        it('should report error if field type is missing', function() {
+            expect(function() {
+                Typorama.define('invalid', {
+                    spec: () => ({
+                        zagzag: null
+                    })
+                });
+            }).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
+        });
 
-			it('should include getters setters for all fields', function(){
-				const dataItem = new TypeWithInheritance();
+        it('should report error for reserved keys', function() { // ToDo: change to fields that start with $ and __
+            expect(() => {
+                Typorama.define('invalid', {
+                    spec: () => ({
+                        $asReadOnly: Typorama.String
+                    })
+                });
+            }).to.report(ERROR_RESERVED_FIELD('invalid.$asReadOnly'));
+        });
 
-				expect(dataItem.titles.length).to.equal(0);
-				dataItem.titles.push('cell0');
-				expect(dataItem.titles.at(0)).to.equal('cell0');
-				expect(dataItem.subTitles.length).to.equal(0);
-				dataItem.subTitles.push('cell0');
-				expect(dataItem.subTitles.at(0)).to.equal('cell0');
-			});
+        describe('type with inheritance', function() {
+            const StringList = Typorama.List.of(Typorama.String);
+            var TypeWithTitles;
+            var TypeWithInheritance;
 
-			it('should be dirtified when any field from super type is changed', function(){
-				const dataItem = new TypeWithInheritance();
-				revision.advance();
-				let rev = revision.read();
+            before('define types', function() {
+                TypeWithTitles = Typorama.define('TypeWithTitles', {
+                    spec: () => ({
+                        titles: StringList
+                    })
+                });
+                TypeWithInheritance = Typorama.define('TypeWithInheritance', {
+                    spec: () => ({
+                        subTitles: StringList
+                    })
+                },TypeWithTitles);
+            });
 
-				expect(dataItem.$isDirty(rev)).to.equal(false);
+            it('should throw error if fields intersect', function() {
+                expect(()=>{Typorama.define('TypeWithBrokenInheritance', {
+                    spec: () => ({
+                        titles: StringList
+                    })
+                },TypeWithTitles)}).to.throw(ERROR_OVERRIDE_FIELD('TypeWithBrokenInheritance.titles','TypeWithTitles'));
+            });
 
-				revision.advance();
-				rev = revision.read();
+            it('spec should include all fields', function() {
+                expect(TypeWithInheritance.getFieldsSpec()).to.eql({
+                    titles: StringList,
+                    subTitles: StringList
+                })
+            });
 
-				dataItem.titles.push('something');
+            it('should include default values for all fields', function() {
+                expect(TypeWithInheritance.defaults()).to.eql({
+                    titles: [],
+                    subTitles: []
+                });
+            });
 
-				expect(dataItem.$isDirty(rev)).to.equal(true);
-			});
+            it('should include getters setters for all fields', function() {
+                const dataItem = new TypeWithInheritance();
 
-			it('should be dirtified when any field from type definition is changed', function(){
-				const dataItem = new TypeWithInheritance();
-				revision.advance();
-				let rev = revision.read();
+                expect(dataItem.titles.length).to.equal(0);
+                dataItem.titles.push('cell0');
+                expect(dataItem.titles.at(0)).to.equal('cell0');
+                expect(dataItem.subTitles.length).to.equal(0);
+                dataItem.subTitles.push('cell0');
+                expect(dataItem.subTitles.at(0)).to.equal('cell0');
+            });
 
-				expect(dataItem.$isDirty(rev)).to.equal(false);
+            it('should be dirtified when any field from super type is changed', function() {
+                const dataItem = new TypeWithInheritance();
+                revision.advance();
+                let rev = revision.read();
 
-				revision.advance();
-				rev = revision.read();
+                expect(dataItem.$isDirty(rev)).to.equal(false);
 
-				dataItem.subTitles.push('something');
+                revision.advance();
+                rev = revision.read();
 
-				expect(dataItem.$isDirty(rev)).to.equal(true);
-			});
+                dataItem.titles.push('something');
 
-		});
+                expect(dataItem.$isDirty(rev)).to.equal(true);
+            });
 
-		describe('type with generic field', function(){
-			it('should throw error if field doesnt include generics info', function(){
-				expect(() => {
-					Typorama.define('invalid', {
-						spec: () => ({
-							zagzag: Typorama.List
-						})
-					});
-				}).to.report(ERROR_MISSING_GENERICS(`invalid.zagzag`));
-			});
-			it('should throw error if field subtypes are invalid', function(){
-				expect(() => {
-					Typorama.define('invalid', {
-						spec: () => ({
-							zagzag: Typorama.List.of(Typorama.String,function(){})
-						})
-					});
-				}).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<string|${arrow}subtype>`));
-			});
-			it('should throw error if field subtypes dont include generics info', function(){
-				expect(() => {
-					Typorama.define('invalid', {
-						spec: () => ({
-							zagzag: Typorama.List.of(Typorama.List)
-						})
-					});
-				}).to.report(ERROR_MISSING_GENERICS(`invalid.zagzag<${arrow}List>`));
-			});
+            it('should be dirtified when any field from type definition is changed', function() {
+                const dataItem = new TypeWithInheritance();
+                revision.advance();
+                let rev = revision.read();
 
-			it('should throw error if field subtypes have invalid generics info', function(){
-				expect(() => {
-					Typorama.define('invalid', {
-						spec: () => ({
-							zagzag: Typorama.List.of(Typorama.List.of(function(){}))
-						})
-					});
-				}).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<${arrow}List>`));
-			});
+                expect(dataItem.$isDirty(rev)).to.equal(false);
 
-			it('should allow fields of the same type', function(){
-				const NodeType = Typorama.define('Node', {
-					spec: (Node) => ({
-						children: Typorama.List.of(Node),
-						parent: Node.nullable()
-					})
-				});
+                revision.advance();
+                rev = revision.read();
 
-				const node = new NodeType();
+                dataItem.subTitles.push('something');
 
-				expect(node.toJSON()).to.eql({children:[],parent:null});
+                expect(dataItem.$isDirty(rev)).to.equal(true);
+            });
 
-				node.parent = new NodeType();
+        });
 
-				expect(node.toJSON()).to.eql({children:[],parent:{children:[],parent:null}});
+        describe('type with generic field', function() {
+            it('should throw error if field doesnt include generics info', function() {
+                expect(() => {
+                    Typorama.define('invalid', {
+                        spec: () => ({
+                            zagzag: Typorama.List
+                        })
+                    });
+                }).to.report(ERROR_MISSING_GENERICS(`invalid.zagzag`));
+            });
+            it('should throw error if field subtypes are invalid', function() {
+                expect(() => {
+                    Typorama.define('invalid', {
+                        spec: () => ({
+                            zagzag: Typorama.List.of(Typorama.String, function() { })
+                        })
+                    });
+                }).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<string|${arrow}subtype>`));
+            });
+            it('should throw error if field subtypes dont include generics info', function() {
+                expect(() => {
+                    Typorama.define('invalid', {
+                        spec: () => ({
+                            zagzag: Typorama.List.of(Typorama.List)
+                        })
+                    });
+                }).to.report(ERROR_MISSING_GENERICS(`invalid.zagzag<${arrow}List>`));
+            });
 
-				node.children.push(new NodeType());
+            it('should throw error if field subtypes have invalid generics info', function() {
+                expect(() => {
+                    Typorama.define('invalid', {
+                        spec: () => ({
+                            zagzag: Typorama.List.of(Typorama.List.of(function() { }))
+                        })
+                    });
+                }).to.report(ERROR_IN_FIELD_TYPE(`invalid.zagzag<${arrow}List>`));
+            });
 
-				expect(node.toJSON()).to.eql({children:[{children:[],parent:null}],parent:{children:[],parent:null}});
-			});
+            it('should allow fields of the same type', function() {
+                const NodeType = Typorama.define('Node', {
+                    spec: (Node) => ({
+                        children: Typorama.List.of(Node),
+                        parent: Node.nullable()
+                    })
+                });
 
-			it.skip('report circular default data', function(){/* ToDo */});
+                const node = new NodeType();
 
-		});
+                expect(node.toJSON()).to.eql({ children: [], parent: null });
 
-	});//Type definition error: "invalid.zagzag:List<string|⚠subtype⚠>" must be a primitive type or extend core3.Type
+                node.parent = new NodeType();
 
-	describe('type with default value', function(){
-		typeCompatibilityTest(() => Type1.withDefault({foo: 'im special!'}));
+                expect(node.toJSON()).to.eql({ children: [], parent: { children: [], parent: null } });
 
-		it('should clone the previous type definition', function(){
-			var originalType = Typorama.String;
-			originalType.options = {};
+                node.children.push(new NodeType());
 
-			var customDefaultType = originalType.withDefault('im special!');
+                expect(node.toJSON()).to.eql({ children: [{ children: [], parent: null }], parent: { children: [], parent: null } });
+            });
 
-			expect(customDefaultType).not.to.equal(originalType);
-			expect(customDefaultType.options).not.to.equal(originalType.options);
-		});
+            it.skip('report circular default data', function() {/* ToDo */ });
 
-	});
+        });
 
-	describe('nullable type', function(){
+    });//Type definition error: "invalid.zagzag:List<string|⚠subtype⚠>" must be a primitive type or extend core3.Type
 
-		it('should clone the previous type definition and options', function(){
-			var originalType = Typorama.String;
-			originalType.options = { randomConfig:{someOption:true} };
+    describe('type with default value', function() {
+        typeCompatibilityTest(() => Type1.withDefault({ foo: 'im special!' }));
 
-			var customDefaultType = originalType.nullable();
+        it('should clone the previous type definition', function() {
+            var originalType = Typorama.String;
+            originalType.options = {};
 
-			expect(customDefaultType).not.to.equal(originalType);
-			expect(customDefaultType.options).not.to.equal(originalType.options);
-			expect(customDefaultType.options.randomConfig).not.to.equal(originalType.options.randomConfig);
-			expect(customDefaultType.options).to.eql({
-				randomConfig:{someOption:true},
-				nullable:true
-			});
-		});
+            var customDefaultType = originalType.withDefault('im special!');
 
-	});
+            expect(customDefaultType).not.to.equal(originalType);
+            expect(customDefaultType.options).not.to.equal(originalType.options);
+        });
 
-	describe("collection",() => {
-		var UserType, AddressType;
-		before('define helper types',()=>{
-			UserType = Typorama.define('User', {
-				spec: () => ({
-					name: Typorama.String.withDefault(''),
-					age: Typorama.Number.withDefault(10)
-				})
-			});
+    });
 
-			AddressType = Typorama.define('Address', {
-				spec: () => ({
-					address: Typorama.String.withDefault(''),
-					code: Typorama.Number.withDefault(10)
-				})
-			});
-		});
+    describe('nullable type', function() {
+
+        it('should clone the previous type definition and options', function() {
+            var originalType = Typorama.String;
+            originalType.options = { randomConfig: { someOption: true } };
+
+            var customDefaultType = originalType.nullable();
+
+            expect(customDefaultType).not.to.equal(originalType);
+            expect(customDefaultType.options).not.to.equal(originalType.options);
+            expect(customDefaultType.options.randomConfig).not.to.equal(originalType.options.randomConfig);
+            expect(customDefaultType.options).to.eql({
+                randomConfig: { someOption: true },
+                nullable: true
+            });
+        });
+
+    });
+
+    describe("collection", () => {
+        var UserType, AddressType;
+        before('define helper types', () => {
+            UserType = Typorama.define('User', {
+                spec: () => ({
+                    name: Typorama.String.withDefault(''),
+                    age: Typorama.Number.withDefault(10)
+                })
+            });
+
+            AddressType = Typorama.define('Address', {
+                spec: () => ({
+                    address: Typorama.String.withDefault(''),
+                    code: Typorama.Number.withDefault(10)
+                })
+            });
+        });
 
 
 
@@ -328,272 +328,272 @@ describe('defining', () => {
 //Type constructor: \"Product.->zagzag" Untyped Lists are not supported please state type of list item in the format core3.List<string>
 //Type constructor: \"Product.zagzag<->0>" must be core 3 type
 // Map constructor: \"Map<List<->List>, List<string>\" Untyped Lists are not supported please state type of list item in the format core3.List<string>
-		describe("a map type",() => {
+        describe("a map type", () => {
 
-			describe('with default value', () => {
-				typeCompatibilityTest(() => Typorama.Map.of(Typorama.String, Typorama.String).withDefault({lookAtMe: 'im special!'}));
-			});
-			describe("with missing sub-types",()=>{
-				it('should report error when instantiating vanilla Map', () => {
-					var inValidMapType = Typorama.Map;
-					expect(()=>new inValidMapType()).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
-				});
-				it('should report error when defining Map with zero types', () => {
-					expect(()=>{let map = Typorama.Map.of();new map()}).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));
-				});
-				it('should report error when defining Map with one type', () => {
-					expect(()=>{let map = Typorama.Map.of(Typorama.Number);new map()}).to.report('Map constructor: "Map<number,➠value>" Wrong number of types for map. Instead of Map<number> Use Map<string, number>');
-				});
-				it('should report error when defining Map with invalid subtype', () => {
-					expect(()=>{let map = Typorama.Map.of(Typorama.String, Typorama.List);new map()}).to.report(new Report('error', 'Typorama.Map', 'Map constructor: "Map<string,➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
-				});
-			});
+            describe('with default value', () => {
+                typeCompatibilityTest(() => Typorama.Map.of(Typorama.String, Typorama.String).withDefault({ lookAtMe: 'im special!' }));
+            });
+            describe("with missing sub-types", () => {
+                it('should report error when instantiating vanilla Map', () => {
+                    var inValidMapType = Typorama.Map;
+                    expect(() => new inValidMapType()).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
+                });
+                it('should report error when defining Map with zero types', () => {
+                    expect(() => { let map = Typorama.Map.of(); new map() }).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));
+                });
+                it('should report error when defining Map with one type', () => {
+                    expect(() => { let map = Typorama.Map.of(Typorama.Number); new map() }).to.report('Map constructor: "Map<number,➠value>" Wrong number of types for map. Instead of Map<number> Use Map<string, number>');
+                });
+                it('should report error when defining Map with invalid subtype', () => {
+                    expect(() => { let map = Typorama.Map.of(Typorama.String, Typorama.List); new map() }).to.report(new Report('error', 'Typorama.Map', 'Map constructor: "Map<string,➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+                });
+            });
 
-			describe('with complex value sub-type', () => {
-				function typeFactory() {
-					return Typorama.Map.of(Typorama.String, AddressType);
-				}
+            describe('with complex value sub-type', () => {
+                function typeFactory() {
+                    return Typorama.Map.of(Typorama.String, AddressType);
+                }
 
-				typeCompatibilityTest(typeFactory);
-				describe("instantiation",function(){
-					it('should allow setting data with json, ', function() {
+                typeCompatibilityTest(typeFactory);
+                describe("instantiation", function() {
+                    it('should allow setting data with json, ', function() {
 
-						var map = typeFactory().create({'foo': {address:'gaga'}});
+                        var map = typeFactory().create({ 'foo': { address: 'gaga' } });
 
-						expect(map.get('foo')).to.be.instanceOf(AddressType);
-						expect(map.get('foo').code).to.equal(10);
-						expect(map.get('foo').address).to.equal('gaga');
-					});
-				});
-				it('should report error when null key is added',function(){
-					expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','null'));
-				});
-				it('should report error when null key is added',function(){
-					expect(() => typeFactory().create([[5, null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','null'));
-				});
-				it('should report error when unallowed primitive key is added',function(){
-					expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','number'));
-				});
-				it('should report error when unallowed primitive value is added',function(){
-					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','string'));
-				});
-				it('should report error when unallowed object key is added',function(){
-					expect(() => typeFactory().create([[{}, new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','object'));
-				});
-				it('should report error when when json value with unallowed _type is added',function(){
-					expect(() => typeFactory().create([['baga', {_type:'User'}]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','object with _type User'));
-				});
-				it('should report error when unallowed typorama key is added',function(){
-					expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>','User'));
-				});
-				it('should report error when unallowed typorama value is added',function(){
-					expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>','User'));
-				});
-			});
+                        expect(map.get('foo')).to.be.instanceOf(AddressType);
+                        expect(map.get('foo').code).to.equal(10);
+                        expect(map.get('foo').address).to.equal('gaga');
+                    });
+                });
+                it('should report error when null key is added', function() {
+                    expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'null'));
+                });
+                it('should report error when null key is added', function() {
+                    expect(() => typeFactory().create([[5, null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'null'));
+                });
+                it('should report error when unallowed primitive key is added', function() {
+                    expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'number'));
+                });
+                it('should report error when unallowed primitive value is added', function() {
+                    expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'string'));
+                });
+                it('should report error when unallowed object key is added', function() {
+                    expect(() => typeFactory().create([[{}, new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'object'));
+                });
+                it('should report error when when json value with unallowed _type is added', function() {
+                    expect(() => typeFactory().create([['baga', { _type: 'User' }]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'object with _type User'));
+                });
+                it('should report error when unallowed typorama key is added', function() {
+                    expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'User'));
+                });
+                it('should report error when unallowed typorama value is added', function() {
+                    expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'User'));
+                });
+            });
 
-			describe('with complex key sub-type', () => {
-				function typeFactory() {
-					return Typorama.Map.of(UserType, Typorama.String);
-				}
-				typeCompatibilityTest(typeFactory);
-				it('should report error when null key is added',function(){
-					expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','null'));
-				});
-				it('should report error when null value is added',function(){
-					expect(() => typeFactory().create([[new UserType(), null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','null'));
-				});
-				it('should report error when unallowed primitive key is added',function(){
-					expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','string'));
-				});
-				it('should report error when unallowed primitive value is added',function(){
-					expect(() => typeFactory().create([[new UserType(), 5]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','number'));
-				});
-				it('should report error unallowed object value is added',function(){
-					expect(() => typeFactory().create([[new UserType(), new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','User'));
-				});
-				it('should report error when when json key with unallowed _type is added',function(){
-					expect(() => typeFactory().create([[{_type:'Address'}, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','object with _type Address'));
-				});
-				it('should report error when unallowed typorama key is added',function(){
-					expect(() => typeFactory().create([[new AddressType(), 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>','Address'));
-				});
-				it('should report error when unallowed typorama value is added',function(){
-					expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>','Address'));
-				});
-			});
+            describe('with complex key sub-type', () => {
+                function typeFactory() {
+                    return Typorama.Map.of(UserType, Typorama.String);
+                }
+                typeCompatibilityTest(typeFactory);
+                it('should report error when null key is added', function() {
+                    expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'null'));
+                });
+                it('should report error when null value is added', function() {
+                    expect(() => typeFactory().create([[new UserType(), null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'null'));
+                });
+                it('should report error when unallowed primitive key is added', function() {
+                    expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'string'));
+                });
+                it('should report error when unallowed primitive value is added', function() {
+                    expect(() => typeFactory().create([[new UserType(), 5]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'number'));
+                });
+                it('should report error unallowed object value is added', function() {
+                    expect(() => typeFactory().create([[new UserType(), new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'User'));
+                });
+                it('should report error when when json key with unallowed _type is added', function() {
+                    expect(() => typeFactory().create([[{ _type: 'Address' }, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'object with _type Address'));
+                });
+                it('should report error when unallowed typorama key is added', function() {
+                    expect(() => typeFactory().create([[new AddressType(), 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'Address'));
+                });
+                it('should report error when unallowed typorama value is added', function() {
+                    expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'Address'));
+                });
+            });
 
-			describe('with complex key sub-type and union value sub-type', () => {
-				function typeFactory() {
-					return Typorama.Map.of(UserType, either(UserType,AddressType,Typorama.String));
-				}
-				typeCompatibilityTest(typeFactory);
-				describe("instantiation",function(){
-					let newUser, newUser2, newAddress;
-					beforeEach(() => {
-						newUser = new UserType();
-						newUser2 = new UserType();
-						newAddress = new AddressType();
-					});
-					it('should keep typorama objects passed to it that fit its subtypes', function() {
-						var mixedMap = typeFactory().create([[newUser, newUser],[newUser2, newAddress]]);
-						expect(mixedMap.get(newUser)).to.equal(newUser);
-						expect(mixedMap.get(newUser2)).to.equal(newAddress);
-					});
-					it('should allow setting data with json and should default to first type, ', function() {
-						var map = typeFactory().create([[newUser, {someKey:'gaga'}]]);
-						expect(map.get(newUser)).to.be.instanceOf(UserType);
-					});
-					it('should use _type field to detect which subtype to use when setting data with json, ', function() {
-						var map = typeFactory().create([[newUser, {_type: AddressType.id, address:'gaga'}]]);
-						expect(map.get(newUser)).to.be.instanceOf(AddressType);
-						expect(map.get(newUser).address).to.equal('gaga');
-					});
-					it('should detect primitives', function() {
-						var mixedMap = typeFactory().create([[newUser, 'gaga']]);
-						expect(mixedMap.get(newUser)).to.be.equal('gaga');
-					});
-				});
-			});
-			describe('with value type that is a union of maps', () => {
-				function typeFactory() {
-					return Typorama.Map.of(Typorama.String,
-										   either(Typorama.Map.of(Typorama.String,Typorama.String),
-											   Typorama.Map.of(Typorama.String,Typorama.Number)));
-				}
-				typeCompatibilityTest(typeFactory);
-				describe("instantiation",function(){
-					it('should allow setting data with array', function() {
-						var mixedMap = typeFactory().create([['foo', [['bar', 'baz']]],['foo2', [['bar2', 2]]]]);
-						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
-						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
-					});
-					it('should allow setting data with json', function() {
-						var mixedMap = typeFactory().create({foo:{bar:'baz'}, foo2:{bar2:2}});
-						expect(mixedMap.get('foo').get('bar')).to.equal('baz');
-						expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
-					});
-				});
-			});
-		});
+            describe('with complex key sub-type and union value sub-type', () => {
+                function typeFactory() {
+                    return Typorama.Map.of(UserType, either(UserType, AddressType, Typorama.String));
+                }
+                typeCompatibilityTest(typeFactory);
+                describe("instantiation", function() {
+                    let newUser, newUser2, newAddress;
+                    beforeEach(() => {
+                        newUser = new UserType();
+                        newUser2 = new UserType();
+                        newAddress = new AddressType();
+                    });
+                    it('should keep typorama objects passed to it that fit its subtypes', function() {
+                        var mixedMap = typeFactory().create([[newUser, newUser], [newUser2, newAddress]]);
+                        expect(mixedMap.get(newUser)).to.equal(newUser);
+                        expect(mixedMap.get(newUser2)).to.equal(newAddress);
+                    });
+                    it('should allow setting data with json and should default to first type, ', function() {
+                        var map = typeFactory().create([[newUser, { someKey: 'gaga' }]]);
+                        expect(map.get(newUser)).to.be.instanceOf(UserType);
+                    });
+                    it('should use _type field to detect which subtype to use when setting data with json, ', function() {
+                        var map = typeFactory().create([[newUser, { _type: AddressType.id, address: 'gaga' }]]);
+                        expect(map.get(newUser)).to.be.instanceOf(AddressType);
+                        expect(map.get(newUser).address).to.equal('gaga');
+                    });
+                    it('should detect primitives', function() {
+                        var mixedMap = typeFactory().create([[newUser, 'gaga']]);
+                        expect(mixedMap.get(newUser)).to.be.equal('gaga');
+                    });
+                });
+            });
+            describe('with value type that is a union of maps', () => {
+                function typeFactory() {
+                    return Typorama.Map.of(Typorama.String,
+                        either(Typorama.Map.of(Typorama.String, Typorama.String),
+                            Typorama.Map.of(Typorama.String, Typorama.Number)));
+                }
+                typeCompatibilityTest(typeFactory);
+                describe("instantiation", function() {
+                    it('should allow setting data with array', function() {
+                        var mixedMap = typeFactory().create([['foo', [['bar', 'baz']]], ['foo2', [['bar2', 2]]]]);
+                        expect(mixedMap.get('foo').get('bar')).to.equal('baz');
+                        expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
+                    });
+                    it('should allow setting data with json', function() {
+                        var mixedMap = typeFactory().create({ foo: { bar: 'baz' }, foo2: { bar2: 2 } });
+                        expect(mixedMap.get('foo').get('bar')).to.equal('baz');
+                        expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
+                    });
+                });
+            });
+        });
 
-		describe("a List type",() => {
+        describe("a List type", () => {
 
-			describe("with no sub-types",()=>{
-				it('should report error when instantiating', () => {
-					var inValidArrType = Typorama.List;
-					expect(()=>new inValidArrType()).to.report(new Report('error', 'Typorama.List', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
-				});
-			});
-			describe('with complex element sub-type', () => {
-				typeCompatibilityTest(function typeFactory() {
-					return Typorama.List.of(UserType);
-				});
-				describe("instantiation",function(){
-					it('should keep typorama objects passed to it that fit its subtypes', function() {
-						var newUser = new UserType();
-						var newAddress = new AddressType();
+            describe("with no sub-types", () => {
+                it('should report error when instantiating', () => {
+                    var inValidArrType = Typorama.List;
+                    expect(() => new inValidArrType()).to.report(new Report('error', 'Typorama.List', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+                });
+            });
+            describe('with complex element sub-type', () => {
+                typeCompatibilityTest(function typeFactory() {
+                    return Typorama.List.of(UserType);
+                });
+                describe("instantiation", function() {
+                    it('should keep typorama objects passed to it that fit its subtypes', function() {
+                        var newUser = new UserType();
+                        var newAddress = new AddressType();
 
-						var mixedList = Typorama.List.of(either(UserType,AddressType)).create([newUser,newAddress]);
+                        var mixedList = Typorama.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
 
-						expect(mixedList.at(0)).to.eql(newUser);
-						expect(mixedList.at(1)).to.eql(newAddress);
-					});
-					it('single subtype List should allow setting data with json, ', function() {
+                        expect(mixedList.at(0)).to.eql(newUser);
+                        expect(mixedList.at(1)).to.eql(newAddress);
+                    });
+                    it('single subtype List should allow setting data with json, ', function() {
 
-						var mixedList = Typorama.List.of(AddressType).create([{address:'gaga'}]);
+                        var mixedList = Typorama.List.of(AddressType).create([{ address: 'gaga' }]);
 
-						expect(mixedList.at(0)).to.be.instanceOf(AddressType);
-						expect(mixedList.at(0).code).to.be.eql(10);
-						expect(mixedList.at(0).address).to.be.eql('gaga');
+                        expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+                        expect(mixedList.at(0).code).to.be.eql(10);
+                        expect(mixedList.at(0).address).to.be.eql('gaga');
 
-					});
+                    });
 
-					it('a multi subtype List should default to first object based types for json', function() {
-						var mixedList = Typorama.List.of(either(AddressType, UserType)).create([{}]);
+                    it('a multi subtype List should default to first object based types for json', function() {
+                        var mixedList = Typorama.List.of(either(AddressType, UserType)).create([{}]);
 
-						expect(mixedList.at(0)).to.be.instanceOf(AddressType);
+                        expect(mixedList.at(0)).to.be.instanceOf(AddressType);
 
-					});
-					it('a multi subtype List should detect primitives', function() {
-						var mixedList = Typorama.List.of(either(AddressType, UserType,Typorama.String)).create(['gaga']);
+                    });
+                    it('a multi subtype List should detect primitives', function() {
+                        var mixedList = Typorama.List.of(either(AddressType, UserType, Typorama.String)).create(['gaga']);
 
-						expect(mixedList.at(0)).to.be.eql('gaga');
-					});
-					it('a multi subtype List should use _type field to detect which subtype to use', function() {
-						var mixedList = Typorama.List.of(either(AddressType, UserType,Typorama.String)).create([{_type:'User'}]);
+                        expect(mixedList.at(0)).to.be.eql('gaga');
+                    });
+                    it('a multi subtype List should use _type field to detect which subtype to use', function() {
+                        var mixedList = Typorama.List.of(either(AddressType, UserType, Typorama.String)).create([{ _type: 'User' }]);
 
-						expect(mixedList.at(0)).to.be.instanceOf(UserType);
-					});
-					it('should report error when unallowed primitive is added',function(){
-						var ListCls = Typorama.List.of(AddressType);
-						expect(function(){ListCls.create(['gaga'])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<Address>[0]','<Address>','string'));
+                        expect(mixedList.at(0)).to.be.instanceOf(UserType);
+                    });
+                    it('should report error when unallowed primitive is added', function() {
+                        var ListCls = Typorama.List.of(AddressType);
+                        expect(function() { ListCls.create(['gaga']) }).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<Address>[0]', '<Address>', 'string'));
 
-						ListCls = Typorama.List.of(Typorama.Number);
-						expect(function(){ListCls.create(['gaga'])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<number>[0]','<number>','string'));
-					});
+                        ListCls = Typorama.List.of(Typorama.Number);
+                        expect(function() { ListCls.create(['gaga']) }).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<number>[0]', '<number>', 'string'));
+                    });
 
-					it('should report error when object is added an no object types allowed',function(){
-						var ListCls = Typorama.List.of(Typorama.String);
-						expect(function(){ListCls.create([{}])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<string>[0]','<string>','object'));
-					});
+                    it('should report error when object is added an no object types allowed', function() {
+                        var ListCls = Typorama.List.of(Typorama.String);
+                        expect(function() { ListCls.create([{}]) }).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<string>[0]', '<string>', 'object'));
+                    });
 
-					it('should report error when unallowed typorama is added',function(){
-						var ListCls = Typorama.List.of(UserType);
-						expect(function(){ListCls.create([new AddressType()])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<User>[0]','<User>','Address'));
-					});
+                    it('should report error when unallowed typorama is added', function() {
+                        var ListCls = Typorama.List.of(UserType);
+                        expect(function() { ListCls.create([new AddressType()]) }).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<User>[0]', '<User>', 'Address'));
+                    });
 
-					it('should report error when json with unallowed _type added',function(){
-						var ListCls = Typorama.List.of(UserType);
-						expect(function(){ListCls.create([{_type:'Address'}])}).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<User>[0]','<User>','object with _type Address'));
-					});
+                    it('should report error when json with unallowed _type added', function() {
+                        var ListCls = Typorama.List.of(UserType);
+                        expect(function() { ListCls.create([{ _type: 'Address' }]) }).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<User>[0]', '<User>', 'object with _type Address'));
+                    });
 
-				});
+                });
 
-			});
-			describe('with union element sub-type', () => {
-				typeCompatibilityTest(function typeFactory() {
-					return Typorama.List.of(either(UserType,AddressType));
-				});
-			});
-			describe("with default values", function() {
+            });
+            describe('with union element sub-type', () => {
+                typeCompatibilityTest(function typeFactory() {
+                    return Typorama.List.of(either(UserType, AddressType));
+                });
+            });
+            describe("with default values", function() {
 
-				typeCompatibilityTest(() => Typorama.List.of(Typorama.String).withDefault(['im special!']));
+                typeCompatibilityTest(() => Typorama.List.of(Typorama.String).withDefault(['im special!']));
 
-				var list, TestType, testType;
+                var list, TestType, testType;
 
-				before("instantiate with create", function () {
-					list = Typorama.List.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
-				});
+                before("instantiate with create", function() {
+                    list = Typorama.List.of(Typorama.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
+                });
 
-				before("define a List type with default", function () {
-					TestType = Typorama.define('TestType', {
-						spec: () => ({
-							names: Typorama.List.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
-						})
-					});
-				});
+                before("define a List type with default", function() {
+                    TestType = Typorama.define('TestType', {
+                        spec: () => ({
+                            names: Typorama.List.of(Typorama.String).withDefault(["Beyonce", "Rihanna", "Britney", "Christina"])
+                        })
+                    });
+                });
 
-				before("instantiate a type with default List", function () {
-					testType = new TestType();
-				});
+                before("instantiate a type with default List", function() {
+                    testType = new TestType();
+                });
 
-				it("should have correct initial values in instances", function () {
-					expect(list.length).to.equal(4);
-					expect(list.at(0)).to.equal("Beyonce");
-					expect(list.at(1)).to.equal("Rihanna");
-					expect(list.at(2)).to.equal("Britney");
-					expect(list.at(3)).to.equal("Christina");
-				});
+                it("should have correct initial values in instances", function() {
+                    expect(list.length).to.equal(4);
+                    expect(list.at(0)).to.equal("Beyonce");
+                    expect(list.at(1)).to.equal("Rihanna");
+                    expect(list.at(2)).to.equal("Britney");
+                    expect(list.at(3)).to.equal("Christina");
+                });
 
-				it("should have correct initial values in withDefaults", function () {
-					expect(testType.names.length).to.equal(4);
-					expect(testType.names.at(0)).to.equal("Beyonce");
-					expect(testType.names.at(1)).to.equal("Rihanna");
-					expect(testType.names.at(2)).to.equal("Britney");
-					expect(testType.names.at(3)).to.equal("Christina");
-				});
+                it("should have correct initial values in withDefaults", function() {
+                    expect(testType.names.length).to.equal(4);
+                    expect(testType.names.at(0)).to.equal("Beyonce");
+                    expect(testType.names.at(1)).to.equal("Rihanna");
+                    expect(testType.names.at(2)).to.equal("Britney");
+                    expect(testType.names.at(3)).to.equal("Christina");
+                });
 
-			});
-		});
-	});
+            });
+        });
+    });
 });

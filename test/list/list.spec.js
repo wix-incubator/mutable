@@ -4,9 +4,9 @@ import lifeCycleAsserter from './lifecycle.js';
 
 describe('List', function() {
 
-	describe('lifecycle:',function() {
-		lifeCycleAsserter.assertDirtyContract();
-	});
+    describe('lifecycle:', function() {
+        lifeCycleAsserter.assertDirtyContract();
+    });
 
 
 });
