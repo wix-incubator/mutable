@@ -1,28 +1,28 @@
 import PrimitiveBase from './primitive-base';
 import {validateNullValue} from './validation';
 
-export default class _String extends PrimitiveBase{
-	
-	static create(v){
-		if(validateNullValue(this, v)){
-			return v;
-		}
-		return String(v);
-	}
-	
-    static defaults(){ return ''; }
+export default class _String extends PrimitiveBase {
 
-    static validate(v){ return typeof v === 'string' || validateNullValue(this, v); }
+    static create(v) {
+        if (validateNullValue(this, v)) {
+            return v;
+        }
+        return String(v);
+    }
 
-    static allowPlainVal(v){ return this.validate(v)}
+    static defaults() { return ''; }
+
+    static validate(v) { return typeof v === 'string' || validateNullValue(this, v); }
+
+    static allowPlainVal(v) { return this.validate(v) }
 
     static validateType(value) {
         return this.validate(value);
     }
 
-    constructor(value){
+    constructor(value) {
         super(value);
-		return String(value);
+        return String(value);
     }
 
 }
