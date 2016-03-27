@@ -95,4 +95,3 @@ build/Release
 node_modules
 
 dist/
-.editorconfig
