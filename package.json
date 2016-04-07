@@ -4,7 +4,7 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
-  "version": "0.0.292",
+  "version": "0.0.293",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
@@ -52,8 +52,8 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "lodash": "4.7.0",
-    "escalate": "0.0.74"
+    "lodash": "4.8.2",
+    "escalate": "0.0.75"
   },
   "babel": {
     "presets": [
