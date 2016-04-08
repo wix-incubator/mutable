@@ -4,7 +4,7 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
-  "version": "0.0.294",
+  "version": "0.0.295",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
@@ -25,8 +25,8 @@
   "author": "core3",
   "license": "c",
   "devDependencies": {
-    "babel-cli": "6.6.5",
-    "babel-core": "6.7.4",
+    "babel-cli": "6.7.5",
+    "babel-core": "6.7.6",
     "babel-loader": "6.2.4",
     "babel-plugin-transform-class-properties": "6.6.0",
     "babel-plugin-transform-es2015-modules-umd": "6.6.5",
@@ -52,8 +52,8 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "lodash": "4.8.2",
-    "escalate": "0.0.75"
+    "lodash": "4.9.0",
+    "escalate": "0.0.76"
   },
   "babel": {
     "presets": [
