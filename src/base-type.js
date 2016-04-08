@@ -67,14 +67,6 @@ export default class BaseType extends PrimitiveBase {
         return fieldDef.type.reportDefinitionErrors(fieldDef.options);
     }
 
-    static reportSetValueErrors(value, options) {
-        return PrimitiveBase.reportSetValueErrors.apply(this, arguments);
-    }
-
-    static reportSetErrors(value, options) {
-        return PrimitiveBase.reportSetValueErrors.apply(this, arguments);
-    }
-
     static createErrorContext(entryPoint, level) {
         return {
             level,

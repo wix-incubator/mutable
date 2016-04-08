@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-const clonedMembers = [
+export const clonedMembers = [
     //every type have a type and id
     'id',
     'uniqueId',
@@ -14,9 +14,13 @@ const clonedMembers = [
     //PrimitiveBase Mods
     'nullable',
     'withDefault',
+    'reportDefinitionErrors',
+    'reportSetValueErrors',
+    'reportSetErrors',
     //BaseType
     'wrapValue',
     'cloneValue',
+    'createErrorContext',
     '_spec'
 ];
 

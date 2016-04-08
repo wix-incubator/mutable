@@ -2,38 +2,13 @@ import {expect} from 'chai';
 import {Report} from 'escalate/dist/test-kit/testDrivers';
 
 import * as Typorama from '../src';
-import {isAssignableFrom} from '../src/validation';
 import {either} from '../src/generic-types';
 import Type1 from './type1';
 import Type2 from './type2';
-import {ERROR_OVERRIDE_FIELD, ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR, ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
-
+import {ERROR_OVERRIDE_FIELD, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
+import {typeCompatibilityTest} from "./type-compatibility.contract";
 const revision = Typorama.revision;
 
-function typeCompatibilityTest(typeFactory) {
-    describe('should be compatible', () => {
-        it('with itself', () => {
-            var type = typeFactory();
-            expect(type.type).to.satisfy(isAssignableFrom.bind(null, type));
-        });
-        it('with instances of itself', () => {
-            var type = typeFactory();
-            var instance = new type();
-            expect(instance).to.satisfy(type.validateType.bind(type));
-        });
-        it('with instance of same schema', () => {
-            var type1 = typeFactory();
-            var type2 = typeFactory();
-            var instance = new type1();
-            expect(instance).to.satisfy(type2.validateType.bind(type2));
-        });
-        it('with types of same schema', () => {
-            var type1 = typeFactory();
-            var type2 = typeFactory();
-            expect(type1.type).to.satisfy(isAssignableFrom.bind(null, type2));
-        });
-    });
-}
 
 describe('defining', () => {
 
@@ -322,162 +297,15 @@ describe('defining', () => {
             });
         });
 
-
-
-//List constructor: \"->List\" Untyped Lists are not supported please state type of list item in the format core3.List<string>
-//Type constructor: \"Product.->zagzag" Untyped Lists are not supported please state type of list item in the format core3.List<string>
-//Type constructor: \"Product.zagzag<->0>" must be core 3 type
-// Map constructor: \"Map<List<->List>, List<string>\" Untyped Lists are not supported please state type of list item in the format core3.List<string>
-        describe("a map type", () => {
-
-            describe('with default value', () => {
-                typeCompatibilityTest(() => Typorama.Map.of(Typorama.String, Typorama.String).withDefault({ lookAtMe: 'im special!' }));
-            });
-            describe("with missing sub-types", () => {
-                it('should report error when instantiating vanilla Map', () => {
-                    var inValidMapType = Typorama.Map;
-                    expect(() => new inValidMapType()).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
-                });
-                it('should report error when defining Map with zero types', () => {
-                    expect(() => { let map = Typorama.Map.of(); new map() }).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));
-                });
-                it('should report error when defining Map with one type', () => {
-                    expect(() => { let map = Typorama.Map.of(Typorama.Number); new map() }).to.report('Map constructor: "Map<number,➠value>" Wrong number of types for map. Instead of Map<number> Use Map<string, number>');
-                });
-                it('should report error when defining Map with invalid subtype', () => {
-                    expect(() => { let map = Typorama.Map.of(Typorama.String, Typorama.List); new map() }).to.report(new Report('error', 'Typorama.Map', 'Map constructor: "Map<string,➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
-                });
-            });
-
-            describe('with complex value sub-type', () => {
-                function typeFactory() {
-                    return Typorama.Map.of(Typorama.String, AddressType);
-                }
-
-                typeCompatibilityTest(typeFactory);
-                describe("instantiation", function() {
-                    it('should allow setting data with json, ', function() {
-
-                        var map = typeFactory().create({ 'foo': { address: 'gaga' } });
-
-                        expect(map.get('foo')).to.be.instanceOf(AddressType);
-                        expect(map.get('foo').code).to.equal(10);
-                        expect(map.get('foo').address).to.equal('gaga');
-                    });
-                });
-                it('should report error when null key is added', function() {
-                    expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'null'));
-                });
-                it('should report error when null key is added', function() {
-                    expect(() => typeFactory().create([[5, null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'null'));
-                });
-                it('should report error when unallowed primitive key is added', function() {
-                    expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'number'));
-                });
-                it('should report error when unallowed primitive value is added', function() {
-                    expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'string'));
-                });
-                it('should report error when unallowed object key is added', function() {
-                    expect(() => typeFactory().create([[{}, new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'object'));
-                });
-                it('should report error when when json value with unallowed _type is added', function() {
-                    expect(() => typeFactory().create([['baga', { _type: 'User' }]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'object with _type User'));
-                });
-                it('should report error when unallowed typorama key is added', function() {
-                    expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'User'));
-                });
-                it('should report error when unallowed typorama value is added', function() {
-                    expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'User'));
-                });
-            });
-
-            describe('with complex key sub-type', () => {
-                function typeFactory() {
-                    return Typorama.Map.of(UserType, Typorama.String);
-                }
-                typeCompatibilityTest(typeFactory);
-                it('should report error when null key is added', function() {
-                    expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'null'));
-                });
-                it('should report error when null value is added', function() {
-                    expect(() => typeFactory().create([[new UserType(), null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'null'));
-                });
-                it('should report error when unallowed primitive key is added', function() {
-                    expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'string'));
-                });
-                it('should report error when unallowed primitive value is added', function() {
-                    expect(() => typeFactory().create([[new UserType(), 5]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'number'));
-                });
-                it('should report error unallowed object value is added', function() {
-                    expect(() => typeFactory().create([[new UserType(), new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'User'));
-                });
-                it('should report error when when json key with unallowed _type is added', function() {
-                    expect(() => typeFactory().create([[{ _type: 'Address' }, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'object with _type Address'));
-                });
-                it('should report error when unallowed typorama key is added', function() {
-                    expect(() => typeFactory().create([[new AddressType(), 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'Address'));
-                });
-                it('should report error when unallowed typorama value is added', function() {
-                    expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'Address'));
-                });
-            });
-
-            describe('with complex key sub-type and union value sub-type', () => {
-                function typeFactory() {
-                    return Typorama.Map.of(UserType, either(UserType, AddressType, Typorama.String));
-                }
-                typeCompatibilityTest(typeFactory);
-                describe("instantiation", function() {
-                    let newUser, newUser2, newAddress;
-                    beforeEach(() => {
-                        newUser = new UserType();
-                        newUser2 = new UserType();
-                        newAddress = new AddressType();
-                    });
-                    it('should keep typorama objects passed to it that fit its subtypes', function() {
-                        var mixedMap = typeFactory().create([[newUser, newUser], [newUser2, newAddress]]);
-                        expect(mixedMap.get(newUser)).to.equal(newUser);
-                        expect(mixedMap.get(newUser2)).to.equal(newAddress);
-                    });
-                    it('should allow setting data with json and should default to first type, ', function() {
-                        var map = typeFactory().create([[newUser, { someKey: 'gaga' }]]);
-                        expect(map.get(newUser)).to.be.instanceOf(UserType);
-                    });
-                    it('should use _type field to detect which subtype to use when setting data with json, ', function() {
-                        var map = typeFactory().create([[newUser, { _type: AddressType.id, address: 'gaga' }]]);
-                        expect(map.get(newUser)).to.be.instanceOf(AddressType);
-                        expect(map.get(newUser).address).to.equal('gaga');
-                    });
-                    it('should detect primitives', function() {
-                        var mixedMap = typeFactory().create([[newUser, 'gaga']]);
-                        expect(mixedMap.get(newUser)).to.be.equal('gaga');
-                    });
-                });
-            });
-            describe('with value type that is a union of maps', () => {
-                function typeFactory() {
-                    return Typorama.Map.of(Typorama.String,
-                        either(Typorama.Map.of(Typorama.String, Typorama.String),
-                            Typorama.Map.of(Typorama.String, Typorama.Number)));
-                }
-                typeCompatibilityTest(typeFactory);
-                describe("instantiation", function() {
-                    it('should allow setting data with array', function() {
-                        var mixedMap = typeFactory().create([['foo', [['bar', 'baz']]], ['foo2', [['bar2', 2]]]]);
-                        expect(mixedMap.get('foo').get('bar')).to.equal('baz');
-                        expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
-                    });
-                    it('should allow setting data with json', function() {
-                        var mixedMap = typeFactory().create({ foo: { bar: 'baz' }, foo2: { bar2: 2 } });
-                        expect(mixedMap.get('foo').get('bar')).to.equal('baz');
-                        expect(mixedMap.get('foo2').get('bar2')).to.equal(2);
-                    });
-                });
-            });
-        });
-
         describe("a List type", () => {
-
+            it('as a nullable field should not crash if supplied null as default', () => {
+                expect(() =>
+                    Typorama.define('WithList', {
+                        spec: () => ({
+                            nullList: Typorama.List.of(Typorama.String).nullable().withDefault(null)
+                        })
+                    })).not.to.throw();
+            });
             describe("with no sub-types", () => {
                 it('should report error when instantiating', () => {
                     var inValidArrType = Typorama.List;

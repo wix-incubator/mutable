@@ -30,7 +30,7 @@ export function isDataMatching(origin, other) {
 }
 
 export function isNullable(type) {
-    return type.options && type.options.nullable;
+    return !! (type.options && type.options.nullable);
 }
 
 export function validateValue(type, value) {
@@ -42,15 +42,7 @@ export function validateNotNullValue(type, value) {
 }
 
 export function validateNullValue(type, value) {
-    if (value === null) {
-        if (isNullable(type)) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
+    return value === null && isNullable(type);
 }
 
 export function validateAndWrap(itemValue, type, lifeCycle, errorContext, errorTemplate) {

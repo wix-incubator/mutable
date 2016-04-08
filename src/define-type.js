@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import BaseType from './base-type';
 import PrimitiveBase from './primitive-base';
 import {isAssignableFrom, validateNullValue, misMatchMessage} from './validation';
-import {generateClassId} from './utils';
+import {generateClassId, clonedMembers} from './utils';
 
 const MAILBOX = getMailBox('Typorama.define');
 
@@ -13,21 +13,9 @@ export default function defineType(id, typeDefinition, ParentType, TypeConstruct
     var Type = TypeConstructor || function Type(value, options, eventContext) {
         ParentType.call(this, value, options, eventContext);
     };
-
-    Type.validate               = Type.validate               || ParentType.validate;
-    Type.validateType           = Type.validateType           || ParentType.validateType;
-    Type.allowPlainVal          = Type.allowPlainVal          || ParentType.allowPlainVal;
-    Type.defaults               = Type.defaults               || ParentType.defaults;
-    Type.withDefault            = Type.withDefault            || ParentType.withDefault;
-    Type.createErrorContext     = Type.createErrorContext     || ParentType.createErrorContext;
-    Type.reportDefinitionErrors = Type.reportDefinitionErrors || ParentType.reportDefinitionErrors;
-    Type.reportSetValueErrors   = Type.reportSetValueErrors   || ParentType.reportSetValueErrors;
-    Type.reportSetErrors        = Type.reportSetErrors        || ParentType.reportSetErrors;
-    Type.nullable               = Type.nullable               || ParentType.nullable;
-    Type.create                 = Type.create                 || ParentType.create;
-    Type.wrapValue              = Type.wrapValue              || ParentType.wrapValue;
-    Type.cloneValue             = Type.cloneValue             || ParentType.cloneValue;
-
+    clonedMembers.forEach(member => {
+        Type[member] = Type[member] || ParentType[member];
+    });
     var superTypeConstructor = Object.getPrototypeOf(Type.prototype).constructor;
 
     if (isAssignableFrom(ParentType, superTypeConstructor.type)) {
@@ -120,7 +108,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
             MAILBOX.fatal(`Type definition error: "${path}" ${error}`);
             return;
         }
-        error = fieldDef.type.reportSetValueErrors(fieldDef.defaults(), fieldDef.options);
+        error = fieldDef.reportSetValueErrors(fieldDef.defaults());
         if (error) {
             MAILBOX.post(errorContext.level, misMatchMessage(errorContext, fieldDef, fieldDef.defaults(), path));
         }
@@ -140,8 +128,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
                         this.$setDirty();
                     }
                 } else {
-                    // todo:warn hook
-                    console.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
+                    MAILBOX.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
                 }
             },
             enumerable: true,

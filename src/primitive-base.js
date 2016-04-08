@@ -5,15 +5,9 @@ import {validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Typorama.PrimitiveBase');
 
-function reportErrorInternal(value, options, allowPlain, allowInstance) {
-    if (value !== undefined) {
-        if (value === null) {
-            if (!options || !options.nullable) {
-                return { message: `expected type ${this.id} but got null`, path: '' }
-            }
-        } else if ((!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))) {
-            return { message: `expected type ${this.id} but got ${getReadableValueTypeName(value)}`, path: '' };
-        }
+function reportErrorInternal(value, allowPlain, allowInstance) {
+    if (value !== undefined && (!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))) {
+        return { message: `expected type ${this.id} but got ${getReadableValueTypeName(value)}`, path: '' };
     }
 }
 
@@ -53,14 +47,14 @@ export default class PrimitiveBase {
         }
         return NewType;
     }
-    static reportDefinitionErrors(options) {
+    static reportDefinitionErrors() {
         return null;
     }
-    static reportSetValueErrors(value, options) {
-        return reportErrorInternal.call(this, value, options, true, true);
+    static reportSetValueErrors(value) {
+        return reportErrorInternal.call(this, value, true, true);
     }
 
-    static reportSetErrors(value, options) {
-        return reportErrorInternal.call(this, value, options, false, true);
+    static reportSetErrors(value) {
+        return reportErrorInternal.call(this, value, false, true);
     }
 }
