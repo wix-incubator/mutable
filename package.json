@@ -4,7 +4,7 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
-  "version": "0.0.304",
+  "version": "0.0.305",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
@@ -45,15 +45,15 @@
     "react": "0.14.8",
     "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
     "sinon-chai": "2.8.0",
-    "webpack": "1.12.15",
+    "webpack": "1.13.0",
     "webpack-dev-server": "1.14.1"
   },
   "engines": {
     "node": ">=0.12"
   },
   "dependencies": {
-    "lodash": "4.10.0",
-    "escalate": "0.0.77"
+    "lodash": "4.11.1",
+    "escalate": "0.0.78"
   },
   "babel": {
     "presets": [
