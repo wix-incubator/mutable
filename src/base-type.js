@@ -171,22 +171,20 @@ export default class BaseType extends PrimitiveBase {
             _.forEach(this.constructor._spec, (fieldSpec, fieldName) => {
                 var fieldValue = (newValue[fieldName] !== undefined) ? newValue[fieldName] : fieldSpec.defaults();
                 if (fieldSpec) {
-                    if (this.__value__[fieldName] === null || (this.__value__[fieldName].setValueDeep && !BaseType.validateType(fieldValue))) {
-                        // recursion call
-                        if (this.__value__[fieldName] === null || this.__value__[fieldName].$isReadOnly()) {
-                            this.__value__[fieldName] = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
-                                {
-                                    level: errorContext.level, entryPoint:
-                                    errorContext.entryPoint, path: errorContext.path + '.' + fieldName
-                                });
-                            changed = true;
-                        } else {
-                            changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
-                        }
-                    } else {
-                        // end recursion, assign value (if applicable)
+                    if(fieldValue === null ||  BaseType.validateType(fieldValue)){
+
                         changed = this.$assignField(fieldName, fieldValue) || changed;
+                    }else if(this.__value__[fieldName] && this.__value__[fieldName].setValueDeep && !this.__value__[fieldName].$isReadOnly()){
+                        changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
+                    }else{
+                        changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
+                            {
+                                level: errorContext.level, entryPoint:
+                            errorContext.entryPoint, path: errorContext.path + '.' + fieldName
+                            })) || changed;
                     }
+
+
                 }
             });
             if (changed) {

@@ -429,6 +429,15 @@ describe('Custom data', function() {
 
                 expect(instance.$isDirty(rev)).to.equal(false);
             });
+            it('should not invalidate item if null child was set to null', function() {
+                var instance = new UserWithNullableChildType({ child: null });
+                revision.advance();
+                var rev = revision.read();
+
+                instance.setValueDeep({ child: null });
+
+                expect(instance.$isDirty(rev)).to.equal(false);
+            });
             it('should invalidate if child has changed', function() {
                 var instance = new UserWithChildType({ child: { name: 'zagzag' } });
                 revision.advance();
