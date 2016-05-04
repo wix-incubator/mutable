@@ -4,7 +4,7 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
-  "version": "0.0.308",
+  "version": "0.0.309",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
@@ -14,7 +14,7 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "build:clean": "npm run clean && npm run build",
-    "build":"npm run build:src && npm run build:test && npm run build:testkit && npm run build:webpack",
+    "build": "npm run build:src && npm run build:test && npm run build:testkit && npm run build:webpack",
     "build:src": "babel ./src/ -d ./dist/src/ --source-maps",
     "build:test": "babel ./test/ -d ./dist/test/ --source-maps",
     "build:testkit": "babel ./test-kit/ -d ./dist/test-kit/ --source-maps",
