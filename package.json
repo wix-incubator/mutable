@@ -9,7 +9,7 @@
   "main": "dist/src",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:wix/typorama"
+    "url": "git+ssh://git@github.com:wix-private/typorama"
   },
   "scripts": {
     "clean": "rimraf ./dist",
