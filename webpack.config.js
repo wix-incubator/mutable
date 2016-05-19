@@ -1,4 +1,8 @@
 var webpack = require('webpack');
+var path = require('path');
+
+var NODE_MODULES_PATH = path.resolve(__dirname, 'node_modules');
+
 module.exports = {
 	context: __dirname,
 	devtool: 'eval',
@@ -32,7 +36,7 @@ module.exports = {
 		loaders: [
 			{
 				test    : /\.js$/,
-				exclude : /node_modules/,
+				exclude : NODE_MODULES_PATH,
 				loader  : 'babel-loader'
 			}
 		],
