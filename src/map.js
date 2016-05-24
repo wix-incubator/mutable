@@ -7,7 +7,8 @@ import {getValueTypeName} from './utils';
 import Number from './number';
 import String from './string';
 import * as generics from './generic-types';
-import {validateAndWrap, validateNullValue, misMatchMessage, arrow} from './validation';
+import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
+import {validateAndWrap} from './type-match';
 
 const MAILBOX = getMailBox('Typorama.Map');
 
@@ -52,23 +53,36 @@ class _Map extends BaseType {
 
     static defaults() { return new Map(); }
 
-    static _allowIterable(iterable, options) {
+    static _allowIterable(iterable, options, errorDetails = null) {
         for (let [key, value] of iterable) {
-            if (options && options.subTypes &&
-                (!generics.getMatchingType(options.subTypes.key, key) || !generics.getMatchingType(options.subTypes.value, value))) {
-                return false;
+            if (options && options.subTypes){
+                if (!generics.getMatchingType(options.subTypes.key, key)){
+                    if (errorDetails){
+                        errorDetails.path = `${errorDetails.path}[${key}]`;
+                        errorDetails.expected = generics.toString(options.subTypes.key);
+                        errorDetails.actual = key;
+                    }
+                    return false;
+                } else if(!generics.getMatchingType(options.subTypes.value, value)){
+                    if (errorDetails){
+                        errorDetails.path = `${errorDetails.path}[${key}]`;
+                        errorDetails.expected = generics.toString(options.subTypes.value);
+                        errorDetails.actual = value;
+                    }
+                    return false;
+                }
             }
         }
         return true;
     }
 
-    static allowPlainVal(value) {
+    static allowPlainVal(value, errorDetails = null) {
         if (validateNullValue(this, value)) {
             return true;
         } else if (isIterable(value)) {
-            return _Map._allowIterable(value, this.options);
+            return _Map._allowIterable(value, this.options, errorDetails);
         } else if (value instanceof Object && this.options && this.options.subTypes && generics.doOnType(this.options.subTypes.key, type => type === String)) {
-            return _Map._allowIterable(entries(value), this.options);
+            return _Map._allowIterable(entries(value), this.options, errorDetails);
         }
         return false;
     }
@@ -112,14 +126,14 @@ class _Map extends BaseType {
     }
 
     static validate(value) {
-        if (BaseType.validateType(value)) {
+        if (validateValue(this, value)) {
             return value.__value__ instanceof Map;
         }
         return isIterable(value) || value instanceof Object;
     }
 
     static wrapValue(value, spec, options, errorContext) {
-        if (BaseType.validateType(value)) {
+        if (super.validateType(value)) {
             if (value.__value__ instanceof Map) {
                 return this._wrapIterable(value.__value__, options, null, errorContext);
             } else {
@@ -135,21 +149,22 @@ class _Map extends BaseType {
         MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
     }
 
-    static reportDefinitionErrors(options) {
-        if (options.definitionError) {
-            return options.definitionError;
+    static reportDefinitionErrors() {
+        const ops = this.options;
+        if (ops && ops.definitionError) {
+            return ops.definitionError;
         }
-        if (!options || !options.subTypes || !options.subTypes.key || !options.subTypes.value) {
+        if (!ops || !ops.subTypes || !ops.subTypes.key || !ops.subTypes.value) {
             return { path: arrow + 'Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>` }
         } else {
-            var keyError = generics.reportDefinitionErrors(options.subTypes.key, BaseType.reportFieldDefinitionError, 'key')
-            var valueTypeError = generics.reportDefinitionErrors(options.subTypes.value, BaseType.reportFieldDefinitionError, 'value')
+            var keyError = generics.reportDefinitionErrors(ops.subTypes.key, BaseType.reportFieldDefinitionError, 'key');
+            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes.value, BaseType.reportFieldDefinitionError, 'value');
             if (keyError) {
-                var valueTypeStr = valueTypeError ? 'value' : generics.toUnwrappedString(options.subTypes.value);
-                return { path: `Map<${keyError.path || arrow + generics.toUnwrappedString(options.subTypes.key)},${valueTypeStr}`, message: keyError.message };
+                var valueTypeStr = valueTypeError ? 'value' : generics.toUnwrappedString(ops.subTypes.value);
+                return { path: `Map<${keyError.path || arrow + generics.toUnwrappedString(ops.subTypes.key)},${valueTypeStr}`, message: keyError.message };
             } else if (valueTypeError) {
-                var keyTypeStr = generics.toUnwrappedString(options.subTypes.key);
-                return { path: `Map<${keyTypeStr},${valueTypeError.path || arrow + generics.toUnwrappedString(options.subTypes.value)}>`, message: valueTypeError.message };
+                var keyTypeStr = generics.toUnwrappedString(ops.subTypes.key);
+                return { path: `Map<${keyTypeStr},${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes.value)}>`, message: valueTypeError.message };
             }
         }
     }
@@ -186,18 +201,20 @@ class _Map extends BaseType {
         }
     }
 
+    static preConstructor(){
+        const report = this.reportDefinitionErrors();
+        if (report) {
+            MAILBOX.error(`Map constructor: "${report.path}" ${report.message}`);
+        }
+        super.preConstructor();
+    }
+
     constructor(value = [], options = { subTypes: {} }, errorContext = null) {
         if (!errorContext) {
             errorContext = _Map.createErrorContext('Map constructor error', 'error', options);
         }
-
-        const report = _Map.reportDefinitionErrors(options);
-        if (report) {
-            MAILBOX.error(`Map constructor: "${report.path}" ${report.message}`);
-        } else {
-            options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
-            options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
-        }
+        options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
+        options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
         super(value, options, errorContext);
     }
 
@@ -369,16 +386,22 @@ class _Map extends BaseType {
         return result;
     }
 
-    toJSON(recursive = true) {
+    toJSON(recursive = true, typed = false) {
         let result = [];
         let allStringKeys = isTypeCompatibleWithPlainJsonObject(this.__options__);
         for (let [key, value] of mapEntries(this.__value__)) {
-            key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true) : this.__exposeInner__(key);
-            value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true) : this.__exposeInner__(value);
+            key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true, typed) : this.__exposeInner__(key);
+            value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
             result.push([key, value]);
             allStringKeys = (allStringKeys && typeof key === 'string');
         }
-        return allStringKeys ? _.fromPairs(result) : result;
+        if (allStringKeys){
+            result = _.fromPairs(result);
+            if (typed) {
+                result._type = this.constructor.id;
+            }
+        }
+        return result;
     }
 
     /**

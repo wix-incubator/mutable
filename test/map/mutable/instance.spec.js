@@ -99,9 +99,15 @@ function testReadFunctionality(builders, isReadonly) {
 
         describe('toJSON', () => {
             it('should return entries json array by default', () => {
-                expect(usersMap.toJSON(), JSON.stringify(usersMap.toJSON())).to.eql([
+                expect(usersMap.toJSON()).to.eql([
                     [userA.toJSON(), userB.toJSON()],
                     [userB.toJSON(), userA.toJSON()]
+                ]);
+            });
+            it('should return typed entries json array if set to typed', () => {
+                expect(usersMap.toJSON(true, true)).to.eql([
+                    [userA.toJSON(true, true), userB.toJSON(true, true)],
+                    [userB.toJSON(true, true), userA.toJSON(true, true)]
                 ]);
             });
             it('should return entries array if not recursive', () => {
@@ -118,6 +124,12 @@ function testReadFunctionality(builders, isReadonly) {
                 const jsonModel = { 'one': 1, 'two': 2, 'three': 3 };
                 var numbersMap = builders.aNumberMap(jsonModel);
                 expect(numbersMap.toJSON()).to.eql(jsonModel);
+            });
+            it('should return typed object if all keys are strings and set to typed', () => {
+                const jsonModel = {'one': 1, 'two': 2, 'three': 3 };
+                var numbersMap = builders.aNumberMap(jsonModel);
+                jsonModel._type = 'Map';
+                expect(numbersMap.toJSON(true, true)).to.eql(jsonModel);
             });
             it('should return empty object if empty and supports string keys', () => {
                 const jsonModel = {};

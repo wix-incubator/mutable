@@ -4,63 +4,40 @@ import {getMailBox} from 'escalate';
 import BaseType from './base-type';
 import PrimitiveBase from './primitive-base';
 import {isAssignableFrom, validateNullValue, misMatchMessage} from './validation';
-import {generateClassId, clonedMembers} from './utils';
+import {generateClassId} from './utils';
 
 const MAILBOX = getMailBox('Typorama.define');
 
 export default function defineType(id, typeDefinition, ParentType, TypeConstructor) {
-    ParentType = ParentType || BaseType;
-    var Type = TypeConstructor || function Type(value, options, eventContext) {
-        ParentType.call(this, value, options, eventContext);
-    };
-    clonedMembers.forEach(member => {
-        Type[member] = Type[member] || ParentType[member];
-    });
-    var superTypeConstructor = Object.getPrototypeOf(Type.prototype).constructor;
-
-    if (isAssignableFrom(ParentType, superTypeConstructor.type)) {
-        Type.ancestors = superTypeConstructor.ancestors.concat([superTypeConstructor.id]);
-    } else {
-        Type.prototype = Object.create(ParentType.prototype);
-        Type.prototype.constructor = Type;
-        Type.ancestors = ParentType.id === 'BaseType' ? [ParentType.id] : ParentType.ancestors.slice();
+    ParentType = TypeConstructor || ParentType || BaseType;
+    if (!BaseType.isJsAssignableFrom(ParentType)){
+        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of core3.Type`);
     }
-
-    Type.id       = id;
-    Type.uniqueId = generateClassId();
-    Type.type     = Type;
-    Type._spec    = {};
-
-    var typeSelfSpec = typeDefinition.spec(Type);
-    Object.keys(typeSelfSpec).forEach(function(fieldId) {
-        Type._spec[fieldId] = typeSelfSpec[fieldId];
-    });
-    var fullSpec = generateSpec(id, typeSelfSpec, ParentType);
-    Object.keys(fullSpec).forEach(function(fieldId) {
-        Type._spec[fieldId] = fullSpec[fieldId];
-    });
-
-    Type.getFieldsSpec = () => { return _.clone(fullSpec) };
-    Type.prototype.$dirtyableElementsIterator = getDirtyableElementsIterator(typeSelfSpec, Type.prototype.$dirtyableElementsIterator);
-
+    class Type extends ParentType {
+        static ancestors = ParentType.ancestors.concat([ParentType.id]);
+        static id = id;
+        static uniqueId = generateClassId();
+        constructor(...args){
+            super(...args);
+        }
+    }
+    // values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
+    const typeSelfSpec = typeDefinition.spec(Type);
+    Type.__proto__ = Object.create(ParentType);
+    Type._spec = generateSpec(id, typeSelfSpec, ParentType);
+    Type.prototype.$dirtyableElementsIterator = getDirtyableElementsIterator(typeSelfSpec, ParentType.prototype.$dirtyableElementsIterator);
     generateFieldsOn(Type.prototype, typeSelfSpec);
 
     return Type;
 }
 
-defineType.oldImpl = function(id, typeDefinition, TypeConstructor) {
-    return defineType(id, typeDefinition, undefined, TypeConstructor);
-};
-
-
-function generateSpec(TypeId, spec, ParentType) {
+function generateSpec(id, spec, ParentType) {
     var baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
     _.forEach(spec, (field, fieldName) => {
-        if (baseSpec[fieldName]) {
-            var path = `${TypeId}.${fieldName}`;
+        if (baseSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism
+            var path = `${id}.${fieldName}`;
             var superName = ParentType.id;
-            //MAILBOX.fatal(`Type definition error: "${path}" already exists on super ${superName}`);
-            throw new Error(`Type definition error: "${path}" already exists on super ${superName}`);
+            MAILBOX.fatal(`Type definition error: "${path}" already exists on super ${superName}`);
         } else {
             baseSpec[fieldName] = field;
         }
@@ -116,7 +93,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
         Object.defineProperty(obj, fieldName, {
             get: function() {
                 var value = this.__value__[fieldName];
-                if (!isAssignableFrom(BaseType, fieldDef.type) || this.$isDirtyable() || value === null || value === undefined) {
+                if (!isAssignableFrom(BaseType, fieldDef) || this.$isDirtyable() || value === null || value === undefined) {
                     return value;
                 } else {
                     return value.$asReadOnly();

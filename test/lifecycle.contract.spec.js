@@ -29,6 +29,9 @@ export function lifecycleContract() {
             }
         },
         assertMutatorContract: (mutator, description) => {
+            if (!contexts.length){
+                throw new Error('empty contexts!');
+            }
             contexts.forEach((context) => {
                 mutatorContract(description, context, (...args) => {
                     mutator(...args);
@@ -46,6 +49,9 @@ export function lifecycleContract() {
             });
         },
         assertDirtyContract: () => {
+            if (!contexts.length){
+                throw new Error('empty contexts!');
+            }
             contexts.forEach(contractSuite);
         }
     };

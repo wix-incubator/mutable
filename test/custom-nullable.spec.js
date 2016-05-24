@@ -83,7 +83,7 @@ describe('Nullable custom type', function() {
 
 
 
-    describe('type definition', function() {
+    describe('definition', function() {
         it('is able to describe itself (no defaults override)', function() {
             expect(build.LoginType.withNullableUser()).to.have.field('user')
                 //.with.defaults(defaultUser)

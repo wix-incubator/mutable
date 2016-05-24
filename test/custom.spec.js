@@ -76,8 +76,12 @@ describe('Custom data', function() {
         it('should take a typorama object, and return a native object', function() {
             var container = new UserWithChildType({ child: { age: 11 } });
 
-            expect(container.toJSON(), 'toJSON() called').to.eql({ name: new UserWithChildType().name, child: new UserType({ age: 11 }).toJSON() });
-            expect(container.toJSON(false), 'toJSON(false) called').to.eql({ name: new UserWithChildType().name, child: container.__value__.child });
+            expect(container.toJSON(), 'toJSON() called').to.eql(
+                { name: new UserWithChildType().name, child: new UserType({ age: 11 }).toJSON() });
+            expect(container.toJSON(false), 'toJSON(false) called').to.eql(
+                { name: new UserWithChildType().name, child: container.__value__.child });
+            expect(container.toJSON(true, true), 'toJSON(true, true) called').to.eql(
+                { _type: 'UserWithChildType', name: new UserWithChildType().name, child: new UserType({ age: 11 }).toJSON(true, true) });
         });
     });
 

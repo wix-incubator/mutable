@@ -11,8 +11,8 @@ export class EnumBase extends PrimitiveBase {
     static create(v) { return v; }
     static validate(v) { return v == null || v instanceof EnumBase; }
     static validateType(v) { return v == null || v instanceof EnumBase; }
+    static defaults(v) { return null; }
 }
-EnumBase.prototype.constructor.type = EnumBase;
 
 function createEnumMember(key, value, proto) {
 
@@ -39,7 +39,6 @@ function convertToObject(def) {
 }
 
 export function defineEnum(def) {
-
     var EnumType = function EnumType(initValue) {
         var key = _.findKey(def, value => value === initValue);
         if (EnumType[key]) {
@@ -47,7 +46,6 @@ export function defineEnum(def) {
         }
         MAILBOX.error(`Enum[${Object.keys(def)}] must be initialized with value.`);
     };
-
     EnumType.prototype = Object.create(EnumBase.prototype);
     EnumType.prototype.constructor = EnumType;
 
@@ -81,7 +79,6 @@ export function defineEnum(def) {
     };
 
     EnumType.id = 'enum';
-    EnumType.type = EnumType;
     EnumType.create = BaseType.create;
 
     EnumType.reportDefinitionErrors = function() {
@@ -99,6 +96,7 @@ export function defineEnum(def) {
         NewType.defaults = () => defaults;
         return NewType;
     };
+    EnumType.__proto__ = EnumBase;
 
     return EnumType;
 }

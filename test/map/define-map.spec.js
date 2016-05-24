@@ -52,8 +52,8 @@ describe("defining", () => {
         });
         describe("with missing sub-types", () => {
             it('should report error when instantiating vanilla Map', () => {
-                var inValidMapType = Typorama.Map;
-                expect(() => new inValidMapType()).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
+                var invalidMapType = Typorama.Map;
+                expect(() => new invalidMapType()).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
             });
             it('should report error when defining Map with zero types', () => {
             expect(() => { let map = Typorama.Map.of(); new map() }).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));

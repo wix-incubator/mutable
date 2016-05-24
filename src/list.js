@@ -2,7 +2,8 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import defineType from './define-type';
-import {validateAndWrap, validateNullValue, misMatchMessage, arrow} from './validation';
+import {validateNullValue, misMatchMessage, arrow} from './validation';
+import {validateAndWrap} from './type-match';
 import {getValueTypeName} from './utils';
 import BaseType from './base-type';
 import Number from './number';
@@ -11,10 +12,6 @@ import * as generics from './generic-types';
 const MAILBOX = getMailBox('Typorama.List');
 
 class _List extends BaseType {
-
-    static withDefault() {
-        return BaseType.withDefault.apply(this, arguments);
-    }
 
     static defaults() { return []; }
 
@@ -29,18 +26,31 @@ class _List extends BaseType {
         });
     }
 
-    static validate(value) { return _.isArray(value); }
+    static validate(value) { return validateNullValue(this, value) || _.isArray(value); }
 
-    static validateType(value) {
-        return BaseType.validateType.call(this, value);
-    }
-
-    static allowPlainVal(val) {
-        return _.isArray(val) || validateNullValue(this, val);
+    static allowPlainVal(value, errorDetails = null) {
+        if (validateNullValue(this, value)) {
+            return true;
+        } else if (!_.isArray(value)) {
+            return false;
+        }
+        return !this.options || !this.options.subTypes ||
+            value.every((element, idx) => {
+                if (!generics.getMatchingType(this.options.subTypes, element)) {
+                    if (errorDetails) {
+                        errorDetails.path = `${errorDetails.path}[${idx}]`;
+                        errorDetails.expected = generics.toString(this.options.subTypes);
+                        errorDetails.actual = element;
+                    }
+                    return false;
+                } else {
+                    return true;
+                }
+            });
     }
 
     static wrapValue(value, spec, options, errorContext) {
-        if (BaseType.validateType(value)) {
+        if (this.validateType(value)) {
             if (value.__value__.map) {
                 return value.__value__.map((itemValue) => {
                     return this._wrapSingleItem(itemValue, options, null, errorContext);
@@ -84,11 +94,11 @@ class _List extends BaseType {
         return this.withDefault(undefined, undefined, { subTypes });
     };
 
-    static reportDefinitionErrors(options) {
-        if (!options || !options.subTypes) {
+    static reportDefinitionErrors() {
+        if (!this.options || !this.options.subTypes) {
             return { path: '', message: `Untyped Lists are not supported please state type of list item in the format core3.List<string>` }
         } else {
-            var error = generics.reportDefinitionErrors(options.subTypes, BaseType.reportFieldDefinitionError);
+            var error = generics.reportDefinitionErrors(this.options.subTypes, BaseType.reportFieldDefinitionError);
             if (error) {
                 return {
                     path: `<${error.path}>`,
@@ -109,21 +119,25 @@ class _List extends BaseType {
         }
     }
 
+    static preConstructor(){
+        const report = this.reportDefinitionErrors();
+        if (report) {
+            MAILBOX.error('List constructor: ' + report.message);
+        }
+        super.preConstructor();
+    }
+
     constructor(value = [], options = {}, errorContext) {
         if (!errorContext) {
             errorContext = _List.createErrorContext('List constructor error', 'error', options);
-        }
-        const report = _List.reportDefinitionErrors(options);
-        if (report) {
-            MAILBOX.error('List constructor: ' + report.message);
         }
         options.subTypes = generics.normalizeTypes(options.subTypes);
         super(value, options, errorContext);
     }
 
-    toJSON(recursive = true) {
+    toJSON(recursive = true, typed = false) {
         return this.__value__.map(item => {
-            return (recursive && BaseType.validateType(item)) ? item.toJSON(true) : item;
+            return (recursive && BaseType.validateType(item)) ? item.toJSON(true, typed) : item;
         });
     }
 

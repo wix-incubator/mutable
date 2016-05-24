@@ -153,9 +153,13 @@ function testViewFunctionality(builders, isReadonly) {
             }]);
 
             expect(arrA.toJSON(false), 'toJSON (non-recursive) called').to.eql([new builders.UserType({ age: 11 }), new builders.UserType({ age: 12 })]);
+
+            expect(arrA.toJSON(true, true), 'toJSON (with types) called').to.eql([
+                new builders.UserType({ age: 11 }).toJSON(true, true),
+                new builders.UserType({ age: 12 }).toJSON(true, true)
+            ]);
         });
     });
-
     describe('valueOf', function() {
         it('should return the primitive value of the specified object', function() {
             var wrapped = ['a', 'b'];

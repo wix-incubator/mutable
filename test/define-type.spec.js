@@ -1,32 +1,45 @@
 import {expect} from 'chai';
 import {Report} from 'escalate/dist/test-kit/testDrivers';
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
 import * as Typorama from '../src';
 import {either} from '../src/generic-types';
-import Type1 from './type1';
-import Type2 from './type2';
-import {ERROR_OVERRIDE_FIELD, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
+import {ERROR_BAD_TYPE, ERROR_OVERRIDE_FIELD, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
 import {typeCompatibilityTest} from "./type-compatibility.contract";
 const revision = Typorama.revision;
 
-
+function typescriptInheritance(d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
 describe('defining', () => {
-
+    let Type1, Type2;
+    before('define types', () => {
+        Type1 = aDataTypeWithSpec({ foo: Typorama.String }, 'Type1');
+        Type2 = aDataTypeWithSpec({ type: Type1 }, 'Type2');
+    });
     describe('String with default value', () => {
-        // fixme #187
-        // typeCompatibilityTest(() => Typorama.String.withDefault('im special!'));
+        typeCompatibilityTest(() => Typorama.String.withDefault('im special!'), true);
     });
 
     describe('Number with default value', () => {
-        // fixme #187
-        // typeCompatibilityTest(() => Typorama.Number.withDefault(6));
+        typeCompatibilityTest(() => Typorama.Number.withDefault(6), true);
     });
 
     describe('Boolean with default value', () => {
-        // fixme #187
-        // typeCompatibilityTest(() => Typorama.Boolean.withDefault(true));
+        typeCompatibilityTest(() => Typorama.Boolean.withDefault(true), true);
     });
 
+    it('a subclass without propper typorama definition', function() {
+        function MyType() {
+            Typorama.BaseType.apply(this, arguments);
+        }
+        typescriptInheritance(MyType, Typorama.BaseType);
+        expect(() => {
+            new MyType();
+        }).to.report(ERROR_BAD_TYPE('MyType'));
+    });
 
     describe('a basic type', () => {
 
@@ -257,7 +270,6 @@ describe('defining', () => {
             expect(customDefaultType).not.to.equal(originalType);
             expect(customDefaultType.options).not.to.equal(originalType.options);
         });
-
     });
 
     describe('nullable type', function() {
@@ -288,7 +300,6 @@ describe('defining', () => {
                     age: Typorama.Number.withDefault(10)
                 })
             });
-
             AddressType = Typorama.define('Address', {
                 spec: () => ({
                     address: Typorama.String.withDefault(''),

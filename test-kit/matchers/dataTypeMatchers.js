@@ -14,7 +14,7 @@ export default function(chai, utils) {
             true
         );
 
-        var TypeName = Type.displayName || Type.type;
+        var TypeName = Type.displayName || Type;
 
         var spec = Type.getFieldsSpec()[name];
 
@@ -53,11 +53,11 @@ export default function(chai, utils) {
             var field = this._obj;
 
             this.assert(
-                field.spec.type === expectedType.type,
+                expectedType.isJsAssignableFrom(field.spec),
                 'expected field "' + field.name + '" type to be #{exp} but got #{act}',
                 'expected field "' + field.name + '" type not to be #{exp} but got #{act}',
                 expectedType.displayName || expectedType,
-                field.spec.type.displayName || field.spec.type,
+                field.spec.displayName || field.spec,
                 true
             );
 

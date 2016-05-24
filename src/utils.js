@@ -1,41 +1,22 @@
 import * as _ from 'lodash';
 
-export const clonedMembers = [
-    //every type have a type and id
-    'id',
-    'uniqueId',
-    'type',
-    //PrimitiveBase
-    'create',
-    'defaults',
-    'validate',
-    'allowPlainVal',
-    'validateType',
-    //PrimitiveBase Mods
-    'nullable',
-    'withDefault',
-    'reportDefinitionErrors',
-    'reportSetValueErrors',
-    'reportSetErrors',
-    //BaseType
-    'wrapValue',
-    'cloneValue',
-    'createErrorContext',
-    '_spec'
-];
-
 var ClassesCounter = 0;
 export function generateClassId() {
     return ClassesCounter++;
 }
 
+/**
+ * js inheritence for configuration override (used for .nullable(), .of(), .withDefault()...)
+ */
 export function cloneType(TypeToClone) {
-    function Type(value, options, errorContext) {
-        var mergeOptions = options ? _.assign({}, Type.options, options) : Type.options;
-        return TypeToClone.create(value !== undefined ? value : Type.defaults(), mergeOptions, errorContext);
+    class Type extends TypeToClone{
+        static options = TypeToClone.options ? _.cloneDeep(TypeToClone.options) : {};
+        constructor(value, options, errorContext) {
+            super(value === undefined ? Type.defaults() : value,
+                options ? _.assign({}, Type.options, options) : Type.options,
+                errorContext);
+        }
     }
-    Type.options = TypeToClone.options ? _.cloneDeep(TypeToClone.options) : {};
-    clonedMembers.forEach(member => { Type[member] = TypeToClone[member] });
     return Type;
 }
 

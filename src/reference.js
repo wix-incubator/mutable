@@ -3,30 +3,36 @@ import {getMailBox} from 'escalate';
 
 import BaseType from './base-type';
 import defineType from './define-type';
-import {validateAndWrap, validateNullValue} from './validation';
+import {validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Typorama.Reference');
 
 class _Reference extends BaseType {
 
-    static allowPlainVal(value) {
-
-        return (_.isObject(value) && _.every(this._spec, (fieldSpec, fieldId) => {
-            return fieldSpec.allowPlainVal(value[fieldId]);
-        })) || validateNullValue(this, value);
+// allow any object as long as it adhers to the entire schema
+    static allowPlainVal(value, errorDetails = null) {
+        if (validateNullValue(this, value)){
+            return true;
+        } else {
+			var result = _.isObject(value)
+                && Object.keys(this._spec).every(key => {
+                    let fieldErrorDetails = errorDetails && _.defaults({path: `${errorDetails.path}.${fieldName}`}, errorDetails);
+                    return this._spec[key].validateType(value[key]) || this._spec[key].allowPlainVal(value[key], fieldErrorDetails)
+                });
+            return result;
+        }
     }
 
     static wrapValue(refVal, spec, options = {}) {
-        var isValid = true;
-        _.each(spec, (fieldSpec, key) => {
-            var fieldVal = refVal[key];
-            if (fieldVal === undefined) {
+        var isValid = Object.keys(this._spec).every(key => {
+            if (refVal[key] === undefined) {
                 MAILBOX.error(`${this.id} cannot accept value with missing field "${key}"`);
-                isValid = false;
-            } else if (!fieldSpec.validateType(fieldVal)) {
+                return false;
+            } else if (!this._spec[key].validateType(refVal[key])) {
                 MAILBOX.error(`${this.id} field "${key}" cannot accept value with mismatched type`);
-                isValid = false;
+                return false;
             }
+            return true;
         });
         return isValid ? refVal : {};
     }

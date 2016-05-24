@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {arrow} from './validation';
-
+import Union from './union';
 const MAILBOX = getMailBox('Typorama.genericTypes');
 
 /**
@@ -24,6 +24,9 @@ export function getMatchingType(subTypes, val) {
  */
 export function doOnType(subTypes, action) {
     if (subTypes) {
+        if (subTypes.id === 'Union'){
+            subTypes = subTypes.getTypes();
+        }
         if (typeof subTypes === 'function') {
             return action(subTypes, 0);
         } else {
@@ -40,14 +43,6 @@ export function doOnType(subTypes, action) {
     }
 }
 
-function getTypeName(type) {
-    let result = type.id || type.name;
-    if (type.options && type.options.subTypes) {
-        let genericSubtypesArr = Object.keys(type.options.subTypes).map(k => type.options.subTypes[k]);
-        result = result + toString(...genericSubtypesArr);
-    }
-    return result;
-}
 
 function mapOrOne(funcOrArr, iteratorFunc) {
     if (_.isFunction(funcOrArr) || _.isPlainObject(funcOrArr)) {
@@ -97,11 +92,11 @@ export function toString(...subTypesArgs) {
 
 
 export function toUnwrappedString(subTypes) {
-    return (typeof subTypes === 'function' && subTypes.type.id) || (subTypes && Object.keys(subTypes).join('|'))
+    return (typeof subTypes === 'function' && subTypes.id) || (subTypes && Object.keys(subTypes).join('|'))
 }
 
 export function unnormalizedArraytoUnwrappedString(subTypes) {
-    return (typeof subTypes === 'function' && (subTypes.type.id || 'subtype')) || (subTypes && _.forEach(subTypes, unnormalizedArraytoUnwrappedString))
+    return (typeof subTypes === 'function' && (subTypes.id || 'subtype')) || (subTypes && _.forEach(subTypes, unnormalizedArraytoUnwrappedString))
 }
 
 /**
@@ -110,11 +105,8 @@ export function unnormalizedArraytoUnwrappedString(subTypes) {
  * @returns {*} a type, or an object that maps type ids to types (a union type object)
  */
 export function normalizeTypes(subTypes) {
-    if (subTypes && subTypes.union) {
-        subTypes = subTypes.reduce(function(subTypes, type) {
-            subTypes[getTypeName(type)] = type;
-            return subTypes;
-        }, {});
+    if (subTypes && subTypes.id === 'Union') {
+        subTypes = subTypes.getTypes();
     }
     return subTypes;
 }
@@ -125,6 +117,5 @@ export function normalizeTypes(subTypes) {
  * @returns {*} the union of the supplied types
  */
 export function either(...types) {
-    types.union = true;
-    return types;
+    return Union.of(types);
 }

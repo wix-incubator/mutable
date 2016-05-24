@@ -4,12 +4,13 @@ import * as Typorama from '../../src';
 import {aDataTypeWithSpec} from '../../test-kit/test-drivers';
 
 describe('Read only instances', () => {
-
-    var UserType = aDataTypeWithSpec({
-        name: Typorama.String
+    let UserType, user;
+    before('init type and instance', () => {
+        UserType = aDataTypeWithSpec({
+            name: Typorama.String
+        });
+        user = new UserType('momo');
     });
-
-    var user = new UserType('momo');
 
     it('are considered equal to their read-write counterparts', () => {
         expect(() => expect(user).to.equal(user.$asReadOnly())).not.to.throw();

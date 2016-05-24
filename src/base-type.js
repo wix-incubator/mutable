@@ -5,7 +5,8 @@ import config from './config';
 import {makeDirtyable, optionalSetManager} from './lifecycle';
 import PrimitiveBase from './primitive-base';
 import {getFieldDef, getReadableValueTypeName} from './utils';
-import {validateAndWrap, isAssignableFrom, validateNullValue, validateValue, isDataMatching} from './validation';
+import {isAssignableFrom, validateNullValue, validateValue} from './validation';
+import {validateAndWrap, isDataMatching} from './type-match';
 
 const MAILBOX = getMailBox('Typorama.BaseType');
 
@@ -48,6 +49,10 @@ export default class BaseType extends PrimitiveBase {
         }
     }
 
+    static getFieldsSpec(){
+        return _.clone(this._spec);
+    }
+
     static cloneValue(value) {
         if (!_.isPlainObject(value)) { return {}; }
 
@@ -60,11 +65,11 @@ export default class BaseType extends PrimitiveBase {
     }
 
 
-    static reportFieldDefinitionError(fieldDef, template) {
-        if (!fieldDef || !fieldDef.type || !(fieldDef.type.prototype instanceof PrimitiveBase)) {
+    static reportFieldDefinitionError(fieldDef) {
+        if (!fieldDef || !(fieldDef.prototype instanceof PrimitiveBase)) {
             return { message: `must be a primitive type or extend core3.Type`, path: '' };
         }
-        return fieldDef.type.reportDefinitionErrors(fieldDef.options);
+        return fieldDef.reportDefinitionErrors();
     }
 
     static createErrorContext(entryPoint, level) {
@@ -76,17 +81,10 @@ export default class BaseType extends PrimitiveBase {
     }
 
     static validate(val) {
-        return Object.keys(this._spec).every(function(key) {
-            return this._spec[key].validate(val[key])
-        }, this);
-    }
-
-    static allowPlainVal(val) {
-        return _.isPlainObject(val) && (!val._type || val._type === this.id) || validateNullValue(this, val);
-    }
-
-    static withDefault() {
-        return PrimitiveBase.withDefault.apply(this, arguments);
+        return validateNullValue(this, val) ||
+            Object.keys(this._spec).every(function(key) {
+                return this._spec[key].validate(val[key])
+            }, this);
     }
 
     /**
@@ -97,8 +95,39 @@ export default class BaseType extends PrimitiveBase {
         return validateValue(this, value);
     }
 
+    static allowPlainVal(value, errorDetails = null) {
+        if (validateNullValue(this, value)){
+            return true;
+        } else if(_.isPlainObject(value)){
+            // todo: instead of (value._type === this.id) use global types registry and isAssignableFrom()
+            if (value._type && value._type !== this.id){
+                if (errorDetails){
+                    errorDetails.expected = this;
+                    errorDetails.actual = value;
+                }
+                return false;
+            }
+          return Object.keys(this._spec).every(fieldName => {
+              if (value[fieldName] === undefined || this._spec[fieldName].validateType(value[fieldName])){
+                  return true;
+              } else {
+                  let fieldErrorDetails = errorDetails && _.defaults({path: `${errorDetails.path}.${fieldName}`}, errorDetails);
+                  let result = this._spec[fieldName].allowPlainVal(value[fieldName], fieldErrorDetails);
+                  if (errorDetails && !result){
+                      _.assign(errorDetails, fieldErrorDetails);
+                      return false;
+                  }
+                  return true;
+              }
+          });
+        }
+    }
+
 
     static wrapValue(value, spec, options, errorContext) {
+        if (value === null){
+            return null;
+        }
         var root = {};
 
         _.each(spec, (fieldSpec, key) => {
@@ -107,13 +136,12 @@ export default class BaseType extends PrimitiveBase {
             if (fieldVal === undefined) {
                 fieldVal = spec[key].defaults();
             }
-            var newField = validateAndWrap(fieldVal, fieldSpec, undefined, { level: errorContext.level, entryPoint: errorContext.entryPoint, path: errorContext.path + '.' + key });
+            let fieldErrorContext = _.defaults({path: errorContext.path + '.' + key }, errorContext);
+            var newField = validateAndWrap(fieldVal, fieldSpec, undefined, fieldErrorContext);
             root[key] = newField;
-
         });
         return root;
     }
-
     constructor(value, options = null, errorContext = null) {
         super(value);
 
@@ -145,12 +173,9 @@ export default class BaseType extends PrimitiveBase {
             _.forEach(newValue, (fieldValue, fieldName) => {
                 var fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
-                    var newVal = validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
-                        {
-                            level: errorContext.level,
-                            entryPoint: errorContext.entryPoint,
-                            path: errorContext.path + '.' + fieldName
-                        });
+                    let fieldErrorContext = _.defaults({path: errorContext.path + '.' + fieldName }, errorContext);
+                    var newVal = fieldSpec._matchValue(fieldValue, fieldErrorContext).wrap();
+                    optionalSetManager(newVal, this.__lifecycleManager__);
                     if (this.__value__[fieldName] !== newVal) {
                         changed = true;
                         this.__value__[fieldName] = newVal;
@@ -171,17 +196,17 @@ export default class BaseType extends PrimitiveBase {
             _.forEach(this.constructor._spec, (fieldSpec, fieldName) => {
                 var fieldValue = (newValue[fieldName] !== undefined) ? newValue[fieldName] : fieldSpec.defaults();
                 if (fieldSpec) {
-                    if(fieldValue === null ||  BaseType.validateType(fieldValue)){
+                    if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
 
                         changed = this.$assignField(fieldName, fieldValue) || changed;
                     }else if(this.__value__[fieldName] && this.__value__[fieldName].setValueDeep && !this.__value__[fieldName].$isReadOnly()){
                         changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
                     }else{
                         changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
-                            {
-                                level: errorContext.level, entryPoint:
-                            errorContext.entryPoint, path: errorContext.path + '.' + fieldName
-                            })) || changed;
+                                {
+                                    level: errorContext.level, entryPoint:
+                                errorContext.entryPoint, path: errorContext.path + '.' + fieldName
+                                })) || changed;
                     }
 
 
@@ -202,7 +227,7 @@ export default class BaseType extends PrimitiveBase {
         // don't assign if input is the same as existing value
         if (this.__value__[fieldName] !== newValue) {
             var fieldDef = getFieldDef(this.constructor, fieldName);
-            var typedField = isAssignableFrom(BaseType, fieldDef.type);
+            var typedField = isAssignableFrom(BaseType, fieldDef);
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
             if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
                 // validation passed set the value
@@ -211,7 +236,7 @@ export default class BaseType extends PrimitiveBase {
                 return true;
             } else {
                 const passedType = getReadableValueTypeName(newValue);
-                MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.type.id} but got ${passedType}`);
+                MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.id} but got ${passedType}`);
             }
         }
         return false;
@@ -231,12 +256,16 @@ export default class BaseType extends PrimitiveBase {
         return this.__readWriteInstance__;
     }
 
-    toJSON(recursive = true) {
-        return Object.keys(this.constructor._spec).reduce((json, key) => {
+    toJSON(recursive = true, typed = false) {
+        const result = Object.keys(this.constructor._spec).reduce((json, key) => {
             var fieldValue = this.__value__[key];
-            json[key] = recursive && fieldValue && fieldValue.toJSON ? fieldValue.toJSON(true) : fieldValue;
+            json[key] = recursive && fieldValue && fieldValue.toJSON ? fieldValue.toJSON(true, typed) : fieldValue;
             return json;
         }, {});
+        if (typed){
+            result._type = this.constructor.id;
+        }
+        return result;
     }
     getRuntimeId() {
         if (this.__id__ !== undefined) {
@@ -258,6 +287,5 @@ BaseType._spec = Object.freeze(Object.create(null));
 
 BaseType.ancestors = [];
 BaseType.id = 'BaseType';
-BaseType.type = BaseType;
 
 makeDirtyable(BaseType);

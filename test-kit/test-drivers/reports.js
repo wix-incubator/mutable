@@ -1,7 +1,9 @@
 var untypedList = 'Untyped Lists are not supported please state type of list item in the format core3.List<string>';
 var reserved = 'is a reserved field.';
 
-
+export function ERROR_BAD_TYPE(path) {
+    return { level: 'error', params: `Type definition error: "${path}" is not inherited correctly. Did you remember to import core3-runtime?` };
+}
 export function ERROR_IN_SET(path, fieldType, passedType) {
     return { level: 'error', params: `Set error: "${path}" expected type ${fieldType} but got ${passedType}` }
 }

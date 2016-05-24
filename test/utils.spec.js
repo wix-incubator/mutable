@@ -9,15 +9,18 @@ describe('utils', function() {
     describe("cloneType", function() {
 
         it("should merge origin type options with constructor options", function() {
-            var MockType = {
-                options: { a: true },
-                create: sinon.stub()
-            };
+            let spy = sinon.spy();
+            class MockType{
+                static options= { a: true };
+                constructor(...args){
+                    spy(...args);
+                }
+            }
             var CloneType = cloneType(MockType);
 
             new CloneType("value", { b: false });
 
-            expect(MockType.create).to.have.been.calledWith("value", { a: true, b: false });
+            expect(spy).to.have.been.calledWith("value", { a: true, b: false });
 
         });
 
