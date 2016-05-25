@@ -16,7 +16,7 @@ class _Reference extends BaseType {
         } else {
 			var result = _.isObject(value)
                 && Object.keys(this._spec).every(key => {
-                    let fieldErrorDetails = errorDetails && _.defaults({path: `${errorDetails.path}.${fieldName}`}, errorDetails);
+                    let fieldErrorDetails = errorDetails && _.defaults({path: `${errorDetails.path}.${key}`}, errorDetails);
                     return this._spec[key].validateType(value[key]) || this._spec[key].allowPlainVal(value[key], fieldErrorDetails)
                 });
             return result;
