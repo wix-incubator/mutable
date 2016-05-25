@@ -16,14 +16,6 @@ const MAILBOX = getMailBox('Typorama.Map');
 function entries(obj) {
     return Object.keys(obj).map((key) => [key, obj[key]]);
 }
-function mapEntries(map) {
-    if (typeof map.entries === 'function') {
-        return map.entries();
-    }
-    let entries = [];
-    map.forEach((v, k) => entries.push([k, v]));
-    return entries;
-}
 
 function safeAsReadOnly(item) {
     return (item && typeof item.$asReadOnly === 'function') ? item.$asReadOnly() : item;
@@ -311,14 +303,18 @@ class _Map extends BaseType {
         return item;
     }
 
-    // for now due to transpiler es6 support we just return an array
-    __wrapIterator__(innerIterator) {
+    // Needed to support TypeScript's transpilation of "for x of y"
+    __unpackIterator__(innerIterator) {
         const resultArr = [];
-        for (let e of innerIterator) {
-            resultArr.push(e);
-        }
+        let e = innerIterator.next();
+        while (!e.done){
+            resultArr.push(e.value);
+            e = innerIterator.next();
+        };
         return this.__isReadOnly__ ? resultArr.map(safeAsReadOnlyOrArr) : resultArr;
     }
+
+
 
     clear() {
         if (this.$setDirty()) {
@@ -358,15 +354,15 @@ class _Map extends BaseType {
     }
 
     entries() {
-        return this.__wrapIterator__(mapEntries(this.__value__));
+        return this.__unpackIterator__(this.__value__.entries());
     }
 
     keys() {
-        return this.__wrapIterator__(this.__value__.keys());
+        return this.__unpackIterator__(this.__value__.keys());
     }
 
     values() {
-        return this.__wrapIterator__(this.__value__.values());
+        return this.__unpackIterator__(this.__value__.values());
     }
 
     forEach(callback, thisArg) {
@@ -378,18 +374,10 @@ class _Map extends BaseType {
         }, thisArg);
     }
 
-    $getElements() {
-        let result = [];
-        for (let [key, value] of mapEntries(this.__value__)) {
-            result.push(key, value);
-        }
-        return result;
-    }
-
     toJSON(recursive = true, typed = false) {
         let result = [];
         let allStringKeys = isTypeCompatibleWithPlainJsonObject(this.__options__);
-        for (let [key, value] of mapEntries(this.__value__)) {
+        for (let [key, value] of this.entries()) {
             key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true, typed) : this.__exposeInner__(key);
             value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
             result.push([key, value]);
@@ -409,12 +397,12 @@ class _Map extends BaseType {
      */
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
-        for (let key of this.__value__.keys()) {
+        for (let key of this.keys()) {
             if (key && _.isFunction(key.$calcLastChange)) {
                 yielder(this, key);
             }
         }
-        for (let value of this.__value__.values()) {
+        for (let value of this.values()) {
             if (value && _.isFunction(value.$calcLastChange)) {
                 yielder(this, value);
             }
