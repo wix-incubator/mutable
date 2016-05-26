@@ -1,6 +1,7 @@
 import * as sinon from 'sinon';
 import {expect} from 'chai';
-
+import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR}  from '../test-kit/test-drivers/reports';
 import testKit from "../test-kit";
 import * as Typorama from '../src';
 
@@ -196,13 +197,34 @@ describe("reference type", function() {
 
     });
 
-    describe('validateType', function() {
+    describe('allowPlainVal', function() {
 
-        //it('should accept any value that has the spec interface', function(){
-        //    var RefType = defineRef({ id:Typorama.String });
-        //    expect(RefType.validateType({id:"001"})).to.be.true;
-        //});
+        it('should accept any value that has the spec interface', function(){
+            var RefType = defineRef({ id:Typorama.String });
+            expect(RefType.allowPlainVal({id:"001", foo:5}, {path:'foo'})).to.be.true;
+        });
+
+        it('should not accept any value that does not have the spec interface', function(){
+            var RefType = defineRef({ id:Typorama.String });
+            expect(RefType.allowPlainVal({}, {path:'foo'})).to.be.false;
+        });
 
     });
 
+    describe('as a field in another type', function() {
+
+        let Type1, Type2;
+        before('define types', () => {
+            Type1 = defineRef({ id:Typorama.String }, 'Type1');
+            Type2 = aDataTypeWithSpec({ ref: Type1 }, 'Type2');
+        });
+
+        it('should return any value that has the spec interface', function(){
+            expect(new Type2({ref:{id:"001", foo:5}}).ref.id).to.eql("001");
+        });
+
+        it('should report on any value that does not have the spec interface', function(){
+            expect(() => new Type2({ref:{foo:5}})).to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR("Type2.ref", "Type1", "object"));
+        });
+    });
 });
