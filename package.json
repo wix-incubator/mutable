@@ -4,7 +4,7 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "typorama",
-  "version": "0.0.324",
+  "version": "0.0.325",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
@@ -39,7 +39,7 @@
     "chai": "3.5.0",
     "karma": "0.13.22",
     "karma-chrome-launcher": "1.0.1",
-    "karma-env-reporter": "1.0.3",
+    "karma-env-reporter": "1.0.4",
     "karma-mocha": "1.0.1",
     "mocha": "2.5.3",
     "mocha-env-reporter": "1.0.2",
