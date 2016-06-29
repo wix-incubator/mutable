@@ -93,7 +93,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
         Object.defineProperty(obj, fieldName, {
             get: function() {
                 var value = this.__value__[fieldName];
-                if (!isAssignableFrom(BaseType, fieldDef) || this.$isDirtyable() || value === null || value === undefined) {
+                if (!this.__isReadOnly__ || !isAssignableFrom(BaseType, fieldDef) || value === null || value === undefined) {
                     return value;
                 } else {
                     return value.$asReadOnly();
