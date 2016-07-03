@@ -208,7 +208,6 @@ describe("reference type", function() {
             var RefType = defineRef({ id:Typorama.String });
             expect(RefType.allowPlainVal({}, {path:'foo'})).to.be.false;
         });
-
     });
 
     describe('as a field in another type', function() {

@@ -81,6 +81,9 @@ export default class BaseType extends PrimitiveBase {
     }
 
     static validate(val) {
+        if(val===undefined){
+            return false;
+        }
         return validateNullValue(this, val) ||
             Object.keys(this._spec).every(function(key) {
                 return this._spec[key].validate(val[key])
