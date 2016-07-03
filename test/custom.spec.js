@@ -85,6 +85,30 @@ describe('Custom data', function() {
         });
     });
 
+    describe('validate', function() {
+        it('should allow json with matching fields', function() {
+            expect(UserType.validate({
+                name:'yossi',
+                age:5,
+                address:'homeless'
+            })).to.be.equal(true);
+        });
+        it("should not allow json with wrong fields", function() {
+            expect(UserType.validate({
+                name:'yossi',
+                age:'5',
+                address:'homeless'
+            })).to.be.equal(false);
+        });
+
+        it("should not allow primitives", function() {
+                expect(UserType.validate(true)).to.be.equal(false);
+        });
+        it("should not allow undefined", function() {
+                expect(UserType.validate(undefined)).to.be.equal(false);
+        });
+    });
+
     describe('mutable instance', function() {
 
         describe('instantiation', function() {
@@ -372,6 +396,8 @@ describe('Custom data', function() {
                 });
             })
         }
+   
+
         describe('setValue', function() {
             valueSetterSuite('setValue');
             it('should create new data objects for nested complex types', function() {
@@ -483,15 +509,14 @@ describe('Custom data', function() {
             expect(a.name).to.equal('bob');
         });
 
-        it('should clone complex data objects on set', function() {
+        it('should use passed data object as field value', function() {
 
             var userData = new UserWithChildType();
 
-            userData.child = new UserType({ name: 'yossi', age: 3 });
+            let newChild = new UserType({ name: 'yossi', age: 3 });
+            userData.child = newChild;
 
-            expect(userData.child.name).to.equal('yossi');
-            expect(userData.child.age).to.equal(3);
-            expect(userData.child.address).to.equal("no address");
+            expect(userData.child).to.equal(newChild);
         });
 
         it('should return json value from toJSON()', function() {

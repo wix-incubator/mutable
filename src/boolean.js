@@ -4,7 +4,7 @@ import {validateNullValue} from './validation';
 export default class _Boolean extends PrimitiveBase {
     static defaults() { return false; }
     static validate(v) { return typeof v === 'boolean' || validateNullValue(this, v); }
-        static validateType(value) {
+    static validateType(value) {
         return this.validate(value);
     }
     constructor(value) {
