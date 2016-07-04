@@ -83,5 +83,13 @@ describe('a type with union type field', function() {
             instance.setValue({foo : val});
             expect(instance.foo.toJSON()).to.eql(val);
         });
+
+        it("shouldn't crap its pants", function () {
+            const Type = defineType();
+            const instance = new Type({
+                foo: 'Monkey'
+            });
+            expect(() => instance.$isDirty()).to.not.throw();
+        });
     });
 });

@@ -340,7 +340,7 @@ describe('defining', () => {
                     it('single subtype List should allow setting data with json, ', function() {
 
                         var mixedList = Typorama.List.of(AddressType).create([{ address: 'gaga' }]);
-
+                        expect(mixedList.$isDirty()).to.equal(false);
                         expect(mixedList.at(0)).to.be.instanceOf(AddressType);
                         expect(mixedList.at(0).code).to.be.eql(10);
                         expect(mixedList.at(0).address).to.be.eql('gaga');

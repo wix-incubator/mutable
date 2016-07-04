@@ -55,7 +55,7 @@ function getDirtyableElementsIterator(spec, superIterator) {
     return function typeDirtyableElementsIterator(yielder) {
         for (let c of complex) {
             let k = this.__value__[c];
-            if (k) {
+            if (k && typeof k.$calcLastChange === 'function') { // if value is dirtyable
                 yielder(this, k);
             }
         }
