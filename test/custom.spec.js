@@ -635,6 +635,8 @@ describe('Custom data', function() {
             expect(readOnlyChild.name).to.equal('bobi');
         });
 
+
+
         describe('getRuntimeId():', function() {
             it('should be the same for instance and readonly ver', function() {
                 var sourceData = { numOfHeads: 2 };

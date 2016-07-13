@@ -15,6 +15,10 @@ describe('a type with union type field', function() {
     function defineType(){
         return aDataTypeWithSpec({ foo: either(TypeA, TypeB, Typorama.String, Typorama.Number) }, 'Generic');
     }
+
+    function defineNullableType(){
+        return aDataTypeWithSpec({ foo: either(TypeA, TypeB).nullable(true) }, 'Generic');
+    }
     it('should not throw on definition', function(){
         expect(defineType).to.not.throw();
     });
@@ -34,6 +38,13 @@ describe('a type with union type field', function() {
                 new Type({foo:new Type()})
             ).to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('Generic.foo', 'TypeA|TypeB|string|number', 'Generic'));
         });
+
+        it('should accept null if allowed', function() {
+            const Type = defineNullableType();
+            expect(new Type({foo:null}).foo).to.equal(null)
+            
+        });
+
     });
     describe('setter', function() {
 
@@ -57,6 +68,14 @@ describe('a type with union type field', function() {
         });
 
     });
+    describe('get',function(){
+        it('should work with primitives in readonly',()=>{
+            const Type = defineType();
+            const instance = new Type({foo:'bar'});
+            expect(instance.foo).to.equal('bar');
+            expect(instance.$asReadOnly().foo).to.equal('bar');
+        })
+    })
     describe('setValue', function() {
 
         it('should accept either type of Typorama', function () {
