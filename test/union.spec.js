@@ -17,7 +17,11 @@ describe('a type with union type field', function() {
     }
 
     function defineNullableType(){
-        return aDataTypeWithSpec({ foo: either(TypeA, TypeB).nullable(true) }, 'Generic');
+        return aDataTypeWithSpec({ foo: either(TypeA, TypeB).nullable(true) }, 'GenericNullable');
+    }
+
+    function defineUnionWithVoid(){
+        return aDataTypeWithSpec({ foo: either(TypeA, TypeB, Typorama.VoidType)}, 'GenericNullable2');
     }
     it('should not throw on definition', function(){
         expect(defineType).to.not.throw();
@@ -41,6 +45,13 @@ describe('a type with union type field', function() {
 
         it('should accept null if allowed', function() {
             const Type = defineNullableType();
+            expect(new Type({foo:null}).foo).to.equal(null)
+            
+        });
+       
+
+        it('should accept null if union includes void', function() {
+            const Type = defineUnionWithVoid();
             expect(new Type({foo:null}).foo).to.equal(null)
             
         });

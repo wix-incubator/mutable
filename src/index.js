@@ -2,6 +2,7 @@ export {default as config} from './config';
 export {default as define} from './define-type';
 export {default as BaseType} from './base-type';
 export {default as PrimitiveBase} from './primitive-base';
+export {default as VoidType} from './void';
 export {default as String} from './string';
 export {default as Boolean} from './boolean';
 export {default as Number} from './number';
