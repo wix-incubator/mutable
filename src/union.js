@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import BaseType from './base-type';
+import VoidType from './void';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
@@ -30,6 +31,8 @@ class _Union extends BaseType {
     static of(subTypes) {
         const result = this.withDefault(undefined, undefined, { subTypes });
         result.id = subTypes.map(getTypeName).join('|');
+        if(_.includes(subTypes,VoidType))
+            return result.nullable(true)
         return result;
     };
 
