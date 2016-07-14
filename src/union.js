@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import BaseType from './base-type';
-import VoidType from './void';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
@@ -31,8 +30,7 @@ class _Union extends BaseType {
     static of(subTypes) {
         const result = this.withDefault(undefined, undefined, { subTypes });
         result.id = subTypes.map(getTypeName).join('|');
-        if(_.includes(subTypes,VoidType))
-            return result.nullable(true)
+        
         return result;
     };
 
@@ -65,6 +63,8 @@ class _Union extends BaseType {
         if (!this.options || !this.options.subTypes) {
             MAILBOX.error('Untyped Unions are not supported. please state union of types in the format string|number');
         } else {
+            if(this.isNullable()&&value===null)
+                return new TypeMatch(value, errorContext).tryType(this);
             return new TypeMatch(value, errorContext).tryTypes(...this.options.subTypes);
         }
     }
