@@ -4,13 +4,26 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "mutable",
-  "version": "0.0.335",
-  "description": "data type system for javascript",
-  "main": "dist/src",
+  "version": "0.0.1",
+  "description": "Mutable state containers with dirty checking and more",
+  "main": "dist/src/index.js",
+  "jsnext:main": "src/index.js",
+  "homepage": "https://github.com/wix/mutable",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:wix-private/mutable"
+    "url": "git+ssh://git@github.com:wix/mutable"
   },
+  "bugs": {
+    "url": "https://github.com/wix/mutable/issues"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "author": "Amir Arad <amira@wix.com> (http://github.com/amir-arad)",
+  "contributors": [
+    "Amir Arad <amira@wix.com> (http://github.com/amir-arad)"
+  ],
+  "license": "SEE LICENSE IN LICENSE.md",
   "scripts": {
     "clean": "rimraf ./dist",
     "build:clean": "npm run clean && npm run build",
@@ -25,8 +38,6 @@
     "test": "npm run test:browser && npm run test:node",
     "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
-  "author": "core3",
-  "license": "c",
   "devDependencies": {
     "babel-cli": "6.10.1",
     "babel-core": "6.10.4",
@@ -51,7 +62,7 @@
     "webpack-dev-server": "1.14.1"
   },
   "engines": {
-    "node": ">=0.12"
+    "node": "^0.12"
   },
   "dependencies": {
     "lodash": "4.13.1",
