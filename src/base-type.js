@@ -8,7 +8,7 @@ import {getFieldDef, getReadableValueTypeName} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
 
-const MAILBOX = getMailBox('Typorama.BaseType');
+const MAILBOX = getMailBox('Mutable.BaseType');
 
 function createReadOnly(source) {
     var readOnlyInstance = Object.create(source);
@@ -168,7 +168,7 @@ export default class BaseType extends PrimitiveBase {
 
 
     // merge native javascript data into the object
-    // this method traverses the input recursively until it reaches typorama values (then it sets them)
+    // this method traverses the input recursively until it reaches mutable values (then it sets them)
     setValue(newValue, errorContext = null) {
         if (this.$isDirtyable()) {
             var changed = false;
@@ -191,7 +191,7 @@ export default class BaseType extends PrimitiveBase {
     }
 
     // merge native javascript data into the object, add defaults when missing fields
-    // this method traverses the input recursively until it reaches typorama values (then it sets them)
+    // this method traverses the input recursively until it reaches mutable values (then it sets them)
     setValueDeep(newValue, errorContext = null) {
         if (this.$isDirtyable()) {
             var changed = false;

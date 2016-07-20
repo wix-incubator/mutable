@@ -1,4 +1,4 @@
-import * as Typorama from '../../src';
+import * as Mutable from '../../src';
 
 export default function(chai, utils) {
 
@@ -6,10 +6,10 @@ export default function(chai, utils) {
         var Type = this._obj;
 
         this.assert(
-            Typorama.BaseType.prototype.isPrototypeOf(Type.prototype),
+            Mutable.BaseType.prototype.isPrototypeOf(Type.prototype),
             'expected a Type but got #{act}',
             'expected not a Type but got #{act}',
-            Typorama.BaseType,
+            Mutable.BaseType,
             Type,
             true
         );

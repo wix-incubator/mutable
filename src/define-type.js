@@ -6,7 +6,7 @@ import PrimitiveBase from './primitive-base';
 import {isAssignableFrom, validateNullValue, misMatchMessage} from './validation';
 import {generateClassId} from './utils';
 
-const MAILBOX = getMailBox('Typorama.define');
+const MAILBOX = getMailBox('Mutable.define');
 
 export default function defineType(id, typeDefinition, ParentType, TypeConstructor) {
     ParentType = TypeConstructor || ParentType || BaseType;

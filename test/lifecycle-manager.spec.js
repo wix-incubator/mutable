@@ -1,12 +1,12 @@
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Typorama from '../src';
+import * as Mutable from '../src';
 
 describe('LifecycleManager', function() {
     var lifecycleManager;
     beforeEach('init', () => {
-        lifecycleManager = new Typorama.LifeCycleManager();
+        lifecycleManager = new Mutable.LifeCycleManager();
         sinon.spy(lifecycleManager, 'onChange');
     });
     describe('by default', () => {

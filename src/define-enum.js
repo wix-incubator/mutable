@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import BaseType from './base-type';
 import PrimitiveBase from './primitive-base';
 
-const MAILBOX = getMailBox('Typorama.defineEnum');
+const MAILBOX = getMailBox('Mutable.defineEnum');
 
 export class EnumBase extends PrimitiveBase {
     static allowPlainVal(v) { return true; }

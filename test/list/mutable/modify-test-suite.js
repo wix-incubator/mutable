@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../../../src';
+import * as Mutable from '../../../src';
 import {LifeCycleManager, revision} from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
 import {aDataTypeWithSpec} from '../../../test-kit/test-drivers';
@@ -39,13 +39,13 @@ export default function modifyTestSuite(command, { complexSubTypeTests }) {
 
             function aTestType(values) {
                 var TestType = aDataTypeWithSpec({
-                    names: Typorama.List.of(Typorama.String).withDefault(values)
+                    names: Mutable.List.of(Mutable.String).withDefault(values)
                 }, "TestType");
 
                 return new TestType();
             }
 
-            it("with Typorama object containing Typorama List of string", function() {
+            it("with Mutable object containing Mutable List of string", function() {
                 var testType = aTestType(["Beyonce", "Rihanna"]);
 
                 expect(testType.names.length).to.equal(2);
@@ -75,10 +75,10 @@ export default function modifyTestSuite(command, { complexSubTypeTests }) {
         });
 
         it("with JSON object containg empty List", function() {
-            var TestType1 = aDataTypeWithSpec({ gaga: Typorama.String }, "TestType1");
-            var TestType2 = aDataTypeWithSpec({ baga: Typorama.String }, "TestType2");
+            var TestType1 = aDataTypeWithSpec({ gaga: Mutable.String }, "TestType1");
+            var TestType2 = aDataTypeWithSpec({ baga: Mutable.String }, "TestType2");
             var TestType3 = aDataTypeWithSpec({
-                gagot: Typorama.List.of(TestType1, TestType2).withDefault([{}, {}])
+                gagot: Mutable.List.of(TestType1, TestType2).withDefault([{}, {}])
             }, "TestType3");
 
             var testObj = new TestType3();
@@ -90,13 +90,13 @@ export default function modifyTestSuite(command, { complexSubTypeTests }) {
         });
 
         it("with List with compatible but different options", function() {
-            var TestType1 = aDataTypeWithSpec({ gaga: Typorama.String }, "TestType1");
-            var TestType2 = aDataTypeWithSpec({ baga: Typorama.String }, "TestType2");
+            var TestType1 = aDataTypeWithSpec({ gaga: Mutable.String }, "TestType1");
+            var TestType2 = aDataTypeWithSpec({ baga: Mutable.String }, "TestType2");
             var TestType3 = aDataTypeWithSpec({
-                gagot: Typorama.List.of(TestType1, TestType2).withDefault([{}, {}, {}])
+                gagot: Mutable.List.of(TestType1, TestType2).withDefault([{}, {}, {}])
             }, "TestType3");
             var TestType4 = aDataTypeWithSpec({
-                gagot: Typorama.List.of(TestType2).withDefault([{}])
+                gagot: Mutable.List.of(TestType2).withDefault([{}])
             }, "TestType3");
             var testObj = new TestType3();
             var test2Obj = new TestType4();
@@ -109,8 +109,8 @@ export default function modifyTestSuite(command, { complexSubTypeTests }) {
 
         describe('on a List with complex subtype', function() {
 
-            it('should keep typorama objects passed to it that fit its subtypes', function() {
-                var mixedList = Typorama.List.of(either(UserType, AddressType)).create([]);
+            it('should keep mutable objects passed to it that fit its subtypes', function() {
+                var mixedList = Mutable.List.of(either(UserType, AddressType)).create([]);
                 var newUser = new UserType();
                 var newAddress = new AddressType();
 
@@ -122,7 +122,7 @@ export default function modifyTestSuite(command, { complexSubTypeTests }) {
 
             it('should set the new item lifecycle manager when creating new from JSON', function() {
                 var mockManager = new LifeCycleManager();
-                var mixedList = Typorama.List.of(AddressType).create([]);
+                var mixedList = Mutable.List.of(AddressType).create([]);
                 mixedList.$setManager(mockManager);
 
                 mixedList[command]([{ code: 5 }]);

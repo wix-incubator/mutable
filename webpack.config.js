@@ -7,7 +7,7 @@ module.exports = {
 	context: __dirname,
 	devtool: 'eval',
 	entry: {
-		'typorama'              : [	'./src' ],
+		'mutable'              : [	'./src' ],
 		'test-kit'              : [ './test-kit' ],
 		'test'                  : ['./test'],
 		'webtest'               : ['mocha!./test']
@@ -23,7 +23,7 @@ module.exports = {
 	resolve: {
 		//extensions: ['', '.js', '.json'],
 		alias: {
-			typorama: __dirname + '/src',
+			mutable: __dirname + '/src',
 			'test-kit': __dirname + '/test-kit/'
 		}
 	},

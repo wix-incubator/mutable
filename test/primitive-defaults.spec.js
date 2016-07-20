@@ -1,35 +1,35 @@
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Typorama from '../src';
+import * as Mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import {lifecycleContract} from './lifecycle.contract.spec';
 
-const revision = Typorama.revision;
+const revision = Mutable.revision;
 describe('primitive defaults', function() {
 
     it('null function', function() {
-        var Type = Typorama.Function.nullable().withDefault(null);
+        var Type = Mutable.Function.nullable().withDefault(null);
         var value = Type.create();
         expect(value).to.equal(null);
     });
 
     it('null string', function() {
-        var Type = Typorama.String.nullable().withDefault(null);
+        var Type = Mutable.String.nullable().withDefault(null);
         var value = Type.create();
         expect(value).to.equal(null);
     });
 
 
     it('null boolean', function() {
-        var Type = Typorama.Boolean.nullable().withDefault(null);
+        var Type = Mutable.Boolean.nullable().withDefault(null);
         var value = Type.create();
         expect(value).to.equal(null);
     });
 
 
     it('null number', function() {
-        var Type = Typorama.Number.nullable().withDefault(null);
+        var Type = Mutable.Number.nullable().withDefault(null);
         var value = Type.create();
         expect(value).to.equal(null);
     });
@@ -38,27 +38,27 @@ describe('primitive defaults', function() {
     ///////////////////////////////////////////////////////////////////////
 
     it('function', function() {
-        var Type = Typorama.Function.withDefault(function() { return 'abc' });
+        var Type = Mutable.Function.withDefault(function() { return 'abc' });
         var value = Type.create();
         expect(value()).to.equal('abc');
     });
 
     it('string', function() {
-        var Type = Typorama.String.withDefault('abc');
+        var Type = Mutable.String.withDefault('abc');
         var value = Type.create();
         expect(value).to.equal('abc');
     });
 
 
     it('boolean', function() {
-        var Type = Typorama.Boolean.withDefault(true);
+        var Type = Mutable.Boolean.withDefault(true);
         var value = Type.create();
         expect(value).to.equal(true);
     });
 
 
     it('number', function() {
-        var Type = Typorama.Number.withDefault(123);
+        var Type = Mutable.Number.withDefault(123);
         var value = Type.create();
         expect(value).to.equal(123);
     });

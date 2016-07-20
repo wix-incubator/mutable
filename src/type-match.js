@@ -4,7 +4,7 @@ import {misMatchMessage, validateNotNullValue} from './validation';
 import {optionalSetManager} from './lifecycle';
 import {PrimitiveBase} from './primitive-base';
 
-const MAILBOX = getMailBox('Typorama.type-match');
+const MAILBOX = getMailBox('Mutable.type-match');
 
 
 export function validateAndWrap(itemValue, type, lifeCycle, errorContext, errorTemplate) {

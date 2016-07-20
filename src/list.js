@@ -9,7 +9,7 @@ import BaseType from './base-type';
 import Number from './number';
 import * as generics from './generic-types';
 
-const MAILBOX = getMailBox('Typorama.List');
+const MAILBOX = getMailBox('Mutable.List');
 
 class _List extends BaseType {
 
@@ -56,7 +56,7 @@ class _List extends BaseType {
                     return this._wrapSingleItem(itemValue, options, null, errorContext);
                 }, this);
             } else {
-                MAILBOX.error('Unmet typorama type requirement.')
+                MAILBOX.error('Unmet mutable type requirement.')
             }
         } else if (!_.isArray(value)) {
             MAILBOX.error('Unmet array type requirement.');
@@ -167,9 +167,9 @@ class _List extends BaseType {
 
     __getLodashIterateeWrapper__(iteratee, allowObj) {
         if (_.isFunction(iteratee)) {
-            var typoramaArr = this;
+            var mutableArr = this;
             return function(item, index) {
-                return iteratee.call(this, item, index, typoramaArr);
+                return iteratee.call(this, item, index, mutableArr);
             }
         } else if (allowObj && _.isObject(iteratee)) {
             if (!iteratee.constructor || !iteratee.constructor.type) {

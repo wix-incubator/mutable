@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../../../src';
+import * as Mutable from '../../../src';
 import {aNumberList, aStringList, aVeryCompositeContainerList, UserType} from '../builders';
 import lifeCycleAsserter from '../lifecycle.js';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
@@ -15,7 +15,7 @@ describe('List', function() {
 
                 newList.reverse();
 
-                expect(newList).to.be.instanceOf(Typorama.List);
+                expect(newList).to.be.instanceOf(Mutable.List);
 
                 for (var i = 0; i < numberList.length; i++) {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
@@ -68,7 +68,7 @@ describe('List', function() {
             });
 
             it('Should wrap items for none immutable data (like custom types)', function() {
-                var arr = Typorama.List.of(UserType).create([{ name: 'aag' }, { name: 'dag' }]);
+                var arr = Mutable.List.of(UserType).create([{ name: 'aag' }, { name: 'dag' }]);
 
                 arr.splice(0, 1, { name: 'zag' });
 

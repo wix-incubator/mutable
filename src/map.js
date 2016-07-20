@@ -10,7 +10,7 @@ import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 
-const MAILBOX = getMailBox('Typorama.Map');
+const MAILBOX = getMailBox('Mutable.Map');
 
 // because Object.entries is too tall an order
 function entries(obj) {
@@ -129,7 +129,7 @@ class _Map extends BaseType {
             if (value.__value__ instanceof Map) {
                 return this._wrapIterable(value.__value__, options, null, errorContext);
             } else {
-                MAILBOX.error('Strange typorama Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
+                MAILBOX.error('Strange mutable Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
             }
         }
         if (isIterable(value)) {
@@ -266,7 +266,7 @@ class _Map extends BaseType {
                         changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
                     });
                 } else {
-                    MAILBOX.error('Strange typorama Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
+                    MAILBOX.error('Strange mutable Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
                 }
             } else if (isIterable(newValue)) {
                 result = new Map();

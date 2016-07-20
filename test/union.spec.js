@@ -2,22 +2,22 @@
 import {expect} from 'chai';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
-import * as Typorama from '../src';
+import * as Mutable from '../src';
 import {either} from '../src/generic-types';
 import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, arrow} from '../test-kit/test-drivers/reports';
 import {typeCompatibilityTest} from "./type-compatibility.contract";
 
 
-const TypeA = aDataTypeWithSpec({ bar: Typorama.String }, 'TypeA');
-const TypeB = aDataTypeWithSpec({ bar: Typorama.Number }, 'TypeB');
+const TypeA = aDataTypeWithSpec({ bar: Mutable.String }, 'TypeA');
+const TypeB = aDataTypeWithSpec({ bar: Mutable.Number }, 'TypeB');
 
 describe('a type with union type field', function() {
     function defineType(){
-        return aDataTypeWithSpec({ foo: either(TypeA, TypeB, Typorama.String, Typorama.Number) }, 'Generic');
+        return aDataTypeWithSpec({ foo: either(TypeA, TypeB, Mutable.String, Mutable.Number) }, 'Generic');
     }
 
     function defineNullableType(){
-        return aDataTypeWithSpec({ foo: either(Typorama.String,TypeA, TypeB).nullable(true) }, 'GenericNullable');
+        return aDataTypeWithSpec({ foo: either(Mutable.String,TypeA, TypeB).nullable(true) }, 'GenericNullable');
     }
 
     it('should not throw on definition', function(){
@@ -43,9 +43,9 @@ describe('a type with union type field', function() {
         it('should accept null if allowed', function() {
             const Type = defineNullableType();
             expect(new Type({foo:null}).foo).to.equal(null)
-            
+
         });
-       
+
 
     });
     describe('setter', function() {
@@ -80,7 +80,7 @@ describe('a type with union type field', function() {
     })
     describe('setValue', function() {
 
-        it('should accept either type of Typorama', function () {
+        it('should accept either type of Mutable', function () {
             const Type = defineType();
             const instance = new Type();
             instance.setValue({foo : 'bar'});

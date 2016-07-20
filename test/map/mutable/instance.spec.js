@@ -2,11 +2,11 @@ import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as _ from 'lodash';
 
-import * as Typorama from '../../../src';
+import * as Mutable from '../../../src';
 import * as builders from '../builders';
 import lifeCycleAsserter from '../lifecycle';
 
-const revision = Typorama.revision;
+const revision = Mutable.revision;
 
 var hasSymbols = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol';
 
@@ -49,10 +49,10 @@ function testReadFunctionality(builders, isReadonly) {
 
         describe("with global freeze config", () => {
             before("set global freeze configuration", () => {
-                Typorama.config.freezeInstance = true;
+                Mutable.config.freezeInstance = true;
             });
             after("clear global freeze configuration", () => {
-                Typorama.config.freezeInstance = false;
+                Mutable.config.freezeInstance = false;
             });
             it("should throw error on unknown field setter", () => {
                 var numbers = builders.aNumberMap();
@@ -65,11 +65,11 @@ function testReadFunctionality(builders, isReadonly) {
         describe('as field on data object', () => {
             var GroupType;
             before(() => {
-                GroupType = Typorama.define('GroupType', {
+                GroupType = Mutable.define('GroupType', {
                     spec: function() {
                         return {
-                            title: Typorama.String,
-                            users: Typorama.Map.of(Typorama.String, builders.UserType)
+                            title: Mutable.String,
+                            users: Mutable.Map.of(Mutable.String, builders.UserType)
                         };
                     }
                 });
@@ -79,7 +79,7 @@ function testReadFunctionality(builders, isReadonly) {
             });
             it('Should be modified from json ', () => {
                 var groupData = new GroupType();
-                groupData.users = Typorama.Map.of(Typorama.String, builders.UserType).create({
+                groupData.users = Mutable.Map.of(Mutable.String, builders.UserType).create({
                     tom: { 'name': 'tom', 'age': 25 },
                     omri: { 'name': 'omri', 'age': 35 }
                 });
@@ -191,7 +191,7 @@ function testReadFunctionality(builders, isReadonly) {
                         numbers.delete('a');
                         expect(numbers.toJSON()).to.eql({});
                     });
-                    it('should support a typorama object as an argument', () => {
+                    it('should support a mutable object as an argument', () => {
                         usersMap.delete(userA);
                         expect(usersMap.toJSON(false)).to.eql([[userB, userA]]);
                     });
@@ -297,7 +297,7 @@ function testReadFunctionality(builders, isReadonly) {
                     numbers.set('a', 42);
                     expect(numbers.toJSON()).to.eql({ a: 42 });
                 });
-                it('should support a typorama object as an argument', () => {
+                it('should support a mutable object as an argument', () => {
                     usersMap.set(userA, userA).set(userB, userA).set(userA, userB);
 
                     // es6 vaguely defines order of elements in map.

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {Report} from 'escalate/dist/test-kit/testDrivers';
 
 import {typeCompatibilityTest} from "../type-compatibility.contract";
-import * as Typorama from '../../src';
+import * as Mutable from '../../src';
 import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR, ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR} from '../../test-kit/test-drivers/reports';
 import {either} from '../../src/generic-types';
 
@@ -11,64 +11,64 @@ describe("defining", () => {
     describe("a map type", () => {
         var UserType, AddressType;
         before('define helper types', () => {
-            UserType = Typorama.define('User', {
+            UserType = Mutable.define('User', {
                 spec: () => ({
-                    name: Typorama.String.withDefault(''),
-                    age: Typorama.Number.withDefault(10)
+                    name: Mutable.String.withDefault(''),
+                    age: Mutable.Number.withDefault(10)
                 })
             });
 
-            AddressType = Typorama.define('Address', {
+            AddressType = Mutable.define('Address', {
                 spec: () => ({
-                    address: Typorama.String.withDefault(''),
-                    code: Typorama.Number.withDefault(10)
+                    address: Mutable.String.withDefault(''),
+                    code: Mutable.Number.withDefault(10)
                 })
             });
         });
         describe('as map<string, boolean> field', () => {
-            it('should crash if supplied Typorama type as map default', () => {
-                expect(() => Typorama.define('WithMapUser', {
+            it('should crash if supplied Mutable type as map default', () => {
+                expect(() => Mutable.define('WithMapUser', {
                     spec: () => ({
-                        map: Typorama.Map.of(Typorama.String, Typorama.Boolean).nullable().withDefault(
-                            new Typorama.Map.of(Typorama.String, Typorama.Boolean)()
+                        map: Mutable.Map.of(Mutable.String, Mutable.Boolean).nullable().withDefault(
+                            new Mutable.Map.of(Mutable.String, Mutable.Boolean)()
                         )
                     })
                 })).to.throw();
             });
             it('should not crash if supplied empty object as map default', () => {
-                expect(() => Typorama.define('WithMapUser', {
+                expect(() => Mutable.define('WithMapUser', {
                     spec: () => ({
-                        map: Typorama.Map.of(Typorama.String, Typorama.Boolean).nullable().withDefault({})
+                        map: Mutable.Map.of(Mutable.String, Mutable.Boolean).nullable().withDefault({})
                     })
                 })).not.to.throw();
             });
             it('allowPlainVal', () => {
-                var allowPlainVal = Typorama.Map.of(Typorama.String, Typorama.Boolean).nullable().allowPlainVal({});
+                var allowPlainVal = Mutable.Map.of(Mutable.String, Mutable.Boolean).nullable().allowPlainVal({});
                 expect(allowPlainVal).to.be.true;
             });
         });
         describe('with default value', () => {
-            typeCompatibilityTest(() => Typorama.Map.of(Typorama.String, Typorama.String).withDefault({ lookAtMe: 'im special!' }));
+            typeCompatibilityTest(() => Mutable.Map.of(Mutable.String, Mutable.String).withDefault({ lookAtMe: 'im special!' }));
         });
         describe("with missing sub-types", () => {
             it('should report error when instantiating vanilla Map', () => {
-                var invalidMapType = Typorama.Map;
-                expect(() => new invalidMapType()).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
+                var invalidMapType = Mutable.Map;
+                expect(() => new invalidMapType()).to.report(new Report('error', 'Mutable.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
             });
             it('should report error when defining Map with zero types', () => {
-            expect(() => { let map = Typorama.Map.of(); new map() }).to.report(new Report('error', 'Typorama.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));
+            expect(() => { let map = Mutable.Map.of(); new map() }).to.report(new Report('error', 'Mutable.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));
             });
             it('should report error when defining Map with one type', () => {
-                expect(() => { let map = Typorama.Map.of(Typorama.Number); new map() }).to.report('Map constructor: "Map<number,➠value>" Wrong number of types for map. Instead of Map<number> Use Map<string, number>');
+                expect(() => { let map = Mutable.Map.of(Mutable.Number); new map() }).to.report('Map constructor: "Map<number,➠value>" Wrong number of types for map. Instead of Map<number> Use Map<string, number>');
             });
             it('should report error when defining Map with invalid subtype', () => {
-                expect(() => { let map = Typorama.Map.of(Typorama.String, Typorama.List); new map() }).to.report(new Report('error', 'Typorama.Map', 'Map constructor: "Map<string,➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+                expect(() => { let map = Mutable.Map.of(Mutable.String, Mutable.List); new map() }).to.report(new Report('error', 'Mutable.Map', 'Map constructor: "Map<string,➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
             });
         });
 
         describe('with complex value sub-type', () => {
             function typeFactory() {
-                return Typorama.Map.of(Typorama.String, AddressType);
+                return Mutable.Map.of(Mutable.String, AddressType);
             }
 
             typeCompatibilityTest(typeFactory);
@@ -100,17 +100,17 @@ describe("defining", () => {
             it('should report error when when json value with unallowed _type is added', function() {
                 expect(() => typeFactory().create([['baga', { _type: 'User' }]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'object with _type User'));
             });
-            it('should report error when unallowed typorama key is added', function() {
+            it('should report error when unallowed mutable key is added', function() {
                 expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'User'));
             });
-            it('should report error when unallowed typorama value is added', function() {
+            it('should report error when unallowed mutable value is added', function() {
                 expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'User'));
             });
         });
 
         describe('with complex key sub-type', () => {
             function typeFactory() {
-                return Typorama.Map.of(UserType, Typorama.String);
+                return Mutable.Map.of(UserType, Mutable.String);
             }
             typeCompatibilityTest(typeFactory);
             it('should report error when null key is added', function() {
@@ -131,17 +131,17 @@ describe("defining", () => {
             it('should report error when when json key with unallowed _type is added', function() {
                 expect(() => typeFactory().create([[{ _type: 'Address' }, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'object with _type Address'));
             });
-            it('should report error when unallowed typorama key is added', function() {
+            it('should report error when unallowed mutable key is added', function() {
                 expect(() => typeFactory().create([[new AddressType(), 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'Address'));
             });
-            it('should report error when unallowed typorama value is added', function() {
+            it('should report error when unallowed mutable value is added', function() {
                 expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'Address'));
             });
         });
 
         describe('with complex key sub-type and union value sub-type', () => {
             function typeFactory() {
-                return Typorama.Map.of(UserType, either(UserType, AddressType, Typorama.String));
+                return Mutable.Map.of(UserType, either(UserType, AddressType, Mutable.String));
             }
             typeCompatibilityTest(typeFactory);
             describe("instantiation", function() {
@@ -151,7 +151,7 @@ describe("defining", () => {
                     newUser2 = new UserType();
                     newAddress = new AddressType();
                 });
-                it('should keep typorama objects passed to it that fit its subtypes', function() {
+                it('should keep mutable objects passed to it that fit its subtypes', function() {
                     var mixedMap = typeFactory().create([[newUser, newUser], [newUser2, newAddress]]);
                     expect(mixedMap.get(newUser)).to.equal(newUser);
                     expect(mixedMap.get(newUser2)).to.equal(newAddress);
@@ -173,9 +173,9 @@ describe("defining", () => {
         });
         describe('with value type that is a union of maps', () => {
             function typeFactory() {
-                return Typorama.Map.of(Typorama.String,
-                    either(Typorama.Map.of(Typorama.String, Typorama.String),
-                        Typorama.Map.of(Typorama.String, Typorama.Number)));
+                return Mutable.Map.of(Mutable.String,
+                    either(Mutable.Map.of(Mutable.String, Mutable.String),
+                        Mutable.Map.of(Mutable.String, Mutable.Number)));
             }
             typeCompatibilityTest(typeFactory);
             describe("instantiation", function() {

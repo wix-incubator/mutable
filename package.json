@@ -3,13 +3,13 @@
   "publishConfig": {
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
-  "name": "typorama",
+  "name": "mutable",
   "version": "0.0.335",
   "description": "data type system for javascript",
   "main": "dist/src",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:wix-private/typorama"
+    "url": "git+ssh://git@github.com:wix-private/mutable"
   },
   "scripts": {
     "clean": "rimraf ./dist",

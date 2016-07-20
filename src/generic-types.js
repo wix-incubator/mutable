@@ -2,12 +2,12 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {arrow} from './validation';
 import Union from './union';
-const MAILBOX = getMailBox('Typorama.genericTypes');
+const MAILBOX = getMailBox('Mutable.genericTypes');
 
 /**
  * try to match a type to a value
  * @param subTypes either a type or a collection of types
- * @param instance null, typorama or plain value instance to match
+ * @param instance null, mutable or plain value instance to match
  * @returns {*} type if matched, otherwise undefined
  */
 export function getMatchingType(subTypes, val) {

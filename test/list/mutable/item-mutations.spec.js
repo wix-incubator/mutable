@@ -1,11 +1,11 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../../../src';
+import * as Mutable from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, aVeryCompositeContainerList} from '../builders';
 import lifeCycleAsserter from '../lifecycle';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
 
-const either = Typorama.either;
+const either = Mutable.either;
 
 describe('List', function() {
     describe('mutable instance', function() {
@@ -45,13 +45,13 @@ describe('List', function() {
             });
 
             it('should add a typed item for non-primitive data (like custom types)', function() {
-                var arr = Typorama.List.of(UserType).create([]);
+                var arr = Mutable.List.of(UserType).create([]);
                 arr.push({});
                 expect(arr.at(0)).to.be.instanceOf(UserType);
             });
 
             it('should add a typed item form multiple types if there is _type field', function() {
-                var arr = Typorama.List.of(either(UserType, AddressType)).create([]);
+                var arr = Mutable.List.of(either(UserType, AddressType)).create([]);
                 arr.push({ _type: 'User' });
                 arr.push({ _type: 'Address' });
                 expect(arr.at(0)).to.be.instanceOf(UserType);

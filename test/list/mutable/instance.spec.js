@@ -1,7 +1,7 @@
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Typorama from '../../../src';
+import * as Mutable from '../../../src';
 import {aNumberList, aStringList, UserType, AddressType, UserWithAddressType} from '../builders';
 
 describe('List', function() {
@@ -15,11 +15,11 @@ describe('List', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Typorama.config.freezeInstance = true;
+                Mutable.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Typorama.config.freezeInstance = false;
+                Mutable.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {
@@ -35,11 +35,11 @@ describe('List', function() {
         describe('as field on data object', function() {
             var GroupType;
             beforeEach(() => {
-                GroupType = Typorama.define('GroupType', {
+                GroupType = Mutable.define('GroupType', {
                     spec: function() {
                         return {
-                            title: Typorama.String,
-                            users: Typorama.List.of(UserType)
+                            title: Mutable.String,
+                            users: Mutable.List.of(UserType)
                         };
                     }
                 });
@@ -48,7 +48,7 @@ describe('List', function() {
             it('Should be modified from json ', function() {
                 var groupData = new GroupType();
 
-                groupData.users = Typorama.List.of(UserType).create([
+                groupData.users = Mutable.List.of(UserType).create([
                     { 'name': 'tom', 'age': 25 },
                     { 'name': 'omri', 'age': 35 }
                 ]);

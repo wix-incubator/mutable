@@ -1,6 +1,6 @@
 import {getMailBox} from 'escalate';
 
-const MAILBOX = getMailBox('Typorama.lifecycle');
+const MAILBOX = getMailBox('Mutable.lifecycle');
 
 export function optionalSetManager(itemValue, lifeCycle) {
     if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {

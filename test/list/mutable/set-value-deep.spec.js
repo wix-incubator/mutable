@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../../../src';
+import * as Mutable from '../../../src';
 import {either, LifeCycleManager, revision} from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
 import {aDataTypeWithSpec} from '../../../test-kit/test-drivers';
@@ -10,7 +10,7 @@ import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-driver
 function complexSubTypeTests() {
     it('single subtype List should allow setting data with json', function() {
         var address = new AddressType({ address: 'gaga' });
-        var List = Typorama.List.of(AddressType).create([address]);
+        var List = Mutable.List.of(AddressType).create([address]);
         revision.advance();
         var rev = revision.read();
 
@@ -25,7 +25,7 @@ function complexSubTypeTests() {
 
     it('single not be dirty if nothing changed', function() {
         var address = new AddressType({ address: 'gaga' });
-        var List = Typorama.List.of(AddressType).create([address]);
+        var List = Mutable.List.of(AddressType).create([address]);
         revision.advance();
         var rev = revision.read();
 
@@ -34,10 +34,10 @@ function complexSubTypeTests() {
         expect(List.$isDirty(rev)).to.equal(false);
     });
 
-    it('should keep typorama instances', function() {
+    it('should keep mutable instances', function() {
         var newUser = new UserType();
         var newAddress = new AddressType();
-        var mixedList = Typorama.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
+        var mixedList = Mutable.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
         revision.advance();
         var rev = revision.read();
 
@@ -51,7 +51,7 @@ function complexSubTypeTests() {
     it('should replace item for mismatch type', function() {
         var newUser = new UserType();
         var newAddress = new AddressType();
-        var mixedList = Typorama.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
+        var mixedList = Mutable.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
         revision.advance();
         var rev = revision.read();
 
@@ -64,7 +64,7 @@ function complexSubTypeTests() {
 
     it('should create new item if item is read only', function() {
         var address = new AddressType({ address: 'gaga' });
-        var List = Typorama.List.of(AddressType).create([address.$asReadOnly()]);
+        var List = Mutable.List.of(AddressType).create([address.$asReadOnly()]);
         revision.advance();
         var rev = revision.read();
 

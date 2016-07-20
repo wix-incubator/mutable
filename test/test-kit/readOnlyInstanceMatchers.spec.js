@@ -1,13 +1,13 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../../src';
+import * as Mutable from '../../src';
 import {aDataTypeWithSpec} from '../../test-kit/test-drivers';
 
 describe('Read only instances', () => {
     let UserType, user;
     before('init type and instance', () => {
         UserType = aDataTypeWithSpec({
-            name: Typorama.String
+            name: Mutable.String
         });
         user = new UserType('momo');
     });

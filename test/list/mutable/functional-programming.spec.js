@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 
-import * as Typorama from '../../../src';
+import * as Mutable from '../../../src';
 import * as builders from '../builders';
 
 function testViewFunctionality(builders, isReadonly) {
@@ -35,7 +35,7 @@ function testViewFunctionality(builders, isReadonly) {
         });
 
         describe('with object iteratee', function() {
-            it('works with typorama instances', function() {
+            it('works with mutable instances', function() {
                 var newList = usersList.map(builders.UserType.create({ age: 11 }));
 
                 // Take a property and return a List
@@ -249,14 +249,14 @@ function testViewFunctionality(builders, isReadonly) {
         it('should return a new List with all elements that pass the predicate', function() {
             var positives = builders.aNumberList(0, 1, 2).filter(x => x > 0);
 
-            expect(positives).to.be.instanceof(Typorama.List);
+            expect(positives).to.be.instanceof(Mutable.List);
             expect(positives.valueOf()).to.eql([1, 2]);
         });
 
         it('should return an empty List if no elements pass the predicate', function() {
             var positives = builders.aNumberList(0, 1, 2).filter(x => x < 0);
 
-            expect(positives).to.be.instanceof(Typorama.List);
+            expect(positives).to.be.instanceof(Mutable.List);
             expect(positives.valueOf()).to.be.empty;
         });
 

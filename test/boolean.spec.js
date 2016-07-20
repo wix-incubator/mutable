@@ -1,18 +1,18 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../src';
+import * as Mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
 describe('Boolean Type', function() {
 
-    var Boolean = Typorama.Boolean;
+    var Boolean = Mutable.Boolean;
 
     describe('js value is strictly boolean', function() {
 
         var BooleanValues = aDataTypeWithSpec({
-            yes: Typorama.Boolean.withDefault(true),
-            no: Typorama.Boolean.withDefault(false),
-            default: Typorama.Boolean
+            yes: Mutable.Boolean.withDefault(true),
+            no: Mutable.Boolean.withDefault(false),
+            default: Mutable.Boolean
         }, 'BooleanValues');
 
         var booleans;
@@ -40,8 +40,8 @@ describe('Boolean Type', function() {
         var booleans;
         before(() => {
             BooleanValues = aDataTypeWithSpec({
-                yes: Typorama.Boolean.withDefault(1),
-                no: Typorama.Boolean.withDefault(0)
+                yes: Mutable.Boolean.withDefault(1),
+                no: Mutable.Boolean.withDefault(0)
             }, 'BooleanValues');
 
             booleans = new BooleanValues()

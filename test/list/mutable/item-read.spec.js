@@ -6,11 +6,11 @@ import {either} from '../../../src';
 function testReadFunctionality(builders, isReadonly) {
     describe('at', function() {
 
-        it('should return a number for native immutable Typorama.Number', function() {
+        it('should return a number for native immutable Mutable.Number', function() {
             expect(builders.aNumberList().at(0)).to.equal(1);
         });
 
-        it('should return a string for native immutable Typorama.String', function() {
+        it('should return a string for native immutable Mutable.String', function() {
             expect(builders.aStringList().at(0)).to.equal('John');
         });
 

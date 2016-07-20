@@ -1,40 +1,40 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../src';
+import * as Mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
-const revision = Typorama.revision;
+const revision = Mutable.revision;
 
 describe('Enum Type', function() {
 
-    it('exists on the typorama object', function() {
-        expect(Typorama.EnumBase).to.be.a("function");
+    it('exists on the mutable object', function() {
+        expect(Mutable.EnumBase).to.be.a("function");
     });
 
     describe("instantiation", function() {
 
         it("should return a class", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             expect(Ape).to.be.a("function");
         });
 
         it("enum cannot be instantiated", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             expect(function() {
                 new Ape();
             }).to.report({ level: /error/ });
         });
 
         it("enum extends EnumBase", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            expect(Ape.chimp).to.be.instanceof(Typorama.EnumBase);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            expect(Ape.chimp).to.be.instanceof(Mutable.EnumBase);
         });
 
         it("enum field can be generic by being EnumBase", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            var Dog = Typorama.defineEnum(["poodle", "lab"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Dog = Mutable.defineEnum(["poodle", "lab"]);
             var TestType = aDataTypeWithSpec({
-                ape: Typorama.EnumBase
+                ape: Mutable.EnumBase
             });
             var tt = TestType.create({ ape: Ape.chimp });
             expect(tt.ape).to.be.equal(Ape.chimp);
@@ -43,32 +43,32 @@ describe('Enum Type', function() {
         });
 
         it("generic enum has static validate method", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
-            expect(Typorama.EnumBase.validate(Ape.chimp)).to.be.ok;
-            expect(Typorama.EnumBase.validate("sugar booger")).to.not.be.ok;
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            expect(Mutable.EnumBase.validate(Ape.chimp)).to.be.ok;
+            expect(Mutable.EnumBase.validate("sugar booger")).to.not.be.ok;
         });
 
         it("enum validate method only allows own instance", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             expect(Ape.validate(Ape.chimp)).to.be.ok;
-            var Dog = Typorama.defineEnum(["poodle", "lab"]);
+            var Dog = Mutable.defineEnum(["poodle", "lab"]);
             expect(Ape.validate(Dog.poodle)).to.not.be.ok;
         });
 
         it("enum can be initialized", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             var ape = Ape.chimp;
             expect(ape).to.be.equal(Ape.chimp);
         });
 
         it("should return value string for toString()", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             expect(Ape.chimp.toString()).to.be.equal("chimp");
             expect(Ape.gorilla.toString()).to.be.equal("gorilla");
         });
 
         it("enum can be initialized as member in a custom type", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({
                 ape: Ape
             });
@@ -77,7 +77,7 @@ describe('Enum Type', function() {
         });
 
         it("enum can be initialized using withDefault", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({
                 ape: Ape.withDefault(Ape.gorilla)
             });
@@ -86,7 +86,7 @@ describe('Enum Type', function() {
         });
 
         it("enum can receive value from create of parent type", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({
                 ape: Ape.withDefault(Ape.gorilla)
             });
@@ -95,25 +95,25 @@ describe('Enum Type', function() {
         });
 
         it("each member can have a string value", function() {
-            var Ape = Typorama.defineEnum(["chimp", "gorilla"]);
+            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
             expect(Ape.chimp.value).to.be.equal("chimp");
             expect(Ape.gorilla.value).to.be.equal("gorilla");
         });
 
         it("members can have a custom string value", function() {
-            var Ape = Typorama.defineEnum({ chimp: "_chimp_", gorilla: "_gorilla_" });
+            var Ape = Mutable.defineEnum({ chimp: "_chimp_", gorilla: "_gorilla_" });
             expect("" + Ape.chimp).to.be.equal("_chimp_");
             expect("" + Ape.gorilla).to.be.equal("_gorilla_");
         });
 
         it("members can have number value", function() {
-            var Ape = Typorama.defineEnum({ chimp: 0, gorilla: 1 });
+            var Ape = Mutable.defineEnum({ chimp: 0, gorilla: 1 });
             expect(Ape.chimp.value).to.be.equal(0);
             expect(Ape.gorilla.value).to.be.equal(1);
         });
 
         it("members can have object values", function() {
-            var Ape = Typorama.defineEnum({
+            var Ape = Mutable.defineEnum({
                 chimp: { dateOfBirth: "11/11/1980" },
                 gorilla: { dateOfBirth: "12/12/1995" }
             });
@@ -122,24 +122,24 @@ describe('Enum Type', function() {
         });
 
         it("member is immutable", function() {
-            var Ape = Typorama.defineEnum({ chimp: 1, gorilla: 2 });
+            var Ape = Mutable.defineEnum({ chimp: 1, gorilla: 2 });
             expect(function() {
                 Ape.chimp.blyat = "blyat";
             }).to.throw('object is not extensible');
         });
 
         it("instanceOf works", function() {
-            var Ape = Typorama.defineEnum({ chimp: 1, gorilla: 2 });
+            var Ape = Mutable.defineEnum({ chimp: 1, gorilla: 2 });
             expect(Ape.chimp).to.be.instanceof(Ape);
         });
 
         it("members have a key which is the originl key in the def", function() {
-            var Ape = Typorama.defineEnum({ chimp: 1, gorilla: 2 });
+            var Ape = Mutable.defineEnum({ chimp: 1, gorilla: 2 });
             expect(Ape.chimp.key).to.be.equal("chimp");
         });
 
         it("should return current value", function() {
-            var ImageSizing = Typorama.defineEnum({
+            var ImageSizing = Mutable.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -151,7 +151,7 @@ describe('Enum Type', function() {
         });
 
         it("should initiate from value string", function() {
-            var ImageSizing = Typorama.defineEnum({
+            var ImageSizing = Mutable.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -163,7 +163,7 @@ describe('Enum Type', function() {
         });
 
         it("should initiate from value string as part of complex data", function() {
-            var ImageSizing = Typorama.defineEnum({
+            var ImageSizing = Mutable.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -179,7 +179,7 @@ describe('Enum Type', function() {
         });
 
         it("should initiate from default value as part of complex data when no initial value is provided", function() {
-            var ImageSizing = Typorama.defineEnum({
+            var ImageSizing = Mutable.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -194,7 +194,7 @@ describe('Enum Type', function() {
         });
 
         it("should not be dirtyable", function() {
-            var ImageSizing = Typorama.defineEnum(["A", "B"]);
+            var ImageSizing = Mutable.defineEnum(["A", "B"]);
             expect(ImageSizing.$isDirtyable).to.not.be.defined;
             expect(ImageSizing.A.$isDirtyable).to.not.be.defined;
             expect(ImageSizing.B.$isDirtyable).to.not.be.defined;

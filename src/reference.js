@@ -5,7 +5,7 @@ import BaseType from './base-type';
 import defineType from './define-type';
 import {validateNullValue} from './validation';
 
-const MAILBOX = getMailBox('Typorama.Reference');
+const MAILBOX = getMailBox('Mutable.Reference');
 
 class _Reference extends BaseType {
 

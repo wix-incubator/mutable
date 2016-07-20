@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import * as Typorama from '../../src';
+import * as Mutable from '../../src';
 import * as b from './builders';
 
 const builders = b.asReadOnly();
@@ -31,11 +31,11 @@ describe('List', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Typorama.config.freezeInstance = true;
+                Mutable.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Typorama.config.freezeInstance = false;
+                Mutable.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {

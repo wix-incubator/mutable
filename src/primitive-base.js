@@ -4,7 +4,7 @@ import {cloneType, getReadableValueTypeName} from './utils';
 import {validateNullValue} from './validation';
 import {TypeMatch} from './type-match';
 
-const MAILBOX = getMailBox('Typorama.PrimitiveBase');
+const MAILBOX = getMailBox('Mutable.PrimitiveBase');
 
 function reportErrorInternal(value, allowPlain, allowInstance) {
     if (value !== undefined && (!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))) {

@@ -1,31 +1,31 @@
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Typorama from '../src';
+import * as Mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import {lifecycleContract} from './lifecycle.contract.spec';
 import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE} from '../test-kit/test-drivers/reports';
 
-const revision = Typorama.revision;
+const revision = Mutable.revision;
 
 var UserType = aDataTypeWithSpec({
-    name: Typorama.String.withDefault('leon'),
-    age: Typorama.Number.withDefault(10),
-    address: Typorama.String.withDefault('no address')
+    name: Mutable.String.withDefault('leon'),
+    age: Mutable.Number.withDefault(10),
+    address: Mutable.String.withDefault('no address')
 }, 'User');
 
 var UserWithChildType = aDataTypeWithSpec({
-    name: Typorama.String.withDefault('leon'),
+    name: Mutable.String.withDefault('leon'),
     child: UserType.withDefault({ name: 'bobi', age: 13 })
 }, 'UserWithChildType');
 
 var UserWithNullableChildType = aDataTypeWithSpec({
-    name: Typorama.String.withDefault('leon'),
+    name: Mutable.String.withDefault('leon'),
     child: UserType.nullable().withDefault(null)
 }, 'UserWithChildType');
 
 var CompositeContainer = aDataTypeWithSpec({
-    name: Typorama.String.withDefault('leon'),
+    name: Mutable.String.withDefault('leon'),
     child1: UserType,
     child2: UserType
 }, 'UserWith2ChildType');
@@ -35,9 +35,9 @@ var VeryCompositeContainer = aDataTypeWithSpec({
 }, 'UserWithDeepChildType');
 
 var PrimitivesContainer = aDataTypeWithSpec({
-    name: Typorama.String.withDefault('leon'),
-    child1: Typorama.String,
-    child2: Typorama.String
+    name: Mutable.String.withDefault('leon'),
+    child1: Mutable.String,
+    child2: Mutable.String
 }, 'User');
 
 var lifeCycleAsserter = lifecycleContract();
@@ -63,8 +63,8 @@ describe('Custom data', function() {
 
     describe('Type Class', function() {
         it('should be able to describe itself', function() {
-            expect(UserType).to.have.field('name').with.defaults('leon').of.type(Typorama.String);
-            expect(UserType).to.have.field('age').with.defaults(10).of.type(Typorama.Number);
+            expect(UserType).to.have.field('name').with.defaults('leon').of.type(Mutable.String);
+            expect(UserType).to.have.field('age').with.defaults(10).of.type(Mutable.Number);
         });
     });
 
@@ -73,7 +73,7 @@ describe('Custom data', function() {
     });
 
     describe('toJSON', function() {
-        it('should take a typorama object, and return a native object', function() {
+        it('should take a mutable object, and return a native object', function() {
             var container = new UserWithChildType({ child: { age: 11 } });
 
             expect(container.toJSON(), 'toJSON() called').to.eql(
@@ -122,8 +122,8 @@ describe('Custom data', function() {
 
             it("should not modify original json object", function() {
                 var CustomType = aDataTypeWithSpec({
-                    name: Typorama.String.withDefault("Gordon Shumway"),
-                    planet: Typorama.String.withDefault("Melmac")
+                    name: Mutable.String.withDefault("Gordon Shumway"),
+                    planet: Mutable.String.withDefault("Melmac")
                 }, "CustomType");
                 var original = { name: "Lilo" };
                 var inst = new CustomType(original);
@@ -132,8 +132,8 @@ describe('Custom data', function() {
 
             it("should not keep references to original json objects", function() {
                 var CustomType = aDataTypeWithSpec({
-                    name: Typorama.String.withDefault("Gordon Shumway"),
-                    planet: Typorama.String.withDefault("Melmac")
+                    name: Mutable.String.withDefault("Gordon Shumway"),
+                    planet: Mutable.String.withDefault("Melmac")
                 }, "CustomType");
                 var original = { name: "Lilo" };
                 var inst = new CustomType(original);
@@ -144,7 +144,7 @@ describe('Custom data', function() {
             it("should not keep references to original json objects, even deep ones", function() {
 
                 var InnerType = aDataTypeWithSpec({
-                    name: Typorama.String.withDefault("Gordon Shumway")
+                    name: Mutable.String.withDefault("Gordon Shumway")
                 }, "InnerType");
                 var OuterType = aDataTypeWithSpec({
                     name: InnerType
@@ -158,7 +158,7 @@ describe('Custom data', function() {
 
             it("should not modify original List", function() {
                 var CustomType = aDataTypeWithSpec({
-                    names: Typorama.List.of(Typorama.String)
+                    names: Mutable.List.of(Mutable.String)
                 }, "CustomType");
 
                 var original = { names: ["Lilo", "Stitch"] };
@@ -168,7 +168,7 @@ describe('Custom data', function() {
 
             it("should not keep references to original List", function() {
                 var CustomType = aDataTypeWithSpec({
-                    names: Typorama.List.of(Typorama.String)
+                    names: Mutable.List.of(Mutable.String)
                 }, "CustomType");
                 var original = { names: ["Lilo", "Stitch"] };
                 var inst = new CustomType(original);
@@ -206,7 +206,7 @@ describe('Custom data', function() {
                 expect(instance.numOfHeads).to.be.undefined;
             });
 
-            it('should reference matching typorama objects passed as value', function() {
+            it('should reference matching mutable objects passed as value', function() {
                 var instance = new UserType();
 
                 var container = new CompositeContainer({ child1: instance });
@@ -245,12 +245,12 @@ describe('Custom data', function() {
 
             before('setup types', () => {
                 ImageType = aDataTypeWithSpec({
-                    src: Typorama.String.withDefault('default.jpg')
+                    src: Mutable.String.withDefault('default.jpg')
                 }, 'ImageType');
 
                 ProductType = aDataTypeWithSpec({
                     image: ImageType,
-                    title: Typorama.String.withDefault('default title')
+                    title: Mutable.String.withDefault('default title')
                 }, 'ProductType');
 
                 StateType = aDataTypeWithSpec({
@@ -258,8 +258,8 @@ describe('Custom data', function() {
                         image: { src: 'original.jpg' },
                         title: 'original title'
                     }),
-                    relatedProducts: Typorama.List.of(ProductType),
-                    stringAndNumbers: Typorama.List.of([Typorama.String, Typorama.Number])
+                    relatedProducts: Mutable.List.of(ProductType),
+                    stringAndNumbers: Mutable.List.of([Mutable.String, Mutable.Number])
                 }, 'StateType');
             });
 
@@ -287,7 +287,7 @@ describe('Custom data', function() {
             //TODO: what to do?
             xit('should not set data that has different options', function() {
                 var state = new StateType();
-                var booleanList = new (Typorama.List.of(Typorama.Boolean))([]);
+                var booleanList = new (Mutable.List.of(Mutable.Boolean))([]);
                 var relatedProductsPrevRef = state.relatedProducts;
                 var stringAndNumbersPrevRef = state.stringAndNumbers;
 
@@ -300,8 +300,8 @@ describe('Custom data', function() {
 
             it('should set data that has equivalent options', function() {
                 var state = new StateType();
-                var productList = new (Typorama.List.of(ProductType))([]);
-                var stringAndNumbersList = new (Typorama.List.of([Typorama.String, Typorama.Number]))([]);
+                var productList = new (Mutable.List.of(ProductType))([]);
+                var stringAndNumbersList = new (Mutable.List.of([Mutable.String, Mutable.Number]))([]);
                 var relatedProductsPrevRef = state.relatedProducts;
                 var stringAndNumbersPrevRef = state.stringAndNumbers;
                 state.relatedProducts = productList;
@@ -377,8 +377,8 @@ describe('Custom data', function() {
 
                 lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj[setterName]({ child: elemFactory() }), setterName + ' which assigns to element field');
             });
-            describe('with typorama input', function() {
-                it('should set replace all values from an incoming object with typorama fields according to schema', function() {
+            describe('with mutable input', function() {
+                it('should set replace all values from an incoming object with mutable fields according to schema', function() {
                     var instance = new UserWithChildType();
                     var childInstance = new UserType({ name: 'zaphod', age: 42 });
                     instance[setterName]({ child: childInstance });
@@ -396,7 +396,7 @@ describe('Custom data', function() {
                 });
             })
         }
-   
+
 
         describe('setValue', function() {
             valueSetterSuite('setValue');
@@ -481,16 +481,16 @@ describe('Custom data', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Typorama.config.freezeInstance = true;
+                Mutable.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Typorama.config.freezeInstance = false;
+                Mutable.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {
                 var ImageType = aDataTypeWithSpec({
-                    src: Typorama.String.withDefault('default.jpg')
+                    src: Mutable.String.withDefault('default.jpg')
                 }, 'ImageType');
                 var image = new ImageType();
 
@@ -654,16 +654,16 @@ describe('Custom data', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Typorama.config.freezeInstance = true;
+                Mutable.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Typorama.config.freezeInstance = false;
+                Mutable.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {
                 var ImageType = aDataTypeWithSpec({
-                    src: Typorama.String.withDefault('default.jpg')
+                    src: Mutable.String.withDefault('default.jpg')
                 }, 'ImageType');
                 var image = new ImageType().$asReadOnly();
 
