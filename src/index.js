@@ -22,7 +22,7 @@ const globalCtx = (typeof self === 'object' && self.self === self && self) ||
 if (globalCtx.__Mutable){
     module.exports = globalCtx.__Mutable;
 } else {
-    module.exports = {
+    module.exports = globalCtx.__Mutable = {
         config,
         define,
         BaseType,
@@ -41,5 +41,5 @@ if (globalCtx.__Mutable){
         defineEnum,
         EnumBase,
         either
-    }
+    };
 }
