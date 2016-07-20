@@ -10,58 +10,61 @@ and formalizes the structure of props and state.
 Mutable also supports default or even non-nullable types.
 
 ## Using mutable
-add mutable to your project by installing it with [npm](https://www.npmjs.com/)
-```npm install mutable --save```
+Add mutable to your project by installing it with [npm](https://www.npmjs.com/):
+
+```bash
+npm install mutable --save
+```
 
 Simple code example:
 ```es6
-    import * as Mutable from 'mutable';
+import * as Mutable from 'mutable';
 
-    // define a Mutable type by providing a name and a spec
-    const Dude = Mutable.define('Dude', {
-        spec: ()=>({
-            name: Mutable.String.withDefault('Leon'),
-            age: Mutable.Number.withDefault(110),
-            address: Mutable.String.withDefault('no address')
-        })
-    });
+// define a Mutable type by providing a name and a spec
+const Dude = Mutable.define('Dude', {
+    spec: ()=>({
+        name: Mutable.String.withDefault('Leon'),
+        age: Mutable.Number.withDefault(110),
+        address: Mutable.String.withDefault('no address')
+    })
+});
 
-    // Mutable types accept custom data according to their spec as the first argument of their constructor
-    const dude = new Dude({name:'Ido'});
+// Mutable types accept custom data according to their spec as the first argument of their constructor
+const dude = new Dude({name:'Ido'});
 
-    // Mutable instances behave just like ordinary javascript objects
-    console.log(dude.name); // prints: 'Ido'
-    console.log(dude.age); // prints: 110
+// Mutable instances behave just like ordinary javascript objects
+console.log(dude.name); // prints: 'Ido'
+console.log(dude.age); // prints: 110
 
-    // Mutable keeps track of the state of the application by an internal revision counter.
-    // changes to Mutable instances are indexed by the revision in which they occur.
+// Mutable keeps track of the state of the application by an internal revision counter.
+// changes to Mutable instances are indexed by the revision in which they occur.
 
-    // advance the revision counter. Subsequent state changes will register to the new revision.
-    Mutable.revision.advance();
+// advance the revision counter. Subsequent state changes will register to the new revision.
+Mutable.revision.advance();
 
-    // read the current revision
-    const firstRevision = Mutable.revision.read();
-    // no changes has been made to dude since firstRevision started
-    console.log(dude.$isDirty(firstRevision)); // prints: false
+// read the current revision
+const firstRevision = Mutable.revision.read();
+// no changes has been made to dude since firstRevision started
+console.log(dude.$isDirty(firstRevision)); // prints: false
 
-    // advance the revision counter
-    Mutable.revision.advance();
+// advance the revision counter
+Mutable.revision.advance();
 
-    // Mutable instances behave just like ordinary javascript objects
-    dude.name = 'Tom';
-    console.log(dude.name); // prints: 'Tom'
+// Mutable instances behave just like ordinary javascript objects
+dude.name = 'Tom';
+console.log(dude.name); // prints: 'Tom'
 
-    // the dude instance has been changed since revision firstRevision
-    console.log(dude.$isDirty(firstRevision)); // prints: true
+// the dude instance has been changed since revision firstRevision
+console.log(dude.$isDirty(firstRevision)); // prints: true
 
-    // advance revision and define newRevision to point to the latest revision
-    Mutable.revision.advance();
-    const newRevision = Mutable.revision.read();
+// advance revision and define newRevision to point to the latest revision
+Mutable.revision.advance();
+const newRevision = Mutable.revision.read();
 
-    // the dude instance has been changed since firstRevision
-    console.log(dude.$isDirty(firstRevision)); // prints: true
-    // the dude instance has not been changed since newRevision
-    console.log(dude.$isDirty(newRevision)); // prints: false
+// the dude instance has been changed since firstRevision
+console.log(dude.$isDirty(firstRevision)); // prints: true
+// the dude instance has not been changed since newRevision
+console.log(dude.$isDirty(newRevision)); // prints: false
 ```
 Integrating mutable into react components is up to the user.
 
