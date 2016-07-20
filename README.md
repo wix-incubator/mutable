@@ -4,13 +4,13 @@ Mutable state containers with dirty checking and more
 
 ### What Mutable does
 Mutable is a state management library designed with [React](https://github.com/facebook/react) in mind.
-It supports simple implementation of ```shouldComponentUpdate``` by efficiently tracking state changes while avoiding the verbosity involved with using immutable data.
+It allows for simple implementation of ```shouldComponentUpdate``` by efficiently tracking state changes while avoiding the verbosity involved with using immutable data.
 In addition, Mutable enhances React components by offering a unique runtime schema engine that enforces [unidirectional data flow](https://facebook.github.io/flux/),
 and formalizes the structure of props and state.
 Mutable also supports default or even non-nullable types.
 
 ## Using mutable
-Add mutable to your project by installing it with [npm](https://www.npmjs.com/):
+Add Mutable to your project by installing it with [npm](https://www.npmjs.com/):
 
 ```bash
 npm install mutable --save
@@ -57,8 +57,9 @@ console.log(dude.name); // prints: 'Tom'
 // the dude instance has been changed since revision firstRevision
 console.log(dude.$isDirty(firstRevision)); // prints: true
 
-// advance revision and define newRevision to point to the latest revision
+// advance revision
 Mutable.revision.advance();
+// define newRevision to point to the latest revision
 const newRevision = Mutable.revision.read();
 
 // the dude instance has been changed since firstRevision
@@ -66,7 +67,7 @@ console.log(dude.$isDirty(firstRevision)); // prints: true
 // the dude instance has not been changed since newRevision
 console.log(dude.$isDirty(newRevision)); // prints: false
 ```
-Integrating mutable into react components is up to the user.
+Integrating mutable into React components is up to the user.
 
 ### how to build and test locally from source
 Clone this project locally.
