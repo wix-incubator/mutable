@@ -4,7 +4,7 @@
     "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
   },
   "name": "mutable",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Mutable state containers with dirty checking and more",
   "main": "dist/src/index.js",
   "jsnext:main": "src/index.js",
