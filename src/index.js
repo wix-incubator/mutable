@@ -1,16 +1,45 @@
-export {default as config} from './config';
-export {default as define} from './define-type';
-export {default as BaseType} from './base-type';
-export {default as PrimitiveBase} from './primitive-base';
-export {default as String} from './string';
-export {default as Boolean} from './boolean';
-export {default as Number} from './number';
-export {default as List} from './list';
-export {default as Function} from './function';
-export {default as Reference} from './reference';
-export {default as validation} from './validation';
-export {default as Map} from './map';
-export {default as PropsBase} from './props-base';
-export {LifeCycleManager, revision} from './lifecycle';
-export {defineEnum, EnumBase} from './define-enum';
-export {either} from './generic-types';
+import {default as config} from './config';
+import {default as define} from './define-type';
+import {default as BaseType} from './base-type';
+import {default as PrimitiveBase} from './primitive-base';
+import {default as String} from './string';
+import {default as Boolean} from './boolean';
+import {default as Number} from './number';
+import {default as List} from './list';
+import {default as Function} from './function';
+import {default as Reference} from './reference';
+import {default as validation} from './validation';
+import {default as Map} from './map';
+import {default as PropsBase} from './props-base';
+import {LifeCycleManager, revision} from './lifecycle';
+import {defineEnum, EnumBase} from './define-enum';
+import {either} from './generic-types';
+
+const globalCtx = (typeof self === 'object' && self.self === self && self) ||
+    (typeof global === 'object' && global.global === global && global) ||
+    this;
+
+if (globalCtx.__Mutable){
+    module.exports = globalCtx.__Mutable;
+} else {
+    module.exports = {
+        config,
+        define,
+        BaseType,
+        PrimitiveBase,
+        String,
+        Boolean,
+        Number,
+        List,
+        Function,
+        Reference,
+        validation,
+        Map,
+        PropsBase,
+        LifeCycleManager,
+        revision,
+        defineEnum,
+        EnumBase,
+        either
+    }
+}
