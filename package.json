@@ -1,11 +1,8 @@
 {
-  "private": false,
-  "publishConfig": {
-    "registry": "http://repo.dev.wix/artifactory/api/npm/npm-local/"
-  },
   "name": "mutable",
   "version": "1.0.1",
   "description": "Mutable state containers with dirty checking and more",
+  "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
   "jsnext:main": "src/index.js",
   "homepage": "https://github.com/wix/mutable",
@@ -23,7 +20,6 @@
   "contributors": [
     "Amir Arad <amira@wix.com> (http://github.com/amir-arad)"
   ],
-  "license": "SEE LICENSE IN LICENSE.md",
   "scripts": {
     "clean": "rimraf ./dist",
     "build:clean": "npm run clean && npm run build",
@@ -62,7 +58,7 @@
     "webpack-dev-server": "1.14.1"
   },
   "engines": {
-    "node": "^0.12"
+    "node": ">=0.12"
   },
   "dependencies": {
     "lodash": "4.13.1",
