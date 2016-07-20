@@ -36,6 +36,11 @@ const dude = new Dude({name:'Ido'});
 console.log(dude.name); // prints: 'Ido'
 console.log(dude.age); // prints: 110
 
+// Mutable instances behave just like ordinary javascript objects
+dude.name = 'Tom';
+console.log(dude.name); // prints: 'Tom'
+
+
 // Mutable keeps track of the state of the application by an internal revision counter.
 // changes to Mutable instances are indexed by the revision in which they occur.
 
@@ -49,10 +54,6 @@ console.log(dude.$isDirty(firstRevision)); // prints: false
 
 // advance the revision counter
 Mutable.revision.advance();
-
-// Mutable instances behave just like ordinary javascript objects
-dude.name = 'Tom';
-console.log(dude.name); // prints: 'Tom'
 
 // the dude instance has been changed since revision firstRevision
 console.log(dude.$isDirty(firstRevision)); // prints: true
@@ -91,7 +92,7 @@ Currently Mutable is in alpha mode. As such, it does not respect semver.
 We use a custom license, see ```LICENSE.md```
 
 ### Similar Projects
-There are examples of the kinds of libraries we’d like to model ourselves after.
+These are examples of the kinds of libraries we would like to model ourselves after.
  - [mobx](https://github.com/mobxjs/mobx) : Simple, scalable state management
  - [immutable.js](https://github.com/facebook/immutable-js/) : Immutable persistent data collections for Javascript which increase efficiency and simplicity
  - [cls.js](https://github.com/camel-chased/cls.js) : Easy, dynamic (kind of mixin) javascript classes
