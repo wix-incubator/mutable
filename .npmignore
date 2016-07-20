@@ -1,0 +1,14 @@
+.idea
+*.ipr
+*.iws
+*.iml
+build/Release
+*.pid
+*.seed
+.lock-wscript
+*.log
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+sftp-config.json
