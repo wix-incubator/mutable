@@ -1,4 +1,5 @@
 # Mutable
+[![npm version](https://badge.fury.io/js/mutable.svg)](https://badge.fury.io/js/mutable)
 
 Mutable state containers with dirty checking and more
 
