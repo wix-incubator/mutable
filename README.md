@@ -10,52 +10,60 @@ and formalizes the structure of props and state.
 Mutable also supports default or even non-nullable types.
 
 ## Using mutable
-add mutable to your project by installing it
+add mutable to your project by installing it with [npm](https://www.npmjs.com/)
 ```npm install mutable --save```
-define a Mutable type by providing a name and a spec:
+
+Simple code example:
 ```es6
-import * as Mutable from 'mutable';
+    import * as Mutable from 'mutable';
 
-const Dude = Mutable.define('Dude', {
-  spec: ()=>({
-                 name: Mutable.String.withDefault('Leon'),
-                 age: Mutable.Number.withDefault(110),
-                 address: Mutable.String.withDefault('no address')
-             })
-});
+    // define a Mutable type by providing a name and a spec
+    const Dude = Mutable.define('Dude', {
+        spec: ()=>({
+            name: Mutable.String.withDefault('Leon'),
+            age: Mutable.Number.withDefault(110),
+            address: Mutable.String.withDefault('no address')
+        })
+    });
 
- // Mutable types are composable, so you can build custom types out of custom Types:
+    // Mutable types accept custom data according to their spec as the first argument of their constructor
+    const dude = new Dude({name:'Ido'});
 
-const ThreeDudes = Mutable.define('ThreeDudes', {
-  spec: ()=>({
-                 first: Dude.withDefault({name:'Barak',  age:111}),
-                 second: Dude.withDefault({name:'Jiri',  age:109}),
-                 third:Dude
-             })
-});
+    // Mutable instances behave just like ordinary javascript objects
+    console.log(dude.name); // prints: 'Ido'
+    console.log(dude.age); // prints: 110
 
- // Mutable types accept custom data as the first argument of their constructor
+    // Mutable keeps track of the state of the application by an internal revision counter.
+    // changes to Mutable instances are indexed by the revision in which they occur.
 
-const troika = new ThreeDudes({third: new Dude({name:'Ido'})});
-console.log(troika.first.name); // prints 'Barak'
-console.log(troika.second.name); // prints 'Jiri'
-console.log(troika.third.name); // prints 'Ido'
+    // advance the revision counter. Subsequent state changes will register to the new revision.
+    Mutable.revision.advance();
 
- // Mutable keeps track of the state of the application by an internal revision counter.
- // Changes to Mutable instances are indexed by the revision in which they occur:
+    // read the current revision
+    const firstRevision = Mutable.revision.read();
+    // no changes has been made to dude since firstRevision started
+    console.log(dude.$isDirty(firstRevision)); // prints: false
 
-const revision = Mutable.revision;
-let rev = revision.read();
-console.log(troika.$isDirty(rev)) // prints 'false' as the troika instance has not been changed since revision rev
+    // advance the revision counter
+    Mutable.revision.advance();
 
-revision.advance();
+    // Mutable instances behave just like ordinary javascript objects
+    dude.name = 'Tom';
+    console.log(dude.name); // prints: 'Tom'
 
-troika.first.name = 'Tom';
+    // the dude instance has been changed since revision firstRevision
+    console.log(dude.$isDirty(firstRevision)); // prints: true
 
-console.log(troika.$isDirty(rev)) // prints 'true' as the troika instance has been changed since revision rev
+    // advance revision and define newRevision to point to the latest revision
+    Mutable.revision.advance();
+    const newRevision = Mutable.revision.read();
 
-console.log(troika.first.name); // prints 'Tom' as expected
+    // the dude instance has been changed since firstRevision
+    console.log(dude.$isDirty(firstRevision)); // prints: true
+    // the dude instance has not been changed since newRevision
+    console.log(dude.$isDirty(newRevision)); // prints: false
 ```
+Integrating mutable into react components is up to the user.
 
 ### how to build and test locally from source
 Clone this project locally.
