@@ -1,9 +1,10 @@
 # Mutable
+[![npm version](https://badge.fury.io/js/mutable.svg)](https://badge.fury.io/js/mutable)
 
-Mutable state containers with dirty checking and more
+Mutable state containers in javascript with dirty checking and more
 
 ### What Mutable does
-Mutable is a state management library designed with [React](https://github.com/facebook/react) in mind.
+Mutable is a javascript state management library designed with [React](https://github.com/facebook/react) in mind.
 It allows for simple implementation of ```shouldComponentUpdate``` by efficiently tracking state changes while avoiding the verbosity involved with using immutable data.
 In addition, Mutable enhances React components by offering a unique runtime schema engine that enforces [unidirectional data flow](https://facebook.github.io/flux/),
 and formalizes the structure of props and state.
