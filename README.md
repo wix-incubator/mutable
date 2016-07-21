@@ -29,43 +29,44 @@ const Dude = Mutable.define('Dude', {
         address: Mutable.String.withDefault('no address')
     })
 });
-
+ 
 // Mutable types accept custom data according to their spec as the first argument of their constructor
 const dude = new Dude({name:'Ido'});
-
+ 
 // Mutable instances behave just like ordinary javascript objects
 console.log(dude.name); // prints: 'Ido'
 console.log(dude.age); // prints: 110
-
+ 
 // Mutable instances behave just like ordinary javascript objects
 dude.name = 'Tom';
 console.log(dude.name); // prints: 'Tom'
-
-
+ 
+ 
 // Mutable keeps track of the state of the application by an internal revision counter.
 // changes to Mutable instances are indexed by the revision in which they occur.
-
+ 
 // advance the revision counter. Subsequent state changes will register to the new revision.
 Mutable.revision.advance();
-
+ 
 // read the current revision
 const firstRevision = Mutable.revision.read();
 // no changes has been made to dude since firstRevision started
 console.log(dude.$isDirty(firstRevision)); // prints: false
-
+ 
 // advance the revision counter
 Mutable.revision.advance();
 
-// the dude instance has been changed since revision firstRevision
-console.log(dude.$isDirty(firstRevision)); // prints: true
+// change the state of the dude
+dude.age = dude.age + 1;
 
+// the dude instance has been changed since first revision
+console.log(dude.$isDirty(firstRevision)); // prints: true
+ 
 // advance revision
 Mutable.revision.advance();
 // define newRevision to point to the latest revision
 const newRevision = Mutable.revision.read();
-
-// the dude instance has been changed since firstRevision
-console.log(dude.$isDirty(firstRevision)); // prints: true
+ 
 // the dude instance has not been changed since newRevision
 console.log(dude.$isDirty(newRevision)); // prints: false
 ```
