@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import * as Mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import {lifecycleContract} from './lifecycle.contract.spec';
-import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE} from '../test-kit/test-drivers/reports';
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE, ERROR_ATTEMPTING_TO_OVERRIDE_READONLY} from '../test-kit/test-drivers/reports';
 
 const revision = Mutable.revision;
 
@@ -102,10 +102,10 @@ describe('Custom data', function() {
         });
 
         it("should not allow primitives", function() {
-                expect(UserType.validate(true)).to.be.equal(false);
+            expect(UserType.validate(true)).to.be.equal(false);
         });
         it("should not allow undefined", function() {
-                expect(UserType.validate(undefined)).to.be.equal(false);
+            expect(UserType.validate(undefined)).to.be.equal(false);
         });
     });
 
@@ -214,7 +214,7 @@ describe('Custom data', function() {
             });
 
             describe('initial value errors', function() {
-                it('throw error for non nullable field recieving null', function() {
+                it('throw error for non nullable field receiving null', function() {
                     expect(() => new UserType({ name: null }))
                         .to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('User.name', 'string', 'null'))
                 });
@@ -549,6 +549,15 @@ describe('Custom data', function() {
                 name: 'moshe',
                 child: { name: 'bobi', age: 13, address: "no address" }
             });
+        });
+
+        it('should warn when attempting to override readOnly values', function() {
+            var userData = new UserType();
+            var userReadOnly = userData.$asReadOnly();
+
+            expect(()=>{
+                userReadOnly.name = 'zorg';
+            }).to.report(ERROR_ATTEMPTING_TO_OVERRIDE_READONLY(userReadOnly.name, 'User', 'name', 'zorg'));
         });
 
         it('should return wrapped data for none native immutable fields (like custom data)', function() {
