@@ -12,8 +12,11 @@ import {validateAndWrap} from './type-match';
 
 const MAILBOX = getMailBox('Mutable.Map');
 
+function entries(map){
+    return (typeof map.entries === 'function')? map.entries() : objEntries(map);
+}
 // because Object.entries is too tall an order
-function entries(obj) {
+function objEntries(obj) {
     return Object.keys(obj).map((key) => [key, obj[key]]);
 }
 
@@ -39,15 +42,31 @@ function isTypeCompatibleWithPlainJsonObject(options) {
 
 class _Map extends BaseType {
 
-    static withDefault() {
-        return BaseType.withDefault.apply(this, arguments);
-    }
-
     static defaults() { return new Map(); }
 
+    static cloneValue(value) {
+        if (_.isArray(value)  || _Map.validateType(value) ||
+            (_.isObject(value) && isTypeCompatibleWithPlainJsonObject(this.options))) {
+            if (!value){
+                return value;
+            }
+            if (!isIterable(value)){
+                value = entries(value);
+            }
+            _Map._allowIterable(value, this.options);
+            var result = [];
+            for (let entry of value) {
+                result.push(entry);
+            }
+            return result;
+        } else {
+            return [];
+        }
+    }
+
     static _allowIterable(iterable, options, errorDetails = null) {
-        for (let [key, value] of iterable) {
-            if (options && options.subTypes){
+        if (options && options.subTypes){
+            for (let [key, value] of iterable) {
                 if (!generics.getMatchingType(options.subTypes.key, key)){
                     if (errorDetails){
                         errorDetails.path = `${errorDetails.path}[${key}]`;
@@ -73,8 +92,8 @@ class _Map extends BaseType {
             return true;
         } else if (isIterable(value)) {
             return _Map._allowIterable(value, this.options, errorDetails);
-        } else if (value instanceof Object && this.options && this.options.subTypes && generics.doOnType(this.options.subTypes.key, type => type === String)) {
-            return _Map._allowIterable(entries(value), this.options, errorDetails);
+        } else if (value instanceof Object && isTypeCompatibleWithPlainJsonObject(this.options)) {
+            return _Map._allowIterable(objEntries(value), this.options, errorDetails);
         }
         return false;
     }
@@ -136,7 +155,7 @@ class _Map extends BaseType {
             return this._wrapIterable(value, options, null, errorContext);
         }
         if (value instanceof Object && isTypeCompatibleWithPlainJsonObject(options)) {
-            return this._wrapIterable(entries(value), options, null, errorContext);
+            return this._wrapIterable(objEntries(value), options, null, errorContext);
         }
         MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
     }
@@ -310,7 +329,7 @@ class _Map extends BaseType {
         while (!e.done){
             resultArr.push(e.value);
             e = innerIterator.next();
-        };
+        }
         return this.__isReadOnly__ ? resultArr.map(safeAsReadOnlyOrArr) : resultArr;
     }
 

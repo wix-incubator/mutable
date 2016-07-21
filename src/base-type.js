@@ -37,7 +37,7 @@ export default class BaseType extends PrimitiveBase {
         const isCircular = ~circularFlags.indexOf(';' + this.uniqueId + ';');
         if (isCircular) {
             if (!this.options || !this.options.nullable) {
-                console.warn('DEFAULT CYRCULAR DATA! resolving value as null - please add better error/warning'); // ToDo: add a proper warning through escalate
+                MAILBOX.warn('DEFAULT CYRCULAR DATA! resolving value as null - please add better error/warning');
             }
             return null;
         } else {
@@ -54,12 +54,10 @@ export default class BaseType extends PrimitiveBase {
     }
 
     static cloneValue(value) {
-        if (!_.isPlainObject(value)) { return {}; }
+        if (!_.isObject(value)) { return {}; }
 
         return _.reduce(this._spec, (cloneObj, fieldSpec, fieldId) => {
-            if (fieldSpec.allowPlainVal(value[fieldId])) {
-                cloneObj[fieldId] = value[fieldId];
-            }
+            cloneObj[fieldId] = fieldSpec.cloneValue(value[fieldId]);
             return cloneObj;
         }, {});
     }
