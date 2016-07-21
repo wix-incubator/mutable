@@ -46,4 +46,7 @@ export function ERROR_KEY_MISMATCH_IN_MAP_METHOD(method, path, keyType, passedTy
 export function ERROR_VALUE_MISMATCH_IN_MAP_METHOD(method, path, keyType, passedType) {
     return { level: 'error', params: `Map ${method} error: "${path}" expected value of type ${keyType} but got ${passedType}` }
 }
+export function ERROR_ATTEMPTING_TO_OVERRIDE_READONLY(readOnlyValue, id, fieldName, newValue){
+    return {level:'warn', params:`Attempt to override a read only value ${JSON.stringify(readOnlyValue)} at ${id}.${fieldName} with ${JSON.stringify(newValue)}`}
+}
 export const arrow = String.fromCharCode(10144);
