@@ -11,8 +11,6 @@ module.exports = {
 		'test-kit'              : [ './test-kit' ],
 		'test'                  : ['./test'],
 		'webtest'               : ['mocha!./test']
-		// 'examples/ReactGallery' : [ './examples/ReactGallery' ],
-		// 'examples/benchmark'    : [ './examples/benchmark' ],
 	},
 	output: {
 		path: __dirname + '/dist',
