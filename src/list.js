@@ -16,14 +16,20 @@ class _List extends BaseType {
     static defaults() { return []; }
 
     static cloneValue(value) {
-        if (!_.isArray(value)) { return []; }
-        return value.map((itemValue, index) => {
-            var Type = generics.getMatchingType(this.options.subTypes, itemValue);
-            if (!Type) {
-                throw new Error('cloneValue error: no type found for index ' + index)
+        if (_.isArray(value) || _List.validateType(value)) {
+            if (!value){
+                return value;
             }
-            return Type.cloneValue(itemValue);
-        });
+            return value.map((itemValue, index) => {
+                var Type = generics.getMatchingType(this.options.subTypes, itemValue);
+                if (!Type) {
+                    throw new Error('cloneValue error: no type found for index ' + index)
+                }
+                return Type.cloneValue(itemValue);
+            });
+        } else {
+            return [];
+        }
     }
 
     static validate(value) { return validateNullValue(this, value) || _.isArray(value); }
