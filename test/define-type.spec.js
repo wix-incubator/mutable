@@ -398,7 +398,17 @@ describe('defining', () => {
 
                 typeCompatibilityTest(() => Mutable.List.of(Mutable.String).withDefault(['im special!']));
 
-                var list, TestType, testType;
+                var list, TestType, testType, GroupType;
+                before(() => {
+                    GroupType = Mutable.define('GroupType', {
+                        spec: function() {
+                            return {
+                                title: Mutable.String,
+                                users: Mutable.List.of(UserType)
+                            };
+                        }
+                    });
+                });
 
                 before("instantiate with create", function() {
                     list = Mutable.List.of(Mutable.String).create(["Beyonce", "Rihanna", "Britney", "Christina"]);
@@ -430,6 +440,22 @@ describe('defining', () => {
                     expect(testType.names.at(1)).to.equal("Rihanna");
                     expect(testType.names.at(2)).to.equal("Britney");
                     expect(testType.names.at(3)).to.equal("Christina");
+                });
+
+                it('Should accept Mutable instance as default value', function() {
+                    var defaultGroupData = new GroupType({
+                        title: 'Title',
+                        users: [
+                            {'name':'tom', 'age':25},
+                            {'name':'omri', 'age':35}
+                        ]
+                    });
+                    var NewType = GroupType.withDefault(defaultGroupData);
+                    var groupData = new NewType();
+                    expect(groupData.users.at(0).name).to.equal('tom');
+                    expect(groupData.users.at(0).age).to.equal(25);
+                    expect(groupData.users.at(1).name).to.equal('omri');
+                    expect(groupData.users.at(1).age).to.equal(35);
                 });
 
             });
