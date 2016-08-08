@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -36,11 +36,11 @@
   },
   "devDependencies": {
     "babel-cli": "6.11.4",
-    "babel-core": "6.11.4",
+    "babel-core": "6.13.2",
     "babel-loader": "6.2.4",
     "babel-plugin-transform-class-properties": "6.11.5",
     "babel-plugin-transform-es2015-modules-umd": "6.12.0",
-    "babel-preset-es2015": "6.9.0",
+    "babel-preset-es2015": "6.13.2",
     "babel-preset-es2015-loose": "7.0.0",
     "chai": "3.5.0",
     "karma": "1.1.2",
@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "lodash": "4.14.1",
-    "escalate": "0.0.91"
+    "escalate": "0.0.92"
   },
   "babel": {
     "presets": [
