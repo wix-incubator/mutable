@@ -95,6 +95,7 @@ We use a custom license, see ```LICENSE.md```
 
 ### Similar Projects
 These are examples of the kinds of libraries we would like to model ourselves after.
+ - [NestedTypes](https://github.com/Volicon/NestedTypes) : High-performance model framework, which can be used as drop-in backbonejs replacement.
  - [mobx](https://github.com/mobxjs/mobx) : Simple, scalable state management
  - [immutable.js](https://github.com/facebook/immutable-js/) : Immutable persistent data collections for Javascript which increase efficiency and simplicity
  - [cls.js](https://github.com/camel-chased/cls.js) : Easy, dynamic (kind of mixin) javascript classes
