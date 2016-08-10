@@ -52,6 +52,10 @@ export function defineEnum(def) {
     EnumType.prototype.toJSON = function() {
         return this.value;
     };
+    EnumType.prototype.toJS = function() {
+        // ToDo: should return static ref (this) and accept it in constructor
+        return this.value;
+    };
 
     if (_.isArray(def)) {
         def = convertToObject(def);

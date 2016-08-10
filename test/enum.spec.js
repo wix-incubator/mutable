@@ -201,4 +201,40 @@ describe('Enum Type', function() {
         });
 
     });
+
+    describe('toJSON', function(){
+
+        it('should return the enum value that can initiate the value', function(){
+            var ApeWithValue = Mutable.defineEnum({
+                'CHIMP':'small ape',
+                'GORILLA':'large ape',
+            });
+
+            const res = ApeWithValue.GORILLA.toJSON();
+            
+            const deserializeApe = new ApeWithValue(res);
+
+            expect(res).to.equal('large ape');
+            expect(deserializeApe).to.equal(ApeWithValue.GORILLA);
+        });
+
+    });
+
+    describe('toJS', function(){
+
+        it('should return the enum value that can initiate the value', function(){
+            var ApeWithValue = Mutable.defineEnum({
+                'CHIMP':'small ape',
+                'GORILLA':'large ape',
+            });
+
+            const res = ApeWithValue.GORILLA.toJS();
+            
+            const deserializeApe = new ApeWithValue(res);
+
+            expect(res).to.equal('large ape');
+            expect(deserializeApe).to.equal(ApeWithValue.GORILLA);
+        });
+
+    });
 });

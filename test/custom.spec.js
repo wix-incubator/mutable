@@ -8,37 +8,42 @@ import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE, E
 
 const revision = Mutable.revision;
 
-var UserType = aDataTypeWithSpec({
+var User = aDataTypeWithSpec({
     name: Mutable.String.withDefault('leon'),
     age: Mutable.Number.withDefault(10),
     address: Mutable.String.withDefault('no address')
 }, 'User');
 
-var UserWithChildType = aDataTypeWithSpec({
+var UserWithChild = aDataTypeWithSpec({
     name: Mutable.String.withDefault('leon'),
-    child: UserType.withDefault({ name: 'bobi', age: 13 })
-}, 'UserWithChildType');
+    child: User.withDefault({ name: 'bobi', age: 13 })
+}, 'UserWithChild');
 
-var UserWithNullableChildType = aDataTypeWithSpec({
+var UserWithNullableChild = aDataTypeWithSpec({
     name: Mutable.String.withDefault('leon'),
-    child: UserType.nullable().withDefault(null)
-}, 'UserWithChildType');
+    child: User.nullable().withDefault(null)
+}, 'UserWithNullableChild');
 
 var CompositeContainer = aDataTypeWithSpec({
     name: Mutable.String.withDefault('leon'),
-    child1: UserType,
-    child2: UserType
-}, 'UserWith2ChildType');
+    child1: User,
+    child2: User
+}, 'CompositeContainer');
 
 var VeryCompositeContainer = aDataTypeWithSpec({
-    child1: UserWithChildType
-}, 'UserWithDeepChildType');
+    child1: UserWithChild
+}, 'VeryCompositeContainer');
 
 var PrimitivesContainer = aDataTypeWithSpec({
     name: Mutable.String.withDefault('leon'),
     child1: Mutable.String,
     child2: Mutable.String
-}, 'User');
+}, 'PrimitivesContainer');
+
+var WithNonSerializable = aDataTypeWithSpec({
+    func: Mutable.Function,
+    str: Mutable.String
+}, 'WithNonSerializable');
 
 var lifeCycleAsserter = lifecycleContract();
 (() => {
@@ -49,7 +54,7 @@ var lifeCycleAsserter = lifecycleContract();
             result.child2 = u2;
             return result;
         },
-        () => new UserType(),
+        () => new User(),
         'object with mutable elements');
     var counter = 0;
     lifeCycleAsserter.addFixture(
@@ -63,8 +68,8 @@ describe('Custom data', function() {
 
     describe('Type Class', function() {
         it('should be able to describe itself', function() {
-            expect(UserType).to.have.field('name').with.defaults('leon').of.type(Mutable.String);
-            expect(UserType).to.have.field('age').with.defaults(10).of.type(Mutable.Number);
+            expect(User).to.have.field('name').with.defaults('leon').of.type(Mutable.String);
+            expect(User).to.have.field('age').with.defaults(10).of.type(Mutable.Number);
         });
     });
 
@@ -74,27 +79,60 @@ describe('Custom data', function() {
 
     describe('toJSON', function() {
         it('should take a mutable object, and return a native object', function() {
-            var container = new UserWithChildType({ child: { age: 11 } });
+            var container = new UserWithChild({ child: { age: 11 } });
 
             expect(container.toJSON(), 'toJSON() called').to.eql(
-                { name: new UserWithChildType().name, child: new UserType({ age: 11 }).toJSON() });
+                { name: new UserWithChild().name, child: new User({ age: 11 }).toJSON() });
             expect(container.toJSON(false), 'toJSON(false) called').to.eql(
-                { name: new UserWithChildType().name, child: container.__value__.child });
+                { name: new UserWithChild().name, child: container.__value__.child });
             expect(container.toJSON(true, true), 'toJSON(true, true) called').to.eql(
-                { _type: 'UserWithChildType', name: new UserWithChildType().name, child: new UserType({ age: 11 }).toJSON(true, true) });
+                { _type: 'UserWithChild', name: new UserWithChild().name, child: new User({ age: 11 }).toJSON(true, true) });
         });
+
+        /** ToDo: change toJSON to output serializable value only */
+        it.skip('should allow keeping none serializable values', function(){
+            const funcVal = () => {};
+            var type = new WithNonSerializable({ str:'val', func:funcVal });
+
+            expect(type.toJSON()).to.eql({ str:type.str, func:'' });
+        });
+    });
+
+    describe('toJS', function() {
+
+        it('should try get reference non serializable values', function(){
+            const funcVal = () => {};
+            var data = new WithNonSerializable({ str:'val', func:funcVal });
+            
+            const result = data.toJS();
+
+            expect(result.func).to.equal(funcVal);
+            expect(result.str).to.equal('val');
+        });
+
+        it('should offer type flag output', function(){
+            const funcVal = () => {};
+            var data = new WithNonSerializable({ str:'val', func:funcVal });
+            
+            const result = data.toJS(true);
+
+            expect(result._type).to.equal('WithNonSerializable');
+            expect(result.func).to.equal(funcVal);
+            expect(result.str).to.equal('val');
+        });
+
     });
 
     describe('validate', function() {
         it('should allow json with matching fields', function() {
-            expect(UserType.validate({
+            expect(User.validate({
                 name:'yossi',
                 age:5,
                 address:'homeless'
             })).to.be.equal(true);
         });
         it("should not allow json with wrong fields", function() {
-            expect(UserType.validate({
+            expect(User.validate({
                 name:'yossi',
                 age:'5',
                 address:'homeless'
@@ -102,10 +140,10 @@ describe('Custom data', function() {
         });
 
         it("should not allow primitives", function() {
-            expect(UserType.validate(true)).to.be.equal(false);
+            expect(User.validate(true)).to.be.equal(false);
         });
         it("should not allow undefined", function() {
-            expect(UserType.validate(undefined)).to.be.equal(false);
+            expect(User.validate(undefined)).to.be.equal(false);
         });
     });
 
@@ -114,7 +152,7 @@ describe('Custom data', function() {
         describe('instantiation', function() {
 
             it('should accept values from json', function() {
-                var userData = new UserType({ name: 'yoshi', age: 50 });
+                var userData = new User({ name: 'yoshi', age: 50 });
 
                 expect(userData.name).to.equal('yoshi');
                 expect(userData.age).to.equal(50);
@@ -177,7 +215,7 @@ describe('Custom data', function() {
             });
 
             it('should provide default values when no initial data is provided', function() {
-                var userData = new UserType();
+                var userData = new User();
 
                 expect(userData).to.be.a.dataInstance.with.fields((field) => {
                     field.to.be.defaultValue();
@@ -185,7 +223,7 @@ describe('Custom data', function() {
             });
 
             it('should provide default values for missing fields', function() {
-                var userData = new UserType({});
+                var userData = new User({});
 
                 expect(userData).to.be.a.dataInstance.with.fields((field) => {
                     field.to.be.defaultValue();
@@ -193,7 +231,7 @@ describe('Custom data', function() {
             });
 
             it('should not provide default values for provided fields', function() {
-                var userData = new UserType({ age: 53 });
+                var userData = new User({ age: 53 });
 
                 expect(userData.age).to.equal(53);
             });
@@ -201,13 +239,13 @@ describe('Custom data', function() {
 
 
             it('should not copy fields that do not appear in the schema', function() {
-                var instance = new UserType({ numOfHeads: 2 });
+                var instance = new User({ numOfHeads: 2 });
 
                 expect(instance.numOfHeads).to.be.undefined;
             });
 
             it('should reference matching mutable objects passed as value', function() {
-                var instance = new UserType();
+                var instance = new User();
 
                 var container = new CompositeContainer({ child1: instance });
                 expect(container.child1).to.be.equal(instance);
@@ -215,25 +253,25 @@ describe('Custom data', function() {
 
             describe('initial value errors', function() {
                 it('throw error for non nullable field receiving null', function() {
-                    expect(() => new UserType({ name: null }))
+                    expect(() => new User({ name: null }))
                         .to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('User.name', 'string', 'null'))
                 });
                 it('throw error for field type mismatch', function() {
-                    expect(() => new UserType({ age: 'gaga' }))
+                    expect(() => new User({ age: 'gaga' }))
                         .to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('User.age', 'number', 'string'))
                 });
                 it("report correct path for field type mismatch in deep field", function() {
                     var container = new VeryCompositeContainer();
                     expect(() => new VeryCompositeContainer({ child1: { child: { age: "666" } } }))
-                        .to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('UserWithDeepChildType.child1.child.age', 'number', 'string'));
+                        .to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR('VeryCompositeContainer.child1.child.age', 'number', 'string'));
                 });
             });
 
             describe('getRuntimeId():', function() {
                 it('should be auto generated and unique', function() {
                     var sourceData = { numOfHeads: 2 };
-                    var instance = new UserType(sourceData);
-                    var instance2 = new UserType(sourceData);
+                    var instance = new User(sourceData);
+                    var instance2 = new User(sourceData);
                     expect(instance.getRuntimeId()).to.equal(instance.getRuntimeId());
                     expect(instance.getRuntimeId()).not.to.equal(instance2.getRuntimeId());
                 });
@@ -337,7 +375,7 @@ describe('Custom data', function() {
         function valueSetterSuite(setterName) {
             describe('with json input', function() {
                 it('should set all values from an incoming JSON according to schema', function() {
-                    var instance = new UserType({ address: '21 jump street' });
+                    var instance = new User({ address: '21 jump street' });
 
                     instance[setterName]({ name: 'zaphod', age: 42 });
 
@@ -346,7 +384,7 @@ describe('Custom data', function() {
                 });
 
                 it('should copy field values rather than the nested value, so that further changes to the new value will not propagate to the instance', function() {
-                    var instance = new UserType();
+                    var instance = new User();
                     var wrapped = { name: 'zaphod' };
                     instance[setterName](wrapped);
 
@@ -356,7 +394,7 @@ describe('Custom data', function() {
                 });
 
                 it('should ignore fields that appear in the passed object but not in the type schema', function() {
-                    var instance = new UserType();
+                    var instance = new User();
 
                     instance[setterName]({ numOfHeads: 2 });
 
@@ -364,8 +402,8 @@ describe('Custom data', function() {
                 });
 
                 it('should not invalidate if fields havnt changed', function() {
-                    var instance = new UserWithChildType();
-                    var instance2 = new UserType();
+                    var instance = new UserWithChild();
+                    var instance2 = new User();
                     instance[setterName]({ child: instance2 });
                     revision.advance();
                     var rev = revision.read();
@@ -379,15 +417,15 @@ describe('Custom data', function() {
             });
             describe('with mutable input', function() {
                 it('should set replace all values from an incoming object with mutable fields according to schema', function() {
-                    var instance = new UserWithChildType();
-                    var childInstance = new UserType({ name: 'zaphod', age: 42 });
+                    var instance = new UserWithChild();
+                    var childInstance = new User({ name: 'zaphod', age: 42 });
                     instance[setterName]({ child: childInstance });
 
                     expect(instance.child).to.equal(childInstance);
                 });
                 it('should not invalidate if child instance hasnt is the same one', function() {
-                    var instance = new UserWithChildType();
-                    var childInstance = new UserType({ name: 'zaphod', age: 42 });
+                    var instance = new UserWithChild();
+                    var childInstance = new User({ name: 'zaphod', age: 42 });
                     instance[setterName]({ child: childInstance });
                     revision.advance();
                     var rev = revision.read();
@@ -401,30 +439,30 @@ describe('Custom data', function() {
         describe('setValue', function() {
             valueSetterSuite('setValue');
             it('should create new data objects for nested complex types', function() {
-                var instance = new UserWithChildType();
+                var instance = new UserWithChild();
                 var childInstance = instance.child;
                 instance.setValue({ child: {} });
 
                 expect(childInstance).to.not.be.equal(instance.child);
             });
             it("should not allow values of wrong type", function() {
-                var user = new UserType();
+                var user = new User();
                 expect(() => { return user.setValue({ age: "666" }) }).to.report(ERROR_IN_SET_VALUE('User.age', 'number', 'string'));
             });
 
             it("report correct path if setting values of wrong type", function() {
                 var container = new VeryCompositeContainer();
                 expect(() => { return container.setValue({ child1: { child: { age: "666" } } }) })
-                    .to.report(ERROR_IN_SET_VALUE('UserWithDeepChildType.child1.child.age', 'number', 'string'));
+                    .to.report(ERROR_IN_SET_VALUE('VeryCompositeContainer.child1.child.age', 'number', 'string'));
             });
         });
 
         describe('setValueDeep', function() {
             valueSetterSuite('setValueDeep');
             it('should create new child if child is read only', function() {
-                var childInstance = new UserType({ name: 'zaphod', age: 42 }).$asReadOnly();
+                var childInstance = new User({ name: 'zaphod', age: 42 }).$asReadOnly();
 
-                var instance = new UserWithChildType({ child: childInstance });
+                var instance = new UserWithChild({ child: childInstance });
                 revision.advance();
                 var rev = revision.read();
 
@@ -435,7 +473,7 @@ describe('Custom data', function() {
             });
             it('should create new child if child is null', function() {
 
-                var instance = new UserWithNullableChildType({ child: null });
+                var instance = new UserWithNullableChild({ child: null });
                 revision.advance();
                 var rev = revision.read();
 
@@ -444,14 +482,14 @@ describe('Custom data', function() {
                 expect(instance.$isDirty(rev)).to.equal(true);
             });
             it('complex children props should be set to default if not specified', function() {
-                var instance = new UserWithChildType({ child: { name: 'zagzag' } });
+                var instance = new UserWithChild({ child: { name: 'zagzag' } });
 
                 instance.setValueDeep({ child: { age: 1 } });
 
                 expect(instance.child.name).to.be.equal('leon');
             });
             it('should not invalidate item if child has not changed', function() {
-                var instance = new UserWithChildType({ child: { name: 'zagzag' } });
+                var instance = new UserWithChild({ child: { name: 'zagzag' } });
                 revision.advance();
                 var rev = revision.read();
 
@@ -460,7 +498,7 @@ describe('Custom data', function() {
                 expect(instance.$isDirty(rev)).to.equal(false);
             });
             it('should not invalidate item if null child was set to null', function() {
-                var instance = new UserWithNullableChildType({ child: null });
+                var instance = new UserWithNullableChild({ child: null });
                 revision.advance();
                 var rev = revision.read();
 
@@ -469,7 +507,7 @@ describe('Custom data', function() {
                 expect(instance.$isDirty(rev)).to.equal(false);
             });
             it('should invalidate if child has changed', function() {
-                var instance = new UserWithChildType({ child: { name: 'zagzag' } });
+                var instance = new UserWithChild({ child: { name: 'zagzag' } });
                 revision.advance();
                 var rev = revision.read();
 
@@ -502,7 +540,7 @@ describe('Custom data', function() {
         });
 
         it('should chain with default calls', function() {
-            var typeWithDefaultBob = UserType.withDefault({ name: 'joe' }).withDefault({ name: 'bob' });
+            var typeWithDefaultBob = User.withDefault({ name: 'joe' }).withDefault({ name: 'bob' });
 
             var a = typeWithDefaultBob.defaults();
 
@@ -511,16 +549,16 @@ describe('Custom data', function() {
 
         it('should use passed data object as field value', function() {
 
-            var userData = new UserWithChildType();
+            var userData = new UserWithChild();
 
-            let newChild = new UserType({ name: 'yossi', age: 3 });
+            let newChild = new User({ name: 'yossi', age: 3 });
             userData.child = newChild;
 
             expect(userData.child).to.equal(newChild);
         });
 
         it('should return json value from toJSON()', function() {
-            var userData = new UserWithChildType();
+            var userData = new UserWithChild();
 
             expect(userData.toJSON()).to.eql({
                 name: 'leon',
@@ -536,7 +574,7 @@ describe('Custom data', function() {
         });
 
         it('should be convertible to JSON ', function() {
-            var userData = new UserWithChildType();
+            var userData = new UserWithChild();
 
             expect(JSON.parse(JSON.stringify(userData))).to.eql({
                 name: 'leon',
@@ -552,7 +590,7 @@ describe('Custom data', function() {
         });
 
         it('should warn when attempting to override readOnly values', function() {
-            var userData = new UserType();
+            var userData = new User();
             var userReadOnly = userData.$asReadOnly();
 
             expect(()=>{
@@ -561,16 +599,16 @@ describe('Custom data', function() {
         });
 
         it('should return wrapped data for none native immutable fields (like custom data)', function() {
-            var userData = new UserWithChildType();
+            var userData = new UserWithChild();
 
-            expect(userData.child instanceof UserType).to.equal(true);
+            expect(userData.child instanceof User).to.equal(true);
         })
     });
 
     describe('(Read Only) instance', function() {
 
         it('should be created from data instance', function() {
-            var userData = new UserType();
+            var userData = new User();
             var userReadOnly = userData.$asReadOnly();
 
             expect(userReadOnly.name).to.equal('leon');
@@ -578,15 +616,15 @@ describe('Custom data', function() {
         });
 
         it('should be prototype of the same type class', function() {
-            var userData = new UserType();
+            var userData = new User();
             var userReadOnly = userData.$asReadOnly();
 
-            expect(userData).to.be.instanceOf(UserType);
-            expect(userReadOnly).to.be.instanceOf(UserType);
+            expect(userData).to.be.instanceOf(User);
+            expect(userReadOnly).to.be.instanceOf(User);
         });
 
         it('should be created once for each data instance', function() {
-            var userData = new UserType();
+            var userData = new User();
             var userReadOnly = userData.$asReadOnly();
             var userReadOnly2 = userData.$asReadOnly();
 
@@ -595,7 +633,7 @@ describe('Custom data', function() {
 
         it('should keep the source instance not readOnly', function() {
             // this is beacause the readonly instance used to have a bug in which it changed the original item value while wrapping it
-            var userData = new UserWithChildType();
+            var userData = new UserWithChild();
 
             userData.$asReadOnly();
             userData.child.setValue({ name: 'moshe' });
@@ -611,7 +649,7 @@ describe('Custom data', function() {
         });
 
         it('should be linked to data instance values', function() {
-            var userData = new UserType();
+            var userData = new User();
             var userReadOnly = userData.$asReadOnly();
 
             userData.name = 'moshe';
@@ -622,7 +660,7 @@ describe('Custom data', function() {
         });
 
         it('should not change values', function() {
-            var userData = new UserType();
+            var userData = new User();
             var userReadOnly = userData.$asReadOnly();
 
             userReadOnly.name = 'moshe';
@@ -635,12 +673,12 @@ describe('Custom data', function() {
         });
 
         it('should return wrapped data for none native immutable fields (like custom data)', function() {
-            var userData = new UserWithChildType().$asReadOnly();
+            var userData = new UserWithChild().$asReadOnly();
 
             var readOnlyChild = userData.child;
             readOnlyChild.name = 'modified name';
 
-            expect(readOnlyChild instanceof UserType).to.equal(true);
+            expect(readOnlyChild instanceof User).to.equal(true);
             expect(readOnlyChild.name).to.equal('bobi');
         });
 
@@ -649,13 +687,13 @@ describe('Custom data', function() {
         describe('getRuntimeId():', function() {
             it('should be the same for instance and readonly ver', function() {
                 var sourceData = { numOfHeads: 2 };
-                var instance = new UserType(sourceData);
+                var instance = new User(sourceData);
                 var readOnly = instance.$asReadOnly();
                 expect(instance.getRuntimeId()).to.equal(readOnly.getRuntimeId());
             });
             it('no matter the reading order', function() {
                 var sourceData = { numOfHeads: 2 };
-                var instance = new UserType(sourceData);
+                var instance = new User(sourceData);
                 var readOnly = instance.$asReadOnly();
                 expect(readOnly.getRuntimeId()).to.equal(instance.getRuntimeId());
             });

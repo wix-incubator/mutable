@@ -30,7 +30,6 @@ function arrFromIterable(iterable) {
         }
         return result;
     }
-    debugger;
     throw new Error('unknown argument type ' + JSON.stringify(iterable));
 }
 
@@ -141,6 +140,42 @@ function testReadFunctionality(builders, isReadonly) {
                 let map = builders.aUserTypeMap(jsonModel);
                 expect(map.toJSON()).to.eql(jsonModel);
             });
+        });
+
+        describe('toJS', function(){
+
+            it('should call toJS on keys that implement it', function(){
+                const serializableType = builders.UserType;
+                const Map = Mutable.Map.of(serializableType, Mutable.Function);
+
+                const funcItem = () => {};
+                const serializableItem = new serializableType();
+                serializableItem.toJS = () => 'called';
+                const input = [[serializableItem, funcItem]];
+
+                const map = new Map(input);
+                const res = map.toJS();
+
+                expect(res[0][0]).to.eql('called');
+                expect(res[0][1]).to.equal(funcItem);
+            });
+
+            it('should call toJS on values that implement it', function(){
+                const serializableType = builders.UserType;
+                const Map = Mutable.Map.of(Mutable.Function, serializableType);
+
+                const funcItem = () => {};
+                const serializableItem = new serializableType();
+                serializableItem.toJS = () => 'called';
+                const input = [[funcItem, serializableItem]];
+
+                const map = new Map(input);
+                const res = map.toJS();
+
+                expect(res[0][0]).to.equal(funcItem);
+                expect(res[0][1]).to.eql('called');
+            });
+
         });
 
         describe('clear', () => {

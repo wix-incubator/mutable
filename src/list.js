@@ -147,6 +147,12 @@ class _List extends BaseType {
         });
     }
 
+    toJS(typed = false){
+        return this.__value__.map(item => {
+            return item && item.toJS ? item.toJS(typed) : item;
+        });
+    }
+
     __lodashProxyWrap__(key, fn, ctx) {
         if (!_.isUndefined(ctx)) {
             if (_.isFunction(fn)) {

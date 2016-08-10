@@ -410,6 +410,16 @@ class _Map extends BaseType {
         }
         return result;
     }
+    
+    toJS(typed = false) {
+        let result = [];
+        for (let [key, value] of this.entries()) {
+            key = (key && key.toJS) ? key.toJS(typed) : key;
+            value = (value && value.toJS) ? value.toJS(typed) : value;
+            result.push([key, value]);
+        }
+        return result;
+    }
 
     /**
      * get iterator over all map keys and values that are dirtyable

@@ -64,7 +64,6 @@ export function aVeryCompositeContainerList(optionalArr) {
 
 const exported = { UserType, AddressType, UserWithAddressType, aStringList, aNumberList, aNumberStringList, anEmptyList, aUserList, aUserWithAddressTypeList, aUserOrAddressList, aVeryCompositeContainerList, a2dUserWithAddressTypeList };
 
-
 export function asReadOnly() {
     return _.mapValues(exported, prop => {
         if (prop.id) { // mutable type

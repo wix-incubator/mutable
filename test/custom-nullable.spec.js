@@ -112,6 +112,17 @@ describe('Nullable custom type', function() {
         });
     });
 
+    describe('toJS', function() {
+        it('produces correct value for nullable field', function() {
+            var NullFieldWithNoSerialization = aDataTypeWithSpec({
+                func: Mutable.Function.nullable().withDefault(null)
+            }, 'NullFieldWithNoSerialization');
+            var data = new NullFieldWithNoSerialization({func:null});
+
+            expect(data.toJSON()).to.deep.equal({ func: null });
+        });
+    });
+
     describe('mutable instance', function() {
 
         describe('instantiation', function() {
