@@ -226,4 +226,5 @@ describe("reference type", function() {
             expect(() => new Type2({ref:{foo:5}})).to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR("Type2.ref", "Type1", "object"));
         });
     });
+    
 });

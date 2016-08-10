@@ -160,6 +160,25 @@ function testViewFunctionality(builders, isReadonly) {
             ]);
         });
     });
+    describe('toJS', function(){
+
+        it('should call toJS on items that implement it', function(){
+            const serializableType = builders.UserType;
+            const List = Mutable.List.of([serializableType, Mutable.Function]);
+
+            const funcItem = () => {};
+            const serializableItem = new serializableType();
+            serializableItem.toJS = () => 'called';
+            const input = [serializableItem, funcItem];
+
+            const list = new List(input);
+            const res = list.toJS();
+
+            expect(res[0]).to.eql('called');
+            expect(res[1]).to.equal(funcItem);
+        });
+
+    });
     describe('valueOf', function() {
         it('should return the primitive value of the specified object', function() {
             var wrapped = ['a', 'b'];

@@ -17,4 +17,5 @@ describe('Function data', function() {
         });
         expect(typedFunction.defaults()()).to.equal(1, 'wrapped function should execute properly');
     });
+
 });

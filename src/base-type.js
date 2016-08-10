@@ -268,6 +268,17 @@ export default class BaseType extends PrimitiveBase {
         }
         return result;
     }
+    toJS(typed = false) {
+        const result = Object.keys(this.constructor._spec).reduce((json, key) => {
+            const fieldValue = this.__value__[key];
+            json[key] = fieldValue && fieldValue.toJS ? fieldValue.toJS() : fieldValue;
+            return json;
+        }, {});
+        if (typed){
+            result._type = this.constructor.id;
+        }
+        return result;
+    }
     getRuntimeId() {
         if (this.__id__ !== undefined) {
             return this.__id__;
