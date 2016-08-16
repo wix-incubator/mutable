@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "lodash": "4.14.1",
-    "escalate": "0.0.92"
+    "escalate": "0.0.93"
   },
   "babel": {
     "presets": [
