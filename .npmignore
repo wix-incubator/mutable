@@ -12,3 +12,4 @@ build/Release
 *.stTheme.cache
 *.sublime-workspace
 sftp-config.json
+*.bundle.js
