@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -32,7 +32,7 @@
     "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
   "devDependencies": {
-    "npminject": "1.0.11",
+    "npminject": "1.0.12",
     "babel-cli": "6.11.4",
     "babel-core": "6.13.2",
     "babel-loader": "6.2.5",
@@ -49,7 +49,7 @@
     "rimraf": "2.5.4",
     "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
     "sinon-chai": "2.8.0",
-    "webpack": "1.13.1",
+    "webpack": "1.13.2",
     "webpack-dev-server": "1.14.1"
   },
   "engines": {
