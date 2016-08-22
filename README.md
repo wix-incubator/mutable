@@ -97,6 +97,7 @@ We use a custom license, see ```LICENSE.md```
 These are examples of the kinds of libraries we would like to model ourselves after.
  - [NestedTypes](https://github.com/Volicon/NestedTypes) : High-performance model framework, which can be used as drop-in backbonejs replacement.
  - [mobx](https://github.com/mobxjs/mobx) : Simple, scalable state management
+ - [alt](http://alt.js.org/) : A library that facilitates the managing of state within your JavaScript applications. It is modeled after flux.
  - [immutable.js](https://github.com/facebook/immutable-js/) : Immutable persistent data collections for Javascript which increase efficiency and simplicity
  - [cls.js](https://github.com/camel-chased/cls.js) : Easy, dynamic (kind of mixin) javascript classes
  - [observable-value](https://github.com/medikoo/observable-value): Object representation of mutable value
