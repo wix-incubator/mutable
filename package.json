@@ -59,6 +59,23 @@
     "lodash": "4.15.0",
     "escalate": "0.0.93"
   },
+  "keywords": [
+    "flux",
+    "mutable",
+    "state",
+    "data",
+    "dirty",
+    "observable",
+    "react-component",
+    "react",
+    "reactjs",
+    "reactive",
+    "model",
+    "frp",
+    "functional-reactive-programming",
+    "state management",
+    "data flow"
+  ],
   "babel": {
     "presets": [
       [
