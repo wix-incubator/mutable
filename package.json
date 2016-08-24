@@ -32,7 +32,7 @@
     "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
   "devDependencies": {
-    "npminject": "1.0.19",
+    "npminject": "1.0.20",
     "babel-cli": "6.11.4",
     "babel-core": "6.13.2",
     "babel-loader": "6.2.5",
@@ -50,7 +50,7 @@
     "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
     "sinon-chai": "2.8.0",
     "webpack": "1.13.2",
-    "webpack-dev-server": "1.14.1"
+    "webpack-dev-server": "1.15.0"
   },
   "engines": {
     "node": ">=0.12"
