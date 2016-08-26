@@ -56,8 +56,9 @@
     "node": ">=0.12"
   },
   "dependencies": {
+    "escalate": "0.0.93",
     "lodash": "4.15.0",
-    "escalate": "0.0.93"
+    "mobx": "2.4.4"
   },
   "keywords": [
     "flux",

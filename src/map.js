@@ -9,6 +9,7 @@ import String from './string';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
+import {observable} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.Map');
 
@@ -246,6 +247,7 @@ class _Map extends BaseType {
 
             if (changed) {
                 this.__value__ = newValue;
+                observable(this.__value__);
                 this.$setDirty();
             }
         }
@@ -310,6 +312,7 @@ class _Map extends BaseType {
             }
             if (changed) {
                 this.__value__ = result;
+                observable(this.__value__);
                 this.$setDirty();
             }
         }
@@ -410,7 +413,7 @@ class _Map extends BaseType {
         }
         return result;
     }
-    
+
     toJS(typed = false) {
         let result = [];
         for (let [key, value] of this.entries()) {

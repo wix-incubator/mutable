@@ -7,6 +7,7 @@ import PrimitiveBase from './primitive-base';
 import {getFieldDef, getReadableValueTypeName} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
+import {observable} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.BaseType');
 
@@ -124,7 +125,6 @@ export default class BaseType extends PrimitiveBase {
         }
     }
 
-
     static wrapValue(value, spec, options, errorContext) {
         if (value === null){
             return null;
@@ -139,7 +139,7 @@ export default class BaseType extends PrimitiveBase {
             }
             let fieldErrorContext = _.defaults({path: errorContext.path + '.' + key }, errorContext);
             var newField = validateAndWrap(fieldVal, fieldSpec, undefined, fieldErrorContext);
-            root[key] = newField;
+            root[key] = fieldSpec._mobxModifier(newField);
         });
         return root;
     }
@@ -159,6 +159,7 @@ export default class BaseType extends PrimitiveBase {
             options,
             errorContext
         );
+        observable(this.__value__);
         if (config.freezeInstance) {
             Object.freeze(this);
         }

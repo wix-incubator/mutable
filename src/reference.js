@@ -37,6 +37,10 @@ class _Reference extends BaseType {
         return isValid ? refVal : {};
     }
 
+    static _mobxModifier(v) {
+        return asReference(v);
+    }
+
     static cloneValue(value) { return value; }
 }
 
