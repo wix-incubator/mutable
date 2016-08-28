@@ -7,7 +7,7 @@ import PrimitiveBase from './primitive-base';
 import {getFieldDef, getReadableValueTypeName} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
-import {observable} from 'mobx';
+import {observable, asFlat} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.BaseType');
 
@@ -159,6 +159,7 @@ export default class BaseType extends PrimitiveBase {
             options,
             errorContext
         );
+        observable(asFlat(this.__value__));
         observable(this.__value__);
         if (config.freezeInstance) {
             Object.freeze(this);
