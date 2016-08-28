@@ -32,11 +32,11 @@
     "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
   "devDependencies": {
-    "babel-cli": "6.11.4",
-    "babel-core": "6.13.2",
+    "babel-cli": "6.14.0",
+    "babel-core": "6.14.0",
     "babel-loader": "6.2.5",
     "babel-plugin-transform-class-properties": "6.11.5",
-    "babel-preset-es2015": "6.13.2",
+    "babel-preset-es2015": "6.14.0",
     "chai": "3.5.0",
     "karma": "1.2.0",
     "karma-chrome-launcher": "2.0.0",
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "lodash": "4.15.0",
-    "escalate": "0.0.95"
+    "escalate": "0.0.96"
   },
   "keywords": [
     "flux",
