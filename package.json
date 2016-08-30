@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -40,7 +40,7 @@
     "chai": "3.5.0",
     "karma": "1.2.0",
     "karma-chrome-launcher": "2.0.0",
-    "karma-env-reporter": "1.0.5",
+    "karma-env-reporter": "1.0.6",
     "karma-mocha": "1.1.1",
     "mocha": "2.5.3",
     "mocha-env-reporter": "1.0.2",
