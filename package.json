@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -40,7 +40,7 @@
     "chai": "3.5.0",
     "karma": "1.2.0",
     "karma-chrome-launcher": "2.0.0",
-    "karma-env-reporter": "1.0.4",
+    "karma-env-reporter": "1.0.5",
     "karma-mocha": "1.1.1",
     "mocha": "2.5.3",
     "mocha-env-reporter": "1.0.2",
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "lodash": "4.15.0",
-    "escalate": "0.0.97"
+    "escalate": "0.0.98"
   },
   "keywords": [
     "flux",
