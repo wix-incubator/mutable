@@ -160,7 +160,6 @@ export default class BaseType extends PrimitiveBase {
             errorContext
         );
         observable(asFlat(this.__value__));
-        observable(this.__value__);
         if (config.freezeInstance) {
             Object.freeze(this);
         }
