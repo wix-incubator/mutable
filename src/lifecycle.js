@@ -78,10 +78,11 @@ export function makeDirtyable(Type) {
     // called when a change has been made to this object directly or after changes are paused
     Type.prototype.$setDirty = function $setDirty() {
         if (this.$isDirtyable()) {
-            this.__lastChange__ = revision.read();
-            if (this.__lifecycleManager__) {
-                this.__lifecycleManager__.$setDirty();
-            }
+            // comment this out
+            //this.__lastChange__ = revision.read();
+            //if (this.__lifecycleManager__) {
+            //    this.__lifecycleManager__.$setDirty();
+            //}
             return true;
         }
         return false;

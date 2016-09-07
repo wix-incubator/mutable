@@ -14,6 +14,7 @@ import {default as PropsBase} from './props-base';
 import {LifeCycleManager, revision} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
 import {either} from './generic-types';
+import {transactionStart, transactionEnd, isInTransaction} from './mobx-spoon';
 
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
@@ -40,6 +41,9 @@ if (globalCtx.__Mutable){
         revision,
         defineEnum,
         EnumBase,
-        either
+        either,
+        transactionStart,
+        transactionEnd,
+        isInTransaction
     };
 }
