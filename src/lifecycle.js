@@ -79,10 +79,10 @@ export function makeDirtyable(Type) {
     Type.prototype.$setDirty = function $setDirty() {
         if (this.$isDirtyable()) {
             // comment this out
-            //this.__lastChange__ = revision.read();
-            //if (this.__lifecycleManager__) {
-            //    this.__lifecycleManager__.$setDirty();
-            //}
+            this.__lastChange__ = revision.read();
+            if (this.__lifecycleManager__) {
+                this.__lifecycleManager__.$setDirty();
+            }
             return true;
         }
         return false;
