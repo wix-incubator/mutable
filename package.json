@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.66",
+  "version": "1.0.67",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -49,14 +49,14 @@
     "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
     "sinon-chai": "2.8.0",
     "webpack": "1.13.2",
-    "webpack-dev-server": "1.15.1"
+    "webpack-dev-server": "1.15.2"
   },
   "engines": {
     "node": ">=0.12"
   },
   "dependencies": {
     "lodash": "4.15.0",
-    "escalate": "0.0.118"
+    "escalate": "0.0.119"
   },
   "keywords": [
     "flux",
