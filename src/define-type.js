@@ -55,7 +55,7 @@ function getDirtyableElementsIterator(spec, superIterator) {
     return function typeDirtyableElementsIterator(yielder) {
         for (let c of complex) {
             let k = this.__value__[c];
-            if (k && typeof k.$calcLastChange === 'function') { // if value is dirtyable
+            if (k && _.isFunction(k.$setManager)) { // if value is dirtyable
                 yielder(this, k);
             }
         }
@@ -101,9 +101,7 @@ function generateFieldsOn(obj, fieldsDefinition) {
             },
             set: function(newValue) {
                 if (this.$isDirtyable()) {
-                    if (this.$assignField(fieldName, newValue)) {
-                        this.$setDirty();
-                    }
+                    this.$assignField(fieldName, newValue);
                 } else {
                     MAILBOX.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
                 }

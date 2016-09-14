@@ -11,7 +11,7 @@ import {default as Reference} from './reference';
 import {default as validation} from './validation';
 import {default as Map} from './map';
 import {default as PropsBase} from './props-base';
-import {LifeCycleManager, revision} from './lifecycle';
+import {LifeCycleManager} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
 import {either} from './generic-types';
 import {transactionStart, transactionEnd, isInTransaction} from './mobx-spoon';
@@ -38,7 +38,6 @@ if (globalCtx.__Mutable){
         Map,
         PropsBase,
         LifeCycleManager,
-        revision,
         defineEnum,
         EnumBase,
         either,

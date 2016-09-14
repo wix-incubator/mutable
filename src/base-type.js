@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import config from './config';
 import {makeDirtyable, optionalSetManager} from './lifecycle';
 import PrimitiveBase from './primitive-base';
-import {getFieldDef, getReadableValueTypeName} from './utils';
+import {getFieldDef, getReadableValueTypeName, clone} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
 import {observable, asFlat} from 'mobx';
@@ -51,7 +51,7 @@ export default class BaseType extends PrimitiveBase {
     }
 
     static getFieldsSpec(){
-        return _.clone(this._spec);
+        return clone(this._spec);
     }
 
     static cloneValue(value) {
@@ -62,7 +62,6 @@ export default class BaseType extends PrimitiveBase {
             return cloneObj;
         }, {});
     }
-
 
     static reportFieldDefinitionError(fieldDef) {
         if (!fieldDef || !(fieldDef.prototype instanceof PrimitiveBase)) {
@@ -184,7 +183,6 @@ export default class BaseType extends PrimitiveBase {
                     }
                 }
             });
-            changed && this.$setDirty();
             return changed;
         }
     }
@@ -214,9 +212,6 @@ export default class BaseType extends PrimitiveBase {
 
                 }
             });
-            if (changed) {
-                this.$setDirty(true);
-            }
             return changed;
         }
     }

@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
-import {getValueTypeName} from './utils';
+import {getValueTypeName, clone} from './utils';
 import BaseType from './base-type';
 import Number from './number';
 import * as generics from './generic-types';
@@ -213,7 +213,7 @@ class _List extends BaseType {
     // Mutator methods
 
     pop() {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             if (this.__value__.length === 0) {
                 return undefined;
             }
@@ -224,7 +224,7 @@ class _List extends BaseType {
     }
 
     push(...newItems) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             return Array.prototype.push.apply(
                 this.__value__,
                 newItems.map((item, idx) => {
@@ -239,7 +239,7 @@ class _List extends BaseType {
     }
 
     reverse() {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             this.__value__.reverse();
             return this;
         } else {
@@ -248,7 +248,7 @@ class _List extends BaseType {
     }
 
     shift() {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             return this.__value__.shift();
         } else {
             return null;
@@ -256,7 +256,7 @@ class _List extends BaseType {
     }
 
     sort(cb) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             return this.__wrapArr__(this.__value__.sort(cb));
         } else {
             return null;
@@ -264,7 +264,7 @@ class _List extends BaseType {
     }
 
     splice(index, removeCount, ...addedItems) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             var spliceParams = [index, removeCount];
             addedItems.forEach(function(newItem, idx) {
                 let errorContext = this.constructor.createErrorContext('List splice error', 'error', this.__options__);
@@ -279,7 +279,7 @@ class _List extends BaseType {
     }
 
     unshift(...newItems) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             return Array.prototype.unshift.apply(
                 this.__value__,
                 newItems.map((item, idx) => {
@@ -294,7 +294,7 @@ class _List extends BaseType {
     }
 
     set(index, element) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
 
             let errorContext = this.constructor.createErrorContext('List set error', 'error', this.__options__);
             return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__, errorContext);
@@ -391,7 +391,7 @@ class _List extends BaseType {
             }
 
             _.forEach(newValue, (itemValue, idx) => {
-                let errorContext = errorContext ? _.clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
+                let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
                 errorContext.path += `[${idx}]`;
                 var newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                 changed = changed || newItemVal != this.__value__[idx];
@@ -399,9 +399,6 @@ class _List extends BaseType {
                 this.__value__[idx] = newItemVal;
 
             });
-            if (changed) {
-                this.$setDirty();
-            }
             this.__value__.length = newValue.length;
         }
         return changed;
@@ -416,7 +413,7 @@ class _List extends BaseType {
         if (_.isArray(newValue)) {
             changed = this.length !== newValue.length;
             let assignIndex = 0;
-            let errorContext = errorContext ? _.clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
+            let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
             _.forEach(newValue, (itemValue, newValIndex) => {
                 const currentItem = this.__value__[assignIndex];
                 const isPassedArrayLength = this.length <= assignIndex;
@@ -437,9 +434,6 @@ class _List extends BaseType {
                 }
                 assignIndex++;
             });
-            if (changed) {
-                this.$setDirty(true);
-            }
             this.__value__.length = newValue.length;
         }
         return changed;
@@ -451,7 +445,7 @@ class _List extends BaseType {
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
         for (let element of this.__value__) {
-            if (element && _.isFunction(element.$calcLastChange)) {
+            if (element && _.isFunction(element.$setManager)) {
                 yielder(this, element);
             }
         }

@@ -248,7 +248,6 @@ class _Map extends BaseType {
             if (changed) {
                 this.__value__ = newValue;
                 observable(this.__value__);
-                this.$setDirty();
             }
         }
         return changed;
@@ -313,7 +312,6 @@ class _Map extends BaseType {
             if (changed) {
                 this.__value__ = result;
                 observable(this.__value__);
-                this.$setDirty();
             }
         }
         return changed;
@@ -339,13 +337,13 @@ class _Map extends BaseType {
 
 
     clear() {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             this.__value__.clear();
         }
     }
 
     delete(key) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             let errorContext = this.constructor.createErrorContext('Map delete error', 'error', this.__options__);
             key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
             return !!this.__value__.delete(key);
@@ -354,7 +352,7 @@ class _Map extends BaseType {
     }
 
     set(key, value) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             let errorContext = this.constructor.createErrorContext('Map set error', 'error', this.__options__);
             key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
             value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__, errorContext);
@@ -430,12 +428,12 @@ class _Map extends BaseType {
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
         for (let key of this.keys()) {
-            if (key && _.isFunction(key.$calcLastChange)) {
+            if (key && _.isFunction(key.$setManager)) {
                 yielder(this, key);
             }
         }
         for (let value of this.values()) {
-            if (value && _.isFunction(value.$calcLastChange)) {
+            if (value && _.isFunction(value.$setManager)) {
                 yielder(this, value);
             }
         }
