@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.73",
+  "version": "1.0.74",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -55,8 +55,8 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "lodash": "4.15.0",
-    "escalate": "0.0.123"
+    "lodash": "4.16.1",
+    "escalate": "0.0.124"
   },
   "keywords": [
     "flux",
