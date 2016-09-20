@@ -89,7 +89,7 @@ describe("defining", () => {
                 expect(() => typeFactory().create([[5, null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'null'));
             });
             it('should report error when unallowed primitive key is added', function() {
-                expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'number'));
+                expect(() => typeFactory().create([[true, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'boolean'));
             });
             it('should report error when unallowed primitive value is added', function() {
                 expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'string'));
@@ -123,7 +123,7 @@ describe("defining", () => {
                 expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'string'));
             });
             it('should report error when unallowed primitive value is added', function() {
-                expect(() => typeFactory().create([[new UserType(), 5]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'number'));
+                expect(() => typeFactory().create([[new UserType(), true]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'boolean'));
             });
             it('should report error unallowed object value is added', function() {
                 expect(() => typeFactory().create([[new UserType(), new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'User'));
