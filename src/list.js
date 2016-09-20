@@ -8,6 +8,7 @@ import {getValueTypeName, clone} from './utils';
 import BaseType from './base-type';
 import Number from './number';
 import * as generics from './generic-types';
+import {untracked} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.List');
 
@@ -214,9 +215,6 @@ class _List extends BaseType {
 
     pop() {
         if (this.$isDirtyable()) {
-            if (this.__value__.length === 0) {
-                return undefined;
-            }
             return this.__value__.pop();
         } else {
             return null;
@@ -229,7 +227,7 @@ class _List extends BaseType {
                 this.__value__,
                 newItems.map((item, idx) => {
                     let errorContext = this.constructor.createErrorContext('List push error', 'error', this.__options__);
-                    errorContext.path += `[${this.__value__.length + idx}]`;
+                    untracked(() => {errorContext.path += `[${this.__value__.length + idx}]`;});
                     return this.constructor._wrapSingleItem(item, this.__options__, this.__lifecycleManager__, errorContext);
                 })
             );
@@ -295,7 +293,6 @@ class _List extends BaseType {
 
     set(index, element) {
         if (this.$isDirtyable()) {
-
             let errorContext = this.constructor.createErrorContext('List set error', 'error', this.__options__);
             return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__, errorContext);
         } else {
@@ -378,65 +375,65 @@ class _List extends BaseType {
     }
 
     setValue(newValue, errorContext) {
-        var changed = false;
-        if (newValue instanceof _List) {
-            newValue = newValue.__getValueArr__();
-        }
-        if (_.isArray(newValue)) {
-            var lengthDiff = this.__value__.length - newValue.length;
-            if (lengthDiff > 0) {
-                // current array is longer than newValue, fill the excess cells with undefined
-                changed = true;
-                this.__value__.splice(newValue.length, lengthDiff);
+            var changed = false;
+            if (newValue instanceof _List) {
+                newValue = newValue.__getValueArr__();
             }
+            if (_.isArray(newValue)) {
+                var lengthDiff = this.__value__.length - newValue.length;
+                if (lengthDiff > 0) {
+                    // current array is longer than newValue, fill the excess cells with undefined
+                    changed = true;
+                    this.__value__.splice(newValue.length, lengthDiff);
+                }
 
-            _.forEach(newValue, (itemValue, idx) => {
-                let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
-                errorContext.path += `[${idx}]`;
-                var newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                changed = changed || newItemVal != this.__value__[idx];
+                _.forEach(newValue, (itemValue, idx) => {
+                    let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
+                    errorContext.path += `[${idx}]`;
+                    var newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                    changed = changed || newItemVal != this.__value__[idx];
 
-                this.__value__[idx] = newItemVal;
+                    this.__value__[idx] = newItemVal;
 
-            });
-            this.__value__.length = newValue.length;
-        }
-        return changed;
+                });
+                this.__value__.length = newValue.length;
+            }
+            return changed;
     }
 
     setValueDeep(newValue, errorContext = null) {
-        var changed = false;
-        if (newValue instanceof _List) {
-            newValue = newValue.__getValueArr__();
-        }
+            var changed = false;
+            if (newValue instanceof _List) {
+                newValue = newValue.__getValueArr__();
+            }
 
-        if (_.isArray(newValue)) {
-            changed = this.length !== newValue.length;
-            let assignIndex = 0;
-            let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
-            _.forEach(newValue, (itemValue, newValIndex) => {
-                const currentItem = this.__value__[assignIndex];
-                const isPassedArrayLength = this.length <= assignIndex;
-                if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
-                    MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
-                } else if (isPassedArrayLength) {
-                    this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
-                    if (currentItem.constructor.allowPlainVal(itemValue)) {
-                        changed = currentItem.setValueDeep(itemValue) || changed;
+            if (_.isArray(newValue)) {
+                changed = this.length !== newValue.length;
+                let assignIndex = 0;
+                let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
+                _.forEach(newValue, (itemValue, newValIndex) => {
+                    const currentItem = this.__value__[assignIndex];
+                    const isPassedArrayLength = this.length <= assignIndex;
+                    if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
+                        MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
+                    } else if (isPassedArrayLength) {
+                        this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                    } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
+                        if (currentItem.constructor.allowPlainVal(itemValue)) {
+                            changed = currentItem.setValueDeep(itemValue) || changed;
+                        } else {
+                            changed = true;
+                            this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                        }
                     } else {
-                        changed = true;
+                        changed = changed || itemValue !== currentItem;
                         this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                     }
-                } else {
-                    changed = changed || itemValue !== currentItem;
-                    this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                }
-                assignIndex++;
-            });
-            this.__value__.length = newValue.length;
-        }
-        return changed;
+                    assignIndex++;
+                });
+                this.__value__.length = newValue.length;
+            }
+            return changed;
     }
 
     /**
@@ -450,12 +447,16 @@ class _List extends BaseType {
             }
         }
     }
+    get length(){
+        return this.__value__.length;
+    }
+    set length(newLength){
+        this.__value__.length = newLength;
+    }
 }
 
 export default defineType('List', {
     spec: function() {
-        return {
-            length: Number.withDefault(0)
-        };
+        return {};
     }
 }, null, _List);

@@ -5,6 +5,7 @@ import BaseType from './base-type';
 import PrimitiveBase from './primitive-base';
 import {isAssignableFrom, validateNullValue, misMatchMessage} from './validation';
 import {generateClassId} from './utils';
+import {untracked} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.define');
 
@@ -103,7 +104,9 @@ function generateFieldsOn(obj, fieldsDefinition) {
                 if (this.$isDirtyable()) {
                     this.$assignField(fieldName, newValue);
                 } else {
-                    MAILBOX.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
+                    untracked(() => {
+                        MAILBOX.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
+                    });
                 }
             },
             enumerable: true,

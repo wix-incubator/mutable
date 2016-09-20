@@ -10,6 +10,7 @@ import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {observable} from 'mobx';
+import {untracked} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.Map');
 
@@ -232,25 +233,25 @@ class _Map extends BaseType {
 
     // shallow merge native javascript data into the map
     setValue(newValue, errorContext = null) {
-        let changed = false;
-        if (this.$isDirtyable()) {
-            errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
-            newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
-            newValue.forEach((val, key) => {
-                changed = changed || (this.__value__.get(key) !== val);
-            });
-            if (!changed) {
-                this.__value__.forEach((val, key) => {
-                    changed = changed || (newValue.get(key) !== val);
+            let changed = false;
+            if (this.$isDirtyable()) {
+                errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
+                newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
+                newValue.forEach((val, key) => {
+                    changed = changed || (this.__value__.get(key) !== val);
                 });
-            }
+                if (!changed) {
+                    this.__value__.forEach((val, key) => {
+                        changed = changed || (newValue.get(key) !== val);
+                    });
+                }
 
-            if (changed) {
-                this.__value__ = newValue;
-                observable(this.__value__);
+                if (changed) {
+                    this.__value__ = newValue;
+                    observable(this.__value__);
+                }
             }
-        }
-        return changed;
+            return changed;
     }
 
     __setValueDeepHandler__(result, key, val, errorContext) {
@@ -275,46 +276,46 @@ class _Map extends BaseType {
 
     // deep merge native javascript data into the map
     setValueDeep(newValue, errorContext = null) {
-        let result, changed = false;
-        if (this.$isDirtyable()) {
-            errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
-            // TODO this code has the same structure as wrapValue, combine both together
-            if (BaseType.validateType(newValue)) {
-                if (newValue.__value__ instanceof Map) {
+            let result, changed = false;
+            if (this.$isDirtyable()) {
+                errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
+                // TODO this code has the same structure as wrapValue, combine both together
+                if (BaseType.validateType(newValue)) {
+                    if (newValue.__value__ instanceof Map) {
+                        result = new Map();
+                        newValue.__value__.forEach((val, key) => {
+                            changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
+                        });
+                    } else {
+                        MAILBOX.error('Strange mutable Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
+                    }
+                } else if (isIterable(newValue)) {
                     result = new Map();
-                    newValue.__value__.forEach((val, key) => {
+                    for (let [key, val] of newValue) {
                         changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
+                    }
+                } else if (newValue instanceof Object && isTypeCompatibleWithPlainJsonObject(this.__options__)) {
+                    result = new Map();
+                    Object.keys(newValue).map((key) => {
+                        changed = this.__setValueDeepHandler__(result, key, newValue[key], errorContext) || changed;
                     });
                 } else {
-                    MAILBOX.error('Strange mutable Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
+                    MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(newValue));
                 }
-            } else if (isIterable(newValue)) {
-                result = new Map();
-                for (let [key, val] of newValue) {
-                    changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
+                // newValue is now array of [key, val] arrays
+                if (!changed) {
+                    this.__value__.forEach((val, key) => {
+                        if (!changed && result.get(key) === undefined) {
+                            changed = true;
+                        }
+                    });
                 }
-            } else if (newValue instanceof Object && isTypeCompatibleWithPlainJsonObject(this.__options__)) {
-                result = new Map();
-                Object.keys(newValue).map((key) => {
-                    changed = this.__setValueDeepHandler__(result, key, newValue[key], errorContext) || changed;
-                });
-            } else {
-                MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(newValue));
+                if (changed) {
+                    this.__value__ = result;
+                    observable(this.__value__);
+                }
             }
-            // newValue is now array of [key, val] arrays
-            if (!changed) {
-                this.__value__.forEach((val, key) => {
-                    if (!changed && result.get(key) === undefined) {
-                        changed = true;
-                    }
-                });
-            }
-            if (changed) {
-                this.__value__ = result;
-                observable(this.__value__);
-            }
-        }
-        return changed;
+            return changed;
     }
     __exposeInner__(item) {
         if (this.__isReadOnly__) {
@@ -438,12 +439,13 @@ class _Map extends BaseType {
             }
         }
     }
+    get size(){
+        return this.__value__.size;
+    }
 }
 
 export default defineType('Map', {
     spec: function() {
-        return {
-            size: Number.withDefault(0)
-        };
+        return {};
     }
 }, null, _Map);

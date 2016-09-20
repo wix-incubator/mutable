@@ -13,9 +13,7 @@ function reportErrorInternal(value, allowPlain, allowInstance) {
 }
 
 export class PrimitiveBase {
-    static _mobxModifier(value){
-        return value;
-    }
+    static get _observable(){return true;}
     static _matchValue(value, errorContext){
         return new TypeMatch(value, errorContext).tryType(this);
     }

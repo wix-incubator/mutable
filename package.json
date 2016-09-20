@@ -57,7 +57,7 @@
   "dependencies": {
     "escalate": "0.0.111",
     "lodash": "4.15.0",
-    "mobx": "2.4.4"
+    "mobx": "2.5.1"
   },
   "keywords": [
     "flux",

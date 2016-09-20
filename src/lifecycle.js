@@ -1,5 +1,5 @@
 import {getMailBox} from 'escalate';
-
+import {untracked} from 'mobx';
 const MAILBOX = getMailBox('Mutable.lifecycle');
 
 export class LifeCycleManager {
@@ -17,21 +17,25 @@ export class LifeCycleManager {
     }
 }
 
+function $setManager(lifecycleManager) {
+    if (lifecycleManager) {
+        if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager) {
+            MAILBOX.error('Moving mutable private state instances between containers');
+        } else if (lifecycleManager instanceof LifeCycleManager) {
+            this.__lifecycleManager__ = lifecycleManager;
+            if (this.$dirtyableElementsIterator) {
+                this.$dirtyableElementsIterator(setContainerManagerToElement);
+            }
+        } else {
+            MAILBOX.error('Attempt to set wrong type of lifecycle manager');
+        }
+    }
+}
+
 export function makeDirtyable(Type) {
     // called when a new lifecycle manager is introduced to this object
-    Type.prototype.$setManager = function $setManager(lifecycleManager) {
-        if (lifecycleManager) {
-            if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager) {
-                MAILBOX.error('Moving mutable private state instances between containers');
-            } else if (lifecycleManager instanceof LifeCycleManager) {
-                this.__lifecycleManager__ = lifecycleManager;
-                if (this.$dirtyableElementsIterator) {
-                    this.$dirtyableElementsIterator(setContainerManagerToElement);
-                }
-            } else {
-                MAILBOX.error('Attempt to set wrong type of lifecycle manager');
-            }
-        }
+    Type.prototype.$setManager = function outerSetManager(lifecycleManager){
+        untracked($setManager.bind(this, lifecycleManager));
     };
 
     // used by setters to determine if changes are allowed to the dirty flag
@@ -42,7 +46,7 @@ export function makeDirtyable(Type) {
 
 export function optionalSetManager(itemValue, lifeCycle) {
     if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
-        itemValue.$setManager(lifeCycle);
+        $setManager.call(itemValue, lifeCycle); // avoid unnecessary calls to untracked
     }
 }
 
