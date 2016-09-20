@@ -170,8 +170,8 @@ describe("reference type", function() {
             var typeIns = new RefType(value);
 
             expect(function() {
-                typeIns.id = 2;
-            }).to.report({ level: /warn|error|fatal/, params: [`Set error: "ParentType.id" expected type string but got number`] });
+                typeIns.id = true;
+            }).to.report({ level: /warn|error|fatal/, params: [`Set error: "ParentType.id" expected type string but got boolean`] });
             expect(value.id).to.equal("001");
         });
         it('should no set the proxy value for non spec value with complex values', function() {
@@ -226,5 +226,5 @@ describe("reference type", function() {
             expect(() => new Type2({ref:{foo:5}})).to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR("Type2.ref", "Type1", "object"));
         });
     });
-    
+
 });

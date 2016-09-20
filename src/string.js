@@ -4,7 +4,7 @@ import {validateNullValue} from './validation';
 export default class _String extends PrimitiveBase {
     static defaults() { return ''; }
 
-    static validate(v) { return typeof v === 'string' || validateNullValue(this, v); }
+    static validate(v) { return typeof v === 'string' || typeof v === 'number' || validateNullValue(this, v); }
 
     static validateType(value) {
         return this.validate(value);
