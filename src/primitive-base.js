@@ -13,7 +13,6 @@ function reportErrorInternal(value, allowPlain, allowInstance) {
 }
 
 export class PrimitiveBase {
-    static get _observable(){return true;}
     static _matchValue(value, errorContext){
         return new TypeMatch(value, errorContext).tryType(this);
     }

@@ -8,7 +8,6 @@ import {validateNullValue} from './validation';
 const MAILBOX = getMailBox('Mutable.Reference');
 
 class _Reference extends BaseType {
-    static get _observable(){return false;}
 
 // allow any object as long as it adhers to the entire schema
     static allowPlainVal(value, errorDetails = null) {

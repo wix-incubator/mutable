@@ -8,16 +8,18 @@ import {getValueTypeName, clone} from './utils';
 import BaseType from './base-type';
 import Number from './number';
 import * as generics from './generic-types';
-import {untracked} from 'mobx';
+import {observable, asFlat, untracked} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.List');
-
+function isArray(val){
+    return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
+}
 class _List extends BaseType {
 
     static defaults() { return []; }
 
     static cloneValue(value) {
-        if (_.isArray(value) || _List.validateType(value)) {
+        if (isArray(value) || _List.validateType(value)) {
             if (!value){
                 return value;
             }
@@ -33,12 +35,12 @@ class _List extends BaseType {
         }
     }
 
-    static validate(value) { return validateNullValue(this, value) || _.isArray(value); }
+    static validate(value) { return validateNullValue(this, value) || isArray(value); }
 
     static allowPlainVal(value, errorDetails = null) {
         if (validateNullValue(this, value)) {
             return true;
-        } else if (!_.isArray(value)) {
+        } else if (!isArray(value)) {
             return false;
         }
         return !this.options || !this.options.subTypes ||
@@ -59,24 +61,24 @@ class _List extends BaseType {
     static wrapValue(value, spec, options, errorContext) {
         if (this.validateType(value)) {
             if (value.__value__.map) {
-                return value.__value__.map((itemValue) => {
+                return observable(asFlat(value.__value__.map((itemValue) => {
                     return this._wrapSingleItem(itemValue, options, null, errorContext);
-                }, this);
+                }, this)));
             } else {
                 MAILBOX.error('Unmet mutable type requirement.')
             }
-        } else if (!_.isArray(value)) {
+        } else if (!isArray(value)) {
             MAILBOX.error('Unmet array type requirement.');
+        } else {
+            return observable(asFlat(value.map((itemValue, itemIndex) => {
+
+                return this._wrapSingleItem(itemValue, options, null, {
+                    level: errorContext.level,
+                    entryPoint: errorContext.entryPoint,
+                    path: errorContext.path + '[' + itemIndex + ']'
+                });
+            }, this)));
         }
-
-        return value.map((itemValue, itemIndex) => {
-
-            return this._wrapSingleItem(itemValue, options, null, {
-                level: errorContext.level,
-                entryPoint: errorContext.entryPoint,
-                path: errorContext.path + '[' + itemIndex + ']'
-            });
-        }, this);
     }
 
     static _wrapSingleItem(value, options, lifeCycle, errorContext) {
@@ -302,8 +304,11 @@ class _List extends BaseType {
 
     // Accessor methods
     at(index) {
-        var item = this.__value__[index];
-        return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+    // optional check to avoid mobx warnings when index >= length
+    //    if (index >= 0 && untracked(() => this.__value__.length > index)) {
+            var item = this.__value__[index];
+            return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+    //    }
     }
 
     concat(...addedArrays) {
@@ -379,7 +384,7 @@ class _List extends BaseType {
             if (newValue instanceof _List) {
                 newValue = newValue.__getValueArr__();
             }
-            if (_.isArray(newValue)) {
+            if (isArray(newValue)) {
                 var lengthDiff = this.__value__.length - newValue.length;
                 if (lengthDiff > 0) {
                     // current array is longer than newValue, fill the excess cells with undefined
@@ -407,7 +412,7 @@ class _List extends BaseType {
                 newValue = newValue.__getValueArr__();
             }
 
-            if (_.isArray(newValue)) {
+            if (isArray(newValue)) {
                 changed = this.length !== newValue.length;
                 let assignIndex = 0;
                 let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
@@ -418,6 +423,8 @@ class _List extends BaseType {
                         MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
                     } else if (isPassedArrayLength) {
                         this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                    } else if(this.__options__.subTypes.validateType(itemValue)){
+                        this.__value__[assignIndex] = itemValue;
                     } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
                         if (currentItem.constructor.allowPlainVal(itemValue)) {
                             changed = currentItem.setValueDeep(itemValue) || changed;

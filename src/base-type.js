@@ -128,7 +128,7 @@ export default class BaseType extends PrimitiveBase {
         if (value === null){
             return null;
         }
-        var root = {};
+        var newValue = {};
 
         _.each(spec, (fieldSpec, key) => {
             var fieldVal = value[key];
@@ -138,9 +138,9 @@ export default class BaseType extends PrimitiveBase {
             }
             let fieldErrorContext = _.defaults({path: errorContext.path + '.' + key }, errorContext);
             var newField = validateAndWrap(fieldVal, fieldSpec, undefined, fieldErrorContext);
-            root[key] = newField;
+            newValue[key] = asReference(newField); // we use asReference because it's stronger than asFlat: it does not treat functions as computed values
         });
-        return root;
+        return observable(newValue);
     }
     constructor(value, options = null, errorContext = null) {
         super(value);
@@ -158,17 +158,10 @@ export default class BaseType extends PrimitiveBase {
             options,
             errorContext
         );
-        if (this.constructor._observable) {
-            _.each(this.constructor._spec, (fieldSpec, key) => {
-                this.__value__[key] = asReference(this.__value__[key]);
-            });
-            observable(asFlat(this.__value__));
-        }
         if (config.freezeInstance) {
             Object.freeze(this);
         }
     }
-
 
     // merge native javascript data into the object
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
