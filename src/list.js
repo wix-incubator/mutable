@@ -32,7 +32,7 @@ class _List extends BaseType {
         }
     }
 
-    static validate(value) { return validateNullValue(this, value) || (value && (_.isArray(value) || _.isArray(value.__value__))); }
+    static validate(value) { return validateNullValue(this, value) || _.isArray(value); }
 
     static allowPlainVal(value, errorDetails = null) {
         if (validateNullValue(this, value)) {
