@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.77",
+  "version": "1.0.78",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
