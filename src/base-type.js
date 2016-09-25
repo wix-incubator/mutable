@@ -167,21 +167,21 @@ export default class BaseType extends PrimitiveBase {
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
     setValue(newValue, errorContext = null) {
         if (this.$isDirtyable()) {
-                var changed = false;
-                errorContext = errorContext || this.constructor.createErrorContext('setValue error', 'error');
-                _.forEach(newValue, (fieldValue, fieldName) => {
-                    var fieldSpec = getFieldDef(this.constructor, fieldName);
-                    if (fieldSpec) {
-                        let fieldErrorContext = _.defaults({path: errorContext.path + '.' + fieldName }, errorContext);
-                        var newVal = fieldSpec._matchValue(fieldValue, fieldErrorContext).wrap();
-                        optionalSetManager(newVal, this.__lifecycleManager__);
-                        if (this.__value__[fieldName] !== newVal) {
-                            changed = true;
-                            this.__value__[fieldName] = newVal;
-                        }
+            var changed = false;
+            errorContext = errorContext || this.constructor.createErrorContext('setValue error', 'error');
+            _.forEach(newValue, (fieldValue, fieldName) => {
+                var fieldSpec = getFieldDef(this.constructor, fieldName);
+                if (fieldSpec) {
+                    let fieldErrorContext = _.defaults({path: errorContext.path + '.' + fieldName }, errorContext);
+                    var newVal = fieldSpec._matchValue(fieldValue, fieldErrorContext).wrap();
+                    optionalSetManager(newVal, this.__lifecycleManager__);
+                    if (this.__value__[fieldName] !== newVal) {
+                        changed = true;
+                        this.__value__[fieldName] = newVal;
                     }
-                });
-                return changed;
+                }
+            });
+            return changed;
         }
     }
 
@@ -189,26 +189,23 @@ export default class BaseType extends PrimitiveBase {
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
     setValueDeep(newValue, errorContext = null) {
         if (this.$isDirtyable()) {
-                var changed = false;
-                errorContext = errorContext || this.constructor.createErrorContext('setValueDeep error', 'error');
-                _.forEach(this.constructor._spec, (fieldSpec, fieldName) => {
-                    var fieldValue = (newValue[fieldName] !== undefined) ? newValue[fieldName] : fieldSpec.defaults();
-                    if (fieldSpec) {
-                        if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
-
-                            changed = this.$assignField(fieldName, fieldValue) || changed;
-                        }else if(this.__value__[fieldName] && this.__value__[fieldName].setValueDeep && !this.__value__[fieldName].$isReadOnly()){
-                            changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
-                        }else{
-                            changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
-                                    {
-                                        level: errorContext.level, entryPoint:
-                                    errorContext.entryPoint, path: errorContext.path + '.' + fieldName
-                                    })) || changed;
-                        }
-                    }
-                });
-                return changed;
+            var changed = false;
+            errorContext = errorContext || this.constructor.createErrorContext('setValueDeep error', 'error');
+            _.forEach(this.constructor._spec, (fieldSpec, fieldName) => {
+                var fieldValue = (newValue[fieldName] !== undefined) ? newValue[fieldName] : fieldSpec.defaults();
+                if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
+                    changed = this.$assignField(fieldName, fieldValue) || changed;
+                }else if(this.__value__[fieldName] && this.__value__[fieldName].setValueDeep && !this.__value__[fieldName].$isReadOnly()){
+                    changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
+                }else{
+                    changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
+                            {
+                                level: errorContext.level, entryPoint:
+                            errorContext.entryPoint, path: errorContext.path + '.' + fieldName
+                            })) || changed;
+                }
+            });
+            return changed;
         }
     }
 
