@@ -165,6 +165,14 @@ describe("defining", () => {
                     expect(map.get(newUser)).to.be.instanceOf(AddressType);
                     expect(map.get(newUser).address).to.equal('gaga');
                 });
+                it('should NOT validate the _type field on JSON value, ', function() {
+                    const StringToNumber = Mutable.Map.of(Mutable.String, Mutable.Number);
+                    let map;
+                    expect(function(){
+                         map = StringToNumber.create({_type:'Map', "key1":5});
+                    }).to.not.throw();
+                    expect(map.get('key1')).to.equal(5);
+                });
                 it('should detect primitives', function() {
                     var mixedMap = typeFactory().create([[newUser, 'gaga']]);
                     expect(mixedMap.get(newUser)).to.be.equal('gaga');
