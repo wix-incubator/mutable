@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.82",
+  "version": "1.0.83",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -43,7 +43,7 @@
     "karma-env-reporter": "1.0.8",
     "karma-mocha": "1.2.0",
     "mocha": "3.1.0",
-    "mocha-env-reporter": "1.1.0",
+    "mocha-env-reporter": "2.0.0",
     "mocha-loader": "1.0.0",
     "rimraf": "2.5.4",
     "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "lodash": "4.16.2",
-    "escalate": "0.0.130"
+    "escalate": "0.0.131"
   },
   "keywords": [
     "flux",
