@@ -36,24 +36,19 @@ function isIterable(value) {
     return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === 'function');
 }
 
-function isTypeCompatibleWithPlainJsonObject(options) {
-    return true;
-}
+class _Es5Map extends BaseType {
 
-class _Map extends BaseType {
-
-    static defaults() { return new Map(); }
+    static defaults() { return {}; }
 
     static cloneValue(value) {
-        if (_.isArray(value)  || _Map.validateType(value) ||
-            (_.isObject(value) && isTypeCompatibleWithPlainJsonObject(this.options))) {
+        if (_.isArray(value)  || _Es5Map.validateType(value) || _.isObject(value)) {
             if (!value){
                 return value;
             }
             if (!isIterable(value)){
                 value = entries(value);
             }
-            _Map._allowIterable(value, this.options);
+            _Es5Map._allowIterable(value, this.options);
             var result = [];
             for (let entry of value) {
                 result.push(entry);
@@ -84,18 +79,16 @@ class _Map extends BaseType {
         if (validateNullValue(this, value)) {
             return true;
         } else if (isIterable(value)) {
-            return _Map._allowIterable(value, this.options, errorDetails);
-        } else if (value instanceof Object && isTypeCompatibleWithPlainJsonObject(this.options)) {
-            return _Map._allowIterable(objEntries(value), this.options, errorDetails);
+            return _Es5Map._allowIterable(value, this.options, errorDetails);
+        } else if (value instanceof Object) {
+            return _Es5Map._allowIterable(objEntries(value), this.options, errorDetails);
         }
         return false;
     }
 
-    static _wrapEntryKey(key, options, lifeCycle, errorContext) {
+    static _validateEntryKey(key, errorContext) {
         if (typeof key !== 'string') {
             MAILBOX.post(errorContext.level, misMatchMessage(errorContext, '<string>', key, null, 'key'));
-        } else {
-            return key;
         }
     }
 
@@ -114,34 +107,34 @@ class _Map extends BaseType {
     }
 
     static _wrapIterable(iterable, options, lifeCycle, errorContext) {
-        var result = new Map();
+        var result = {};
         for (let [key, value] of iterable) {
-            key = this._wrapEntryKey(key, options, lifeCycle, errorContext);
+            this._validateEntryKey(key, errorContext);
             value = this._wrapEntryValue(value, options, lifeCycle, errorContext);
-            result.set(key, value);
+            result[key] = value;
         }
         return result;
     }
 
     static validate(value) {
         if (validateValue(this, value)) {
-            return value.__value__ instanceof Map;
+            return _.isObject(value.__value__);
         }
         return isIterable(value) || value instanceof Object;
     }
 
     static wrapValue(value, spec, options, errorContext) {
         if (super.validateType(value)) {
-            if (value.__value__ instanceof Map) {
+            if (_.isObject(value.__value__)) {
                 return this._wrapIterable(value.__value__, options, null, errorContext);
             } else {
-                MAILBOX.error('Strange mutable Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
+                MAILBOX.error('Strange mutable Es5Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
             }
         }
         if (isIterable(value)) {
             return this._wrapIterable(value, options, null, errorContext);
         }
-        if (value instanceof Object && isTypeCompatibleWithPlainJsonObject(options)) {
+        if (_.isObject(value)) {
             return this._wrapIterable(objEntries(value), options, null, errorContext);
         }
         MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
@@ -153,11 +146,11 @@ class _Map extends BaseType {
             return ops.definitionError;
         }
         if (!ops || !ops.subTypes) {
-            return { path: arrow + 'Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Map<SomeType>` }
+            return { path: arrow + 'Es5Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>` }
         } else {
             var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, BaseType.reportFieldDefinitionError, 'value');
             if (valueTypeError) {
-                return { path: `Map<${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes)}>`, message: valueTypeError.message };
+                return { path: `Es5Map<${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes)}>`, message: valueTypeError.message };
             }
         }
     }
@@ -166,14 +159,14 @@ class _Map extends BaseType {
         var definitionError;
         switch (arguments.length) {
             case 0:
-                definitionError = { path: arrow + 'Map', message: 'Missing types for map. Use Map<SomeType>' };
+                definitionError = { path: arrow + 'Es5Map', message: 'Missing types for map. Use Es5Map<SomeType>' };
                 break;
             case 1:
                 subTypes = generics.normalizeTypes(subTypes);
                 break;
             default:
                 subTypes = generics.normalizeTypes(subTypes);
-                definitionError = { path: `Map<${generics.toUnwrappedString(subTypes)},${arrow}unallowed>`, message: `Too many types for map (${arguments.length}). Use Map<SomeType>` };
+                definitionError = { path: `Es5Map<${generics.toUnwrappedString(subTypes)},${arrow}unallowed>`, message: `Too many types for map (${arguments.length}). Use Es5Map<SomeType>` };
         }
         return this.withDefault(undefined, undefined, { subTypes, definitionError: definitionError });
 
@@ -184,21 +177,21 @@ class _Map extends BaseType {
         return {
             entryPoint,
             level,
-            path: 'Map' + generics.toString(options.subTypes)
+            path: 'Es5Map' + generics.toString(options.subTypes)
         }
     }
 
     static preConstructor(){
         const report = this.reportDefinitionErrors();
         if (report) {
-            MAILBOX.error(`Map constructor: "${report.path}" ${report.message}`);
+            MAILBOX.error(`Es5Map constructor: "${report.path}" ${report.message}`);
         }
         super.preConstructor();
     }
 
     constructor(value = [], options = { subTypes: {} }, errorContext = null) {
         if (!errorContext) {
-            errorContext = _Map.createErrorContext('Map constructor error', 'error', options);
+            errorContext = _Es5Map.createErrorContext('Es5Map constructor error', 'error', options);
         }
         options.subTypes = generics.normalizeTypes(options.subTypes);
         super(value, options, errorContext);
@@ -210,13 +203,17 @@ class _Map extends BaseType {
         if (this.$isDirtyable()) {
             errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
             newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
-            newValue.forEach((val, key) => {
-                changed = changed || (this.__value__.get(key) !== val);
-            });
+            for (let key in newValue) {
+                if (newValue.hasOwnProperty(key)) {
+                    changed = changed || (this.__value__[key] !== newValue[key]);
+                }
+            }
             if (!changed) {
-                this.__value__.forEach((val, key) => {
-                    changed = changed || (newValue.get(key) !== val);
-                });
+                for (let key in this.__value__) {
+                    if (this.__value__.hasOwnProperty(key)) {
+                        changed = changed || (this.__value__[key] !== newValue[key]);
+                    }
+                }
             }
 
             if (changed) {
@@ -228,60 +225,61 @@ class _Map extends BaseType {
     }
 
     __setValueDeepHandler__(result, key, val, errorContext) {
-        let oldVal = this.__value__.get(key);
+        let oldVal = this.__value__[key];
         let changed = false;
-        if (oldVal === val) {
-            val = oldVal;
-        } else {
+        if (oldVal !== val) {
             if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
                 (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
                 changed = oldVal.setValueDeep(val);
                 val = oldVal;
             } else {
-                key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
                 val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
                 changed = true;
             }
         }
-        result.set(key, val);
+        result[key] = val;
         return changed;
     }
 
     // deep merge native javascript data into the map
     setValueDeep(newValue, errorContext = null) {
-        let result, changed = false;
+        const result = {};
+        let changed = false;
         if (this.$isDirtyable()) {
-            errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
+            errorContext = errorContext || this.constructor.createErrorContext('Es5Map setValue error', 'error', this.__options__);
             // TODO this code has the same structure as wrapValue, combine both together
             if (BaseType.validateType(newValue)) {
-                if (newValue.__value__ instanceof Map) {
-                    result = new Map();
-                    newValue.__value__.forEach((val, key) => {
-                        changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
-                    });
+                if (_.isObject(newValue.__value__)) {
+                    for (let key in newValue.__value__) {
+                        if (newValue.__value__.hasOwnProperty(key)) {
+                            changed = this.__setValueDeepHandler__(result, key, newValue.__value__[key], errorContext) || changed;
+                        }
+                    }
                 } else {
-                    MAILBOX.error('Strange mutable Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
+                    MAILBOX.error('Strange mutable Es5Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
                 }
             } else if (isIterable(newValue)) {
-                result = new Map();
                 for (let [key, val] of newValue) {
                     changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
                 }
-            } else if (newValue instanceof Object && isTypeCompatibleWithPlainJsonObject(this.__options__)) {
-                result = new Map();
-                Object.keys(newValue).map((key) => {
-                    changed = this.__setValueDeepHandler__(result, key, newValue[key], errorContext) || changed;
-                });
+            } else if (_.isObject(newValue)) {
+                for (let key in newValue) {
+                    if (newValue.hasOwnProperty(key)) {
+                        changed = this.__setValueDeepHandler__(result, key, newValue[key], errorContext) || changed;
+                    }
+                }
             } else {
-                MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(newValue));
+                MAILBOX.error('Unknown or incompatible Es5Map value : ' + JSON.stringify(newValue));
             }
             // newValue is now array of [key, val] arrays
             if (!changed) {
-                this.__value__.forEach((val, key) => {
-                    if (!changed && result.get(key) === undefined) {
-                        changed = true;
+                for (let key in this.__value__) {
+                    if (this.__value__.hasOwnProperty(key)) {
+                        if (!changed && result[key] === undefined) {
+                            changed = true;
+                        }
                     }
-                });
+                }
             }
             if (changed) {
                 this.__value__ = result;
@@ -299,79 +297,79 @@ class _Map extends BaseType {
 
     // Needed to support TypeScript's transpilation of "for x of y"
     __unpackIterator__(innerIterator) {
-        const resultArr = [];
-        let e = innerIterator.next();
-        while (!e.done){
-            resultArr.push(e.value);
-            e = innerIterator.next();
-        }
-        return this.__isReadOnly__ ? resultArr.map(safeAsReadOnlyOrArr) : resultArr;
+        return this.__isReadOnly__ ? innerIterator.map(safeAsReadOnlyOrArr) : innerIterator;
     }
-
-
 
     clear() {
         if (this.$setDirty()) {
-            this.__value__.clear();
+            this.__value__ = {};
         }
     }
 
     delete(key) {
-        if (this.$setDirty()) {
-            let errorContext = this.constructor.createErrorContext('Map delete error', 'error', this.__options__);
-            key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
-            return !!this.__value__.delete(key);
+        if (this.$setDirty()){
+            let errorContext = this.constructor.createErrorContext('Es5Map delete error', 'error', this.__options__);
+            this.constructor._validateEntryKey(key, errorContext);
+            if (this.__value__.hasOwnProperty(key)) {
+                delete this.__value__[key];
+                return true;
+            }
         }
         return false;
     }
 
     set(key, value) {
         if (this.$setDirty()) {
-            let errorContext = this.constructor.createErrorContext('Map set error', 'error', this.__options__);
-            key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
+            let errorContext = this.constructor.createErrorContext('Es5Map set error', 'error', this.__options__);
+            this.constructor._validateEntryKey(key, errorContext);
             value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__, errorContext);
-            this.__value__.set(key, value);
+            this.__value__[key] = value;
         }
         return this;
     }
 
     get(key) {
-        let errorContext = this.constructor.createErrorContext('Map get error', 'error', this.__options__);
-        key = this.constructor._wrapEntryKey(key, this.__options__, null, errorContext);
-        return this.__exposeInner__(this.__value__.get(key));
+        let errorContext = this.constructor.createErrorContext('Es5Map get error', 'error', this.__options__);
+        this.constructor._validateEntryKey(key, errorContext);
+        return this.__exposeInner__(this.__value__[key]);
     }
 
     has(key) {
-        let errorContext = this.constructor.createErrorContext('Map has error', 'error', this.__options__);
-        key = this.constructor._wrapEntryKey(key, this.__options__, null, errorContext);
-        return !!this.__value__.has(key);
+        let errorContext = this.constructor.createErrorContext('Es5Map has error', 'error', this.__options__);
+        this.constructor._validateEntryKey(key, errorContext);
+        return this.__value__.hasOwnProperty(key);
     }
 
     entries() {
-        return this.__unpackIterator__(this.__value__.entries());
+        return this.__unpackIterator__(objEntries(this.__value__));
     }
 
     keys() {
-        return this.__unpackIterator__(this.__value__.keys());
+        return this.__unpackIterator__(Object.keys(this.__value__));
     }
 
     values() {
-        return this.__unpackIterator__(this.__value__.values());
+        return this.__unpackIterator__(Object.keys(this.__value__).map((key) => this.__value__[key]));
     }
 
     forEach(callback, thisArg) {
         if (thisArg) {
             callback = callback.bind(thisArg);
         }
-        this.__value__.forEach((value, key) => {
-            callback(this.__exposeInner__(value), this.__exposeInner__(key), this);
+        Object.keys(this.__value__).forEach((key) => {
+            const value = this.__value__[key];
+            callback(this.__exposeInner__(value), key, this);
         }, thisArg);
     }
 
     toJSON(recursive = true, typed = false) {
         let result = {};
-        for (let [key, value] of this.entries()) {
-            result[key] = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
+
+        for (let key in this.__value__) {
+            if (this.__value__.hasOwnProperty(key)) {
+                const value = this.__value__[key];
+                result[key] = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
+            }
         }
         if (typed) {
             result._type = this.constructor.id;
@@ -381,8 +379,11 @@ class _Map extends BaseType {
 
     toJS(typed = false) {
         let result = {};
-        for (let [key, value] of this.entries()) {
-            result[key] = (value && value.toJS) ? value.toJS(typed) : value;
+        for (let key in this.__value__) {
+            if (this.__value__.hasOwnProperty(key)) {
+                const value = this.__value__[key];
+                result[key] = (value && value.toJS) ? value.toJS(typed) : value;
+            }
         }
         if (typed) {
             result._type = this.constructor.id;
@@ -395,23 +396,22 @@ class _Map extends BaseType {
      */
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
-        for (let key of this.keys()) {
-            if (key && _.isFunction(key.$calcLastChange)) {
-                yielder(this, key);
+        for (let key in this.__value__) {
+            if (this.__value__.hasOwnProperty(key)) {
+                const value = this.__value__[key];
+                if (value && _.isFunction(value.$calcLastChange)) {
+                    yielder(this, value);
+                }
             }
         }
-        for (let value of this.values()) {
-            if (value && _.isFunction(value.$calcLastChange)) {
-                yielder(this, value);
-            }
-        }
+    }
+    get size() {
+        return Object.keys(this.__value__).length;
     }
 }
 
 export default defineType('Es5Map', {
     spec: function() {
-        return {
-            size: Number.withDefault(0)
-        };
+        return {};
     }
-}, null, _Map);
+}, null, _Es5Map);

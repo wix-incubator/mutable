@@ -255,9 +255,7 @@ class _Map extends BaseType {
     __setValueDeepHandler__(result, key, val, errorContext) {
         let oldVal = this.__value__.get(key);
         let changed = false;
-        if (oldVal === val) {
-            val = oldVal;
-        } else {
+        if (oldVal !== val) {
             if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
                 (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
                 changed = oldVal.setValueDeep(val);

@@ -15,7 +15,9 @@ function mapEntries(map) {
     map.forEach((v, k) => entries.push([k, v]));
     return entries;
 }
-
+function objEntries(obj) {
+    return  Object.keys(obj).map((key) => [key, obj[key]]);
+}
 function arrFromIterable(iterable) {
     if (_.isArray(iterable)) {
         return iterable;
@@ -121,12 +123,12 @@ function testReadFunctionality(builders, isReadonly) {
 
             it('should call toJS on values that implement it', function(){
                 const serializableType = builders.UserType;
-                const Map = Mutable.Es5Map.of(serializableType);
+                const Es5Map = Mutable.Es5Map.of(serializableType);
 
                 const serializableItem = new serializableType();
                 serializableItem.toJS = () => 'called';
 
-                const map = new Map({'foo' : serializableItem});
+                const map = new Es5Map({'foo' : serializableItem});
                 const res = map.toJS();
                 expect(res.foo).to.eql('called');
             });
@@ -312,7 +314,7 @@ function testReadFunctionality(builders, isReadonly) {
                 var rev = revision.read();
 
                 usersMap.setValue(usersMapInitialState);
-                expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                 expect(usersMap.$isDirty(rev)).to.be.false;
             });
             describe('with a new state', () => {
@@ -325,7 +327,7 @@ function testReadFunctionality(builders, isReadonly) {
                 });
                 if (isReadonly) {
                     it('should not change', function() {
-                        expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                        expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                     });
                     it('should not set map as dirty', function() {
                         expect(usersMap.$isDirty(changeRevision)).to.be.false;
@@ -350,7 +352,7 @@ function testReadFunctionality(builders, isReadonly) {
                 var rev = revision.read();
 
                 usersMap.setValueDeep(usersMapInitialState);
-                expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                 expect(usersMap.$isDirty(rev)).to.be.false;
             });
             describe('with a new state', () => {
@@ -364,7 +366,7 @@ function testReadFunctionality(builders, isReadonly) {
                 });
                 if (isReadonly) {
                     it('should not change', function() {
-                        expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                        expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                     });
                     it('should not set map as dirty', function() {
                         expect(usersMap.$isDirty(changeRevision)).to.be.false;

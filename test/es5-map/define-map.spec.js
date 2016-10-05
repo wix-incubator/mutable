@@ -52,23 +52,20 @@ describe("defining", () => {
         });
         describe("with missing sub-types", () => {
             it('should report error when instantiating vanilla Map', () => {
-                var invalidMapType = Mutable.Map;
-                expect(() => new invalidMapType()).to.report(new Report('error', 'Mutable.Map', `Map constructor: "➠Map" Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>`));
+                var invalidMapType = Mutable.Es5Map;
+                expect(() => new invalidMapType()).to.report(new Report('error', 'Mutable.Es5Map', `Es5Map constructor: "➠Es5Map" Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>`));
             });
             it('should report error when defining Map with zero types', () => {
-            expect(() => { let map = Mutable.Map.of(); new map() }).to.report(new Report('error', 'Mutable.Map', `Map constructor: "➠Map" Missing types for map. Use Map<SomeType, SomeType>`));
-            });
-            it('should report error when defining Map with one type', () => {
-                expect(() => { let map = Mutable.Map.of(Mutable.Number); new map() }).to.report('Map constructor: "Map<number,➠value>" Wrong number of types for map. Instead of Map<number> Use Map<string, number>');
+            expect(() => { let map = Mutable.Es5Map.of(); new map() }).to.report(new Report('error', 'Mutable.Es5Map', `Es5Map constructor: "➠Es5Map" Missing types for map. Use Es5Map<SomeType>`));
             });
             it('should report error when defining Map with invalid subtype', () => {
-                expect(() => { let map = Mutable.Map.of(Mutable.String, Mutable.List); new map() }).to.report(new Report('error', 'Mutable.Map', 'Map constructor: "Map<string,➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+                expect(() => { let map = Mutable.Es5Map.of(Mutable.List); new map() }).to.report(new Report('error', 'Mutable.Es5Map', 'Es5Map constructor: "Es5Map<➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
             });
         });
 
         describe('with complex value sub-type', () => {
             function typeFactory() {
-                return Mutable.Map.of(Mutable.String, AddressType);
+                return Mutable.Es5Map.of(AddressType);
             }
 
             typeCompatibilityTest(typeFactory);
@@ -83,65 +80,34 @@ describe("defining", () => {
                 });
             });
             it('should report error when null key is added', function() {
-                expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'null'));
+                expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<string>', 'null', 'Es5Map'));
             });
             it('should report error when null key is added', function() {
-                expect(() => typeFactory().create([[5, null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'null'));
+                expect(() => typeFactory().create([[5, null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<Address>', 'null', 'Es5Map'));
             });
             it('should report error when unallowed primitive key is added', function() {
-                expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'number'));
+                expect(() => typeFactory().create([[5, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<string>', 'number', 'Es5Map'));
             });
             it('should report error when unallowed primitive value is added', function() {
-                expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'string'));
+                expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<Address>', 'string', 'Es5Map'));
             });
             it('should report error when unallowed object key is added', function() {
-                expect(() => typeFactory().create([[{}, new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'object'));
+                expect(() => typeFactory().create([[{}, new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<string>', 'object', 'Es5Map'));
             });
             it('should report error when when json value with unallowed _type is added', function() {
-                expect(() => typeFactory().create([['baga', { _type: 'User' }]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'object with _type User'));
+                expect(() => typeFactory().create([['baga', { _type: 'User' }]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<Address>', 'object with _type User', 'Es5Map'));
             });
             it('should report error when unallowed mutable key is added', function() {
-                expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<string>', 'User'));
+                expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<string>', 'User', 'Es5Map'));
             });
             it('should report error when unallowed mutable value is added', function() {
-                expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<string, Address>', '<Address>', 'User'));
+                expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<Address>', 'User', 'Es5Map'));
             });
         });
 
-        describe('with complex key sub-type', () => {
+        describe('with union value sub-type', () => {
             function typeFactory() {
-                return Mutable.Map.of(UserType, Mutable.String);
-            }
-            typeCompatibilityTest(typeFactory);
-            it('should report error when null key is added', function() {
-                expect(() => typeFactory().create([[null, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'null'));
-            });
-            it('should report error when null value is added', function() {
-                expect(() => typeFactory().create([[new UserType(), null]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'null'));
-            });
-            it('should report error when unallowed primitive key is added', function() {
-                expect(() => typeFactory().create([['baga', 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'string'));
-            });
-            it('should report error when unallowed primitive value is added', function() {
-                expect(() => typeFactory().create([[new UserType(), 5]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'number'));
-            });
-            it('should report error unallowed object value is added', function() {
-                expect(() => typeFactory().create([[new UserType(), new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'User'));
-            });
-            it('should report error when when json key with unallowed _type is added', function() {
-                expect(() => typeFactory().create([[{ _type: 'Address' }, 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'object with _type Address'));
-            });
-            it('should report error when unallowed mutable key is added', function() {
-                expect(() => typeFactory().create([[new AddressType(), 'gaga']])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<User>', 'Address'));
-            });
-            it('should report error when unallowed mutable value is added', function() {
-                expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Map<User, string>', '<string>', 'Address'));
-            });
-        });
-
-        describe('with complex key sub-type and union value sub-type', () => {
-            function typeFactory() {
-                return Mutable.Map.of(UserType, either(UserType, AddressType, Mutable.String));
+                return Mutable.Es5Map.of(either(UserType, AddressType, Mutable.String));
             }
             typeCompatibilityTest(typeFactory);
             describe("instantiation", function() {
@@ -152,29 +118,28 @@ describe("defining", () => {
                     newAddress = new AddressType();
                 });
                 it('should keep mutable objects passed to it that fit its subtypes', function() {
-                    var mixedMap = typeFactory().create([[newUser, newUser], [newUser2, newAddress]]);
-                    expect(mixedMap.get(newUser)).to.equal(newUser);
-                    expect(mixedMap.get(newUser2)).to.equal(newAddress);
+                    var mixedMap = typeFactory().create([['newUser', newUser], ['newUser2', newAddress]]);
+                    expect(mixedMap.get('newUser')).to.equal(newUser);
+                    expect(mixedMap.get('newUser2')).to.equal(newAddress);
                 });
                 it('should allow setting data with json and should default to first type, ', function() {
-                    var map = typeFactory().create([[newUser, { someKey: 'gaga' }]]);
-                    expect(map.get(newUser)).to.be.instanceOf(UserType);
+                    var map = typeFactory().create([['newUser', { someKey: 'gaga' }]]);
+                    expect(map.get('newUser')).to.be.instanceOf(UserType);
                 });
                 it('should use _type field to detect which subtype to use when setting data with json, ', function() {
-                    var map = typeFactory().create([[newUser, { _type: AddressType.id, address: 'gaga' }]]);
-                    expect(map.get(newUser)).to.be.instanceOf(AddressType);
-                    expect(map.get(newUser).address).to.equal('gaga');
+                    var map = typeFactory().create([['newUser', { _type: AddressType.id, address: 'gaga' }]]);
+                    expect(map.get('newUser')).to.be.instanceOf(AddressType);
+                    expect(map.get('newUser').address).to.equal('gaga');
                 });
                 it('should detect primitives', function() {
-                    var mixedMap = typeFactory().create([[newUser, 'gaga']]);
-                    expect(mixedMap.get(newUser)).to.be.equal('gaga');
+                    var mixedMap = typeFactory().create([['newUser', 'gaga']]);
+                    expect(mixedMap.get('newUser')).to.be.equal('gaga');
                 });
             });
         });
         describe('with value type that is a union of maps', () => {
             function typeFactory() {
-                return Mutable.Map.of(Mutable.String,
-                    either(Mutable.Map.of(Mutable.String, Mutable.String),
+                return Mutable.Es5Map.of(either(Mutable.Map.of(Mutable.String, Mutable.String),
                         Mutable.Map.of(Mutable.String, Mutable.Number)));
             }
             typeCompatibilityTest(typeFactory);

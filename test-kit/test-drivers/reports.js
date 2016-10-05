@@ -34,17 +34,17 @@ export function ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR(path, fieldType, passed
 export function ERROR_FIELD_MISMATCH_IN_LIST_METHOD(method, path, fieldType, passedType) {
     return { level: 'error', params: `List ${method} error: "${path}" expected type ${fieldType} but got ${passedType}` }
 }
-export function ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR(path, fieldType, passedType) {
-    return { level: 'error', params: `Map constructor error: "${path}" expected value of type ${fieldType} but got ${passedType}` }
+export function ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR(path, fieldType, passedType, mapType = "Map") {
+    return { level: 'error', params: `${mapType} constructor error: "${path}" expected value of type ${fieldType} but got ${passedType}` }
 }
-export function ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR(path, keyType, passedType) {
-    return ERROR_KEY_MISMATCH_IN_MAP_METHOD('constructor', path, keyType, passedType);
+export function ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR(path, keyType, passedType, mapType = "Map") {
+    return ERROR_KEY_MISMATCH_IN_MAP_METHOD('constructor', path, keyType, passedType, mapType);
 }
-export function ERROR_KEY_MISMATCH_IN_MAP_METHOD(method, path, keyType, passedType) {
-    return { level: 'error', params: `Map ${method} error: "${path}" expected key of type ${keyType} but got ${passedType}` }
+export function ERROR_KEY_MISMATCH_IN_MAP_METHOD(method, path, keyType, passedType, mapType = "Map") {
+    return { level: 'error', params: `${mapType} ${method} error: "${path}" expected key of type ${keyType} but got ${passedType}` }
 }
-export function ERROR_VALUE_MISMATCH_IN_MAP_METHOD(method, path, keyType, passedType) {
-    return { level: 'error', params: `Map ${method} error: "${path}" expected value of type ${keyType} but got ${passedType}` }
+export function ERROR_VALUE_MISMATCH_IN_MAP_METHOD(method, path, keyType, passedType, mapType = "Map") {
+    return { level: 'error', params: `${mapType} ${method} error: "${path}" expected value of type ${keyType} but got ${passedType}` }
 }
 export function ERROR_ATTEMPTING_TO_OVERRIDE_READONLY(readOnlyValue, id, fieldName, newValue){
     return {level:'warn', params:`Attempt to override a read only value ${JSON.stringify(readOnlyValue)} at ${id}.${fieldName} with ${JSON.stringify(newValue)}`}
