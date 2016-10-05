@@ -129,6 +129,9 @@ class _Map extends BaseType {
     static _wrapIterable(iterable, options, lifeCycle, errorContext) {
         var result = new Map();
         for (let [key, value] of iterable) {
+            if(key === '_type'){
+                continue;
+            }
             key = this._wrapEntryKey(key, options, lifeCycle, errorContext);
             value = this._wrapEntryValue(value, options, lifeCycle, errorContext);
             result.set(key, value);
