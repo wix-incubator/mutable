@@ -258,9 +258,7 @@ class _Map extends BaseType {
     __setValueDeepHandler__(result, key, val, errorContext) {
         let oldVal = this.__value__.get(key);
         let changed = false;
-        if (oldVal === val) {
-            val = oldVal;
-        } else {
+        if (oldVal !== val) {
             if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
                 (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
                 changed = oldVal.setValueDeep(val);
@@ -416,10 +414,17 @@ class _Map extends BaseType {
 
     toJS(typed = false) {
         let result = [];
+        let allStringKeys = isTypeCompatibleWithPlainJsonObject(this.__options__);
         for (let [key, value] of this.entries()) {
             key = (key && key.toJS) ? key.toJS(typed) : key;
             value = (value && value.toJS) ? value.toJS(typed) : value;
             result.push([key, value]);
+        }
+        if (allStringKeys){
+            result = _.fromPairs(result);
+            if (typed) {
+                result._type = this.constructor.id;
+            }
         }
         return result;
     }
