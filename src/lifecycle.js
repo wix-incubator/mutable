@@ -9,7 +9,7 @@ export class LifeCycleManager {
     constructor(){
         const managerInstance = this;
         // we need to filter calls to reportObserved of the state tree when this.__tracked__ is false.
-        // create an unbound wrappingReportObserved function that has this instance of LifeCycleManager in its clojure.
+        // create an unbound wrappingReportObserved function that has this instance of LifeCycleManager in its closure.
         this.$wrappingReportObserved = function wrappingReportObserved(){
             if (managerInstance.__tracked__){
                 this.$mutableOriginalReportObserved.apply(this, arguments);
