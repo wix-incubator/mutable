@@ -10,7 +10,7 @@ import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 
-const MAILBOX = getMailBox('Mutable.Map');
+const MAILBOX = getMailBox('Mutable.Es5Map');
 
 function entries(map){
     return (typeof map.entries === 'function')? map.entries() : objEntries(map);
@@ -37,7 +37,7 @@ function isIterable(value) {
 }
 
 function isTypeCompatibleWithPlainJsonObject(options) {
-    return !!(options && options.subTypes && generics.getMatchingType(options.subTypes.key, ''));
+    return true;
 }
 
 class _Map extends BaseType {
@@ -67,17 +67,10 @@ class _Map extends BaseType {
     static _allowIterable(iterable, options, errorDetails = null) {
         if (options && options.subTypes){
             for (let [key, value] of iterable) {
-                if (!generics.getMatchingType(options.subTypes.key, key)){
+                if(!generics.getMatchingType(options.subTypes, value)){
                     if (errorDetails){
                         errorDetails.path = `${errorDetails.path}[${key}]`;
-                        errorDetails.expected = generics.toString(options.subTypes.key);
-                        errorDetails.actual = key;
-                    }
-                    return false;
-                } else if(!generics.getMatchingType(options.subTypes.value, value)){
-                    if (errorDetails){
-                        errorDetails.path = `${errorDetails.path}[${key}]`;
-                        errorDetails.expected = generics.toString(options.subTypes.value);
+                        errorDetails.expected = generics.toString(options.subTypes);
                         errorDetails.actual = value;
                     }
                     return false;
@@ -99,27 +92,21 @@ class _Map extends BaseType {
     }
 
     static _wrapEntryKey(key, options, lifeCycle, errorContext) {
-        var result = generics.doOnType(options.subTypes.key, type => {
-            if (type.validateType(key) || type.allowPlainVal(key)) {
-                return validateAndWrap(key, type, lifeCycle, errorContext);
-            }
-        });
-        if (null === result || undefined === result) {
-            var allowedTypes = generics.toString(options.subTypes.key);
-            MAILBOX.post(errorContext.level, misMatchMessage(errorContext, allowedTypes, key, null, 'key'));
+        if (typeof key !== 'string') {
+            MAILBOX.post(errorContext.level, misMatchMessage(errorContext, '<string>', key, null, 'key'));
         } else {
-            return result;
+            return key;
         }
     }
 
     static _wrapEntryValue(value, options, lifeCycle, errorContext) {
-        var result = generics.doOnType(options.subTypes.value, type => {
+        var result = generics.doOnType(options.subTypes, type => {
             if (type.validateType(value) || type.allowPlainVal(value)) {
                 return validateAndWrap(value, type, lifeCycle, errorContext);
             }
         });
         if (null === result || undefined === result) {
-            var allowedTypes = generics.toString(options.subTypes.value);
+            var allowedTypes = generics.toString(options.subTypes);
             MAILBOX.post(errorContext.level, misMatchMessage(errorContext, allowedTypes, value, null, 'value'));
         } else {
             return result;
@@ -165,41 +152,30 @@ class _Map extends BaseType {
         if (ops && ops.definitionError) {
             return ops.definitionError;
         }
-        if (!ops || !ops.subTypes || !ops.subTypes.key || !ops.subTypes.value) {
-            return { path: arrow + 'Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Map<string, string>` }
+        if (!ops || !ops.subTypes) {
+            return { path: arrow + 'Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Map<SomeType>` }
         } else {
-            var keyError = generics.reportDefinitionErrors(ops.subTypes.key, BaseType.reportFieldDefinitionError, 'key');
-            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes.value, BaseType.reportFieldDefinitionError, 'value');
-            if (keyError) {
-                var valueTypeStr = valueTypeError ? 'value' : generics.toUnwrappedString(ops.subTypes.value);
-                return { path: `Map<${keyError.path || arrow + generics.toUnwrappedString(ops.subTypes.key)},${valueTypeStr}`, message: keyError.message };
-            } else if (valueTypeError) {
-                var keyTypeStr = generics.toUnwrappedString(ops.subTypes.key);
-                return { path: `Map<${keyTypeStr},${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes.value)}>`, message: valueTypeError.message };
+            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, BaseType.reportFieldDefinitionError, 'value');
+            if (valueTypeError) {
+                return { path: `Map<${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes)}>`, message: valueTypeError.message };
             }
         }
     }
 
-    static of(key, value) {
+    static of(subTypes) {
         var definitionError;
         switch (arguments.length) {
             case 0:
-                definitionError = { path: arrow + 'Map', message: 'Missing types for map. Use Map<SomeType, SomeType>' };
+                definitionError = { path: arrow + 'Map', message: 'Missing types for map. Use Map<SomeType>' };
                 break;
             case 1:
-                key = generics.normalizeTypes(key);
-                definitionError = { path: `Map<${generics.toUnwrappedString(key)},${arrow}value>`, message: `Wrong number of types for map. Instead of Map${generics.toString(key)} Use Map${generics.toString(String, key)}` };
-                break;
-            case 2:
-                key = generics.normalizeTypes(key);
-                value = generics.normalizeTypes(value);
+                subTypes = generics.normalizeTypes(subTypes);
                 break;
             default:
-                key = generics.normalizeTypes(key);
-                value = generics.normalizeTypes(value);
-                definitionError = { path: `Map<${generics.toUnwrappedString(key)},${generics.toUnwrappedString(value)},${arrow}unallowed>`, message: `Too many types for map (${arguments.length}). Use Map<SomeType, SomeType>` };
+                subTypes = generics.normalizeTypes(subTypes);
+                definitionError = { path: `Map<${generics.toUnwrappedString(subTypes)},${arrow}unallowed>`, message: `Too many types for map (${arguments.length}). Use Map<SomeType>` };
         }
-        return this.withDefault(undefined, undefined, { subTypes: { key, value }, definitionError: definitionError });
+        return this.withDefault(undefined, undefined, { subTypes, definitionError: definitionError });
 
     };
 
@@ -208,7 +184,7 @@ class _Map extends BaseType {
         return {
             entryPoint,
             level,
-            path: 'Map' + generics.toString(options.subTypes.key, options.subTypes.value)
+            path: 'Map' + generics.toString(options.subTypes)
         }
     }
 
@@ -224,8 +200,7 @@ class _Map extends BaseType {
         if (!errorContext) {
             errorContext = _Map.createErrorContext('Map constructor error', 'error', options);
         }
-        options.subTypes.key = generics.normalizeTypes(options.subTypes.key);
-        options.subTypes.value = generics.normalizeTypes(options.subTypes.value);
+        options.subTypes = generics.normalizeTypes(options.subTypes);
         super(value, options, errorContext);
     }
 
@@ -394,36 +369,23 @@ class _Map extends BaseType {
     }
 
     toJSON(recursive = true, typed = false) {
-        let result = [];
-        let allStringKeys = isTypeCompatibleWithPlainJsonObject(this.__options__);
+        let result = {};
         for (let [key, value] of this.entries()) {
-            key = (recursive && key && BaseType.validateType(key)) ? key.toJSON(true, typed) : this.__exposeInner__(key);
-            value = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
-            result.push([key, value]);
-            allStringKeys = (allStringKeys && typeof key === 'string');
+            result[key] = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
         }
-        if (allStringKeys){
-            result = _.fromPairs(result);
-            if (typed) {
-                result._type = this.constructor.id;
-            }
+        if (typed) {
+            result._type = this.constructor.id;
         }
         return result;
     }
 
     toJS(typed = false) {
-        let result = [];
-        let allStringKeys = isTypeCompatibleWithPlainJsonObject(this.__options__);
+        let result = {};
         for (let [key, value] of this.entries()) {
-            key = (key && key.toJS) ? key.toJS(typed) : key;
-            value = (value && value.toJS) ? value.toJS(typed) : value;
-            result.push([key, value]);
+            result[key] = (value && value.toJS) ? value.toJS(typed) : value;
         }
-        if (allStringKeys){
-            result = _.fromPairs(result);
-            if (typed) {
-                result._type = this.constructor.id;
-            }
+        if (typed) {
+            result._type = this.constructor.id;
         }
         return result;
     }
@@ -446,7 +408,7 @@ class _Map extends BaseType {
     }
 }
 
-export default defineType('Map', {
+export default defineType('Es5Map', {
     spec: function() {
         return {
             size: Number.withDefault(0)
