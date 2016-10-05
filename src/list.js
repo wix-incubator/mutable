@@ -454,6 +454,9 @@ class _List extends BaseType {
             }
         }
     }
+    $atomsIterator(yielder) {
+        yielder(this.__value__.$mobx.atom);
+    }
     get length(){
         return this.__value__.length;
     }

@@ -3,54 +3,75 @@ import {untracked} from 'mobx';
 const MAILBOX = getMailBox('Mutable.lifecycle');
 
 export class LifeCycleManager {
+    __readOnly__ = false;
+    __tracked__ = true;
 
+    constructor(){
+        const managerInstance = this;
+        // we need to filter calls to reportObserved of the state tree when this.__tracked__ is false.
+        // create an unbound wrappingReportObserved function that has this instance of LifeCycleManager in its clojure.
+        this.$wrappingReportObserved = function wrappingReportObserved(){
+            if (managerInstance.__tracked__){
+                this.$mutableOriginalReportObserved.apply(this, arguments);
+            }
+        };
+    }
     allowChange() {
-        delete this.__lockToken__;
+        this.__readOnly__ = false;
     }
-
     forbidChange() {
-        this.__lockToken__ = Math.random() + 1;
+        this.__readOnly__ = true;
     }
-
-    $getLockToken() {
-        return this.__lockToken__;
+    alowTracking() {
+        this.__tracked__ = true;
+    }
+    forbidTracking() {
+        this.__tracked__ = false;
+    }
+    $bindAtom = (atom) => {
+        if (!atom.$mutableOriginalReportObserved) {
+            atom.$mutableOriginalReportObserved = atom.reportObserved;
+            atom.reportObserved = this.$wrappingReportObserved;
+        }
     }
 }
 
-function $setManager(lifecycleManager) {
+// called when a new lifecycle manager is introduced to this object
+function setManager(lifecycleManager) {
     if (lifecycleManager) {
         if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager) {
             MAILBOX.error('Moving mutable private state instances between containers');
         } else if (lifecycleManager instanceof LifeCycleManager) {
             this.__lifecycleManager__ = lifecycleManager;
+            if (this.$atomsIterator) {
+                this.$atomsIterator(lifecycleManager.$bindAtom);
+            }
             if (this.$dirtyableElementsIterator) {
-                this.$dirtyableElementsIterator(setContainerManagerToElement);
+                this.$dirtyableElementsIterator(setManagerToDirtyableElement);
             }
         } else {
             MAILBOX.error('Attempt to set wrong type of lifecycle manager');
         }
     }
 }
+function setManagerToDirtyableElement(container, element) {
+    optionalSetManager(element, container.__lifecycleManager__);
+}
+
+// used by setters to determine if changes are allowed to the dirty flag
+function isDirtyable() {
+    return !this.__isReadOnly__ && (!this.__lifecycleManager__ || !this.__lifecycleManager__.__readOnly__);
+}
 
 export function makeDirtyable(Type) {
-    // called when a new lifecycle manager is introduced to this object
-    Type.prototype.$setManager = function outerSetManager(lifecycleManager){
-        untracked($setManager.bind(this, lifecycleManager));
-    };
-
-    // used by setters to determine if changes are allowed to the dirty flag
-    Type.prototype.$isDirtyable = function $isDirtyable() {
-        return !this.__isReadOnly__ && (!this.__lifecycleManager__ || !this.__lifecycleManager__.$getLockToken());
-    };
+    Type.prototype.$setManager = setManager;
+    Type.prototype.$isDirtyable = isDirtyable;
 }
 
 export function optionalSetManager(itemValue, lifeCycle) {
     if (itemValue && itemValue.$setManager && typeof itemValue.$setManager === 'function' && !itemValue.$isReadOnly()) {
-        $setManager.call(itemValue, lifeCycle); // avoid unnecessary calls to untracked
+        itemValue.$setManager(lifeCycle);
     }
 }
 
-// functions to be used as callbacks to $dirtyableElementsIterator
-function setContainerManagerToElement(container, element) {
-    optionalSetManager(element, container.__lifecycleManager__);
-}
+

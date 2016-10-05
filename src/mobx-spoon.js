@@ -86,3 +86,22 @@ export function transactionEnd(report) {
     if (report && extras.isSpyEnabled())
         extras.spyReportEnd();
 }
+
+
+export function untracked(action){
+    const prev = untrackedStart();
+    const res = action();
+    untrackedEnd(prev);
+    return res;
+}
+
+export function untrackedStart() {
+    const prev = globalState.trackingDerivation;
+    globalState.trackingDerivation = null;
+    return prev;
+}
+
+export function untrackedEnd(prev) {
+    globalState.trackingDerivation = prev;
+}
+

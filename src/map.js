@@ -437,6 +437,9 @@ class _Map extends BaseType {
             }
         }
     }
+    $atomsIterator(yielder) {
+        MAILBOX.warn('Mutable map $atomsIterator() not yet implemented');
+    }
     get size(){
         return this.__value__.size;
     }

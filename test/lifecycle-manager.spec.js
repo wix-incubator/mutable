@@ -11,8 +11,7 @@ describe('LifecycleManager', function() {
     });
     describe('by default', () => {
         it('$change() returns true', () => {
-            var result = lifecycleManager.$getLockToken();
-            expect(result, 'result of call to $getLockToken()').not.to.be.defined;
+            expect(lifecycleManager.isMutable()).not.to.be.ok;
         });
     });
     describe('after forbidChange()', () => {
@@ -20,16 +19,14 @@ describe('LifecycleManager', function() {
             lifecycleManager.forbidChange();
         });
         it('$getLockToken() returns false', () => {
-            var result = lifecycleManager.$getLockToken();
-            expect(result, 'result of call to $getLockToken()').to.be.defined;
+            expect(lifecycleManager.isMutable()).to.be.ok;
         });
         describe('allowChange() makes', () => {
             beforeEach('init', () => {
                 lifecycleManager.allowChange();
             });
             it('$getLockToken() return true again', () => {
-                var result = lifecycleManager.$getLockToken();
-                expect(result, 'result of call to $getLockToken()').not.to.be.defined;
+                expect(lifecycleManager.isMutable()).not.to.be.ok;
             });
         });
     });
