@@ -101,3 +101,5 @@ These are examples of the kinds of libraries we would like to model ourselves af
  - [immutable.js](https://github.com/facebook/immutable-js/) : Immutable persistent data collections for Javascript which increase efficiency and simplicity
  - [cls.js](https://github.com/camel-chased/cls.js) : Easy, dynamic (kind of mixin) javascript classes
  - [observable-value](https://github.com/medikoo/observable-value): Object representation of mutable value
+ 
+ 
