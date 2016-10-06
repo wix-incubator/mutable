@@ -50,6 +50,36 @@ describe("defining", () => {
         describe('with default value', () => {
             typeCompatibilityTest(() => Mutable.Map.of(Mutable.String, Mutable.String).withDefault({ lookAtMe: 'im special!' }));
         });
+        describe('when create Custom Type', () => {
+            var CustomType;
+            var Map;
+            before('define Custom Type and Map which uses Custom Type for values', () => {
+                CustomType = Mutable.define('CustomType', {
+                    spec: () => ({
+                        value   : Mutable.String.withDefault('value'),
+                        selector: Mutable.String.withDefault('selector')
+                    })
+                });
+                Map =  Mutable.Map.of(Mutable.String, CustomType);
+            });
+            describe('with valid object', () => {
+                it('should not fail', function() {
+                    expect(() => {
+                        new Map({
+                            a: {value: 'new value', selector: 'new selector'},
+                            b: {value: 'new value for b', selector: 'new selector for b'},
+                        });
+                    }).to.not.throw();
+                });
+            });
+            describe('with invalid object', () => {
+                it('should fail with type mismatch', function() {
+                    expect(() => {
+                        new Map({a: {another: 'type', of: 'object'}});
+                    }).to.throw();
+                });
+            });
+        });
         describe("with missing sub-types", () => {
             it('should report error when instantiating vanilla Map', () => {
                 var invalidMapType = Mutable.Es5Map;
