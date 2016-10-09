@@ -5,7 +5,7 @@ import BaseType from './base-type';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
-import {toString} from './generic-types';
+import {toString, toUnwrappedString} from './generic-types';
 const MAILBOX = getMailBox('Mutable.Union');
 
 
@@ -29,8 +29,7 @@ class _Union extends BaseType {
 
     static of(subTypes) {
         const result = this.withDefault(undefined, undefined, { subTypes });
-        result.id = subTypes.map(getTypeName).join('|');
-
+        result.id = subTypes.map(toUnwrappedString).join('|');
         return result;
     };
 
