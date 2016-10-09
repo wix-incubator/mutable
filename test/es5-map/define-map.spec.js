@@ -25,12 +25,12 @@ describe("defining", () => {
                 })
             });
         });
-        describe('as map<string, boolean> field', () => {
+        describe('as es5map<boolean> field', () => {
             it('should crash if supplied Mutable type as map default', () => {
                 expect(() => Mutable.define('WithMapUser', {
                     spec: () => ({
-                        map: Mutable.Map.of(Mutable.String, Mutable.Boolean).nullable().withDefault(
-                            new Mutable.Map.of(Mutable.String, Mutable.Boolean)()
+                        map: Mutable.Es5Map.of(Mutable.Boolean).nullable().withDefault(
+                            new Mutable.Es5Map.of(Mutable.Boolean)()
                         )
                     })
                 })).to.throw();
@@ -38,17 +38,17 @@ describe("defining", () => {
             it('should not crash if supplied empty object as map default', () => {
                 expect(() => Mutable.define('WithMapUser', {
                     spec: () => ({
-                        map: Mutable.Map.of(Mutable.String, Mutable.Boolean).nullable().withDefault({})
+                        map: Mutable.Es5Map.of(Mutable.Boolean).nullable().withDefault({})
                     })
                 })).not.to.throw();
             });
             it('allowPlainVal', () => {
-                var allowPlainVal = Mutable.Map.of(Mutable.String, Mutable.Boolean).nullable().allowPlainVal({});
+                var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({});
                 expect(allowPlainVal).to.be.true;
             });
         });
         describe('with default value', () => {
-            typeCompatibilityTest(() => Mutable.Map.of(Mutable.String, Mutable.String).withDefault({ lookAtMe: 'im special!' }));
+            typeCompatibilityTest(() => Mutable.Es5Map.of(Mutable.String).withDefault({ lookAtMe: 'im special!' }));
         });
         describe("with missing sub-types", () => {
             it('should report error when instantiating vanilla Map', () => {
@@ -139,8 +139,8 @@ describe("defining", () => {
         });
         describe('with value type that is a union of maps', () => {
             function typeFactory() {
-                return Mutable.Es5Map.of(either(Mutable.Map.of(Mutable.String, Mutable.String),
-                        Mutable.Map.of(Mutable.String, Mutable.Number)));
+                return Mutable.Es5Map.of(either(Mutable.Es5Map.of(Mutable.String),
+                        Mutable.Es5Map.of(Mutable.Number)));
             }
             typeCompatibilityTest(typeFactory);
             describe("instantiation", function() {
