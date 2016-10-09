@@ -139,8 +139,7 @@ describe("defining", () => {
         });
         describe('with value type that is a union of maps', () => {
             function typeFactory() {
-                return Mutable.Es5Map.of(either(Mutable.Es5Map.of(Mutable.String),
-                        Mutable.Es5Map.of(Mutable.Number)));
+                return Mutable.Es5Map.of(either(Mutable.Es5Map.of(Mutable.String), Mutable.Es5Map.of(Mutable.Number)));
             }
             typeCompatibilityTest(typeFactory);
             describe("instantiation", function() {
