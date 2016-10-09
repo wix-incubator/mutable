@@ -8,7 +8,7 @@ import {either} from '../../src/generic-types';
 
 
 describe("defining", () => {
-    describe("a map type", () => {
+    describe("a es5map type", () => {
         var UserType, AddressType;
         before('define helper types', () => {
             UserType = Mutable.define('User', {
