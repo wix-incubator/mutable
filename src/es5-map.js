@@ -109,9 +109,11 @@ class _Es5Map extends BaseType {
     static _wrapIterable(iterable, options, lifeCycle, errorContext) {
         var result = {};
         for (let [key, value] of iterable) {
-            this._validateEntryKey(key, errorContext);
-            value = this._wrapEntryValue(value, options, lifeCycle, errorContext);
-            result[key] = value;
+            if(key !== '_type') {
+                this._validateEntryKey(key, errorContext);
+                value = this._wrapEntryValue(value, options, lifeCycle, errorContext);
+                result[key] = value;
+            }
         }
         return result;
     }
@@ -225,19 +227,21 @@ class _Es5Map extends BaseType {
     }
 
     __setValueDeepHandler__(result, key, val, errorContext) {
-        let oldVal = this.__value__[key];
         let changed = false;
-        if (oldVal !== val) {
-            if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
-                (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
-                changed = oldVal.setValueDeep(val);
-                val = oldVal;
-            } else {
-                val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
-                changed = true;
+        if (key !== '_type') {
+            let oldVal = this.__value__[key];
+            if (oldVal !== val) {
+                if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
+                    (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
+                    changed = oldVal.setValueDeep(val);
+                    val = oldVal;
+                } else {
+                    val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
+                    changed = true;
+                }
             }
+            result[key] = val;
         }
-        result[key] = val;
         return changed;
     }
 
