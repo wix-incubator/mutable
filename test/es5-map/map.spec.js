@@ -1,7 +1,7 @@
 
 import lifeCycleAsserter from './lifecycle';
 
-describe('Map', function() {
+describe('Es5 Map', function() {
 
     describe('lifecycle', function() {
         lifeCycleAsserter.assertDirtyContract();
@@ -10,3 +10,4 @@ describe('Map', function() {
 });
 
 require('./mutable/instance.spec');
+require('./type-edge-cases.spec');

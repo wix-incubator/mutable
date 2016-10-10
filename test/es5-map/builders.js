@@ -4,15 +4,15 @@ import * as Mutable from '../../src';
 import {aDataTypeWithSpec} from '../../test-kit/test-drivers';
 
 export function aNumberMap(optionalMap) {
-    return Mutable.Map.of(Mutable.String, Mutable.Number).create(optionalMap || {});
+    return Mutable.Es5Map.of(Mutable.Number).create(optionalMap || {});
 }
 
 export function aUserTypeMap(optionalMap) {
-    return Mutable.Map.of(UserType, UserType).create(optionalMap || []);
+    return Mutable.Es5Map.of(UserType).create(optionalMap || []);
 }
 
 export function aUnionTypeMap(optionalMap) {
-    return Mutable.Map.of(Mutable.String, Mutable.either(CheeseType, UserType)).create(optionalMap || []);
+    return Mutable.Es5Map.of(Mutable.either(CheeseType, UserType)).create(optionalMap || []);
 }
 
 export const UserType = aDataTypeWithSpec({

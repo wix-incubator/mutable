@@ -15,7 +15,9 @@ function mapEntries(map) {
     map.forEach((v, k) => entries.push([k, v]));
     return entries;
 }
-
+function objEntries(obj) {
+    return  Object.keys(obj).map((key) => [key, obj[key]]);
+}
 function arrFromIterable(iterable) {
     if (_.isArray(iterable)) {
         return iterable;
@@ -42,7 +44,7 @@ function testReadFunctionality(builders, isReadonly) {
         beforeEach('init example data', () => {
             userA = new builders.UserType({ age: 1000 });
             userB = new builders.UserType({ age: 1001 });
-            usersMapInitialState = [[userA, userB], [userB, userA]];
+            usersMapInitialState = [['userA', userA], ['userB', userB]];
             usersMap = builders.aUserTypeMap(usersMapInitialState);
         });
 
@@ -68,7 +70,7 @@ function testReadFunctionality(builders, isReadonly) {
                     spec: function() {
                         return {
                             title: Mutable.String,
-                            users: Mutable.Map.of(Mutable.String, builders.UserType)
+                            users: Mutable.Es5Map.of(builders.UserType)
                         };
                     }
                 });
@@ -78,7 +80,7 @@ function testReadFunctionality(builders, isReadonly) {
             });
             it('Should be modified from json ', () => {
                 var groupData = new GroupType();
-                groupData.users = Mutable.Map.of(Mutable.String, builders.UserType).create({
+                groupData.users = Mutable.Es5Map.of(builders.UserType).create({
                     tom: { 'name': 'tom', 'age': 25 },
                     omri: { 'name': 'omri', 'age': 35 }
                 });
@@ -97,83 +99,38 @@ function testReadFunctionality(builders, isReadonly) {
         });
 
         describe('toJSON', () => {
-            it('should return entries json array by default', () => {
-                expect(usersMap.toJSON()).to.eql([
-                    [userA.toJSON(), userB.toJSON()],
-                    [userB.toJSON(), userA.toJSON()]
-                ]);
+            it('should return entries json object by default', () => {
+                expect(usersMap.toJSON()).to.eql({'userA': userA.toJSON(), 'userB': userB.toJSON()});
             });
-            it('should return typed entries json array if set to typed', () => {
-                expect(usersMap.toJSON(true, true)).to.eql([
-                    [userA.toJSON(true, true), userB.toJSON(true, true)],
-                    [userB.toJSON(true, true), userA.toJSON(true, true)]
-                ]);
+            it('should return typed entries json object if set to typed', () => {
+                expect(usersMap.toJSON(true, true)).to.eql({'userA': userA.toJSON(true, true), 'userB': userB.toJSON(true, true), _type: "Es5Map"});
             });
-            it('should return entries array if not recursive', () => {
-                expect(usersMap.toJSON(false)[0][0]).to.equal(userA);
-                expect(usersMap.toJSON(false)[0][1]).to.equal(userB);
-                expect(usersMap.toJSON(false)[1][0]).to.equal(userB);
-                expect(usersMap.toJSON(false)[1][1]).to.equal(userA);
+            it('should return entries object if not recursive', () => {
+                expect(usersMap.toJSON(false).userA).to.equal(userA);
+                expect(usersMap.toJSON(false).userB).to.equal(userB);
             });
             it('should expose ' + typeOfObj(isReadonly) + ' entries', () => {
-                expect(usersMap.toJSON(false)[0][0].$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
-                expect(usersMap.toJSON(false)[0][1].$isReadOnly(), 'value is readonly').to.equal(isReadonly);
+                expect(usersMap.toJSON(false).userA.$isReadOnly(), 'value is readonly').to.equal(isReadonly);
             });
-            it('should return object if all keys are strings', () => {
-                const jsonModel = { 'one': 1, 'two': 2, 'three': 3 };
-                var numbersMap = builders.aNumberMap(jsonModel);
-                expect(numbersMap.toJSON()).to.eql(jsonModel);
-            });
-            it('should return typed object if all keys are strings and set to typed', () => {
-                const jsonModel = {'one': 1, 'two': 2, 'three': 3 };
-                var numbersMap = builders.aNumberMap(jsonModel);
-                jsonModel._type = 'Map';
-                expect(numbersMap.toJSON(true, true)).to.eql(jsonModel);
-            });
-            it('should return empty object if empty and supports string keys', () => {
+            it('should return empty object if empty', () => {
                 const jsonModel = {};
                 var numbersMap = builders.aNumberMap(jsonModel);
                 expect(numbersMap.toJSON()).to.eql(jsonModel);
-            });
-            it('should return empty array if empty and does not support string keys', () => {
-                const jsonModel = [];
-                let map = builders.aUserTypeMap(jsonModel);
-                expect(map.toJSON()).to.eql(jsonModel);
             });
         });
 
         describe('toJS', function(){
 
-            it('should call toJS on keys that implement it', function(){
-                const serializableType = builders.UserType;
-                const Map = Mutable.Map.of(serializableType, Mutable.Function);
-
-                const funcItem = () => {};
-                const serializableItem = new serializableType();
-                serializableItem.toJS = () => 'called';
-                const input = [[serializableItem, funcItem]];
-
-                const map = new Map(input);
-                const res = map.toJS();
-
-                expect(res[0][0]).to.eql('called');
-                expect(res[0][1]).to.equal(funcItem);
-            });
-
             it('should call toJS on values that implement it', function(){
                 const serializableType = builders.UserType;
-                const Map = Mutable.Map.of(Mutable.Function, serializableType);
+                const Es5Map = Mutable.Es5Map.of(serializableType);
 
-                const funcItem = () => {};
                 const serializableItem = new serializableType();
                 serializableItem.toJS = () => 'called';
-                const input = [[funcItem, serializableItem]];
 
-                const map = new Map(input);
+                const map = new Es5Map({'foo' : serializableItem});
                 const res = map.toJS();
-
-                expect(res[0][0]).to.equal(funcItem);
-                expect(res[0][1]).to.eql('called');
+                expect(res.foo).to.eql('called');
             });
 
         });
@@ -227,8 +184,8 @@ function testReadFunctionality(builders, isReadonly) {
                         expect(numbers.toJSON()).to.eql({});
                     });
                     it('should support a mutable object as an argument', () => {
-                        usersMap.delete(userA);
-                        expect(usersMap.toJSON(false)).to.eql([[userB, userA]]);
+                        usersMap.delete('userA');
+                        expect(usersMap.toJSON(false)).to.eql({userB});
                     });
                     it('should return true', () => {
                         var numbers = builders.aNumberMap({ a: 5 });
@@ -238,7 +195,7 @@ function testReadFunctionality(builders, isReadonly) {
             });
             if (!isReadonly) {
                 lifeCycleAsserter.assertMutatorContract(
-                    (map, elemFactory) => map.delete(map.toJSON()[0][0]), 'delete');
+                    (map, elemFactory) => map.delete(Object.keys(map.toJSON())[0]), 'delete');
             }
         });
         describe('entries', () => {
@@ -250,7 +207,6 @@ function testReadFunctionality(builders, isReadonly) {
             it('should expose ' + typeOfObj(isReadonly) + ' entries', () => {
                 var element = usersMap.entries()[0];
 
-                expect(element[0].$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
                 expect(element[1].$isReadOnly(), 'value is readonly').to.equal(isReadonly);
             });
         });
@@ -271,31 +227,30 @@ function testReadFunctionality(builders, isReadonly) {
 
             it('should expose ' + typeOfObj(isReadonly) + ' entries', () => {
                 usersMap.forEach((val, key) => {
-                    expect(key.$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
                     expect(val.$isReadOnly(), 'value is readonly').to.equal(isReadonly);
                 });
             });
         });
         describe('get', () => {
             it('should return stored value', () => {
-                expect(usersMap.get(userB), 'get1').to.equal(userA);
-                expect(usersMap.get(userA), 'get2').to.equal(userB);
+                expect(usersMap.get('userA'), 'get1').to.equal(userA);
+                expect(usersMap.get('userB'), 'get2').to.equal(userB);
             });
             it('should return undefined if no stored value', () => {
-                expect(usersMap.get({})).to.equal(undefined);
+                expect(usersMap.get('foo')).to.equal(undefined);
             });
             it('should return ' + typeOfObj(isReadonly) + ' entries', () => {
-                expect(usersMap.get(userA).$isReadOnly()).to.equal(isReadonly);
+                expect(usersMap.get('userA').$isReadOnly()).to.equal(isReadonly);
             });
         });
 
         describe('has', () => {
             it('should return true if a value exists for supplied key', () => {
-                expect(usersMap.has(userB)).to.equal(true);
-                expect(usersMap.has(userA)).to.equal(true);
+                expect(usersMap.has('userB')).to.equal(true);
+                expect(usersMap.has('userA')).to.equal(true);
             });
             it('should return false if no stored value', () => {
-                expect(usersMap.has({})).to.equal(false);
+                expect(usersMap.has('foo')).to.equal(false);
             });
         });
 
@@ -303,12 +258,6 @@ function testReadFunctionality(builders, isReadonly) {
             it('should return an array of the map keys', () => {
                 var array = builders.aNumberMap({ a: 1, b: 2 }).keys();
                 expect(array).to.eql(['a', 'b']);
-            });
-
-            it('should expose ' + typeOfObj(isReadonly) + ' keys', () => {
-                var element = usersMap.keys()[0];
-
-                expect(element.$isReadOnly(), 'key is readOnly').to.equal(isReadonly);
             });
         });
 
@@ -333,15 +282,11 @@ function testReadFunctionality(builders, isReadonly) {
                     expect(numbers.toJSON()).to.eql({ a: 42 });
                 });
                 it('should support a mutable object as an argument', () => {
-                    usersMap.set(userA, userA).set(userB, userA).set(userA, userB);
-
-                    // es6 vaguely defines order of elements in map.
-                    // if order definition breaks, consider using chai-things plugin for matching regardless of order
-                    // http://chaijs.com/plugins/chai-things
-                    expect(usersMap.toJSON(false)).to.eql([[userA, userB], [userB, userA]]);
+                    usersMap.set('userA', userB).set('userB', userB).set('userA', userA);
+                    expect(usersMap.toJSON(false)).to.eql({userB, userA});
                 });
                 lifeCycleAsserter.assertMutatorContract(
-                    (map, elemFactory) => map.set(elemFactory(), elemFactory()), 'set');
+                    (map, elemFactory) => map.set('foo', elemFactory()), 'set');
             }
             it('should return the map', () => {
                 var numbers = builders.aNumberMap({ a: 5 });
@@ -369,20 +314,20 @@ function testReadFunctionality(builders, isReadonly) {
                 var rev = revision.read();
 
                 usersMap.setValue(usersMapInitialState);
-                expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                 expect(usersMap.$isDirty(rev)).to.be.false;
             });
             describe('with a new state', () => {
                 let newValue, changeRevision;
                 beforeEach('change value', () => {
-                    newValue = [[userA, userB], [userB, userB]];
+                    newValue = [['userA', userB], ['userB', userB]];
                     revision.advance();
                     changeRevision = revision.read();
                     usersMap.setValue(newValue);
                 });
                 if (isReadonly) {
                     it('should not change', function() {
-                        expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                        expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                     });
                     it('should not set map as dirty', function() {
                         expect(usersMap.$isDirty(changeRevision)).to.be.false;
@@ -395,7 +340,7 @@ function testReadFunctionality(builders, isReadonly) {
                         expect(usersMap.$isDirty(changeRevision)).to.be.true;
                     });
                     lifeCycleAsserter.assertMutatorContract(
-                        (map, elemFactory) => map.setValue([[elemFactory(), elemFactory()]]), 'setValue');
+                        (map, elemFactory) => map.setValue([['foo', elemFactory()]]), 'setValue');
                 }
             });
 
@@ -407,22 +352,21 @@ function testReadFunctionality(builders, isReadonly) {
                 var rev = revision.read();
 
                 usersMap.setValueDeep(usersMapInitialState);
-                expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                 expect(usersMap.$isDirty(rev)).to.be.false;
             });
             describe('with a new state', () => {
                 let userC, newValue, changeRevision;
                 beforeEach('change value', () => {
                     userC = new builders.UserType({ name: 'katanka' });
-
-                    newValue = [[userA, userB], [userB, userC], [userC, userA]];
+                    newValue = [['userA', userA], ['userB', userC], ['userC', userA]];
                     revision.advance();
                     changeRevision = revision.read();
                     usersMap.setValueDeep(newValue);
                 });
                 if (isReadonly) {
                     it('should not change', function() {
-                        expect(arrFromIterable(mapEntries(usersMap.__value__)), 'entries array').to.eql(usersMapInitialState);
+                        expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
                     });
                     it('should not set map as dirty', function() {
                         expect(usersMap.$isDirty(changeRevision)).to.be.false;
@@ -436,17 +380,17 @@ function testReadFunctionality(builders, isReadonly) {
                             .to.eql(getNewUsers(new Map(newValue).keys()));
                     });
                     it('should not replace instances of existing mappings', function() {
-                        expect(usersMap.get(userA)).to.equal(userB);
-                        expect(usersMap.get(userB)).to.equal(userA);
+                        expect(usersMap.get('userA')).to.equal(userA);
+                        expect(usersMap.get('userB')).to.equal(userB);
                     });
                     it('should add new mappings if missing', function() {
-                        expect(usersMap.get(userC)).to.equal(userA);
+                        expect(usersMap.get('userC')).to.equal(userA);
                     });
                     it('should set map as dirty', function() {
                         expect(usersMap.$isDirty(changeRevision)).to.be.true;
                     });
                     lifeCycleAsserter.assertMutatorContract(
-                        (map, elemFactory) => map.setValueDeep([[elemFactory(), elemFactory()]]), 'setValueDeep');
+                        (map, elemFactory) => map.setValueDeep([['foo', elemFactory()]]), 'setValueDeep');
                 }
             });
             if (!isReadonly) {
@@ -510,7 +454,7 @@ function typeOfObj(isReadonly) {
     return isReadonly ? 'read only' : 'mutable';
 }
 
-describe('Map', function() {
+describe('Es5 Map', function() {
     testReadFunctionality(builders, false);
     testReadFunctionality(builders.asReadOnly(), true);
 });

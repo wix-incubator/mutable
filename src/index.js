@@ -9,7 +9,7 @@ import {default as List} from './list';
 import {default as Function} from './function';
 import {default as Reference} from './reference';
 import {default as validation} from './validation';
-import {default as Map} from './map';
+import {default as Es5Map} from './es5-map';
 import {default as PropsBase} from './props-base';
 import {LifeCycleManager} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
@@ -35,7 +35,7 @@ if (globalCtx.__Mutable){
         Function,
         Reference,
         validation,
-        Map,
+        Es5Map,
         PropsBase,
         LifeCycleManager,
         defineEnum,
