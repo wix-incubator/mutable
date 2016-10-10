@@ -129,12 +129,11 @@ class _Map extends BaseType {
     static _wrapIterable(iterable, options, lifeCycle, errorContext) {
         var result = new Map();
         for (let [key, value] of iterable) {
-            if(key === '_type'){
-                continue;
+            if(key !== '_type') {
+                key = this._wrapEntryKey(key, options, lifeCycle, errorContext);
+                value = this._wrapEntryValue(value, options, lifeCycle, errorContext);
+                result.set(key, value);
             }
-            key = this._wrapEntryKey(key, options, lifeCycle, errorContext);
-            value = this._wrapEntryValue(value, options, lifeCycle, errorContext);
-            result.set(key, value);
         }
         return result;
     }
@@ -256,20 +255,22 @@ class _Map extends BaseType {
     }
 
     __setValueDeepHandler__(result, key, val, errorContext) {
-        let oldVal = this.__value__.get(key);
         let changed = false;
-        if (oldVal !== val) {
-            if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
-                (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
-                changed = oldVal.setValueDeep(val);
-                val = oldVal;
-            } else {
-                key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
-                val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
-                changed = true;
+        if (key !== '_type') {
+            let oldVal = this.__value__.get(key);
+            if (oldVal !== val) {
+                if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
+                    (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
+                    changed = oldVal.setValueDeep(val);
+                    val = oldVal;
+                } else {
+                    key = this.constructor._wrapEntryKey(key, this.__options__, this.__lifecycleManager__, errorContext);
+                    val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
+                    changed = true;
+                }
             }
+            result.set(key, val);
         }
-        result.set(key, val);
         return changed;
     }
 

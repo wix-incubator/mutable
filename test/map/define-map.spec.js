@@ -165,11 +165,33 @@ describe("defining", () => {
                     expect(map.get(newUser)).to.be.instanceOf(AddressType);
                     expect(map.get(newUser).address).to.equal('gaga');
                 });
-                it('should NOT validate the _type field on JSON value, ', function() {
+                it('should NOT validate the _type field on JSON value on create() ', function() {
                     const StringToNumber = Mutable.Map.of(Mutable.String, Mutable.Number);
+                    const json = new StringToNumber({"key1":5}).toJSON(true, true);
+                    expect(json._type).to.be.ok;
                     let map;
                     expect(function(){
-                         map = StringToNumber.create({_type:'Map', "key1":5});
+                         map = StringToNumber.create(json);
+                    }).to.not.throw();
+                    expect(map.get('key1')).to.equal(5);
+                });
+                it('should NOT validate the _type field on JSON value on setValue() ', function() {
+                    const StringToNumber = Mutable.Map.of(Mutable.String, Mutable.Number);
+                    const json = new StringToNumber({"key1":5}).toJSON(true, true);
+                    expect(json._type).to.be.ok;
+                    let map = new StringToNumber();
+                    expect(function(){
+                        map.setValue(json);
+                    }).to.not.throw();
+                    expect(map.get('key1')).to.equal(5);
+                });
+                it('should NOT validate the _type field on JSON value on setValueDeep() ', function() {
+                    const StringToNumber = Mutable.Map.of(Mutable.String, Mutable.Number);
+                    const json = new StringToNumber({"key1":5}).toJSON(true, true);
+                    expect(json._type).to.be.ok;
+                    let map = new StringToNumber();
+                    expect(function(){
+                        map.setValueDeep(json);
                     }).to.not.throw();
                     expect(map.get('key1')).to.equal(5);
                 });
