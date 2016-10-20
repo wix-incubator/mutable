@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import * as Mutable from '../../../src';
-import {LifeCycleManager, revision, either} from '../../../src';
+import {LifeCycleManager, either} from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
 import {aDataTypeWithSpec} from '../../../test-kit/test-drivers';
 import modifyTestSuite from './modify-test-suite';

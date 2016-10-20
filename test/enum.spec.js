@@ -3,8 +3,6 @@ import {expect} from 'chai';
 import * as Mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
-const revision = Mutable.revision;
-
 describe('Enum Type', function() {
 
     it('exists on the mutable object', function() {
@@ -211,7 +209,7 @@ describe('Enum Type', function() {
             });
 
             const res = ApeWithValue.GORILLA.toJSON();
-            
+
             const deserializeApe = new ApeWithValue(res);
 
             expect(res).to.equal('large ape');
@@ -229,7 +227,7 @@ describe('Enum Type', function() {
             });
 
             const res = ApeWithValue.GORILLA.toJS();
-            
+
             const deserializeApe = new ApeWithValue(res);
 
             expect(res).to.equal('large ape');

@@ -3,10 +3,10 @@ import * as sinon from 'sinon';
 import * as _ from 'lodash';
 
 import * as Mutable from '../../../src';
+import {getMobxLogOf} from '../../../test-kit/test-drivers';
+
 import * as builders from '../builders';
 import lifeCycleAsserter from '../lifecycle';
-
-const revision = Mutable.revision;
 
 var hasSymbols = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol';
 
@@ -310,34 +310,28 @@ function testReadFunctionality(builders, isReadonly) {
         describe('setValue', () => {
 
             it('with same state should not change or get dirty if values are not changed', function() {
-                revision.advance();
-                var rev = revision.read();
-
-                usersMap.setValue(usersMapInitialState);
-                expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
-                expect(usersMap.$isDirty(rev)).to.be.false;
+                var log = getMobxLogOf(()=> usersMap.setValue(usersMapInitialState));
+                expect(log).to.be.empty;
             });
             describe('with a new state', () => {
-                let newValue, changeRevision;
+                let newValue, log;
                 beforeEach('change value', () => {
                     newValue = [['userA', userB], ['userB', userB]];
-                    revision.advance();
-                    changeRevision = revision.read();
-                    usersMap.setValue(newValue);
+                    log = getMobxLogOf(()=> usersMap.setValue(newValue), usersMap.__value__);
                 });
                 if (isReadonly) {
                     it('should not change', function() {
-                        expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
+                        expect(objEntries(usersMap.__value__.toJS()), 'entries array').to.eql(usersMapInitialState);
                     });
                     it('should not set map as dirty', function() {
-                        expect(usersMap.$isDirty(changeRevision)).to.be.false;
+                        expect(log).to.be.empty;
                     });
                 } else {
                     it('should only leave the new state', function() {
                         expect(usersMap.entries()).to.eql(newValue);
                     });
                     it('should set map as dirty', function() {
-                        expect(usersMap.$isDirty(changeRevision)).to.be.true;
+                        expect(log).not.to.be.empty;
                     });
                     lifeCycleAsserter.assertMutatorContract(
                         (map, elemFactory) => map.setValue([['foo', elemFactory()]]), 'setValue');
@@ -348,28 +342,23 @@ function testReadFunctionality(builders, isReadonly) {
         describe('setValueDeep', () => {
 
             it('with same state should not change or get dirty if values are not changed', function() {
-                revision.advance();
-                var rev = revision.read();
-
-                usersMap.setValueDeep(usersMapInitialState);
-                expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
-                expect(usersMap.$isDirty(rev)).to.be.false;
+                var log = getMobxLogOf(()=> usersMap.setValue(usersMapInitialState), usersMap.__value__);
+                expect(log).to.be.empty;
+                expect(objEntries(usersMap.__value__.toJS()), 'entries array').to.eql(usersMapInitialState);
             });
             describe('with a new state', () => {
-                let userC, newValue, changeRevision;
+                let userC, newValue, log;
                 beforeEach('change value', () => {
                     userC = new builders.UserType({ name: 'katanka' });
                     newValue = [['userA', userA], ['userB', userC], ['userC', userA]];
-                    revision.advance();
-                    changeRevision = revision.read();
-                    usersMap.setValueDeep(newValue);
+                    log = getMobxLogOf(()=> usersMap.setValue(newValue), usersMap.__value__);
                 });
                 if (isReadonly) {
                     it('should not change', function() {
-                        expect(objEntries(usersMap.__value__), 'entries array').to.eql(usersMapInitialState);
+                        expect(objEntries(usersMap.__value__.toJS()), 'entries array').to.eql(usersMapInitialState);
                     });
                     it('should not set map as dirty', function() {
-                        expect(usersMap.$isDirty(changeRevision)).to.be.false;
+                        expect(log).to.be.empty;
                     });
                 } else {
                     it('should change data of map to new state', function() {
@@ -387,7 +376,7 @@ function testReadFunctionality(builders, isReadonly) {
                         expect(usersMap.get('userC')).to.equal(userA);
                     });
                     it('should set map as dirty', function() {
-                        expect(usersMap.$isDirty(changeRevision)).to.be.true;
+                        expect(log).not.to.be.empty;
                     });
                     lifeCycleAsserter.assertMutatorContract(
                         (map, elemFactory) => map.setValueDeep([['foo', elemFactory()]]), 'setValueDeep');
@@ -395,16 +384,13 @@ function testReadFunctionality(builders, isReadonly) {
             });
             if (!isReadonly) {
                 describe('on a map with union type value', () => {
-                    let map, cheese, oldValue, newValue, changeRevision;
+                    let map, cheese, oldValue, newValue;
                     beforeEach('change value', () => {
                         cheese = new builders.CheeseType({ name: 'brie' });
 
                         oldValue = [['a', userA], ['b', userB], ['c', userB]];
                         newValue = [['a', userA], ['b', cheese]];
                         map = builders.aUnionTypeMap(oldValue);
-
-                        revision.advance();
-                        changeRevision = revision.read();
                     });
                     it('should change data of map to new state', function() {
                         map.setValueDeep(newValue);
@@ -423,20 +409,17 @@ function testReadFunctionality(builders, isReadonly) {
                         expect(map.get('c')).to.be.undefined;
                     });
                     it('should set map as dirty', function() {
-                        map.setValueDeep(newValue);
-                        expect(map.$isDirty(changeRevision)).to.be.true;
+                        var log = getMobxLogOf(()=> map.setValueDeep(newValue), map.__value__);
+                        expect(log).not.to.be.empty;
                     });
                 });
                 it('should create new value if value is read only', function() {
                     userA = new builders.UserType({ name: 'zaphod', age: 42 }).$asReadOnly();
                     let map = builders.aUnionTypeMap([['a', userA]]);
-                    revision.advance();
-                    var rev = revision.read();
 
-                    map.setValueDeep([['a', { child: { name: 'zagzag' } }]]);
-
+                    var log = getMobxLogOf(()=> map.setValueDeep([['a', { child: { name: 'zagzag' } }]]), map.__value__);
+                    expect(log).not.to.be.empty;
                     expect(userA).to.not.equal(map.get('a'));
-                    expect(map.$isDirty(rev)).to.equal(true);
                 });
                 it('complex children props should be set to default if not specified', function() {
                     let map = builders.aUnionTypeMap([['a', { name: 'zagzag' }]]);

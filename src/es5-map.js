@@ -374,7 +374,7 @@ class _Es5Map extends BaseType {
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
         this.__value__.forEach((value) => {
-            if (value && _.isFunction(value.$calcLastChange)) {
+            if (value && _.isFunction(value.$setManager)) {
                 yielder(this, value);
             }
         });

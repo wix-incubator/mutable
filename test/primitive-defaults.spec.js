@@ -5,7 +5,6 @@ import * as Mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import {lifecycleContract} from './lifecycle.contract.spec';
 
-const revision = Mutable.revision;
 describe('primitive defaults', function() {
 
     it('null function', function() {
