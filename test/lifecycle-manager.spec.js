@@ -7,26 +7,50 @@ describe('LifecycleManager', function() {
     var lifecycleManager;
     beforeEach('init', () => {
         lifecycleManager = new Mutable.LifeCycleManager();
-        sinon.spy(lifecycleManager, 'onChange');
     });
-    describe('by default', () => {
-        it('$change() returns true', () => {
-            expect(lifecycleManager.isMutable()).not.to.be.ok;
-        });
-    });
-    describe('after forbidChange()', () => {
-        beforeEach('init', () => {
+    describe('manages change', () => {
+        it('.forbidChange() sets __readOnly__ to true', () => {
+            lifecycleManager.__readOnly__ = false;
             lifecycleManager.forbidChange();
+            expect(lifecycleManager.__readOnly__).to.be.ok;
         });
-        it('$getLockToken() returns false', () => {
-            expect(lifecycleManager.isMutable()).to.be.ok;
+        it('.allowChange() sets __readOnly__ to false', () => {
+            lifecycleManager.__readOnly__ = true;
+            lifecycleManager.allowChange();
+            expect(lifecycleManager.__readOnly__).not.to.be.ok;
         });
-        describe('allowChange() makes', () => {
-            beforeEach('init', () => {
-                lifecycleManager.allowChange();
+    });
+    describe('manages tracking', () => {
+        it('.forbidTracking() sets __tracked__ to false', () => {
+            lifecycleManager.__tracked__ = true;
+            lifecycleManager.forbidTracking();
+            expect(lifecycleManager.__tracked__).not.to.be.ok;
+        });
+        it('.alowTracking() sets __readOnly__ to true', () => {
+            lifecycleManager.__tracked__ = false;
+            lifecycleManager.alowTracking();
+            expect(lifecycleManager.__tracked__).to.be.ok;
+        });
+    });
+    describe('.$bindAtom()', () => {
+        let atom, originalReportObserved;
+        beforeEach('init', () => {
+			originalReportObserved = sinon.spy();
+            atom = {reportObserved : originalReportObserved};
+            lifecycleManager.$bindAtom(atom);
+        });
+        describe('proxies original atom.reportObserved', () => {
+            it('ignores calls when __tracked__ is false', () => {
+                lifecycleManager.__tracked__ = false;
+                atom.reportObserved();
+                expect(originalReportObserved).to.have.not.been.called;
             });
-            it('$getLockToken() return true again', () => {
-                expect(lifecycleManager.isMutable()).not.to.be.ok;
+            it('calls original when __tracked__ is true', () => {
+                lifecycleManager.__tracked__ = true;
+                atom.reportObserved(1, 2, 3);
+                expect(originalReportObserved).to.have.been.calledOnce;
+                expect(originalReportObserved.firstCall).to.have.been.calledWith(1, 2, 3);
+                expect(originalReportObserved.firstCall).to.have.been.calledOn(atom);
             });
         });
     });
