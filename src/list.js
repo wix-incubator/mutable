@@ -324,7 +324,7 @@ class _List extends BaseType {
     }
 
     toString() {
-        return this.__value__.toString();
+        return this.__value__.peek().toString();
     }
 
     valueOf() {

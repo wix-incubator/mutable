@@ -310,7 +310,7 @@ function testReadFunctionality(builders, isReadonly) {
         describe('setValue', () => {
 
             it('with same state should not change or get dirty if values are not changed', function() {
-                var log = getMobxLogOf(()=> usersMap.setValue(usersMapInitialState));
+                var log = getMobxLogOf(()=> usersMap.setValue(usersMapInitialState), usersMap.__value__);
                 expect(log).to.be.empty;
             });
             describe('with a new state', () => {
@@ -370,7 +370,7 @@ function testReadFunctionality(builders, isReadonly) {
                     });
                     it('should not replace instances of existing mappings', function() {
                         expect(usersMap.get('userA')).to.equal(userA);
-                        expect(usersMap.get('userB')).to.equal(userB);
+                        expect(usersMap.get('userB')).to.equal(userC);
                     });
                     it('should add new mappings if missing', function() {
                         expect(usersMap.get('userC')).to.equal(userA);

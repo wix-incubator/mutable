@@ -167,7 +167,7 @@ describe('defining', () => {
 
             it('should be dirtified when any field from type definition is changed', function() {
                 const dataItem = new TypeWithInheritance();
-                var log = getMobxLogOf(()=> dataItem.subTitles.push('something'), dataItem.titles.__value__);
+                var log = getMobxLogOf(()=> dataItem.subTitles.push('something'), dataItem.subTitles.__value__);
                 expect(log).not.to.be.empty;
             });
 

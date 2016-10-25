@@ -47,9 +47,9 @@ describe('LifecycleManager', function() {
             });
             it('calls original when __tracked__ is true', () => {
                 lifecycleManager.__tracked__ = true;
-                atom.reportObserved(1, 2, 3);
+                atom.reportObserved(1, null, '3'); // 1, null, '3' are just arbitrary arguments
                 expect(originalReportObserved).to.have.been.calledOnce;
-                expect(originalReportObserved.firstCall).to.have.been.calledWith(1, 2, 3);
+                expect(originalReportObserved.firstCall).to.have.been.calledWith(1, null, '3');
                 expect(originalReportObserved.firstCall).to.have.been.calledOn(atom);
             });
         });

@@ -289,13 +289,13 @@ class _Es5Map extends BaseType {
     }
 
     clear() {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             this.__value__.clear();
         }
     }
 
     delete(key) {
-        if (this.$setDirty()){
+        if (this.$isDirtyable()){
             let errorContext = this.constructor.createErrorContext('Es5Map delete error', 'error', this.__options__);
             this.constructor._validateEntryKey(key, errorContext);
             return this.__value__.delete(key);
@@ -304,7 +304,7 @@ class _Es5Map extends BaseType {
     }
 
     set(key, value) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             let errorContext = this.constructor.createErrorContext('Es5Map set error', 'error', this.__options__);
             this.constructor._validateEntryKey(key, errorContext);
             value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__, errorContext);

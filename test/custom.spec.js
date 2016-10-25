@@ -465,7 +465,6 @@ describe('Custom data', function() {
                 var instance = new UserWithNullableChild({ child: null });
                 var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance.__value__);
                 expect(log).to.not.be.empty;
-                expect(instance.$isDirty(rev)).to.equal(true);
             });
             it('complex children props should be set to default if not specified', function() {
                 var instance = new UserWithChild({ child: { name: 'zagzag' } });
@@ -486,8 +485,9 @@ describe('Custom data', function() {
             });
             it('should invalidate if child has changed', function() {
                 var instance = new UserWithChild({ child: { name: 'zagzag' } });
-                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'not zagzag' } }), instance.__value__);
-                expect(log).not.to.be.empty;
+                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'not zagzag' } }));
+                expect(log.filter(change => change.object === instance.__value__)).to.be.empty;
+                expect(log.filter(change => change.object === instance.child.__value__)).not.to.be.empty;
             });
         });
         describe("with global freeze config", function() {
