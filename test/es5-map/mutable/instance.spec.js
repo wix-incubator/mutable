@@ -445,6 +445,12 @@ function testReadFunctionality(builders, isReadonly) {
 
                     expect(map.get('a').name).to.equal(new builders.UserType().name);
                 });
+                it('should support polymorphism', function() {
+                    var instance = new (Mutable.Es5Map.of(Mutable.BaseType))();
+                    instance.setValueDeep({foo: {_type:'User', name: 'zaphod', age: 42 }});
+                    expect(instance.get('foo').constructor.name).to.eql('User');
+                    expect(instance.get('foo').child.name).to.eql('zaphod');
+                });
             }
         });
     });

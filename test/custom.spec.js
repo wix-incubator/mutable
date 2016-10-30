@@ -45,6 +45,10 @@ var WithNonSerializable = aDataTypeWithSpec({
     str: Mutable.String
 }, 'WithNonSerializable');
 
+var ParentContainer = aDataTypeWithSpec({
+    child: Mutable.BaseType
+}, 'ParentContainer');
+
 var lifeCycleAsserter = lifecycleContract();
 (() => {
     lifeCycleAsserter.addFixture(
@@ -103,7 +107,7 @@ describe('Custom data', function() {
         it('should try get reference non serializable values', function(){
             const funcVal = () => {};
             var data = new WithNonSerializable({ str:'val', func:funcVal });
-            
+
             const result = data.toJS();
 
             expect(result.func).to.equal(funcVal);
@@ -113,7 +117,7 @@ describe('Custom data', function() {
         it('should offer type flag output', function(){
             const funcVal = () => {};
             var data = new WithNonSerializable({ str:'val', func:funcVal });
-            
+
             const result = data.toJS(true);
 
             expect(result._type).to.equal('WithNonSerializable');
@@ -515,7 +519,13 @@ describe('Custom data', function() {
 
                 expect(instance.$isDirty(rev)).to.equal(true);
             });
-        })
+            it('should support polymorphism', function() {
+                var instance = new ParentContainer();
+                instance.setValueDeep({child: {_type:'User', name: 'zaphod', age: 42 }});
+                expect(instance.child.constructor.name).to.eql('User');
+                expect(instance.child.name).to.eql('zaphod');
+            });
+        });
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
