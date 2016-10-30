@@ -42,10 +42,30 @@ describe("defining", () => {
                     })
                 })).not.to.throw();
             });
-            it('allowPlainVal', () => {
-                var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({});
-                expect(allowPlainVal).to.be.true;
+            describe('allowPlainVal', () => {
+
+                it('should accept empty object', () => {
+                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({});
+                    expect(allowPlainVal).to.be.true;
+                });
+
+                it('should accept object with _type', () => {
+                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({_type:'string-value'});
+                    expect(allowPlainVal).to.be.true;
+                });
+
+                it('should accept object with boolean value', () => {
+                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({someKey:true});
+                    expect(allowPlainVal).to.be.true;
+                });
+
+                it('should not accept object with mismatched types', () => {
+                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({someKey:'string-value'});
+                    expect(allowPlainVal).to.be.false;
+                });
+
             });
+
         });
         describe('with default value', () => {
             typeCompatibilityTest(() => Mutable.Es5Map.of(Mutable.String).withDefault({ lookAtMe: 'im special!' }));
