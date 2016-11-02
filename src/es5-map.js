@@ -17,7 +17,12 @@ function entries(map){
 }
 // because Object.entries is too tall an order
 function objEntries(obj) {
-    return Object.keys(obj).map((key) => [key, obj[key]]);
+     return Object.keys(obj).reduce((prevValue, key) => {
+       if(key !== '_type') {
+            prevValue.push([key, obj[key]]);
+        }
+        return prevValue;
+    }, []);
 }
 
 function safeAsReadOnly(item) {
