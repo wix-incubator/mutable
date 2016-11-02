@@ -5,6 +5,7 @@ import BaseType from './base-type';
 import PrimitiveBase from './primitive-base';
 import {isAssignableFrom, validateNullValue, misMatchMessage} from './validation';
 import {generateClassId} from './utils';
+import {registerClass} from './class-repo';
 
 const MAILBOX = getMailBox('Mutable.define');
 
@@ -27,7 +28,7 @@ export default function defineType(id, typeDefinition, ParentType, TypeConstruct
     Type._spec = generateSpec(id, typeSelfSpec, ParentType);
     Type.prototype.$dirtyableElementsIterator = getDirtyableElementsIterator(typeSelfSpec, ParentType.prototype.$dirtyableElementsIterator);
     generateFieldsOn(Type.prototype, typeSelfSpec);
-
+    registerClass(Type, id);
     return Type;
 }
 

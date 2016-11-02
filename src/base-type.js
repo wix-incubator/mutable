@@ -101,6 +101,7 @@ export default class BaseType extends PrimitiveBase {
             return true;
         } else if(_.isPlainObject(value)){
             // todo: instead of (value._type === this.id) use global types registry and isAssignableFrom()
+            // notice the use case: if checking the type's assignability then polymorphism is fine, but for .setValue we shouldn't accept subtypes but rather replace the instance completely
             if (value._type && value._type !== this.id){
                 if (errorDetails){
                     errorDetails.expected = this;
@@ -108,19 +109,19 @@ export default class BaseType extends PrimitiveBase {
                 }
                 return false;
             }
-          return Object.keys(this._spec).every(fieldName => {
-              if (value[fieldName] === undefined || this._spec[fieldName].validateType(value[fieldName])){
-                  return true;
-              } else {
-                  let fieldErrorDetails = errorDetails && _.defaults({path: `${errorDetails.path}.${fieldName}`}, errorDetails);
-                  let result = this._spec[fieldName].allowPlainVal(value[fieldName], fieldErrorDetails);
-                  if (errorDetails && !result){
-                      _.assign(errorDetails, fieldErrorDetails);
-                      return false;
-                  }
-                  return true;
-              }
-          });
+            return Object.keys(this._spec).every(fieldName => {
+                if (value[fieldName] === undefined || this._spec[fieldName].validateType(value[fieldName])){
+                    return true;
+                } else {
+                    let fieldErrorDetails = errorDetails && _.defaults({path: `${errorDetails.path}.${fieldName}`}, errorDetails);
+                    let result = this._spec[fieldName].allowPlainVal(value[fieldName], fieldErrorDetails);
+                    if (errorDetails && !result){
+                        _.assign(errorDetails, fieldErrorDetails);
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
     }
 
@@ -198,19 +199,16 @@ export default class BaseType extends PrimitiveBase {
                 var fieldValue = (newValue[fieldName] !== undefined) ? newValue[fieldName] : fieldSpec.defaults();
                 if (fieldSpec) {
                     if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
-
                         changed = this.$assignField(fieldName, fieldValue) || changed;
                     }else if(this.__value__[fieldName] && this.__value__[fieldName].setValueDeep && !this.__value__[fieldName].$isReadOnly()){
                         changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
-                    }else{
+                    } else {
                         changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
                                 {
                                     level: errorContext.level, entryPoint:
                                 errorContext.entryPoint, path: errorContext.path + '.' + fieldName
                                 })) || changed;
                     }
-
-
                 }
             });
             if (changed) {
@@ -236,8 +234,7 @@ export default class BaseType extends PrimitiveBase {
                 optionalSetManager(newValue, this.__lifecycleManager__);
                 return true;
             } else {
-                const passedType = getReadableValueTypeName(newValue);
-                MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.id} but got ${passedType}`);
+                MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.id} but got ${getReadableValueTypeName(newValue)}`);
             }
         }
         return false;

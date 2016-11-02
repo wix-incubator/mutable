@@ -4,14 +4,16 @@ import {getMailBox} from 'escalate';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
-import {getValueTypeName} from './utils';
 import BaseType from './base-type';
 import Number from './number';
+import Any from './any';
 import * as generics from './generic-types';
 
 const MAILBOX = getMailBox('Mutable.List');
 
 class _List extends BaseType {
+
+    static options = {subTypes:[Any]};
 
     static defaults() { return []; }
 

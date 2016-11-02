@@ -519,12 +519,6 @@ describe('Custom data', function() {
 
                 expect(instance.$isDirty(rev)).to.equal(true);
             });
-            it('should support polymorphism', function() {
-                var instance = new ParentContainer();
-                instance.setValueDeep({child: {_type:'User', name: 'zaphod', age: 42 }});
-                expect(instance.child.constructor.name).to.eql('User');
-                expect(instance.child.name).to.eql('zaphod');
-            });
         });
         describe("with global freeze config", function() {
 

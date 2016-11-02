@@ -73,12 +73,5 @@ function complexSubTypeTests() {
         expect(List.at(0)).to.not.be.equal(address);
         expect(List.$isDirty(rev)).to.equal(true);
     });
-
-    it('should support polymorphism', function() {
-        var instance = new (Mutable.List.of(Mutable.BaseType))();
-        instance.setValueDeep([{_type:'User', name: 'zaphod', age: 42 }]);
-        expect(instance.at(0).constructor.name).to.eql('User');
-        expect(instance.at(0).child.name).to.eql('zaphod');
-    });
 }
 modifyTestSuite('setValueDeep', { complexSubTypeTests });
