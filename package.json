@@ -47,7 +47,7 @@
     "mocha-loader": "1.0.0",
     "rimraf": "2.5.4",
     "sinon": "2.0.0-pre.2",
-    "sinon-chai": "ssh://github.com/wix/sinon-chai"
+    "sinon-chai": "ssh://github.com/wix/sinon-chai",
     "webpack": "1.13.3",
     "webpack-dev-server": "1.16.2"
   },
