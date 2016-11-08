@@ -46,8 +46,8 @@
     "mocha-env-reporter": "2.0.4",
     "mocha-loader": "1.0.0",
     "rimraf": "2.5.4",
-    "sinon": "git://github.com/cjohansen/Sinon.JS.git#b672042043517b9f84e14ed0fb8265126168778a",
-    "sinon-chai": "2.8.0",
+    "sinon": "2.0.0-pre.2",
+    "sinon-chai": "ssh://github.com/wix/sinon-chai",
     "webpack": "1.13.3",
     "webpack-dev-server": "1.16.2"
   },
