@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.117",
+  "version": "1.0.118",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -13,7 +13,6 @@
   "bugs": {
     "url": "https://github.com/wix/mutable/issues"
   },
- 
   "directories": {
     "test": "test"
   },
