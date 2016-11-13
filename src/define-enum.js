@@ -74,10 +74,13 @@ export function defineEnum(def) {
     };
 
     EnumType.validate = function(v) {
+        return this.validateType(v) || this.allowPlainVal(v);
+    };
+
+    EnumType.validateType = function(v) {
         return (v instanceof EnumType && EnumType[v.key] === v);
     };
 
-    EnumType.validateType = EnumType.validate;
     EnumType.allowPlainVal = function(plainVal) {
         return _.includes(def, plainVal); // ToDo: is enum nullable? || validateNullValue(this, val);
     };
