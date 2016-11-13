@@ -74,7 +74,7 @@ export function defineEnum(def) {
     };
 
     EnumType.validate = function(v) {
-        return (v instanceof EnumType && EnumType[v.key] === v) || (typeof v == 'string' && EnumType[v]);
+        return this.validateType(v) || this.allowPlainVal(v);
     };
 
     EnumType.validateType = function(v) {
