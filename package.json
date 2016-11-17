@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.130",
+  "version": "1.0.131",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -35,7 +35,7 @@
     "babel-cli": "6.18.0",
     "babel-core": "6.18.2",
     "babel-loader": "6.2.7",
-    "babel-plugin-transform-class-properties": "6.18.0",
+    "babel-plugin-transform-class-properties": "6.19.0",
     "babel-preset-es2015": "6.18.0",
     "chai": "3.5.0",
     "karma": "1.3.0",
@@ -55,8 +55,8 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "lodash": "4.16.5",
-    "escalate": "0.0.166"
+    "lodash": "4.17.2",
+    "escalate": "0.0.167"
   },
   "keywords": [
     "flux",
