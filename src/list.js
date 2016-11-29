@@ -240,7 +240,10 @@ class _List extends BaseType {
 
     reverse() {
         if (this.$isDirtyable()) {
-            this.__value__.reverse();
+            const reversed = this.__value__.reverse();
+            _.forEach(reversed, (itemValue, idx) => {
+                this.__value__[idx] = itemValue;
+            });
             return this;
         } else {
             return null;
@@ -280,7 +283,7 @@ class _List extends BaseType {
 
     unshift(...newItems) {
         if (this.$isDirtyable()) {
-            return Array.prototype.unshift.apply(
+            return this.__value__.unshift.apply(
                 this.__value__,
                 newItems.map((item, idx) => {
                     let errorContext = this.constructor.createErrorContext('List unshift error', 'error', this.__options__);

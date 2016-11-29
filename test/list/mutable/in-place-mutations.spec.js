@@ -20,33 +20,31 @@ describe('List', function() {
                 for (var i = 0; i < numberList.length; i++) {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
                 }
-                ;
             });
 
             lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
         });
 
         describe('sort', function() {
-            it('should sort the elements of a List in place', function() {
-                var stringList = aStringList(['Blue', 'Humpback', 'Beluga']);
-                var numberList = aNumberList([40, 1, 5, 200]);
+            it('should return a sorted copy of the list but not change the original', function() {
+                const stringList = aStringList(['2', '1', '3']);
+                const numberList = aNumberList([ 2, 1, 3]);
 
-                function compareNumbers(a, b) {
-                    return a - b;
+                function reverseCompareNumbers(a, b) {
+                    return b-a;
                 }
 
-                var sortedStringList = stringList.sort().toJSON();
-                var sortedNumberList = numberList.sort().toJSON();
-                var funkySortNumberList = numberList.sort(compareNumbers).toJSON();
+                const sortedStringList = stringList.sort().toJSON();
+                const sortedNumberList = numberList.sort().toJSON();
+                const funkySortNumberList = numberList.sort(reverseCompareNumbers).toJSON();
 
-                expect(sortedStringList).to.eql(sortedStringList.sort());
-                expect(sortedNumberList).to.eql(sortedNumberList.sort());
-                expect(funkySortNumberList).to.eql(funkySortNumberList.sort(compareNumbers));
+                expect(sortedStringList, 'sorting with native string comparator').to.eql(['1', '2', '3']);
+                expect(sortedNumberList, 'sorting with native number comparator').to.eql([ 1, 2, 3]);
+                expect(funkySortNumberList, 'sorting with custom comparator').to.eql([ 3, 2, 1]);
+
+                expect(stringList.toJSON(), 'original string list unchanged').to.eql(['2', '1', '3']);
+                expect(numberList.toJSON(), 'original number list unchanged').to.eql([ 2, 1, 3]);
             });
-
-            lifeCycleAsserter.assertMutatorContract((arr) => arr.sort(function(a, b) {
-                return a > b;
-            }), 'sort');
         });
 
         describe('splice', function() {

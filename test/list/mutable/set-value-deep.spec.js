@@ -42,15 +42,15 @@ function complexSubTypeTests() {
     });
 
     it('should replace item for mismatch type', function() {
-        var newUser = new UserType();
-        var newAddress = new AddressType();
-        var mixedList = Mutable.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
-        var log = getMobxLogOf(()=> mixedList.setValueDeep([{ _type: 'Address', age: 65 }, { code: 999 }]));
+        const aUser = new UserType();
+        const anAddress = new AddressType();
+        const mixedList = Mutable.List.of(either(UserType, AddressType)).create([aUser, anAddress]);
+        const log = getMobxLogOf(()=> mixedList.setValueDeep([{ _type: 'Address', age: 65 }, { code: 999 }]));
 
         expect(mixedList.at(0)).to.be.an.instanceOf(AddressType);
-        expect(mixedList.at(1)).to.equal(newAddress);
-        expect(log.filter(change => change.object === mixedList.__value__)).to.be.empty;
-        expect(log.filter(change => change.object === mixedList.at(0).__value__)).not.to.be.empty;
+        expect(mixedList.at(1)).to.equal(anAddress);
+        expect(log.filter(change => change.object === mixedList.__value__)).not.to.be.empty;
+        expect(log.filter(change => change.object === aUser.__value__)).to.be.empty;
         expect(log.filter(change => change.object === mixedList.at(1).__value__)).not.to.be.empty;
     });
 

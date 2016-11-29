@@ -118,7 +118,7 @@ describe('a type with union type field', function() {
             const instance = new Type({
                 foo: 'Monkey'
             });
-            expect(() => instance.$isDirty()).to.not.throw();
+            expect(() => instance.toJSON()).to.not.throw();
         });
     });
 });
