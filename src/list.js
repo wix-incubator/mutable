@@ -307,11 +307,10 @@ class _List extends BaseType {
 
     // Accessor methods
     at(index) {
-    // optional check to avoid mobx warnings when index >= length
-    //    if (index >= 0 && untracked(() => this.__value__.length > index)) {
+       if (index >= 0 && untracked(() => this.__value__.length > index)) {
             var item = this.__value__[index];
             return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
-    //    }
+       }
     }
 
     concat(...addedArrays) {
@@ -399,10 +398,13 @@ class _List extends BaseType {
                     let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
                     errorContext.path += `[${idx}]`;
                     var newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                    changed = changed || newItemVal != this.__value__[idx];
-
-                    this.__value__[idx] = newItemVal;
-
+                    if (this.__value__.length <= idx){
+                        this.__value__.push(newItemVal);
+                        changed = true;
+                    } else {
+                        changed = changed || newItemVal != this.__value__[idx];
+                        this.__value__[idx] = newItemVal;
+                    }
                 });
                 this.__value__.length = newValue.length;
             }
@@ -420,8 +422,8 @@ class _List extends BaseType {
                 let assignIndex = 0;
                 let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
                 _.forEach(newValue, (itemValue, newValIndex) => {
-                    const currentItem = this.__value__[assignIndex];
                     const isPassedArrayLength = this.length <= assignIndex;
+                    const currentItem = isPassedArrayLength? undefined : this.__value__[assignIndex];
                     if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
                         MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
                     } else if (isPassedArrayLength) {

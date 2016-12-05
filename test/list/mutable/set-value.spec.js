@@ -9,16 +9,26 @@ import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-driver
 
 
 function complexSubTypeTests() {
-    it('single subtype List should allow setting data with json', function() {
+    it('List should allow setting data with json', function() {
         var address = new AddressType({ address: 'gaga' });
-        var mixedList = Mutable.List.of(AddressType).create([address]);
+        var list = Mutable.List.of(AddressType).create([address]);
 
-        mixedList.setValue([{ code: 5 }]);
+        list.setValue([{ code: 5 }]);
 
-        expect(mixedList.at(0)).to.be.instanceOf(AddressType);
-        expect(mixedList.at(0).code).to.be.eql(5);
-        expect(mixedList.at(0).address).to.be.eql('');
-        expect(mixedList.at(0)).to.not.be.eql(address);
+        expect(list.at(0)).to.be.instanceOf(AddressType);
+        expect(list.at(0).code).to.be.eql(5);
+        expect(list.at(0).address).to.be.eql('');
+        expect(list.at(0)).to.not.be.eql(address);
+
+    });
+
+    it('List should allow adding data with json', function() {
+        var list = Mutable.List.of(AddressType).create();
+
+        list.setValue([{ code: 5 }]);
+
+        expect(list.at(0)).to.be.instanceOf(AddressType);
+        expect(list.at(0).code).to.be.eql(5);
 
     });
 
