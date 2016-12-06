@@ -201,11 +201,13 @@ class _List extends BaseType {
 
     __getValueArr__() {
         if (this.__isReadOnly__) {
-            return _.map(this.__value__, function(item) {
+            return this.__value__.map(function(item) {
                 return (item.$asReadOnly) ? item.$asReadOnly() : item;
             })
         } else {
-            return this.__value__;
+            return this.__value__.map(function(item) {
+                return item;
+            })
         }
     }
 
