@@ -1,12 +1,11 @@
 import {expect} from 'chai';
 import {Report} from 'escalate/dist/test-kit/testDrivers';
-import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+import {aDataTypeWithSpec, getMobxLogOf} from '../test-kit/test-drivers';
 
 import * as Mutable from '../src';
 import {either} from '../src/generic-types';
 import {ERROR_BAD_TYPE, ERROR_OVERRIDE_FIELD, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
 import {typeCompatibilityTest} from "./type-compatibility.contract";
-const revision = Mutable.revision;
 
 function typescriptInheritance(d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -162,32 +161,14 @@ describe('defining', () => {
 
             it('should be dirtified when any field from super type is changed', function() {
                 const dataItem = new TypeWithInheritance();
-                revision.advance();
-                let rev = revision.read();
-
-                expect(dataItem.$isDirty(rev)).to.equal(false);
-
-                revision.advance();
-                rev = revision.read();
-
-                dataItem.titles.push('something');
-
-                expect(dataItem.$isDirty(rev)).to.equal(true);
+                var log = getMobxLogOf(()=> dataItem.titles.push('something'), dataItem.titles.__value__);
+                expect(log).not.to.be.empty;
             });
 
             it('should be dirtified when any field from type definition is changed', function() {
                 const dataItem = new TypeWithInheritance();
-                revision.advance();
-                let rev = revision.read();
-
-                expect(dataItem.$isDirty(rev)).to.equal(false);
-
-                revision.advance();
-                rev = revision.read();
-
-                dataItem.subTitles.push('something');
-
-                expect(dataItem.$isDirty(rev)).to.equal(true);
+                var log = getMobxLogOf(()=> dataItem.subTitles.push('something'), dataItem.subTitles.__value__);
+                expect(log).not.to.be.empty;
             });
 
         });
@@ -338,9 +319,7 @@ describe('defining', () => {
                         expect(mixedList.at(1)).to.eql(newAddress);
                     });
                     it('single subtype List should allow setting data with json, ', function() {
-
                         var mixedList = Mutable.List.of(AddressType).create([{ address: 'gaga' }]);
-                        expect(mixedList.$isDirty()).to.equal(false);
                         expect(mixedList.at(0)).to.be.instanceOf(AddressType);
                         expect(mixedList.at(0).code).to.be.eql(10);
                         expect(mixedList.at(0).address).to.be.eql('gaga');

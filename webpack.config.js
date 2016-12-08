@@ -1,7 +1,6 @@
 var webpack = require('webpack');
 var path = require('path');
-
-var NODE_MODULES_PATH = path.resolve(__dirname, 'node_modules');
+var SOURCES_PATH = ['src', 'test', 'test-kit'].map(function(dir){return path.join(__dirname, dir)});
 
 module.exports = {
 	context: __dirname,
@@ -34,7 +33,7 @@ module.exports = {
 		loaders: [
 			{
 				test    : /\.js$/,
-				exclude : NODE_MODULES_PATH,
+				include : SOURCES_PATH,
 				loader  : 'babel-loader'
 			}
 		],

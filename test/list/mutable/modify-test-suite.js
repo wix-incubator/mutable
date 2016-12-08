@@ -1,9 +1,9 @@
 import {expect} from 'chai';
 
 import * as Mutable from '../../../src';
-import {LifeCycleManager, revision} from '../../../src';
+import {LifeCycleManager} from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
-import {aDataTypeWithSpec} from '../../../test-kit/test-drivers';
+import {aDataTypeWithSpec, getMobxLogOf} from '../../../test-kit/test-drivers';
 import {either} from '../../../src/generic-types';
 import lifeCycleAsserter from '../lifecycle';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports';
@@ -15,12 +15,8 @@ export default function modifyTestSuite(command, { complexSubTypeTests }) {
 
         it('should not get dirty if values are not changed', function() {
             var numberList = aNumberList([1]);
-            revision.advance();
-            var rev = revision.read();
-
-            numberList[command]([1]);
-
-            expect(numberList.$isDirty(rev)).to.be.false;
+            var log = getMobxLogOf(()=> numberList[command]([1]));
+            expect(log).to.be.empty;
         });
 
         it("accepts a vanilla JS List", function() {

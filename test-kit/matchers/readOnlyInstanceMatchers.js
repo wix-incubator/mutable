@@ -1,7 +1,6 @@
 export default function(chai, utils) {
     chai.Assertion.overwriteMethod('equal', function(_super) {
         return function mutableEquality(expected) {
-
             var actual = this._obj;
             if (expected && actual && expected.$isReadOnly && actual.$isReadOnly && expected.$isReadOnly() != actual.$isReadOnly()) {
                 this.assert(

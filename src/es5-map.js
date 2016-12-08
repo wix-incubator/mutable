@@ -9,7 +9,7 @@ import String from './string';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
-
+import {observable, asFlat, asMap} from 'mobx';
 const MAILBOX = getMailBox('Mutable.Es5Map');
 
 function entries(map){
@@ -120,31 +120,25 @@ class _Es5Map extends BaseType {
                 result[key] = value;
             }
         }
-        return result;
+        return observable(asMap(result, asFlat));
     }
 
     static validate(value) {
-        if (validateValue(this, value)) {
-            return _.isObject(value.__value__);
-        }
-        return isIterable(value) || value instanceof Object;
+        return validateValue(this, value) || isIterable(value) || value instanceof Object;
     }
 
     static wrapValue(value, spec, options, errorContext) {
         if (super.validateType(value)) {
-            if (_.isObject(value.__value__)) {
-                return this._wrapIterable(value.__value__, options, null, errorContext);
-            } else {
-                MAILBOX.error('Strange mutable Es5Map encountered\n __value__:' + JSON.stringify(value.__value__) + '\ninstance: ' + JSON.stringify(value));
-            }
+            return this._wrapIterable(value.__value__.entries(), options, null, errorContext);
         }
         if (isIterable(value)) {
             return this._wrapIterable(value, options, null, errorContext);
         }
         if (_.isObject(value)) {
             return this._wrapIterable(objEntries(value), options, null, errorContext);
+        } else {
+            MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
         }
-        MAILBOX.error('Unknown or incompatible Map value : ' + JSON.stringify(value));
     }
 
     static reportDefinitionErrors() {
@@ -210,22 +204,19 @@ class _Es5Map extends BaseType {
         if (this.$isDirtyable()) {
             errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
             newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
-            for (let key in newValue) {
-                if (newValue.hasOwnProperty(key)) {
-                    changed = changed || (this.__value__[key] !== newValue[key]);
-                }
-            }
+            newValue.forEach((val, key) => {
+                changed = changed || (this.__value__.get(key) !== val);
+            });
             if (!changed) {
-                for (let key in this.__value__) {
-                    if (this.__value__.hasOwnProperty(key)) {
-                        changed = changed || (this.__value__[key] !== newValue[key]);
-                    }
-                }
+                this.__value__.forEach((val, key) => {
+                    changed = changed || val !== newValue.get(key);
+                });
             }
-
+            // apply changes only after no error was thrown.
+            // otherwise we can get an inconsistent map
             if (changed) {
-                this.__value__ = newValue;
-                this.$setDirty();
+                this.__value__.clear();
+                this.__value__.merge(newValue);
             }
         }
         return changed;
@@ -234,7 +225,7 @@ class _Es5Map extends BaseType {
     __setValueDeepHandler__(result, key, val, errorContext) {
         let changed = false;
         if (key !== '_type') {
-            let oldVal = this.__value__[key];
+            let oldVal = this.__value__.get(key);
             if (oldVal !== val) {
                 if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
                     (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
@@ -257,42 +248,35 @@ class _Es5Map extends BaseType {
         if (this.$isDirtyable()) {
             errorContext = errorContext || this.constructor.createErrorContext('Es5Map setValue error', 'error', this.__options__);
             // TODO this code has the same structure as wrapValue, combine both together
+            const newEntriesVisitor = (val, key) => {
+                changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
+            };
             if (BaseType.validateType(newValue)) {
-                if (_.isObject(newValue.__value__)) {
-                    for (let key in newValue.__value__) {
-                        if (newValue.__value__.hasOwnProperty(key)) {
-                            changed = this.__setValueDeepHandler__(result, key, newValue.__value__[key], errorContext) || changed;
-                        }
-                    }
-                } else {
-                    MAILBOX.error('Strange mutable Es5Map encountered\n __value__:' + JSON.stringify(newValue.__value__) + '\ninstance: ' + JSON.stringify(newValue));
-                }
+                newValue.__value__.forEach(newEntriesVisitor);
             } else if (isIterable(newValue)) {
                 for (let [key, val] of newValue) {
-                    changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
+                    newEntriesVisitor(val, key);
                 }
             } else if (_.isObject(newValue)) {
                 for (let key in newValue) {
                     if (newValue.hasOwnProperty(key)) {
-                        changed = this.__setValueDeepHandler__(result, key, newValue[key], errorContext) || changed;
+						const val = newValue[key];
+                        newEntriesVisitor(val, key);
                     }
                 }
             } else {
                 MAILBOX.error('Unknown or incompatible Es5Map value : ' + JSON.stringify(newValue));
             }
-            // newValue is now array of [key, val] arrays
             if (!changed) {
-                for (let key in this.__value__) {
-                    if (this.__value__.hasOwnProperty(key)) {
-                        if (!changed && result[key] === undefined) {
-                            changed = true;
-                        }
-                    }
-                }
+                this.__value__.forEach((val, key) => {
+                    changed = changed || result[key] === undefined;
+                });
             }
+            // apply changes only after no error was thrown.
+            // otherwise we can get an inconsistent map
             if (changed) {
-                this.__value__ = result;
-                this.$setDirty();
+                this.__value__.clear();
+                this.__value__.merge(result);
             }
         }
         return changed;
@@ -310,29 +294,26 @@ class _Es5Map extends BaseType {
     }
 
     clear() {
-        if (this.$setDirty()) {
-            this.__value__ = {};
+        if (this.$isDirtyable()) {
+            this.__value__.clear();
         }
     }
 
     delete(key) {
-        if (this.$setDirty()){
+        if (this.$isDirtyable()){
             let errorContext = this.constructor.createErrorContext('Es5Map delete error', 'error', this.__options__);
             this.constructor._validateEntryKey(key, errorContext);
-            if (this.__value__.hasOwnProperty(key)) {
-                delete this.__value__[key];
-                return true;
-            }
+            return this.__value__.delete(key);
         }
         return false;
     }
 
     set(key, value) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             let errorContext = this.constructor.createErrorContext('Es5Map set error', 'error', this.__options__);
             this.constructor._validateEntryKey(key, errorContext);
             value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__, errorContext);
-            this.__value__[key] = value;
+            this.__value__.set(key, value);
         }
         return this;
     }
@@ -340,46 +321,41 @@ class _Es5Map extends BaseType {
     get(key) {
         let errorContext = this.constructor.createErrorContext('Es5Map get error', 'error', this.__options__);
         this.constructor._validateEntryKey(key, errorContext);
-        return this.__exposeInner__(this.__value__[key]);
+        return this.__exposeInner__(this.__value__.get(key));
     }
 
     has(key) {
         let errorContext = this.constructor.createErrorContext('Es5Map has error', 'error', this.__options__);
         this.constructor._validateEntryKey(key, errorContext);
-        return this.__value__.hasOwnProperty(key);
+        return this.__value__.has(key);
     }
 
     entries() {
-        return this.__unpackIterator__(objEntries(this.__value__));
+        return this.__unpackIterator__(this.__value__.entries());
     }
 
     keys() {
-        return this.__unpackIterator__(Object.keys(this.__value__));
+        return this.__unpackIterator__(this.__value__.keys());
     }
 
     values() {
-        return this.__unpackIterator__(Object.keys(this.__value__).map((key) => this.__value__[key]));
+        return this.__unpackIterator__(this.__value__.values());
     }
 
     forEach(callback, thisArg) {
         if (thisArg) {
             callback = callback.bind(thisArg);
         }
-        Object.keys(this.__value__).forEach((key) => {
-            const value = this.__value__[key];
+        this.__value__.forEach((value, key) => {
             callback(this.__exposeInner__(value), key, this);
         }, thisArg);
     }
 
     toJSON(recursive = true, typed = false) {
         let result = {};
-
-        for (let key in this.__value__) {
-            if (this.__value__.hasOwnProperty(key)) {
-                const value = this.__value__[key];
-                result[key] = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
-            }
-        }
+        this.__value__.forEach((value, key) => {
+            result[key] = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
+        });
         if (typed) {
             result._type = this.constructor.id;
         }
@@ -388,12 +364,9 @@ class _Es5Map extends BaseType {
 
     toJS(typed = false) {
         let result = {};
-        for (let key in this.__value__) {
-            if (this.__value__.hasOwnProperty(key)) {
-                const value = this.__value__[key];
-                result[key] = (value && value.toJS) ? value.toJS(typed) : value;
-            }
-        }
+        this.__value__.forEach((value, key) => {
+            result[key] = (value && value.toJS) ? value.toJS(typed) : value;
+        });
         if (typed) {
             result._type = this.constructor.id;
         }
@@ -405,17 +378,14 @@ class _Es5Map extends BaseType {
      */
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
-        for (let key in this.__value__) {
-            if (this.__value__.hasOwnProperty(key)) {
-                const value = this.__value__[key];
-                if (value && _.isFunction(value.$calcLastChange)) {
-                    yielder(this, value);
-                }
+        this.__value__.forEach((value) => {
+            if (value && _.isFunction(value.$setManager)) {
+                yielder(this, value);
             }
-        }
+        });
     }
     get size() {
-        return Object.keys(this.__value__).length;
+        return this.__value__.size;
     }
 }
 

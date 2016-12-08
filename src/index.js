@@ -11,7 +11,7 @@ import {default as Reference} from './reference';
 import {default as validation} from './validation';
 import {default as Es5Map} from './es5-map';
 import {default as PropsBase} from './props-base';
-import {LifeCycleManager, revision} from './lifecycle';
+import {LifeCycleManager} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
 import {either} from './generic-types';
 
@@ -37,7 +37,6 @@ if (globalCtx.__Mutable){
         Es5Map,
         PropsBase,
         LifeCycleManager,
-        revision,
         defineEnum,
         EnumBase,
         either

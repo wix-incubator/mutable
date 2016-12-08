@@ -97,7 +97,7 @@ function testViewFunctionality(builders, isReadonly) {
             var concatResult = builders.aNumberList([1, 2]).concat(builders.aNumberList([3, 4]), [5, 6]);
 
             expect(concatResult.length).to.equal(6, 'Length check');
-            expect(concatResult.__value__).to.eql([1, 2, 3, 4, 5, 6], 'Equality test'); //TODO: create matcher.
+            expect(concatResult.toJS()).to.eql([1, 2, 3, 4, 5, 6], 'Equality test'); //TODO: create matcher.
         });
 
         it('should be able to concat N Lists of the different types', function() {
@@ -106,7 +106,7 @@ function testViewFunctionality(builders, isReadonly) {
             var concatResult = mixedList.concat(builders.aStringList(['3', '4']), [5, 6]);
 
             expect(concatResult.length).to.equal(6, 'Length check');
-            expect(concatResult.__value__).to.eql([1, '2', '3', '4', 5, 6], 'Equality test'); //TODO: create matcher.
+            expect(concatResult.toJS()).to.eql([1, '2', '3', '4', 5, 6], 'Equality test'); //TODO: create matcher.
         });
 
         it('should allow subtypes allowed by all the different Lists', function() {

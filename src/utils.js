@@ -5,12 +5,32 @@ export function generateClassId() {
     return ClassesCounter++;
 }
 
+const CLONE_KEY = 'isActiveClone';
+export function clone(obj, isDeep = false) {
+    if (obj === null || typeof(obj) !== 'object' || CLONE_KEY in obj) {
+        return obj;
+    }
+    const cloned = obj.constructor ? obj.constructor() : {};
+    for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            if (isDeep) {
+                obj[CLONE_KEY] = null;
+                cloned[key] = clone(obj[key]);
+                delete obj[CLONE_KEY];
+            } else {
+                cloned[key] = obj[key];
+            }
+        }
+    }
+    return cloned;
+}
+
 /**
  * js inheritence for configuration override (used for .nullable(), .of(), .withDefault()...)
  */
 export function cloneType(TypeToClone) {
     class Type extends TypeToClone{
-        static options = TypeToClone.options ? _.cloneDeep(TypeToClone.options) : {};
+        static options = TypeToClone.options ? clone(TypeToClone.options, true) : {};
         constructor(value, options, errorContext) {
             super(value === undefined ? Type.defaults() : value,
                 options ? _.assign({}, Type.options, options) : Type.options,

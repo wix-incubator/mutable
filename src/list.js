@@ -4,19 +4,22 @@ import {getMailBox} from 'escalate';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
-import {getValueTypeName} from './utils';
+import {getValueTypeName, clone} from './utils';
 import BaseType from './base-type';
 import Number from './number';
 import * as generics from './generic-types';
+import {observable, asFlat, untracked} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.List');
-
+function isArray(val){
+    return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
+}
 class _List extends BaseType {
 
     static defaults() { return []; }
 
     static cloneValue(value) {
-        if (_.isArray(value) || _List.validateType(value)) {
+        if (isArray(value) || _List.validateType(value)) {
             if (!value){
                 return value;
             }
@@ -32,12 +35,12 @@ class _List extends BaseType {
         }
     }
 
-    static validate(value) { return validateNullValue(this, value) || _.isArray(value); }
+    static validate(value) { return validateNullValue(this, value) || isArray(value); }
 
     static allowPlainVal(value, errorDetails = null) {
         if (validateNullValue(this, value)) {
             return true;
-        } else if (!_.isArray(value)) {
+        } else if (!isArray(value)) {
             return false;
         }
         return !this.options || !this.options.subTypes ||
@@ -58,24 +61,24 @@ class _List extends BaseType {
     static wrapValue(value, spec, options, errorContext) {
         if (this.validateType(value)) {
             if (value.__value__.map) {
-                return value.__value__.map((itemValue) => {
+                return observable(asFlat(value.__value__.map((itemValue) => {
                     return this._wrapSingleItem(itemValue, options, null, errorContext);
-                }, this);
+                }, this)));
             } else {
                 MAILBOX.error('Unmet mutable type requirement.')
             }
-        } else if (!_.isArray(value)) {
+        } else if (!isArray(value)) {
             MAILBOX.error('Unmet array type requirement.');
+        } else {
+            return observable(asFlat(value.map((itemValue, itemIndex) => {
+
+                return this._wrapSingleItem(itemValue, options, null, {
+                    level: errorContext.level,
+                    entryPoint: errorContext.entryPoint,
+                    path: errorContext.path + '[' + itemIndex + ']'
+                });
+            }, this)));
         }
-
-        return value.map((itemValue, itemIndex) => {
-
-            return this._wrapSingleItem(itemValue, options, null, {
-                level: errorContext.level,
-                entryPoint: errorContext.entryPoint,
-                path: errorContext.path + '[' + itemIndex + ']'
-            });
-        }, this);
     }
 
     static _wrapSingleItem(value, options, lifeCycle, errorContext) {
@@ -198,11 +201,13 @@ class _List extends BaseType {
 
     __getValueArr__() {
         if (this.__isReadOnly__) {
-            return _.map(this.__value__, function(item) {
+            return this.__value__.map(function(item) {
                 return (item.$asReadOnly) ? item.$asReadOnly() : item;
             })
         } else {
-            return this.__value__;
+            return this.__value__.map(function(item) {
+                return item;
+            })
         }
     }
 
@@ -213,10 +218,7 @@ class _List extends BaseType {
     // Mutator methods
 
     pop() {
-        if (this.$setDirty()) {
-            if (this.__value__.length === 0) {
-                return undefined;
-            }
+        if (this.$isDirtyable()) {
             return this.__value__.pop();
         } else {
             return null;
@@ -224,12 +226,12 @@ class _List extends BaseType {
     }
 
     push(...newItems) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             return Array.prototype.push.apply(
                 this.__value__,
                 newItems.map((item, idx) => {
                     let errorContext = this.constructor.createErrorContext('List push error', 'error', this.__options__);
-                    errorContext.path += `[${this.__value__.length + idx}]`;
+                    untracked(() => {errorContext.path += `[${this.__value__.length + idx}]`;});
                     return this.constructor._wrapSingleItem(item, this.__options__, this.__lifecycleManager__, errorContext);
                 })
             );
@@ -239,8 +241,11 @@ class _List extends BaseType {
     }
 
     reverse() {
-        if (this.$setDirty()) {
-            this.__value__.reverse();
+        if (this.$isDirtyable()) {
+            const reversed = this.__value__.reverse();
+            _.forEach(reversed, (itemValue, idx) => {
+                this.__value__[idx] = itemValue;
+            });
             return this;
         } else {
             return null;
@@ -248,7 +253,7 @@ class _List extends BaseType {
     }
 
     shift() {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             return this.__value__.shift();
         } else {
             return null;
@@ -256,7 +261,7 @@ class _List extends BaseType {
     }
 
     sort(cb) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             return this.__wrapArr__(this.__value__.sort(cb));
         } else {
             return null;
@@ -264,7 +269,7 @@ class _List extends BaseType {
     }
 
     splice(index, removeCount, ...addedItems) {
-        if (this.$setDirty()) {
+        if (this.$isDirtyable()) {
             var spliceParams = [index, removeCount];
             addedItems.forEach(function(newItem, idx) {
                 let errorContext = this.constructor.createErrorContext('List splice error', 'error', this.__options__);
@@ -279,8 +284,8 @@ class _List extends BaseType {
     }
 
     unshift(...newItems) {
-        if (this.$setDirty()) {
-            return Array.prototype.unshift.apply(
+        if (this.$isDirtyable()) {
+            return this.__value__.unshift.apply(
                 this.__value__,
                 newItems.map((item, idx) => {
                     let errorContext = this.constructor.createErrorContext('List unshift error', 'error', this.__options__);
@@ -294,8 +299,7 @@ class _List extends BaseType {
     }
 
     set(index, element) {
-        if (this.$setDirty()) {
-
+        if (this.$isDirtyable()) {
             let errorContext = this.constructor.createErrorContext('List set error', 'error', this.__options__);
             return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__, errorContext);
         } else {
@@ -305,8 +309,10 @@ class _List extends BaseType {
 
     // Accessor methods
     at(index) {
-        var item = this.__value__[index];
-        return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+       if (index >= 0 && untracked(() => this.__value__.length > index)) {
+            var item = this.__value__[index];
+            return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+       }
     }
 
     concat(...addedArrays) {
@@ -322,7 +328,7 @@ class _List extends BaseType {
     }
 
     toString() {
-        return this.__value__.toString();
+        return this.__value__.peek().toString();
     }
 
     valueOf() {
@@ -378,71 +384,70 @@ class _List extends BaseType {
     }
 
     setValue(newValue, errorContext) {
-        var changed = false;
-        if (newValue instanceof _List) {
-            newValue = newValue.__getValueArr__();
-        }
-        if (_.isArray(newValue)) {
-            var lengthDiff = this.__value__.length - newValue.length;
-            if (lengthDiff > 0) {
-                // current array is longer than newValue, fill the excess cells with undefined
-                changed = true;
-                this.__value__.splice(newValue.length, lengthDiff);
+            var changed = false;
+            if (newValue instanceof _List) {
+                newValue = newValue.__getValueArr__();
             }
+            if (isArray(newValue)) {
+                var lengthDiff = this.__value__.length - newValue.length;
+                if (lengthDiff > 0) {
+                    // current array is longer than newValue, fill the excess cells with undefined
+                    changed = true;
+                    this.__value__.splice(newValue.length, lengthDiff);
+                }
 
-            _.forEach(newValue, (itemValue, idx) => {
-                let errorContext = errorContext ? _.clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
-                errorContext.path += `[${idx}]`;
-                var newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                changed = changed || newItemVal != this.__value__[idx];
-
-                this.__value__[idx] = newItemVal;
-
-            });
-            if (changed) {
-                this.$setDirty();
+                _.forEach(newValue, (itemValue, idx) => {
+                    let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
+                    errorContext.path += `[${idx}]`;
+                    var newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                    if (this.__value__.length <= idx){
+                        this.__value__.push(newItemVal);
+                        changed = true;
+                    } else {
+                        changed = changed || newItemVal != this.__value__[idx];
+                        this.__value__[idx] = newItemVal;
+                    }
+                });
+                this.__value__.length = newValue.length;
             }
-            this.__value__.length = newValue.length;
-        }
-        return changed;
+            return changed;
     }
 
     setValueDeep(newValue, errorContext = null) {
-        var changed = false;
-        if (newValue instanceof _List) {
-            newValue = newValue.__getValueArr__();
-        }
+            var changed = false;
+            if (newValue instanceof _List) {
+                newValue = newValue.__getValueArr__();
+            }
 
-        if (_.isArray(newValue)) {
-            changed = this.length !== newValue.length;
-            let assignIndex = 0;
-            let errorContext = errorContext ? _.clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
-            _.forEach(newValue, (itemValue, newValIndex) => {
-                const currentItem = this.__value__[assignIndex];
-                const isPassedArrayLength = this.length <= assignIndex;
-                if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
-                    MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
-                } else if (isPassedArrayLength) {
-                    this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
-                    if (currentItem.constructor.allowPlainVal(itemValue)) {
-                        changed = currentItem.setValueDeep(itemValue) || changed;
+            if (isArray(newValue)) {
+                changed = this.length !== newValue.length;
+                let assignIndex = 0;
+                let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
+                _.forEach(newValue, (itemValue, newValIndex) => {
+                    const isPassedArrayLength = this.length <= assignIndex;
+                    const currentItem = isPassedArrayLength? undefined : this.__value__[assignIndex];
+                    if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
+                        MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
+                    } else if (isPassedArrayLength) {
+                        this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                    } else if(this.__options__.subTypes.validateType(itemValue)){
+                        this.__value__[assignIndex] = itemValue;
+                    } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
+                        if (currentItem.constructor.allowPlainVal(itemValue)) {
+                            changed = currentItem.setValueDeep(itemValue) || changed;
+                        } else {
+                            changed = true;
+                            this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                        }
                     } else {
-                        changed = true;
+                        changed = changed || itemValue !== currentItem;
                         this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                     }
-                } else {
-                    changed = changed || itemValue !== currentItem;
-                    this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                }
-                assignIndex++;
-            });
-            if (changed) {
-                this.$setDirty(true);
+                    assignIndex++;
+                });
+                this.__value__.length = newValue.length;
             }
-            this.__value__.length = newValue.length;
-        }
-        return changed;
+            return changed;
     }
 
     /**
@@ -451,18 +456,25 @@ class _List extends BaseType {
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
         for (let element of this.__value__) {
-            if (element && _.isFunction(element.$calcLastChange)) {
+            if (element && _.isFunction(element.$setManager)) {
                 yielder(this, element);
             }
         }
+    }
+    $atomsIterator(yielder) {
+        yielder(this.__value__.$mobx.atom);
+    }
+    get length(){
+        return this.__value__.length;
+    }
+    set length(newLength){
+        this.__value__.length = newLength;
     }
 }
 
 export default defineType('List', {
     spec: function() {
-        return {
-            length: Number.withDefault(0)
-        };
+        return {};
     }
 }, null, _List);
 
