@@ -7,11 +7,6 @@ import {either} from '../src/generic-types';
 import {ERROR_BAD_TYPE, ERROR_OVERRIDE_FIELD, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
 import {typeCompatibilityTest} from "./type-compatibility.contract";
 
-function typescriptInheritance(d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-}
 describe('defining', () => {
     let Type1, Type2;
     before('define types', () => {
@@ -29,17 +24,6 @@ describe('defining', () => {
     describe('Boolean with default value', () => {
         typeCompatibilityTest(() => Mutable.Boolean.withDefault(true), true);
     });
-
-    it('a subclass without propper mutable definition', function() {
-        function MyType() {
-            Mutable.BaseType.apply(this, arguments);
-        }
-        typescriptInheritance(MyType, Mutable.BaseType);
-        expect(() => {
-            new MyType();
-        }).to.report(ERROR_BAD_TYPE('MyType'));
-    });
-
     describe('a basic type', () => {
 
         typeCompatibilityTest(() => Type2);

@@ -119,7 +119,7 @@ describe('List', function() {
             it('sort', function() {
                 var numberList = builders.aNumberList([40, 1, 5, 200]);
                 numberList.sort();
-                expect(numberList).to.eql(builders.aNumberList([40, 1, 5, 200]));
+                expect(numberList.toJSON()).to.eql([40, 1, 5, 200]);
             });
 
             it('splice', function() {

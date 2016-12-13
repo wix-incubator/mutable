@@ -6,10 +6,8 @@ module.exports = {
 	context: __dirname,
 	devtool: 'eval',
 	entry: {
-		'mutable'              : [	'./src' ],
-		'test-kit'              : [ './test-kit' ],
-		'test'                  : ['./test'],
-		'webtest'               : ['mocha!./test']
+		'test' : ['./test/browser-test'],
+		'webtest' : ['mocha!./test/browser-test']
 	},
 	output: {
 		path: __dirname + '/dist',
@@ -18,7 +16,6 @@ module.exports = {
 		pathinfo: true
 	},
 	resolve: {
-		//extensions: ['', '.js', '.json'],
 		alias: {
 			mutable: __dirname + '/src',
 			'test-kit': __dirname + '/test-kit/'
@@ -32,9 +29,9 @@ module.exports = {
 	module: {
 		loaders: [
 			{
-				test    : /\.js$/,
+				test    : /\.[tj]s$/,
 				include : SOURCES_PATH,
-				loader  : 'babel-loader'
+                loader: 'ts-loader?logLevel=warn&entryFileIsJs=true'
 			}
 		],
 		noParse: /\.min\.js$/
