@@ -37,6 +37,7 @@ export function cloneType(TypeToClone) {
                 errorContext);
         }
     }
+    Type.__proto__ = Object.create(TypeToClone);  // inherint non-enumerable static properties
     return Type;
 }
 
