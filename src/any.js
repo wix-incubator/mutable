@@ -2,10 +2,8 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import BaseType from './base-type';
-import defineType from './define-type';
-import {validateNullValue, misMatchMessage} from './validation';
+import {misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
-import {toString, toUnwrappedString} from './generic-types';
 import {getClassesByName, getAllClasses} from '../src/class-repo';
 
 const MAILBOX = getMailBox('Mutable.Any');

@@ -93,11 +93,5 @@ describe('a type with any type field', function() {
             expect(() => instance.setValue({foo:null})).to.not.throw();
             expect(instance.foo).to.be.null;
         });
-
-        it("shouldn't crap its pants", function () {
-            const Type = defineType();
-            const instance = new Type({foo: 'Monkey'});
-            expect(() => instance.$isDirty()).to.not.throw();
-        });
     });
 });

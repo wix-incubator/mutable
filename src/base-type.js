@@ -217,21 +217,21 @@ export default class BaseType extends PrimitiveBase {
     $assignField(fieldName, newValue) {
         // don't assign if input is the same as existing value
         return untracked(() => {
-            if (this.__value__[fieldName] !== newValue) {
-                var fieldDef = getFieldDef(this.constructor, fieldName);
-                var typedField = isAssignableFrom(BaseType, fieldDef);
-                // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
-                if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
-                    // validation passed set the value
-                    this.__value__[fieldName] = newValue;
-                    optionalSetManager(newValue, this.__lifecycleManager__);
-                    return true;
-                } else {
-                    const passedType = getReadableValueTypeName(newValue);
-                    MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.id} but got ${passedType}`);
-                }
-            }
-            return false;
+			if (this.__value__[fieldName] !== newValue) {
+				var fieldDef = getFieldDef(this.constructor, fieldName);
+				var typedField = isAssignableFrom(BaseType, fieldDef);
+				// for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
+				if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
+					// validation passed set the value
+					this.__value__[fieldName] = newValue;
+					optionalSetManager(newValue, this.__lifecycleManager__);
+					return true;
+				} else {
+					const passedType = getReadableValueTypeName(newValue);
+					MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.id} but got ${passedType}`);
+				}
+			}
+			return false;
         });
     }
 

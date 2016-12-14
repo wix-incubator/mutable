@@ -3,9 +3,6 @@ import {getMailBox} from 'escalate';
 
 import defineType from './define-type';
 import BaseType from './base-type';
-import Number from './number';
-import String from './string';
-import Any from './any';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
@@ -43,7 +40,7 @@ function isIterable(value) {
 
 class _Es5Map extends BaseType {
 
-    static options = {subTypes:[Any]};
+ //   static options = {subTypes:[Any]};
 
     static defaults() { return {}; }
 
