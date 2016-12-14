@@ -1,5 +1,16 @@
 import {BaseAtom} from 'mobx';
 
+/*
+proto: getter, setter
+proto.fields : type
+this. : atom
+this.value : values
+
+
+
+*/
+
+
 
 /**
  * A Field is a typed reference to a mutable object.
@@ -34,18 +45,19 @@ export class Field{
 
 }
 
-// "inherit" type API
-[
-    '_matchValue',
-    'allowPlainVal',
-    'isNullable',
-    'create',
-    'defaults',
-    'validate',
-    'validateType',
-    'isJsAssignableFrom'
-].forEach(funcName => {
-    Field.prototype[funcName] = function () {
-        return this.fieldSpec[funcName].apply(this.fieldSpec, arguments);
-    };
-});
+//
+// // "inherit" type API
+// [
+//     '_matchValue',
+//     'allowPlainVal',
+//     'isNullable',
+//     'create',
+//     'defaults',
+//     'validate',
+//     'validateType',
+//     'isJsAssignableFrom'
+// ].forEach(funcName => {
+//     Field.prototype[funcName] = function () {
+//         return this.fieldSpec[funcName].apply(this.fieldSpec, arguments);
+//     };
+// });

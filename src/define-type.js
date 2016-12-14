@@ -46,14 +46,14 @@ function generateSpec(id, spec, ParentType) {
     return baseSpec;
 }
 
-function setSchemaIterators(target, spec, parent) {
+function setSchemaIterators(proto, spec, parent) {
     var complex = [];
     for (var k in spec) {
         if (spec[k] && spec[k]._spec) {
             complex[complex.length] = k;
         }
     }
-    target.$dirtyableElementsIterator = function typeDirtyableElementsIterator(yielder) {
+    proto.$dirtyableElementsIterator = function typeDirtyableElementsIterator(yielder) {
         for (let c of complex) {
             let k = this.__value__[c];
             if (k && _.isFunction(k.$setManager)) { // if value is dirtyable
@@ -62,7 +62,7 @@ function setSchemaIterators(target, spec, parent) {
         }
         parent && _.isFunction(parent.$dirtyableElementsIterator) && parent.$dirtyableElementsIterator.call(this, yielder);
     };
-    target.$atomsIterator = function atomsIterator(yielder) {
+    proto.$atomsIterator = function atomsIterator(yielder) {
         for (var c in spec) {
             if (spec.hasOwnProperty(c)) {
                 let a = this.__value__.$mobx.values[c];
