@@ -18,13 +18,13 @@ export default function defineType(id, typeDefinition, ParentType, TypeConstruct
         static ancestors = ParentType.ancestors.concat([ParentType.id]);
         static id = id;
         static uniqueId = generateClassId();
+        static defined = true;
         constructor(...args){
             super(...args);
         }
     }
     // values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
     const typeSelfSpec = typeDefinition.spec(Type);
-    Type.__proto__ = Object.create(ParentType);
     Type._spec = generateSpec(id, typeSelfSpec, ParentType);
     setSchemaIterators(Type.prototype, typeSelfSpec, ParentType.prototype);
     generateFieldsOn(Type.prototype, typeSelfSpec);

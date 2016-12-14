@@ -46,7 +46,6 @@ export class PrimitiveBase {
     static validateType() {
         MAILBOX.error(this.id + 'did not properly override validateType()');
     }
-    static preConstructor() {}
 
     /**
      * Determines whether an instance of a specified type can be assigned to an instance of the current type
@@ -95,8 +94,6 @@ export class PrimitiveBase {
     constructor(...args){
         if (typeof this.constructor.preConstructor === 'function'){
             this.constructor.preConstructor(...args);
-        } else {
-            MAILBOX.error(`Type definition error: "${this.constructor.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
     }
 }

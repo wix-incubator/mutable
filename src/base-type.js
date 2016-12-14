@@ -142,6 +142,12 @@ export default class BaseType extends PrimitiveBase {
         });
         return observable(newValue);
     }
+    static preConstructor() {
+        if (!this.defined) {
+            MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
+        }
+    }
+
     constructor(value, options = null, errorContext = null) {
         super(value);
 
