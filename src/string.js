@@ -1,5 +1,6 @@
 import PrimitiveBase from './primitive-base';
 import {validateNullValue} from './validation';
+import {registerClass} from './class-repo';
 
 export default class _String extends PrimitiveBase {
     static defaults() { return ''; }
@@ -17,3 +18,4 @@ export default class _String extends PrimitiveBase {
 
 }
 _String.id = 'string';
+registerClass(_String);

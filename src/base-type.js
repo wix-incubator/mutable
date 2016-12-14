@@ -101,6 +101,7 @@ export default class BaseType extends PrimitiveBase {
             return true;
         } else if(_.isPlainObject(value)){
             // todo: instead of (value._type === this.id) use global types registry and isAssignableFrom()
+            // notice the use case: if checking the type's assignability then polymorphism is fine, but for .setValue we shouldn't accept subtypes but rather replace the instance completely
             if (value._type && value._type !== this.id){
                 if (errorDetails){
                     errorDetails.expected = this;

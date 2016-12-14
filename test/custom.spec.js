@@ -43,6 +43,10 @@ var WithNonSerializable = aDataTypeWithSpec({
     str: Mutable.String
 }, 'WithNonSerializable');
 
+var ParentContainer = aDataTypeWithSpec({
+    child: Mutable.BaseType
+}, 'ParentContainer');
+
 var lifeCycleAsserter = lifecycleContract();
 (() => {
     lifeCycleAsserter.addFixture(

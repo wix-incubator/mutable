@@ -3,9 +3,9 @@ import {getMailBox} from 'escalate';
 
 import defineType from './define-type';
 import BaseType from './base-type';
-import {getValueTypeName} from './utils';
 import Number from './number';
 import String from './string';
+import Any from './any';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
@@ -38,10 +38,12 @@ function safeAsReadOnlyOrArr(item) {
 }
 
 function isIterable(value) {
-    return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === 'function');
+    return typeof value === 'object' && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === 'function');
 }
 
 class _Es5Map extends BaseType {
+
+    static options = {subTypes:[Any]};
 
     static defaults() { return {}; }
 

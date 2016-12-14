@@ -40,21 +40,13 @@ export function cloneType(TypeToClone) {
     return Type;
 }
 
-export function getValueTypeName(value) {
-    if (value && value.constructor && value.constructor.id) {
-        return value.constructor.id
-    }
-    if (_.isPlainObject(value) && value._type) {
-        return value._type
-    }
-    return typeof value;
-}
-
 export function getFieldDef(Type, fieldName) {
     return Type._spec[fieldName];
 }
 
-
+/**
+ * used for error message construction, returns the name of the type
+ */
 export function getReadableValueTypeName(value) {
     if (value === null)
         return 'null';
