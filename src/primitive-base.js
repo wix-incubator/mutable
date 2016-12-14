@@ -30,10 +30,6 @@ export class PrimitiveBase {
     static isNullable() {
         return (this.options && this.options.nullable) || false;
     }
-    static get type(){
-        MAILBOX.warn('Type.type is deprecated');
-        return this;
-    }
     static create(v) {
         return this.validate(v) ? v : this.defaults();
     }
