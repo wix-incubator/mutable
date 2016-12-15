@@ -1,17 +1,20 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-
 import BaseType from './base-type';
-import PrimitiveBase from './primitive-base';
-import {isAssignableFrom, validateNullValue, misMatchMessage} from './validation';
-import {generateClassId} from './utils';
+import {misMatchMessage, validateValue} from './validation';
+import {generateClassId, getDefinedType} from './utils';
 import {untracked} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.define');
 
-function defineGeneric(source){
-    const result = defineType('GenericType', {spec: () => ({})});
-    result.withDefault(source.defaults(), source.validate, source.options);
+function genericValidateType(value){
+    return validateValue(BaseType, value);
+}
+
+function defineGenericField(source){
+    const result =  defineType('GenericType', {spec: () => ({})})
+        .withDefault(source.defaults(), source.validate, source.options);
+    result.validateType = genericValidateType;
     return result;
 }
 
@@ -42,8 +45,8 @@ export default function defineType(id, typeDefinition, ParentType, TypeConstruct
 function normalizeSchema(type, parentSpec, typeSelfSpec, parentName) {
     _.forEach(typeSelfSpec, (fieldDef, fieldName) => {
         if (validateField(type, parentSpec, fieldName, fieldDef, parentName)){
-            if ((fieldDef || fieldDef._cloned) === BaseType) {
-                typeSelfSpec[fieldName] = defineGeneric(fieldDef);
+            if (getDefinedType(fieldDef) === BaseType) {
+                typeSelfSpec[fieldName] = defineGenericField(fieldDef);
             }
         }
         // maybe we should delete the field from the spec if it's not valid?

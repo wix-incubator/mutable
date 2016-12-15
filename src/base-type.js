@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import config from './config';
 import {makeDirtyable, optionalSetManager} from './lifecycle';
 import PrimitiveBase from './primitive-base';
-import {getFieldDef, getReadableValueTypeName, clone} from './utils';
+import {getFieldDef, getReadableValueTypeName, clone, getDefinedType} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
 import {observable, asFlat, asReference, untracked} from 'mobx';
@@ -144,7 +144,7 @@ export default class BaseType extends PrimitiveBase {
         return observable(newValue);
     }
     static preConstructor(){
-        if (BaseType._spec === ((this._cloned && this._cloned._spec) || this._spec)) {
+        if (BaseType._spec === getDefinedType(this)._spec) {
             MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
     }
