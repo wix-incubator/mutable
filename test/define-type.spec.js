@@ -31,6 +31,12 @@ describe('defining', () => {
         }).to.report(ERROR_BAD_TYPE('MyType'));
     });
 
+    it('a defined subclass that uses BaseType as a generic field (legacy, remove when we offer a generic type)', function() {
+        const GenericType = aDataTypeWithSpec({ wrapped: Mutable.BaseType }, 'GenericType');
+        expect(new GenericType().toJS()).to.eql({wrapped:{}});
+    });
+
+
     describe('a basic type', () => {
 
         typeCompatibilityTest(() => Type2);

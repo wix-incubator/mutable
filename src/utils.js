@@ -30,7 +30,7 @@ export function clone(obj, isDeep = false) {
  */
 export function cloneType(TypeToClone) {
     class Type extends TypeToClone{
-        static defined = true; // a dirty hack to not break abominal hack that uses Basetype.nullable() as a generic <any> field
+        static _cloned = TypeToClone._cloned || TypeToClone;
         static options = TypeToClone.options ? clone(TypeToClone.options, true) : {};
         constructor(value, options, errorContext) {
             super(value === undefined ? Type.defaults() : value,

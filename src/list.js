@@ -133,7 +133,6 @@ class _List extends BaseType {
         if (report) {
             MAILBOX.error('List constructor: ' + report.message);
         }
-        super.preConstructor();
     }
 
     constructor(value = [], options = {}, errorContext) {

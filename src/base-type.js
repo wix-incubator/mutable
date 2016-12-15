@@ -63,6 +63,7 @@ export default class BaseType extends PrimitiveBase {
         }, {});
     }
 
+    // this is not the right place for reportFieldDefinitionError
     static reportFieldDefinitionError(fieldDef) {
         if (!fieldDef || !(fieldDef.prototype instanceof PrimitiveBase)) {
             return { message: `must be a primitive type or extend core3.Type`, path: '' };
@@ -142,8 +143,8 @@ export default class BaseType extends PrimitiveBase {
         });
         return observable(newValue);
     }
-    static preConstructor() {
-        if (!this.defined) {
+    static preConstructor(){
+        if (BaseType._spec === ((this._cloned && this._cloned._spec) || this._spec)) {
             MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
     }
