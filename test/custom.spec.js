@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import * as Mutable from '../src';
 import {aDataTypeWithSpec, getMobxLogOf} from '../test-kit/test-drivers';
 import {lifecycleContract} from './lifecycle.contract.spec';
-import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE, ERROR_ATTEMPTING_TO_OVERRIDE_READONLY} from '../test-kit/test-drivers/reports';
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE, ERROR_IN_SET_VALUE_DEEP, ERROR_ATTEMPTING_TO_OVERRIDE_READONLY} from '../test-kit/test-drivers/reports';
 
 var User = aDataTypeWithSpec({
     name: Mutable.String.withDefault('leon'),
@@ -493,6 +493,48 @@ describe('Custom data', function() {
                 expect(log.filter(change => change.object === instance.__value__)).to.be.empty;
                 expect(log.filter(change => change.object === instance.child.__value__)).not.to.be.empty;
             });
+            describe('setting values of wrong type', () => {
+                const StartField = Mutable.define("StartField", { spec: function() { return {
+                    validProp: Mutable.String,
+                    invalidProp: Mutable.Number
+                }; }});
+                const StartData = Mutable.define("StartData", { spec: function() { return {
+                    field: StartField.nullable(true)
+                }; }});
+                const EndField = Mutable.define("EndField", { spec: function() { return {
+                    validProp: Mutable.String,
+                    invalidProp: Mutable.String
+                }; }});
+                const EndData = Mutable.define("EndData", { spec: function() { return {
+                    field: EndField.nullable(true)
+                }; }});
+                const startInstance = new StartData({field:{validProp:'start',invalidProp:5}});
+                const endInstance = new EndData({field:null});
+
+                const inputValue = startInstance.toJS(true);
+
+                it("should report correct level, path and context", function() {
+                    expect (() => endInstance.setValueDeep(inputValue)).to.throw;
+                    expect (() => endInstance.setValueDeep(inputValue)).to.report(ERROR_IN_SET_VALUE_DEEP('EndData.field.invalidProp', 'string', 'number'));
+                });
+
+                it("should allow report override", function() {
+                    const errorContext = endInstance.constructor.createErrorContext('custom','info');
+                    expect (() => endInstance.setValueDeep(inputValue, errorContext)).not.to.throw;
+                    expect (() => endInstance.setValueDeep(inputValue, errorContext)).to.report({ level: 'info', params: `custom: "EndData.field.invalidProp" expected type string but got number` });
+                });
+
+                it("if not throws, should apply partial fitting value from sub-field", function() {
+                    const errorContext = endInstance.constructor.createErrorContext('custom','info');
+                    endInstance.setValueDeep(inputValue, errorContext);
+                    expect(endInstance.toJSON(true)).to.eql({
+                        field:{
+                            validProp:'start',
+                            invalidProp:''
+                        }});
+                });
+            });
+
         });
         describe("with global freeze config", function() {
 
