@@ -18,7 +18,7 @@ function getTypeName(type) {
     return result;
 }
 
-class _Union extends BaseType {
+export default class Union extends BaseType {
     static defaults() {
         if (!this.options || !this.options.subTypes) {
             MAILBOX.error('Untyped Unions are not supported. please state union of types in the format string|number');
@@ -45,9 +45,15 @@ class _Union extends BaseType {
     }
 
     static allowPlainVal(value, errorDetails = null) {
-        return validateNullValue(this, value) ||
+        const myPath = errorDetails && errorDetails.path;
+        const result = validateNullValue(this, value) ||
             (this.options && this.options.subTypes &&
-            this.options.subTypes.some(typeDef => typeDef.allowPlainVal(value, errorDetails)))
+            this.options.subTypes.some(typeDef => typeDef.allowPlainVal(value, errorDetails)));
+        if (!result && errorDetails && myPath === errorDetails.path){
+            // the expected type is the union, not the last rejecting type.
+            errorDetails.expected = this;
+        }
+        return result;
     }
 
     static validate(value) {
@@ -102,8 +108,3 @@ class _Union extends BaseType {
         super.preConstructor();
     }
 }
-
-export default defineType('Union', {
-    spec: function(Union) {return {};}
-}, null, _Union);
-

@@ -1,5 +1,6 @@
 import PrimitiveBase from './primitive-base';
 import {validateNullValue} from './validation';
+import {registerClass} from './class-repo';
 
 export default class _Boolean extends PrimitiveBase {
     static defaults() { return false; }
@@ -14,4 +15,4 @@ export default class _Boolean extends PrimitiveBase {
 }
 
 _Boolean.id = 'boolean';
-//_Boolean.create = Boolean;
+registerClass(_Boolean);

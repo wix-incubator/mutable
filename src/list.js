@@ -6,7 +6,6 @@ import {validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {getValueTypeName, clone} from './utils';
 import BaseType from './base-type';
-import Number from './number';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked} from 'mobx';
 
@@ -15,6 +14,8 @@ function isArray(val){
     return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
 }
 class _List extends BaseType {
+
+  //  static options = {subTypes:[Any]};
 
     static defaults() { return []; }
 

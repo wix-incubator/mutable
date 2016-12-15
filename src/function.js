@@ -1,5 +1,6 @@
 import PrimitiveBase from './primitive-base';
 import {validateNullValue} from './validation';
+import {registerClass} from './class-repo';
 
 function noop() { }
 
@@ -18,3 +19,4 @@ export default class _Function extends PrimitiveBase {
 }
 
 _Function.id = 'function';
+registerClass(_Function);

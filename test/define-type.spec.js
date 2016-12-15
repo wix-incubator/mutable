@@ -87,7 +87,6 @@ describe('defining', () => {
             }).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
         });
 
-
         it('should report error if field type is missing', function() {
             expect(function() {
                 Mutable.define('invalid', {

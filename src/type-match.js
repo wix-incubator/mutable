@@ -3,12 +3,11 @@ import {getMailBox} from 'escalate';
 import {misMatchMessage, validateNotNullValue} from './validation';
 import {optionalSetManager} from './lifecycle';
 import {PrimitiveBase} from './primitive-base';
-
+import {getClassesByName} from './class-repo';
 const MAILBOX = getMailBox('Mutable.type-match');
 
-
 export function validateAndWrap(itemValue, type, lifeCycle, errorContext, errorTemplate) {
-    itemValue = matchValueToType(itemValue, type).wrap(itemValue, type, errorContext, errorTemplate);
+    itemValue = new TypeMatch(itemValue, errorContext, errorTemplate).tryType(type).wrap();
     optionalSetManager(itemValue, lifeCycle);
     return itemValue;
 }
@@ -39,10 +38,19 @@ export class TypeMatch{
             expected: PrimitiveBase,
             actual:this.value
         };
-        // TODO: search for _type annotation and create match with global type registry
     }
     wrap(){
         return this.match.wrap(this.value, this.type, this.errorContext, this.errorTemplate, this.errorDetails);
+    }
+    tryTypeAnnotation(){
+        if (this.value && this.value._type){
+            const types = getClassesByName(this.value._type);
+            if (types){
+                this.tryTypes(...types);
+            } else {
+                MAILBOX.error('did not find type '+this.value._type);
+            }
+        }
     }
     tryTypes(...newTypes) {
         for (let i=0; i < newTypes.length && !this.match.best; ++i){
@@ -76,9 +84,13 @@ const matchTypes = {
         worseThan: (o) => false,
         best:true
     },
-    NATIVE_JS_VALUE : {
+    TYPED_NATIVE_JS_VALUE : {
         wrap: (itemValue, type, errorContext) => type.create(itemValue, undefined, errorContext),
         worseThan: (o) => o === matchTypes.PERFECT
+    },
+    NATIVE_JS_VALUE : {
+        wrap: (itemValue, type, errorContext) => type.create(itemValue, undefined, errorContext),
+        worseThan: (o) => o !== matchTypes.MISMATCH
     },
     MISMATCH: {
         wrap: (itemValue, type, errorContext, errorTemplate, errorDetails) => {
@@ -96,14 +108,12 @@ const matchTypes = {
 };
 
 function matchValueToType(itemValue, type, errorDetails){
-    if (itemValue === null && type.isNullable()) {
-        return matchTypes.PERFECT;
-    } else if (itemValue === null) {
-        return matchTypes.MISMATCH;
-    } else if (type.validateType(itemValue)) { //todo if ancestor it's not perfect
+    if (itemValue === null) {
+        return type.isNullable() ? matchTypes.PERFECT : matchTypes.MISMATCH;
+    } else if (type.validateType(itemValue)) { //todo polymorphism?
         return matchTypes.PERFECT;
     } else if (type.allowPlainVal(itemValue, errorDetails)){
-        return matchTypes.NATIVE_JS_VALUE;
+        return (type.id === itemValue._type) ? matchTypes.TYPED_NATIVE_JS_VALUE : matchTypes.NATIVE_JS_VALUE;
     } else {
         return matchTypes.MISMATCH
     }
