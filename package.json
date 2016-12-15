@@ -30,7 +30,7 @@
     "test:node": "mocha --reporter mocha-env-reporter --require dist/test-kit/index.js --require source-map-support/register 'dist/**/*.spec.js'",
     "test:browser": "karma start --single-run",
     "test": "npm run test:node && npm run test:browser",
-    "reset": "rimraf ./node_modules ./dist && npm install && npm run build:src && npm test",
+    "reset": "rimraf ./node_modules ./dist && npm install && npm test",
     "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
   "devDependencies": {

@@ -2,8 +2,8 @@
   "compilerOptions": {
     "allowJs": true,
     "module": "commonjs",
-    "target": "es5",
-    "noImplicitAny": false,
+    "target": "es2015",
+    "noImplicitAny": true,
     "strictNullChecks": true,
     "stripInternal": true,
     "sourceMap": true,
