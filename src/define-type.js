@@ -4,17 +4,12 @@ import BaseType from './base-type';
 import {misMatchMessage, validateValue} from './validation';
 import {generateClassId, getDefinedType} from './utils';
 import {untracked} from 'mobx';
-
 const MAILBOX = getMailBox('Mutable.define');
-
-function genericValidateType(value){
-    return validateValue(BaseType, value);
-}
 
 function defineGenericField(source){
     const result =  defineType('GenericType', {spec: () => ({})})
         .withDefault(source.defaults(), source.validate, source.options);
-    result.validateType = genericValidateType;
+    result.validateType = (value) => validateValue(source, value);
     return result;
 }
 

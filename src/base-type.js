@@ -144,7 +144,9 @@ export default class BaseType extends PrimitiveBase {
         return observable(newValue);
     }
     static preConstructor(){
-        if (BaseType._spec === getDefinedType(this)._spec) {
+        if (BaseType === getDefinedType(this)){
+            MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
+        } else if (BaseType._spec === getDefinedType(this)._spec) {
             MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
     }
