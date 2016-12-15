@@ -10,6 +10,9 @@ export function ERROR_IN_SET(path, fieldType, passedType) {
 export function ERROR_IN_SET_VALUE(path, fieldType, passedType) {
     return { level: 'error', params: `setValue error: "${path}" expected type ${fieldType} but got ${passedType}` };
 }
+export function ERROR_IN_SET_VALUE_DEEP(path, fieldType, passedType) {
+    return { level: 'error', params: `setValueDeep error: "${path}" expected type ${fieldType} but got ${passedType}` };
+}
 export function ERROR_IN_DEFAULT_VALUES(path, fieldType, passedType) {
     return { level: 'fatal', params: `Type definition error: "${path}" expected type ${fieldType} but got ${passedType}` };
 }
