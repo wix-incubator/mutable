@@ -25,11 +25,15 @@ export function clone(obj, isDeep = false) {
     return cloned;
 }
 
+export function getDefinedType(type){
+    return type && type._cloned || type;
+}
 /**
  * js inheritence for configuration override (used for .nullable(), .of(), .withDefault()...)
  */
 export function cloneType(TypeToClone) {
     class Type extends TypeToClone{
+        static _cloned = getDefinedType(TypeToClone);
         static options = TypeToClone.options ? clone(TypeToClone.options, true) : {};
         constructor(value, options, errorContext) {
             super(value === undefined ? Type.defaults() : value,
@@ -37,6 +41,7 @@ export function cloneType(TypeToClone) {
                 errorContext);
         }
     }
+    Type.__proto__ = Object.create(TypeToClone);  // inherint non-enumerable static properties
     return Type;
 }
 

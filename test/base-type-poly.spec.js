@@ -34,7 +34,7 @@ describe('BaseType', function() {
 
         var TestType = aDataTypeWithSpec({
             poly: Typorama.BaseType.nullable().withDefault(null)
-        }, 'Test');
+        }, 'TestType');
 
         var test = new TestType();
 

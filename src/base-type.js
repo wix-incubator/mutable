@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import config from './config';
 import {makeDirtyable, optionalSetManager} from './lifecycle';
 import PrimitiveBase from './primitive-base';
-import {getFieldDef, getReadableValueTypeName, clone} from './utils';
+import {getFieldDef, getReadableValueTypeName, clone, getDefinedType} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue, misMatchMessage} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
 import {observable, asFlat, asReference, untracked} from 'mobx';
@@ -63,6 +63,7 @@ export default class BaseType extends PrimitiveBase {
         }, {});
     }
 
+    // this is not the right place for reportFieldDefinitionError
     static reportFieldDefinitionError(fieldDef) {
         if (!fieldDef || !(fieldDef.prototype instanceof PrimitiveBase)) {
             return { message: `must be a primitive type or extend core3.Type`, path: '' };
@@ -142,6 +143,14 @@ export default class BaseType extends PrimitiveBase {
         });
         return observable(newValue);
     }
+    static preConstructor(){
+        if (BaseType === getDefinedType(this)){
+            MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
+        } else if (BaseType._spec === getDefinedType(this)._spec) {
+            MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
+        }
+    }
+
     constructor(value, options = null, errorContext = null) {
         super(value);
 
