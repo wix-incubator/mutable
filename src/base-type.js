@@ -4,8 +4,8 @@ import {getMailBox} from 'escalate';
 import config from './config';
 import {makeDirtyable, optionalSetManager} from './lifecycle';
 import PrimitiveBase from './primitive-base';
-import {getFieldDef, getReadableValueTypeName, clone} from './utils';
-import {isAssignableFrom, validateNullValue, validateValue} from './validation';
+import {getFieldDef, getReadableValueTypeName, clone, getDefinedType} from './utils';
+import {isAssignableFrom, validateNullValue, validateValue, misMatchMessage} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
 import {observable, asFlat, asReference, untracked} from 'mobx';
 
@@ -63,6 +63,7 @@ export default class BaseType extends PrimitiveBase {
         }, {});
     }
 
+    // this is not the right place for reportFieldDefinitionError
     static reportFieldDefinitionError(fieldDef) {
         if (!fieldDef || !(fieldDef.prototype instanceof PrimitiveBase)) {
             return { message: `must be a primitive type or extend core3.Type`, path: '' };
@@ -142,6 +143,14 @@ export default class BaseType extends PrimitiveBase {
         });
         return observable(newValue);
     }
+    static preConstructor(){
+        if (BaseType === getDefinedType(this)){
+            MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
+        } else if (BaseType._spec === getDefinedType(this)._spec) {
+            MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
+        }
+    }
+
     constructor(value, options = null, errorContext = null) {
         super(value);
 
@@ -198,11 +207,12 @@ export default class BaseType extends PrimitiveBase {
                 }else if(this.__value__[fieldName] && this.__value__[fieldName].setValueDeep && !this.__value__[fieldName].$isReadOnly()){
                     changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
                 }else{
-                    changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__,
-                            {
-                                level: errorContext.level, entryPoint:
-                            errorContext.entryPoint, path: errorContext.path + '.' + fieldName
-                            })) || changed;
+                    const fieldErrorContext = {
+                        level: errorContext.level,
+                        entryPoint: errorContext.entryPoint,
+                        path: errorContext.path + '.' + fieldName
+                    };
+                    changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, fieldErrorContext), fieldErrorContext) || changed;
                 }
             });
             return changed;
@@ -213,24 +223,27 @@ export default class BaseType extends PrimitiveBase {
     // validates and assigns input to field.
     // will report error for undefined fields
     // returns whether the field value has changed
-    $assignField(fieldName, newValue) {
+    $assignField(fieldName, newValue, errorContext = null) {
         // don't assign if input is the same as existing value
         return untracked(() => {
-            if (this.__value__[fieldName] !== newValue) {
-                var fieldDef = getFieldDef(this.constructor, fieldName);
-                var typedField = isAssignableFrom(BaseType, fieldDef);
-                // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
-                if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
-                    // validation passed set the value
-                    this.__value__[fieldName] = newValue;
-                    optionalSetManager(newValue, this.__lifecycleManager__);
-                    return true;
-                } else {
-                    const passedType = getReadableValueTypeName(newValue);
-                    MAILBOX.error(`Set error: "${this.constructor.id}.${fieldName}" expected type ${fieldDef.id} but got ${passedType}`);
-                }
-            }
-            return false;
+			if (this.__value__[fieldName] !== newValue) {
+				var fieldDef = getFieldDef(this.constructor, fieldName);
+				var typedField = isAssignableFrom(BaseType, fieldDef);
+				// for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
+				if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
+					// validation passed set the value
+					this.__value__[fieldName] = newValue;
+					optionalSetManager(newValue, this.__lifecycleManager__);
+					return true;
+				} else {
+					if (!errorContext){
+					errorContext =this.constructor.createErrorContext('Set error', 'error');
+                        errorContext.path  = errorContext.path + '.'+fieldName;
+                    }
+                    MAILBOX.post(errorContext.level, misMatchMessage(errorContext,fieldDef, newValue));
+				}
+			}
+			return false;
         });
     }
 

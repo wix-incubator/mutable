@@ -187,7 +187,6 @@ class _Es5Map extends BaseType {
         if (report) {
             MAILBOX.error(`Es5Map constructor: "${report.path}" ${report.message}`);
         }
-        super.preConstructor();
     }
 
     constructor(value = [], options = { subTypes: {} }, errorContext = null) {

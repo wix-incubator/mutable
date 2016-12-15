@@ -37,14 +37,14 @@ function testViewFunctionality(builders, isReadonly) {
 
             var slicedList = numberList.slice(-(numberList.length - 1));
 
-            expect(slicedList).to.eql(builders.aNumberList([2, 3]).$asReadWrite());
+            expect(slicedList.toJSON()).to.eql([2, 3]);
         });
         it('should offset from the end, if passed a negative END value', function() {
             var numberList = builders.aNumberList([1, 2, 3]);
 
             var slicedList = numberList.slice(0, -1);
 
-            expect(slicedList).to.eql(builders.aNumberList([1, 2]).$asReadWrite());
+            expect(slicedList.toJSON()).to.eql([1, 2]);
         });
         it('should return mutable List', function() {
             var numberList = builders.aNumberList([1, 2, 3]);

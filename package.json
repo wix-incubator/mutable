@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.152",
+  "version": "1.0.158",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -22,21 +22,22 @@
   ],
   "scripts": {
     "clean": "rimraf ./dist",
+    "build:watch": "tsc -w",
     "build:clean": "npm run clean && npm run build:src",
-    "build:src": "babel ./src/ -d ./dist/src/ --source-maps && babel ./test-kit/ -d ./dist/test-kit/ --source-maps",
+    "build": "tsc",
     "bundle": "webpack",
-    "pretest": "npm run bundle",
-    "test:node": "mocha --reporter mocha-env-reporter ./dist/test.bundle.js",
+    "pretest": "npm run build && npm run bundle",
+    "test:node": "mocha --reporter mocha-env-reporter --require dist/test-kit/index.js --require source-map-support/register 'dist/**/*.spec.js'",
     "test:browser": "karma start --single-run",
-    "test": "npm run test:browser && npm run test:node",
+    "test": "npm run test:node && npm run test:browser",
+    "reset": "rimraf ./node_modules ./dist && npm install && npm run build:src && npm test",
     "start": "webpack-dev-server --progress --hot --inline --no-colors"
   },
   "devDependencies": {
-    "babel-cli": "6.18.0",
-    "babel-core": "6.20.0",
-    "babel-loader": "6.2.9",
-    "babel-plugin-transform-class-properties": "6.19.0",
-    "babel-preset-es2015": "6.18.0",
+    "@types/chai": "3.4.34",
+    "@types/lodash": "4.14.39",
+    "@types/mocha": "2.2.33",
+    "@types/sinon": "1.16.32",
     "chai": "3.5.0",
     "deep-is": "0.1.3",
     "difflet": "1.0.1",
@@ -50,6 +51,9 @@
     "rimraf": "2.5.4",
     "sinon": "2.0.0-pre.2",
     "sinon-chai": "2.8.0",
+    "source-map-support": "0.4.6",
+    "ts-loader": "1.3.2",
+    "typescript": "2.1.4",
     "webpack": "1.14.0",
     "webpack-dev-server": "1.16.2"
   },
@@ -58,7 +62,7 @@
   },
   "dependencies": {
     "lodash": "4.17.2",
-    "escalate": "0.0.187",
+    "escalate": "0.0.191",
     "mobx": "2.6.3"
   },
   "keywords": [
@@ -83,18 +87,5 @@
     "functional-reactive-programming",
     "state management",
     "data flow"
-  ],
-  "babel": {
-    "presets": [
-      [
-        "es2015",
-        {
-          "loose": true
-        }
-      ]
-    ],
-    "plugins": [
-      "transform-class-properties"
-    ]
-  }
+  ]
 }
