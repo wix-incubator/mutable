@@ -1,3 +1,4 @@
+import {ErrorContext, ErrorMessage, Validator, ClassOptions, MutableObj} from './types';
 import _BaseType from './base-type';
 import {getMailBox, Level} from 'escalate';
 import {generateClassId, getDefinedType} from './utils';
@@ -15,37 +16,12 @@ const BaseType : Class = cast<Class>(_BaseType);
 
 // ----- typify module I/O
 
-type LifeCycleManager = {};
-
-type Constructor = new (...args: any[]) => MutableObj;
-
-interface ClassOptions{}
-
-type Validator = (value:any) => boolean;
-
-interface ErrorContext {
-    level: Level;
-    entryPoint : string;
-    path : string;
-}
-interface ErrorMessage {
-    path:string;
-    message: string;
-}
 
 interface PrimitiveBase{
     reportDefinitionErrors():ErrorMessage;
-    isJsAssignableFrom(other:Constructor):boolean;
+    isJsAssignableFrom(other:new(...args:any[])=>any):boolean;
     withDefault(defaults:MutableObj, validate:Validator, options:ClassOptions):Class;
     reportSetValueErrors(value:any):ErrorMessage;
-}
-type DirtyableYielder = (container:MutableObj, element:MutableObj)=>void;
-type AtomYielder = (atom:BaseAtom)=>void;
-interface MutableObj{
-    __lifecycleManager__? : LifeCycleManager;
-    $setManager(newManager:LifeCycleManager):void;
-    $dirtyableElementsIterator: (yielder:DirtyableYielder)=>void;
-    $atomsIterator: (yielder:AtomYielder)=>void;
 }
 
 interface Class extends PrimitiveBase{
@@ -141,7 +117,7 @@ function validateField(type:Class, parentSpec:Schema, fieldName:string, fieldDef
     } else if (parentSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism
         error = `already exists on super ${parentName}`;
     } else {
-        var err = BaseType.reportFieldDefinitionError(fieldDef);
+        const err = BaseType.reportFieldDefinitionError(fieldDef);
         if (err) {
             error = err.message;
             if (err.path) {

@@ -28,11 +28,11 @@ module.exports = {
 	},
 	module: {
 		loaders: [
-			{
-				test    : /\.[tj]s$/,
-				include : SOURCES_PATH,
-                loader: 'ts-loader?logLevel=warn&entryFileIsJs=true'
-			}
+			// {
+			// 	test    : /\.[tj]s$/,
+			// 	include : SOURCES_PATH,
+             //    loader: 'ts-loader?logLevel=warn&entryFileIsJs=true'
+			// }
 		],
 		noParse: [/\.min\.js$/, /\.bundle\.js$/]
 	}
