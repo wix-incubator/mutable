@@ -2,11 +2,10 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import defineType from './define-type';
-import {validateNullValue, misMatchMessage, arrow} from './validation';
+import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
-import {getValueTypeName, clone} from './utils';
+import {clone} from './utils';
 import BaseType from './base-type';
-import Number from './number';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked} from 'mobx';
 

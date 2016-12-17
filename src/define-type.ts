@@ -1,106 +1,77 @@
-import {ErrorContext, ErrorMessage, Validator, ClassOptions, MutableObj} from './types';
+import {MutableObj, Spec, cast, Type, Class, isCompositeType} from './types';
 import _BaseType from './base-type';
-import {getMailBox, Level} from 'escalate';
-import {generateClassId, getDefinedType} from './utils';
+import {getMailBox} from 'escalate';
+import {generateClassId, getPrimeType, __extends} from './utils';
 import {forEach, isFunction} from 'lodash';
-import {misMatchMessage as _mmm, validateValue} from './validation';
-import {BaseAtom, untracked} from 'mobx';
+import {misMatchMessage, validateValue} from './validation';
+import {untracked} from 'mobx';
+
 // ---- typify imports
-function cast<T>(ref:any): T{
-    return ref as T;
-}
-type mmmType = (errorContext:ErrorContext, expected:{id:string}|string, actual:any, overridepath?:string, template?:string)=>string;
-const misMatchMessage = cast<mmmType>(_mmm);
-const BaseType : Class = cast<Class>(_BaseType);
+
+const BaseType : Class<{}> = cast<Class<{}>>(_BaseType);
 // done typifying imports
 
 // ----- typify module I/O
-
-
-interface PrimitiveBase{
-    reportDefinitionErrors():ErrorMessage;
-    isJsAssignableFrom(other:new(...args:any[])=>any):boolean;
-    withDefault(defaults:MutableObj, validate:Validator, options:ClassOptions):Class;
-    reportSetValueErrors(value:any):ErrorMessage;
-}
-
-interface Class extends PrimitiveBase{
-    id:string;
-    ancestors : string[];
-    _spec:Spec;
-    __proto__:Class;
-    options:ClassOptions;
-    getFieldsSpec():Spec;
-    defaults():MutableObj;
-    validate:Validator;
-    validateType:Validator;
-    createErrorContext(entryPoint:string, level:Level):ErrorContext;
-    reportFieldDefinitionError(field:FieldDef):ErrorMessage;
-    new(...args: any[]): MutableObj;
-}
-
-type FieldDef = Class | any;
-/**
- * the internal schema of a defined class
- */
-interface Spec{
-    [fieldName:string] :  FieldDef;
-}
 
 /**
  * the schema of the class to define (input format)
  */
 interface Schema{
-    [fieldName:string] :  Class;
+    [fieldName:string] :  Type<any, any>;
 }
 /**
  * the metadata of the type to define
  */
 interface Metadata{
-    spec(self:Class) : Schema;
+    spec(self:Class<any>) : Schema;
 }
 // done typify module I/O
 
 
 const MAILBOX = getMailBox('Mutable.extend');
 
-export default function defineType(id:string, typeDefinition: Metadata, _ParentType?: Class, TypeConstructor?: Class) {
-    const ParentType = TypeConstructor || _ParentType || BaseType;
+export default function defineType<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
+    const ParentType:Class<any> = TypeConstructor || _ParentType || BaseType;
     if (!BaseType.isJsAssignableFrom(ParentType)){
         MAILBOX.fatal(`Type definition error: ${id} is not a subclass of core3.Type`);
     }
-    class Type extends ParentType {
-        static ancestors = ParentType.ancestors.concat([ParentType.id]);
-        static id = id;
-        static uniqueId = generateClassId();
-        constructor(...args:any[]){
-            super(...args);
-        }
+    const type = Type as any as Class<T>;
+    const _super = ParentType as any as (...args:any[]) => void;
+    __extends(Type, ParentType);
+    function Type() {
+        _super.apply(this, arguments);
     }
+    type.ancestors = ParentType.ancestors.concat([ParentType.id]);
+    type.id = id;
+    type.uniqueId = ''+generateClassId();
+
     // values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
-    const typeSelfSpec = typeDefinition.spec(Type);
+    const typeSelfSpec = typeDefinition.spec(type);
     const baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
-    normalizeSchema(Type, baseSpec, typeSelfSpec, ParentType.id);
-    Type.__proto__ = Object.create(ParentType); // inherint non-enumerable static properties
-    Type._spec = generateSpec(id, typeSelfSpec, baseSpec);
-    setSchemaIterators(Type.prototype, typeSelfSpec, ParentType.prototype);
-    generateFieldsOn(Type.prototype, typeSelfSpec);
-    return Type;
+    normalizeSchema(type, baseSpec, typeSelfSpec, ParentType.id);
+    type.__proto__ = Object.create(ParentType); // inherint non-enumerable static properties
+    type._spec = generateSpec(id, typeSelfSpec, baseSpec);
+    setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
+    generateFieldsOn(type.prototype, typeSelfSpec);
+    return type;
 }
 
 
-function defineGenericField(source:Class){
-    const result =  defineType('GenericType', {spec: () => ({})})
+function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{
+    let result =  defineType('GenericType', {spec: () => ({})})
         .withDefault(source.defaults(), source.validate, source.options);
-    result.validateType = (value) => validateValue(source, value);
+    result.validateType = (value:any):value is Type<{}|null, {}|null> => validateValue(source, value);
     return result;
 }
 
+function isBaseType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
+    return getPrimeType(fieldDef) === BaseType;
+}
 
-function normalizeSchema(type:Class, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
-    forEach(typeSelfSpec, (fieldDef:FieldDef, fieldName:string) => {
+function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
+    forEach(typeSelfSpec, (fieldDef:Type<any, any>, fieldName:string) => {
         if (validateField(type, parentSpec, fieldName, fieldDef, parentName)){
-            if (getDefinedType(fieldDef) === BaseType) {
+            if (isBaseType(fieldDef)) {
                 typeSelfSpec[fieldName] = defineGenericField(fieldDef);
             }
         }
@@ -108,7 +79,7 @@ function normalizeSchema(type:Class, parentSpec:Spec, typeSelfSpec:Schema, paren
     });
 }
 
-function validateField(type:Class, parentSpec:Schema, fieldName:string, fieldDef:Class, parentName:string):boolean {
+function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fieldDef:Type<any, any>, parentName:string):boolean {
     let error;
     const errorContext = BaseType.createErrorContext(`Type definition error`, 'fatal');
     let path = `${type.id}.${fieldName}`;
@@ -137,7 +108,7 @@ function validateField(type:Class, parentSpec:Schema, fieldName:string, fieldDef
 }
 
 function generateSpec(id:string, spec:Schema, baseSpec:Spec) {
-    forEach(spec, (field:FieldDef, fieldName:string) => {
+    forEach(spec, (field:Type<any, any>, fieldName:string) => {
         baseSpec[fieldName] = field;
     });
     return baseSpec;
@@ -146,7 +117,7 @@ function generateSpec(id:string, spec:Schema, baseSpec:Spec) {
 function setSchemaIterators(proto:MutableObj, spec:Schema, parent:MutableObj) {
     const complex:Array<string> = [];
     for (let k in spec) {
-        if (spec[k] && spec[k]._spec) {
+        if (isCompositeType(spec[k])) {
             complex[complex.length] = k;
         }
     }
@@ -160,7 +131,7 @@ function setSchemaIterators(proto:MutableObj, spec:Schema, parent:MutableObj) {
         parent && isFunction(parent.$dirtyableElementsIterator) && parent.$dirtyableElementsIterator.call(this, yielder);
     };
     proto.$atomsIterator = function atomsIterator(yielder) {
-        for (var c in spec) {
+        for (let c in spec) {
             if (spec.hasOwnProperty(c)) {
                 let a = this.__value__.$mobx.values[c];
                 if (a && isFunction(a.reportObserved)) {
@@ -173,7 +144,7 @@ function setSchemaIterators(proto:MutableObj, spec:Schema, parent:MutableObj) {
 }
 
 function generateFieldsOn(proto:any, fieldsDefinition:Schema) {
-    forEach(fieldsDefinition, function(fieldDef:Class, fieldName:string) {
+    forEach(fieldsDefinition, function(fieldDef:Type<any, any>, fieldName:string) {
         Object.defineProperty(proto, fieldName, {
             get: function() {
                 const value = this.__value__[fieldName];

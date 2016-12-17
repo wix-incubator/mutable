@@ -3,11 +3,13 @@ import {getMailBox} from 'escalate';
 import {misMatchMessage, validateNotNullValue} from './validation';
 import {optionalSetManager} from './lifecycle';
 import {PrimitiveBase} from './primitive-base';
+import {Type, ErrorDetails, ErrorContext} from "./types";
 
 const MAILBOX = getMailBox('Mutable.type-match');
 
+type LifecycleManager = {};
 
-export function validateAndWrap(itemValue, type, lifeCycle, errorContext, errorTemplate) {
+export function validateAndWrap<T>(itemValue:any, type:Type<T, any>, lifeCycle:LifecycleManager|undefined|null, errorContext:ErrorContext, errorTemplate?:string) :T{
     itemValue = matchValueToType(itemValue, type).wrap(itemValue, type, errorContext, errorTemplate);
     optionalSetManager(itemValue, lifeCycle);
     return itemValue;
@@ -20,7 +22,7 @@ export function validateAndWrap(itemValue, type, lifeCycle, errorContext, errorT
  * @param other other instance to match
  * @return true iff all other is assignable to origin's type and matches all it's fields
  */
-export function isDataMatching(origin, other) {
+export function isDataMatching(origin:any, other:any):boolean {
     return !!(origin === other || (origin && !other) || // TODO: should compare to null and undefined
     (_.isString(origin) && _.isString(other) && origin.localeCompare(other) === 0) ||
     (_.isObject(origin) && origin.constructor && origin.constructor && validateNotNullValue(origin.constructor, other) &&
@@ -28,12 +30,10 @@ export function isDataMatching(origin, other) {
 }
 
 export class TypeMatch{
-    match = matchTypes.MISMATCH;
-    type = PrimitiveBase;
-    constructor(value, errorContext, errorTemplate){
-        this.value = value;
-        this.errorContext = errorContext;
-        this.errorTemplate = errorTemplate;
+    match:MatchType = matchTypes.MISMATCH;
+    type:Type<any, any> = PrimitiveBase;
+    errorDetails:ErrorDetails;
+    constructor(private value:any, private errorContext:ErrorContext, private errorTemplate?:string){
         this.errorDetails = {
             path : errorContext? errorContext.path : '',
             expected: PrimitiveBase,
@@ -44,13 +44,13 @@ export class TypeMatch{
     wrap(){
         return this.match.wrap(this.value, this.type, this.errorContext, this.errorTemplate, this.errorDetails);
     }
-    tryTypes(...newTypes) {
+    tryTypes(...newTypes:Type<any, any>[]) {
         for (let i=0; i < newTypes.length && !this.match.best; ++i){
             this.tryType(newTypes[i]);
         }
         return this;
     }
-    tryType(newType){
+    tryType(newType:Type<any, any>){
         let errorDetails = {
             path : this.errorContext? this.errorContext.path : '',
             expected:newType,
@@ -65,6 +65,12 @@ export class TypeMatch{
         return this;
     }
 }
+
+interface MatchType{
+    wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
+    worseThan(o:MatchType):boolean;
+    best?:boolean
+}
 /**
  * each match type knows how to wrap input value,
  * can tell if it's better than another match type,
@@ -72,16 +78,16 @@ export class TypeMatch{
  */
 const matchTypes = {
     PERFECT : {
-        wrap: (itemValue) => itemValue,
-        worseThan: (o) => false,
+        wrap: (itemValue:any) => itemValue,
+        worseThan: (o:MatchType) => false,
         best:true
     },
     NATIVE_JS_VALUE : {
-        wrap: (itemValue, type, errorContext) => type.create(itemValue, undefined, errorContext),
-        worseThan: (o) => o === matchTypes.PERFECT
+        wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext){ return type.create(itemValue, undefined, errorContext);},
+        worseThan: (o:MatchType) => o === matchTypes.PERFECT
     },
     MISMATCH: {
-        wrap: (itemValue, type, errorContext, errorTemplate, errorDetails) => {
+        wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails){
             let errorPath = null;
             if (errorDetails){
                 itemValue = errorDetails.actual;
@@ -91,11 +97,11 @@ const matchTypes = {
             MAILBOX.post(errorContext.level, misMatchMessage(errorContext, type, itemValue, errorPath, errorTemplate));
             return type.create();
         },
-        worseThan: (o) => true
+        worseThan: (o:MatchType) => true
     }
 };
 
-function matchValueToType(itemValue, type, errorDetails){
+function matchValueToType<T, S>(itemValue:any, type:Type<T, S>, errorDetails?:ErrorDetails):MatchType{
     if (itemValue === null && type.isNullable()) {
         return matchTypes.PERFECT;
     } else if (itemValue === null) {
