@@ -48,7 +48,7 @@ export function inheritBabel(parent){
 const __extends = (this && this.__extends) || new Function('d', 'b', `
         for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
         function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());`);
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new__());`);
 
 export function inheritTypescript(parent){
     __extends(TsChild, parent);
