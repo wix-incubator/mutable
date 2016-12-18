@@ -1,7 +1,7 @@
 import {MutableObj, Spec, cast, Type, Class, isCompositeType} from './types';
 import _BaseType from './base-type';
 import {getMailBox} from 'escalate';
-import {generateClassId, getPrimeType, __extends} from './utils';
+import {generateClassId, getPrimeType, inherit} from './utils';
 import {forEach, isFunction} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
 import {untracked} from 'mobx';
@@ -35,12 +35,7 @@ export default function defineType<T extends P, P>(id:string, typeDefinition: Me
     if (!BaseType.isJsAssignableFrom(ParentType)){
         MAILBOX.fatal(`Type definition error: ${id} is not a subclass of core3.Type`);
     }
-    const type = Type as any as Class<T>;
-    const _super = ParentType as any as (...args:any[]) => void;
-    __extends(Type, ParentType);
-    function Type() {
-        return _super.apply(this, arguments) || this;
-    }
+    const type = inherit(id, ParentType);
     type.ancestors = ParentType.ancestors.concat([ParentType.id]);
     type.id = id;
     type.uniqueId = ''+generateClassId();

@@ -40,6 +40,10 @@ export function isCompositeType(type:any):type is CompositeType<any, any>{
     return type && type.preConstructor && isType(type);
 }
 
+// array of constructor arguments
+// value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext
+export type CtorArgs<T extends Mutable<S>|null, S> = [T|DeepPartial<S>|undefined, ClassOptions|undefined, ErrorContext|undefined];
+
 // class / list / map
 export interface CompositeType<T extends Mutable<S>|null, S> extends Type<T, S> {
     createErrorContext(entryPoint:string, level:Level):ErrorContext;

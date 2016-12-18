@@ -16,7 +16,7 @@ describe('utils', function() {
                     spy(...args);
                 }
             }
-            var CloneType = cloneType(MockType);
+            var CloneType = cloneType('CloneType', MockType);
 
             new CloneType("value", { b: false });
 

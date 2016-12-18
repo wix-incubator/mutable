@@ -55,7 +55,7 @@ abstract class _PrimitiveBase {
     }
 
     static nullable() {
-        const NullableType = cloneType(this as any);
+        const NullableType = cloneType(this.id+'|null', this as any);
         NullableType.options.nullable = true;
         return NullableType;
     }
@@ -63,7 +63,7 @@ abstract class _PrimitiveBase {
         return value;
     }
     static withDefault(defaults?:MutableObj, validate?:Validator<any>, options?:ClassOptions){
-        const NewType = cloneType(cast<Type<any, any>>(this));
+        const NewType = cloneType(this.id+'_with_defaults', this as any);
         if (validate) {
             NewType.validate = validate;
         }

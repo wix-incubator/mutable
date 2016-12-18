@@ -1,5 +1,11 @@
 import * as _ from 'lodash';
-import {Type, DeepPartial, ClassOptions, ErrorContext, Mutable, Class} from "./types";
+import {default as config} from './config';
+
+import {Type, DeepPartial, ClassOptions, ErrorContext, Mutable, Class, CtorArgs, cast} from "./types";
+
+export function isDevMode(){
+    return config.devMode;
+}
 
 let ClassesCounter = 0;
 export function generateClassId() {
@@ -47,18 +53,51 @@ export const __extends = (this && this.__extends) || function (d:any, b:any) {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());
     };
 
+type PreSuperFunction<R extends Type<T, S>, T extends Mutable<S>|null, S> = (type:R, value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext)=>CtorArgs<T, S>;
+
+function anonymousInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, parent:R, superArgsMutator?:PreSuperFunction<R, T, S>):R{
+    const type = Type as any as R;
+    const _super = parent as any as (value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext) => T;
+    function Type(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext) {
+        return _super.apply(this,
+                superArgsMutator ? superArgsMutator(type, value, options, errorContext) : [value, options, errorContext]
+            ) || this;
+    }
+    __extends(Type, parent);
+    return type;
+}
+
+const classNameRegExp = /^(?:[\$A-Z_a-z])(?:[\$0-9A-Z_a-z])*$/;
+const unionClassDelimitter = /\|/gi;
+function sanitizeClassName(id:string){
+    id = id.replace(unionClassDelimitter, '_or_');
+    if (!classNameRegExp.test(id)){
+        throw new Error(`illegal class name "${id}" did you remember to use a capital letter in the class name?`);
+    }
+    return id;
+}
+function namedInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, parent:R, superArgsMutator?:PreSuperFunction<R, T, S>):R{
+    id = sanitizeClassName(id);
+    const type = cast<R>(new Function('parent', 'superArgsMutator', `return function ${id}(value, options, errorContext) {
+    return parent.${superArgsMutator ? `apply(this, superArgsMutator(${id}, value, options, errorContext))` : 'call(this, value, options, errorContext)'} || this;
+    };`)(parent, superArgsMutator));
+    __extends(type, parent);
+    return type;
+}
+
+export const inherit = isDevMode() ? namedInherit : anonymousInherit;
+
+function clonedPreSuper<R extends Type<T, S>, T extends Mutable<S>|null, S>(type:R, value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext){
+    return [value === undefined ? type.defaults() : value,
+        options ? _.assign({}, type.options, options) : type.options,
+        errorContext];
+}
+
 /**
  * js inheritence for configuration override (used for .nullable(), .of(), .withDefault()...)
  */
-export function cloneType<T extends Mutable<S>|null, S>(TypeToClone:Type<T, S>):Type<T, S> {
-    const type = Type as any as Type<T, S>;
-    const _super = TypeToClone as any as (value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext) => void;
-    function Type(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext) {
-        return _super.call(this, value === undefined ? type.defaults() : value,
-            options ? _.assign({}, type.options, options) : type.options,
-            errorContext) || this;
-    }
-    __extends(Type, TypeToClone);
+export function cloneType<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, TypeToClone:R):R {
+    const type = inherit<R, T, S>(id, TypeToClone, clonedPreSuper as PreSuperFunction<R, T, S>);
     type._prime = getPrimeType(TypeToClone);
     type.options = TypeToClone.options ? clone(TypeToClone.options, true) : {};
     type.__proto__ = Object.create(TypeToClone);  // inherint non-enumerable static properties
