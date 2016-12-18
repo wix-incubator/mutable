@@ -45,10 +45,6 @@ export const __extends = (this && this.__extends) || function (d:any, b:any) {
         for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());
-
-        //
-        // function __(_this:any) {_this.constructor = d; return _this;}
-        // d.prototype = b === null ? Object.create(b) : __(Object.create(b.prototype));
     };
 
 /**
