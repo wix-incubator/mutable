@@ -66,7 +66,6 @@ function anonymousInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id
     __extends(Type, parent);
     return type;
 }
-
 const classNameRegExp = /^(?:[\$A-Z_a-z])(?:[\$0-9A-Z_a-z])*$/;
 const unionClassDelimitter = /\|/gi;
 function sanitizeClassName(id:string){

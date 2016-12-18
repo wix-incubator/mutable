@@ -42,11 +42,13 @@ export function inheritBabel(parent){
 }
 
 // typescript
-const __extends = (this && this.__extends) || function (d, b) {
+// using function constructor to hide copy-paste generated code from linter
+// it's important that this code is the same as typescript's __extends function
+// using tslib will solve this
+const __extends = (this && this.__extends) || new Function('d', 'b', `
         for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
         function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());
-    };
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());`);
 
 export function inheritTypescript(parent){
     __extends(TsChild, parent);
