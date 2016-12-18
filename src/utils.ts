@@ -58,9 +58,9 @@ export function cloneType<T extends Mutable<S>|null, S>(TypeToClone:Type<T, S>):
     const type = Type as any as Type<T, S>;
     const _super = TypeToClone as any as (value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext) => void;
     function Type(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext) {
-        _super.call(this, value === undefined ? type.defaults() : value,
+        return _super.call(this, value === undefined ? type.defaults() : value,
             options ? _.assign({}, type.options, options) : type.options,
-            errorContext);
+            errorContext) || this;
     }
     __extends(Type, TypeToClone);
     type._prime = getPrimeType(TypeToClone);

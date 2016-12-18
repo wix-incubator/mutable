@@ -39,7 +39,7 @@ export default function defineType<T extends P, P>(id:string, typeDefinition: Me
     const _super = ParentType as any as (...args:any[]) => void;
     __extends(Type, ParentType);
     function Type() {
-        _super.apply(this, arguments);
+        return _super.apply(this, arguments) || this;
     }
     type.ancestors = ParentType.ancestors.concat([ParentType.id]);
     type.id = id;
