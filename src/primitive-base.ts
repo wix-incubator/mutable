@@ -1,22 +1,25 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {cloneType, getReadableValueTypeName} from './utils';
-import {validateNullValue} from './validation';
 import {TypeMatch} from './type-match';
+import {ErrorMessage, ErrorContext, ErrorDetails, MutableObj, Validator,
+    ClassOptions, cast, Type} from "./types";
 
 const MAILBOX = getMailBox('Mutable.PrimitiveBase');
 
-function reportErrorInternal(value, allowPlain, allowInstance) {
+function reportErrorInternal(value:any, allowPlain?:boolean, allowInstance?:boolean) : ErrorMessage|undefined{
     if (value !== undefined && (!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))) {
         return { message: `expected type ${this.id} but got ${getReadableValueTypeName(value)}`, path: '' };
     }
 }
 
-export class PrimitiveBase {
-    static _matchValue(value, errorContext){
-        return new TypeMatch(value, errorContext).tryType(this);
+abstract class _PrimitiveBase {
+    static id:string;
+    static options:ClassOptions = {};
+    static _matchValue(value:any, errorContext:ErrorContext){
+        return new TypeMatch(value, errorContext).tryType(this as any as Type<any, any>);
     }
-    static allowPlainVal(value, errorDetails = null) {
+    static allowPlainVal(value:any, errorDetails?:ErrorDetails) {
         if(this.validate(value)){
             return true;
         } else {
@@ -30,13 +33,13 @@ export class PrimitiveBase {
     static isNullable() {
         return (this.options && this.options.nullable) || false;
     }
-    static create(v) {
+    static create(v:any) {
         return this.validate(v) ? v : this.defaults();
     }
     static defaults() {
         MAILBOX.error(this.id + 'did not properly override defaults()');
     }
-    static validate(value) {
+    static validate(value:any) {
         MAILBOX.error(this.id + 'did not properly override validate()');
     }
     static validateType() {
@@ -44,23 +47,23 @@ export class PrimitiveBase {
     }
 
     /**
-     * Determines whether an instance of a specified type can be assigned to an instance of the current type
+     * Determines whether an instance of a specified type can be assigned to the current type
      * @param otherType
      */
-    static isJsAssignableFrom(otherType){
+    static isJsAssignableFrom(otherType:any){
         return otherType && (this.prototype === otherType.prototype || this.prototype.isPrototypeOf(otherType.prototype));
     }
 
     static nullable() {
-        const NullableType = cloneType(this);
+        const NullableType = cloneType(this.id+'|null', this as any);
         NullableType.options.nullable = true;
         return NullableType;
     }
-    static cloneValue(value) {
+    static cloneValue(value:any) {
         return value;
     }
-    static withDefault(defaults, validate, options) {
-        const NewType = cloneType(this);
+    static withDefault(defaults?:MutableObj, validate?:Validator<any>, options?:ClassOptions){
+        const NewType = cloneType(this.id+'_with_defaults', this as any);
         if (validate) {
             NewType.validate = validate;
         }
@@ -80,18 +83,20 @@ export class PrimitiveBase {
     static reportDefinitionErrors() {
         return null;
     }
-    static reportSetValueErrors(value) {
+    static reportSetValueErrors(value:any) {
         return reportErrorInternal.call(this, value, true, true);
     }
 
-    static reportSetErrors(value) {
+    static reportSetErrors(value:any) {
         return reportErrorInternal.call(this, value, false, true);
     }
-    constructor(...args){
-        if (typeof this.constructor.preConstructor === 'function'){
-            this.constructor.preConstructor(...args);
+    constructor(){
+        const type = this.constructor as any as Type<any, any>;
+        if (typeof type.preConstructor === 'function'){
+            type.preConstructor();
         }
     }
 }
+export const PrimitiveBase = _PrimitiveBase as any as Type<any, any>;
 
 export default PrimitiveBase;

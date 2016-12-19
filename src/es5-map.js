@@ -3,9 +3,6 @@ import {getMailBox} from 'escalate';
 
 import defineType from './define-type';
 import BaseType from './base-type';
-import {getValueTypeName} from './utils';
-import Number from './number';
-import String from './string';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';

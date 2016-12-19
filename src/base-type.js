@@ -4,10 +4,10 @@ import {getMailBox} from 'escalate';
 import config from './config';
 import {makeDirtyable, optionalSetManager} from './lifecycle';
 import PrimitiveBase from './primitive-base';
-import {getFieldDef, getReadableValueTypeName, clone, getDefinedType} from './utils';
+import {getFieldDef, clone, getPrimeType} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue, misMatchMessage} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
-import {observable, asFlat, asReference, untracked} from 'mobx';
+import {observable, asReference, untracked} from 'mobx';
 
 const MAILBOX = getMailBox('Mutable.BaseType');
 
@@ -26,6 +26,9 @@ function generateId() {
 }
 
 export default class BaseType extends PrimitiveBase {
+    static _spec = Object.freeze(Object.create(null));
+    static ancestors = [];
+    static id = 'BaseType';
 
     static create(value, options, errorContext) {
         return new this(value, options, errorContext);
@@ -143,17 +146,17 @@ export default class BaseType extends PrimitiveBase {
         });
         return observable(newValue);
     }
+
     static preConstructor(){
-        if (BaseType === getDefinedType(this)){
+        if (BaseType === getPrimeType(this)){
             MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
-        } else if (BaseType._spec === getDefinedType(this)._spec) {
+        } else if (BaseType._spec === getPrimeType(this)._spec) {
             MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
     }
 
     constructor(value, options = null, errorContext = null) {
         super(value);
-
         errorContext = errorContext || this.constructor.createErrorContext('Type constructor error', 'error');
 
         this.__isReadOnly__ = false;
@@ -299,9 +302,5 @@ export default class BaseType extends PrimitiveBase {
     }
 }
 
-BaseType._spec = Object.freeze(Object.create(null));
-
-BaseType.ancestors = [];
-BaseType.id = 'BaseType';
 
 makeDirtyable(BaseType);

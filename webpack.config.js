@@ -1,39 +1,39 @@
 var webpack = require('webpack');
 var path = require('path');
-var SOURCES_PATH = ['src', 'test', 'test-kit'].map(function(dir){return path.join(__dirname, dir)});
+var SOURCES_PATH = ['src', 'test', 'test-kit'].map(function(dir){return path.join(__dirname, 'dist', dir)});
 
 module.exports = {
 	context: __dirname,
 	devtool: 'eval',
 	entry: {
-		'test' : ['./test/browser-test'],
-		'webtest' : ['mocha!./test/browser-test']
+		'test' : [path.join(__dirname, 'dist', 'test', 'browser-test')],
+		'webtest' : ['mocha!'+path.join(__dirname, 'dist', 'test', 'browser-test')]
 	},
 	output: {
-		path: __dirname + '/dist',
+		path: path.join(__dirname, 'dist'),
 		filename: '[name].bundle.js',
 		libraryTarget: 'umd',
 		pathinfo: true
 	},
 	resolve: {
 		alias: {
-			mutable: __dirname + '/src',
-			'test-kit': __dirname + '/test-kit/'
+			mutable: path.join(__dirname, 'dist', 'src'),
+			'test-kit': path.join(__dirname, 'dist', 'test-kit')
 		}
 	},
 	devServer: {
-		contentBase: __dirname + '/dist',
+		contentBase: path.join(__dirname, 'dist'),
 		inline: true,
 		hot: true
 	},
 	module: {
 		loaders: [
-			{
-				test    : /\.[tj]s$/,
-				include : SOURCES_PATH,
-                loader: 'ts-loader?logLevel=warn&entryFileIsJs=true'
-			}
+			// {
+			// 	test    : /\.[tj]s$/,
+			// 	include : SOURCES_PATH,
+             //    loader: 'ts-loader?logLevel=warn&entryFileIsJs=true'
+			// }
 		],
-		noParse: /\.min\.js$/
+		noParse: [/\.min\.js$/, /\.bundle\.js$/]
 	}
 };

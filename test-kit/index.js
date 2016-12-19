@@ -1,4 +1,4 @@
-import * as drivers from './test-drivers/aDataTypeWithSpec'
+import * as drivers from './test-drivers'
 import chaiMatchers from "./matchers";
 import * as chai from 'chai';
 import * as sinonChai from 'sinon-chai';

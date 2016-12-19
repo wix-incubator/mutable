@@ -39,20 +39,20 @@ function convertToObject(def) {
 }
 
 export function defineEnum(def) {
-    var EnumType = function EnumType(initValue) {
+    var enumType = function EnumType(initValue) {
         var key = _.findKey(def, value => value === initValue);
-        if (EnumType[key]) {
-            return EnumType[key];
+        if (enumType[key]) {
+            return enumType[key];
         }
         MAILBOX.error(`Enum[${Object.keys(def)}] must be initialized with value.`);
     };
-    EnumType.prototype = Object.create(EnumBase.prototype);
-    EnumType.prototype.constructor = EnumType;
+    enumType.prototype = Object.create(EnumBase.prototype);
+    enumType.prototype.constructor = enumType;
 
-    EnumType.prototype.toJSON = function() {
+    enumType.prototype.toJSON = function() {
         return this.value;
     };
-    EnumType.prototype.toJS = function() {
+    enumType.prototype.toJS = function() {
         // ToDo: should return static ref (this) and accept it in constructor
         return this.value;
     };
@@ -63,47 +63,47 @@ export function defineEnum(def) {
 
     var defVal = null;
     Object.keys(def).forEach(function(key) {
-        EnumType[key] = EnumType[key] = createEnumMember(key, def[key], EnumType.prototype);
+        enumType[key] = enumType[key] = createEnumMember(key, def[key], enumType.prototype);
         if (defVal == null) {
-            defVal = EnumType[key];
+            defVal = enumType[key];
         }
     });
 
-    EnumType.defaults = function() {
+    enumType.defaults = function() {
         return defVal;
     };
 
-    EnumType.validate = function(v) {
+    enumType.validate = function(v) {
         return this.validateType(v) || this.allowPlainVal(v);
     };
 
-    EnumType.validateType = function(v) {
-        return (v instanceof EnumType && EnumType[v.key] === v);
+    enumType.validateType = function(v) {
+        return (v instanceof enumType && enumType[v.key] === v);
     };
 
-    EnumType.allowPlainVal = function(plainVal) {
+    enumType.allowPlainVal = function(plainVal) {
         return _.includes(def, plainVal); // ToDo: is enum nullable? || validateNullValue(this, val);
     };
 
-    EnumType.id = 'enum';
-    EnumType.create = BaseType.create;
+    enumType.id = 'enum';
+    enumType.create = enumType;
 
-    EnumType.reportDefinitionErrors = function() {
+    enumType.reportDefinitionErrors = function() {
         return null;
     };
-    EnumType.reportSetErrors = function() {
+    enumType.reportSetErrors = function() {
         return null;
     };
-    EnumType.reportSetValueErrors = function() {
+    enumType.reportSetValueErrors = function() {
         return null;
     };
 
-    EnumType.withDefault = function(defaults, validate) {
+    enumType.withDefault = function(defaults, validate) {
         var NewType = PrimitiveBase.withDefault.call(this, defaults, validate);
         NewType.defaults = () => defaults;
         return NewType;
     };
-    EnumType.__proto__ = EnumBase;
+    enumType.__proto__ = EnumBase;
 
-    return EnumType;
+    return enumType;
 }
