@@ -1,5 +1,7 @@
 import * as _ from 'lodash';
 import {default as config} from './config';
+import {getMailBox} from 'escalate';
+const MAILBOX = getMailBox('Mutable.utils');
 
 import {Type, DeepPartial, ClassOptions, ErrorContext, Mutable, Class, CtorArgs, cast} from "./types";
 
@@ -68,15 +70,13 @@ function anonymousInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id
 }
 const classNameRegExp = /^(?:[\$A-Z_a-z])(?:[\$0-9A-Z_a-z])*$/;
 const unionClassDelimitter = /\|/gi;
-function sanitizeClassName(id:string){
+
+function namedInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, parent:R, superArgsMutator?:PreSuperFunction<R, T, S>):R{
     id = id.replace(unionClassDelimitter, '_or_');
     if (!classNameRegExp.test(id)){
-        throw new Error(`illegal class name "${id}" did you remember to use a capital letter in the class name?`);
+        MAILBOX.info(`illegal class name "${id}", using "Type" instead`);
+        id = 'Type';
     }
-    return id;
-}
-function namedInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, parent:R, superArgsMutator?:PreSuperFunction<R, T, S>):R{
-    id = sanitizeClassName(id);
     const type = cast<R>(new Function('parent', 'superArgsMutator', `return function ${id}(value, options, errorContext) {
     return parent.${superArgsMutator ? `apply(this, superArgsMutator(${id}, value, options, errorContext))` : 'call(this, value, options, errorContext)'} || this;
     };`)(parent, superArgsMutator));
