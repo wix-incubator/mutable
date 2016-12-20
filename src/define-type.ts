@@ -1,4 +1,4 @@
-import {MutableObj, Spec, cast, Type, Class, isCompositeType} from './types';
+import {MutableObj, Spec, cast, Type, Class, isCompositeType, ReferenceType} from './types';
 import _BaseType from './base-type';
 import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit} from './utils';
@@ -48,6 +48,7 @@ export default function defineType<T extends P, P>(id:string, typeDefinition: Me
     type._spec = generateSpec(id, typeSelfSpec, baseSpec);
     setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
     generateFieldsOn(type.prototype, typeSelfSpec);
+    type.__refType = generateRefType(type); // TODO: lazy getter
     return type;
 }
 
@@ -162,4 +163,26 @@ function generateFieldsOn(proto:any, fieldsDefinition:Schema) {
             configurable: false
         });
     });
+}
+
+function generateRefType<T>(type: Class<T>) :ReferenceType<T>{
+    class Reference {
+        constructor(public __origin:() => any, public path:string[]){}
+    }
+    forEach(type._spec, function(fieldDef:Type<any, any>, fieldName:string) {
+        Object.defineProperty(Reference.prototype, fieldName, {
+            get: function(this:Reference) {
+                let value = this.__origin();
+                for (let i = 0; i < this.path.length; i++){
+                    value = value[this.path[i]];
+                }
+                const fieldErrorContext = type.createErrorContext('get reference error', 'error');
+                return fieldDef._matchValue(value[fieldName], fieldErrorContext).wrap();
+            },
+            enumerable: true,
+            configurable: false
+        });
+    });
+
+    return Reference as any as ReferenceType<T>;
 }

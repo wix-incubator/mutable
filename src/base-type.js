@@ -155,6 +155,13 @@ export default class BaseType extends PrimitiveBase {
         }
     }
 
+    static byReference(provider, path = []){
+        // wrap provider
+        const result = new this();
+        result.__value__ = new this.__refType(provider, path);
+        return result;
+    }
+
     constructor(value, options = null, errorContext = null) {
         super(value);
         errorContext = errorContext || this.constructor.createErrorContext('Type constructor error', 'error');

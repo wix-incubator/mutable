@@ -1,5 +1,6 @@
 import {Level} from 'escalate';
 import {BaseAtom} from 'mobx';
+import {TypeMatch} from "./type-match";
 
 
 export type DeepPartial<T> = {
@@ -14,6 +15,7 @@ export interface Type<T, S>{
     id:string;
     options:ClassOptions;
     _prime?:this;
+    _matchValue:(value:any, errorContext:ErrorContext) => TypeMatch;
     allowPlainVal(value:any, errorDetails?:ErrorDetails):boolean;
     isNullable():boolean;
     withDefault(defaults?:DefaultSource<T>, validate?:Validator<T|S>, options?:ClassOptions):this|Type<(T|null), S>;
@@ -37,7 +39,7 @@ export type Mutable<T> = {
 type DefaultSource<T> = (()=>DeepPartial<T>)|DeepPartial<T>;
 
 export function isCompositeType(type:any):type is CompositeType<any, any>{
-    return type && type.preConstructor && isType(type);
+    return type && type.byReference && isType(type);
 }
 
 // array of constructor arguments
@@ -52,6 +54,8 @@ export interface CompositeType<T extends Mutable<S>|null, S> extends Type<T, S> 
     reportFieldDefinitionError(field:Type<any, any>):ErrorMessage;
     uniqueId:string;
     preConstructor():void;
+    __refType: ReferenceType<T>;
+    byReference: (provider:() => any, path?:string[]) => T;
     new(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext): T;
 }
 
@@ -63,6 +67,10 @@ export interface Spec{
 }
 export function isClass(type:any):type is Class<any>{
     return type && type._spec && isCompositeType(type);
+}
+
+export interface ReferenceType<T>{
+    new :(provider:() => any, path:string[])=>T
 }
 export interface Class<T> extends CompositeType<Mutable<T>, T> {
     _spec:Spec;
