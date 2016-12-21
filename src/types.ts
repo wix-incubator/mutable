@@ -55,7 +55,7 @@ export interface CompositeType<T extends Mutable<S>|null, S> extends Type<T, S> 
     uniqueId:string;
     preConstructor():void;
     __refType: ReferenceType<T>;
-    byReference: (provider:() => any, path?:string[]) => T;
+    byReference: (provider:() => any, path?:Array<string|number>) => T;
     new(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext): T;
 }
 

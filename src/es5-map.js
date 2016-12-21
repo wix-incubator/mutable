@@ -160,10 +160,10 @@ class _Es5Map extends BaseType {
                 definitionError = { path: arrow + 'Es5Map', message: 'Missing types for map. Use Es5Map<SomeType>' };
                 break;
             case 1:
-                subTypes = generics.normalizeTypes(subTypes);
+                subTypes = generics.typesAsArray(subTypes);
                 break;
             default:
-                subTypes = generics.normalizeTypes(subTypes);
+                subTypes = generics.typesAsArray(subTypes);
                 definitionError = { path: `Es5Map<${generics.toUnwrappedString(subTypes)},${arrow}unallowed>`, message: `Too many types for map (${arguments.length}). Use Es5Map<SomeType>` };
         }
         return this.withDefault(undefined, undefined, { subTypes, definitionError: definitionError });
@@ -190,7 +190,7 @@ class _Es5Map extends BaseType {
         if (!errorContext) {
             errorContext = _Es5Map.createErrorContext('Es5Map constructor error', 'error', options);
         }
-        options.subTypes = generics.normalizeTypes(options.subTypes);
+        options.subTypes = generics.typesAsArray(options.subTypes);
         super(value, options, errorContext);
     }
 

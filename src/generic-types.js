@@ -104,7 +104,7 @@ export function unnormalizedArraytoUnwrappedString(subTypes) {
  * @param subTypes could be a type, a result of a call to either() or a result of a previous call to this function
  * @returns {*} a type, or an object that maps type ids to types (a union type object)
  */
-export function normalizeTypes(subTypes) {
+export function typesAsArray(subTypes) {
     if (subTypes && subTypes.id === 'Union') {
         subTypes = subTypes.getTypes();
     }

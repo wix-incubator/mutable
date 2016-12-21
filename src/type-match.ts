@@ -44,7 +44,7 @@ export class TypeMatch{
     wrap(){
         return this.match.wrap(this.value, this.type, this.errorContext, this.errorTemplate, this.errorDetails);
     }
-    byReference(provider:() => any, path:string[]){
+    byReference(provider:() => any, path:Array<string|number>){
         let match, type;
         if (isCompositeType(this.type)) {
             return this.match.byReference(provider, path, this.value, this.type, this.errorContext, this.errorTemplate, this.errorDetails);
@@ -76,7 +76,7 @@ export class TypeMatch{
 
 interface MatchType{
     wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
-    byReference<T>(provider:() => any, path:string[], itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
+    byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
     worseThan(o:MatchType):boolean;
     best?:boolean
 }
@@ -88,13 +88,13 @@ interface MatchType{
 const matchTypes = {
     PERFECT : {
         wrap: (itemValue:any) => itemValue,
-        byReference<T>(provider:() => any, path:string[], itemValue:any){ return itemValue},
+        byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any){ return itemValue},
         worseThan: (o:MatchType) => false,
         best:true
     },
     NATIVE_JS_VALUE : {
         wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext){ return type.create(itemValue, undefined, errorContext);},
-        byReference<T>(provider:() => any, path:string[], itemValue:any, type:CompositeType<T, any>){ return type.byReference(provider, path);},
+        byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>){ return type.byReference(provider, path);},
         worseThan: (o:MatchType) => o === matchTypes.PERFECT
     },
     MISMATCH: {
@@ -108,7 +108,7 @@ const matchTypes = {
             MAILBOX.post(errorContext.level, misMatchMessage(errorContext, type, itemValue, errorPath, errorTemplate));
             return type.create();
         },
-        byReference<T>(provider:() => any, path:string[], itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate:string = 'reference', errorDetails?:ErrorDetails){
+        byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate:string = 'reference', errorDetails?:ErrorDetails){
             let errorPath = null;
             if (errorDetails){
                 itemValue = errorDetails.actual;

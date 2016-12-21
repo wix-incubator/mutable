@@ -48,7 +48,7 @@ export default function defineType<T extends P, P>(id:string, typeDefinition: Me
     type._spec = generateSpec(id, typeSelfSpec, baseSpec);
     setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
     generateFieldsOn(type.prototype, typeSelfSpec);
-    type.__refType = generateRefType(type); // TODO: lazy getter
+    type.__refType = generateRefType(type);
     return type;
 }
 
@@ -165,19 +165,33 @@ function generateFieldsOn(proto:any, fieldsDefinition:Schema) {
     });
 }
 
+export function getValueFromRootRef(rootReference: () => any, path: Array<string|number>) {
+    let value = rootReference();
+    // TODO add checks (the entire path should be objects, arrays or functions)
+    for (let i = 0; i < path.length; i++) {
+        value = value[path[i]];
+    }
+    return value;
+}
+
+export function getReferenceWrapper<T>(thisType: Class<any>, fieldDef: Type<T, any>, rootReference: () => any, path: Array<string|number>, value: any):T {
+    const fieldErrorContext = thisType.createErrorContext('get reference error', 'error');
+    return fieldDef._matchValue(value, fieldErrorContext).byReference(rootReference, path);
+}
+
+function getReference<T>(rootReference:() => any, path:Array<string|number>, thisType: Class<any>, fieldDef: Type<T, any>, fieldName: string):T {
+    let value = getValueFromRootRef(rootReference, path);
+    return getReferenceWrapper(thisType, fieldDef, rootReference, path.concat(fieldName), value[fieldName]);
+}
+
 function generateRefType<T>(type: Class<T>) :ReferenceType<T>{
     class Reference {
-        constructor(public __origin:() => any, public path:string[]){}
+        constructor(public __origin:() => any, public path:Array<string|number>){}
     }
     forEach(type._spec, function(fieldDef:Type<any, any>, fieldName:string) {
         Object.defineProperty(Reference.prototype, fieldName, {
             get: function(this:Reference) {
-                let value = this.__origin();
-                for (let i = 0; i < this.path.length; i++){
-                    value = value[this.path[i]];
-                }
-                const fieldErrorContext = type.createErrorContext('get reference error', 'error');
-                return fieldDef._matchValue(value[fieldName], fieldErrorContext).wrap();
+                return getReference(this.__origin, this.path, type, fieldDef, fieldName);
             },
             enumerable: true,
             configurable: false

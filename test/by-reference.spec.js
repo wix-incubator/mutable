@@ -3,21 +3,28 @@ import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import * as Mutable from '../src';
 import * as sinon from 'sinon';
 
-describe.only('reference', () => {
-    let Type1, Type2, inner, reference;
+describe('reference', () => {
+    let Type1, Type2, inner, reference, state;
     before(() => {
         Type1 = aDataTypeWithSpec({ foo: Mutable.String }, 'Type1');
-        Type2 = aDataTypeWithSpec({ foo: Mutable.String, complex: Type1 }, 'Type2');
+        Type2 = aDataTypeWithSpec({
+            foo: Mutable.String,
+            complex: Type1,
+            listFoo: Mutable.List.of(Mutable.String),
+            listComplex: Mutable.List.of(Type1)
+        }, 'Type2');
     });
 
     beforeEach('reset initial inner object', () => {
-        inner = {
+        reference = sinon.spy(() => state);
+        state = {
             foo: 'bar',
             complex:{
                 foo: 'bar'
-            }
+            },
+            listFoo:['foo', 'bar', 'baz'],
+            listComplex:[{foo: 'bar'}, {foo: 'buz'}]
         };
-        reference = sinon.spy(() => inner);
     });
 
     it ('make a reference instance', () => {
@@ -36,32 +43,66 @@ describe.only('reference', () => {
             expect(reference).to.have.not.been.called;
         });
 
-        it ('has primitive properties as provided', () => {
-            expect(lazy.foo).to.eql('bar');
-            expect(reference).to.have.been.calledOnce;
+        describe('primitive property', () => {
+            it ('has correct value', () => {
+                expect(lazy.foo).to.eql('bar');
+                expect(reference).to.have.been.calledOnce;
+            });
+
+            it('tracks changes', () => {
+                state.foo = 'baz';
+                expect(lazy.foo).to.eql(state.foo);
+            });
         });
 
-        it('tracks changes in primitive properties', () => {
-            expect(lazy.foo).to.eql('bar');
-            expect(reference).to.have.been.calledOnce;
-            inner.foo = 'baz';
-            expect(lazy.foo).to.eql('baz');
-            expect(reference).to.have.been.calledTwice;
+        describe('complex property', () => {
+            it ('has correct value', () => {
+                const complexProperty = lazy.complex;
+                expect(complexProperty).to.be.instanceOf(Type1);
+                expect(reference).to.have.been.calledOnce;
+                expect(complexProperty.foo).to.eql('bar');
+                expect(reference).to.have.been.calledTwice;
+            });
+
+            it('tracks changes', () => {
+                const complexProperty = lazy.complex;
+                state.complex.foo = 'baz';
+                expect(complexProperty.foo).to.eql(state.complex.foo);
+            });
         });
 
-        it ('has complex type properties as provided', () => {
-            const complexProperty = lazy.complex;
-            expect(complexProperty).to.be.instanceOf(Type1);
-            expect(complexProperty.foo).to.eql('bar');
-            expect(reference).to.have.been.calledOnce;
+        describe('list of primitive property', () => {
+            it ('has correct value', () => {
+                const list = lazy.listFoo;
+                expect(list).to.be.instanceOf(Mutable.List);
+                expect(reference).to.have.been.calledOnce;
+                expect(list.at(0)).to.eql('foo');
+                expect(list.toJS()).to.eql(['foo', 'bar', 'baz']);
+            });
+
+            it('tracks changes', () => {
+                const list = lazy.listFoo;
+                state.listFoo = ['baz'];
+                expect(list.toJS()).to.eql(state.listFoo);
+            });
         });
 
-        it('tracks changes in complex properties', () => {
-            expect(lazy.complex.foo).to.eql('bar');
-            expect(reference).to.have.been.calledOnce;
-            inner.complex.foo = 'baz';
-            expect(lazy.complex.foo).to.eql('baz');
-            expect(reference).to.have.been.calledTwice;
+        describe('list of complex property', () => {
+            it ('has correct value', () => {
+                const list = lazy.listComplex;
+                expect(list).to.be.instanceOf(Mutable.List);
+                expect(reference).to.have.been.calledOnce;
+                const complexElement = list.at(0);
+                expect(complexElement).to.be.instanceOf(Type1);
+                expect(complexElement.foo).to.eql('bar');
+                expect(list.toJS()).to.eql([{foo: 'bar'}, {foo: 'buz'}]);
+            });
+
+            it('tracks changes', () => {
+                const list = lazy.listComplex;
+                state.listComplex = [{foo: 'meep'}];
+                expect(list.toJS()).to.eql(state.listComplex);
+            });
         });
     });
 
