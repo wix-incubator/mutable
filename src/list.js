@@ -238,18 +238,6 @@ class _List extends BaseType {
         }
     }
 
-    reverse() {
-        if (this.$isDirtyable()) {
-            const reversed = this.__value__.reverse();
-            _.forEach(reversed, (itemValue, idx) => {
-                this.__value__[idx] = itemValue;
-            });
-            return this;
-        } else {
-            return null;
-        }
-    }
-
     shift() {
         if (this.$isDirtyable()) {
             return this.__value__.shift();
@@ -258,12 +246,12 @@ class _List extends BaseType {
         }
     }
 
-    sort(cb) {
-        if (this.$isDirtyable()) {
-            return this.__wrapArr__(this.__value__.sort(cb));
-        } else {
-            return null;
-        }
+    sort(compareFn) {
+        return this.__wrapArr__(this.__value__.sort(compareFn));
+    }
+
+    reverse() {
+        return this.__wrapArr__(this.__value__.reverse());
     }
 
     splice(index, removeCount, ...addedItems) {
