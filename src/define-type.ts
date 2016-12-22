@@ -1,7 +1,7 @@
 import {MutableObj, Spec, cast, Type, Class, isCompositeType, ReferenceType} from './types';
 import _BaseType from './base-type';
 import {getMailBox} from 'escalate';
-import {generateClassId, getPrimeType, inherit} from './utils';
+import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
 import {forEach, isFunction} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
 import {untracked} from 'mobx';
@@ -163,20 +163,6 @@ function generateFieldsOn(proto:any, fieldsDefinition:Schema) {
             configurable: false
         });
     });
-}
-
-export function getValueFromRootRef(rootReference: () => any, path: Array<string|number>) {
-    let value = rootReference();
-    // TODO add checks (the entire path should be objects, arrays or functions)
-    for (let i = 0; i < path.length; i++) {
-        value = value[path[i]];
-    }
-    return value;
-}
-
-export function getReferenceWrapper<T>(thisType: Class<any>, fieldDef: Type<T, any>, rootReference: () => any, path: Array<string|number>, value: any):T {
-    const fieldErrorContext = thisType.createErrorContext('get reference error', 'error');
-    return fieldDef._matchValue(value, fieldErrorContext).byReference(rootReference, path);
 }
 
 function getReference<T>(rootReference:() => any, path:Array<string|number>, thisType: Class<any>, fieldDef: Type<T, any>, fieldName: string):T {

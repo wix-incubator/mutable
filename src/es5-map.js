@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import {default as defineType, getValueFromRootRef, getReferenceWrapper} from './define-type';
+import defineType from './define-type';
+import {getValueFromRootRef, getReferenceWrapper} from './utils';
 import BaseType from './base-type';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
