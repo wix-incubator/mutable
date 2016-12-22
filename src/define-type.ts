@@ -1,7 +1,7 @@
-import {MutableObj, Spec, cast, Type, Class, isCompositeType} from './types';
+import {MutableObj, Spec, cast, Type, Class, isCompositeType, ReferenceType} from './types';
 import _BaseType from './base-type';
 import {getMailBox} from 'escalate';
-import {generateClassId, getPrimeType, inherit} from './utils';
+import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
 import {forEach, isFunction} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
 import {untracked} from 'mobx';
@@ -48,6 +48,7 @@ export default function defineType<T extends P, P>(id:string, typeDefinition: Me
     type._spec = generateSpec(id, typeSelfSpec, baseSpec);
     setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
     generateFieldsOn(type.prototype, typeSelfSpec);
+    type.__refType = generateRefType(type);
     return type;
 }
 
@@ -162,4 +163,26 @@ function generateFieldsOn(proto:any, fieldsDefinition:Schema) {
             configurable: false
         });
     });
+}
+
+function getReference<T>(rootReference:() => any, path:Array<string|number>, thisType: Class<any>, fieldDef: Type<T, any>, fieldName: string):T {
+    let value = getValueFromRootRef(rootReference, path);
+    return getReferenceWrapper(thisType, fieldDef, rootReference, path.concat(fieldName), value[fieldName]);
+}
+
+function generateRefType<T>(type: Class<T>) :ReferenceType<T>{
+    class Reference {
+        constructor(public __origin:() => any, public path:Array<string|number>){}
+    }
+    forEach(type._spec, function(fieldDef:Type<any, any>, fieldName:string) {
+        Object.defineProperty(Reference.prototype, fieldName, {
+            get: function(this:Reference) {
+                return getReference(this.__origin, this.path, type, fieldDef, fieldName);
+            },
+            enumerable: true,
+            configurable: false
+        });
+    });
+
+    return Reference as any as ReferenceType<T>;
 }

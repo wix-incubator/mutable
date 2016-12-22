@@ -1,7 +1,8 @@
 
+type _Level = 'trace'|'debug'|'info'|'warn'|'error'|'fatal';
 declare module "escalate" {
 
-    export type Level = 'trace'|'debug'|'info'|'warn'|'error'|'fatal';
+    export type Level = _Level;
 
     export interface Mailbox{
         post(level: Level, s: string): void;
@@ -13,4 +14,15 @@ declare module "escalate" {
         trace(message: string): void;
     }
     export function getMailBox(namespace:string):Mailbox;
+}
+
+declare namespace Chai {
+    export interface Report{
+        level?:_Level|RegExp;
+        params?:string;
+        context?:string;
+    }
+    interface Assertion {
+        report(r: Report): Assertion;
+    }
 }

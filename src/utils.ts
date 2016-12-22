@@ -119,3 +119,17 @@ export function getReadableValueTypeName(value:any):string {
     }
     return typeof value;
 }
+
+export function getValueFromRootRef(rootReference: () => any, path: Array<string|number>) {
+    let value = rootReference();
+    // TODO add checks (the entire path should be objects, arrays or functions)
+    for (let i = 0; i < path.length; i++) {
+        value = value[path[i]];
+    }
+    return value;
+}
+
+export function getReferenceWrapper<T>(thisType: Class<any>, fieldDef: Type<T, any>, rootReference: () => any, path: Array<string|number>, value: any):T {
+    const fieldErrorContext = thisType.createErrorContext('get reference error', 'error');
+    return fieldDef._matchValue(value, fieldErrorContext).byReference(rootReference, path);
+}
