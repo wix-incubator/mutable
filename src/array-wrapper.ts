@@ -12,27 +12,27 @@ const _Array = class _Array {
 _Array.prototype = [];
 
 export class ArrayWrapper<T, S> extends _Array<T>{
-    constructor(values: () => Array<S>, public mapper:(e:S, i:number)=>T){
+    constructor(ref: () => Array<S>, public mapper:(e:S, i:number)=>T){
         super();
-        Object.defineProperty(ArrayWrapper.prototype, "values", {
+        Object.defineProperty(this, "ref", {
             enumerable: false,
             configurable: true,
             get: () => {
-                const res = arr = values();
+                const res = arr = ref();
                 untracked(updateArrayLength);
                 return res;
             }
         });
     }
     // here for static type checker only
-    get values():Array<any> {return [];}
+    get ref():Array<S> {return [];}
     get length():number{return 0;}
 }
 
 Object.defineProperties(ArrayWrapper.prototype, {
     constructor : {enumerable: false}, // to have no enumerable properties
     mapper : {enumerable: false, writable:true}, // to have no enumerable properties
-    length : {enumerable: false, get:function(this:ArrayWrapper<any, any>){return this.values.length;}}
+    length : {enumerable: false, get:function(this:ArrayWrapper<any, any>){return this.ref.length;}}
 });
 
 let ARRAY_BUFFER_SIZE = 0;
@@ -54,7 +54,7 @@ function reserveArrayBuffer(max: number) {
 
 function createArrayBufferItem(index: number) {
     const get = function<T, S> (this:ArrayWrapper<T, S>) {
-        const v = this.values;
+        const v = this.ref;
         if (index < v.length) {
             return this.mapper ? this.mapper(v[index], index) : v[index];
         }

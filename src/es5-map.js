@@ -1,12 +1,13 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import defineType from './define-type';
+import {default as defineType, getValueFromRootRef, getReferenceWrapper} from './define-type';
 import BaseType from './base-type';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {observable, asFlat, asMap} from 'mobx';
+import {MapWrapperOverDictionary} from './map-wrapper';
 const MAILBOX = getMailBox('Mutable.Es5Map');
 
 function entries(map){
@@ -37,6 +38,15 @@ function safeAsReadOnlyOrArr(item) {
 function isIterable(value) {
     return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === 'function');
 }
+
+
+class MapReferenceToDictionary extends MapWrapperOverDictionary{
+    constructor(rootReference, path, thisType){
+        super(() => getValueFromRootRef(rootReference, path),
+            (value, idx) => getReferenceWrapper(thisType, thisType.options.subTypes, rootReference, path.concat(idx), value));
+    }
+}
+
 
 class _Es5Map extends BaseType {
 
@@ -172,10 +182,11 @@ class _Es5Map extends BaseType {
 
 
     static createErrorContext(entryPoint, level, options) {
+        options = options || this.options || this.__options__;
         return {
             entryPoint,
             level,
-            path: 'Es5Map' + generics.toString(options.subTypes)
+            path: 'Es5Map' + generics.toString(options? options.subTypes : [])
         }
     }
 
@@ -184,6 +195,13 @@ class _Es5Map extends BaseType {
         if (report) {
             MAILBOX.error(`Es5Map constructor: "${report.path}" ${report.message}`);
         }
+    }
+
+    static byReference(provider, path = []){
+        // wrap provider
+        const result = new this();
+        result.__value__ = new MapReferenceToDictionary(provider, path, this);
+        return result;
     }
 
     constructor(value = [], options = { subTypes: {} }, errorContext = null) {
@@ -327,15 +345,15 @@ class _Es5Map extends BaseType {
     }
 
     entries() {
-        return this.__unpackIterator__(this.__value__.entries());
+        return this.__unpackIterator__(Array.from(this.__value__.entries()));
     }
 
     keys() {
-        return this.__unpackIterator__(this.__value__.keys());
+        return this.__unpackIterator__(Array.from(this.__value__.keys()));
     }
 
     values() {
-        return this.__unpackIterator__(this.__value__.values());
+        return this.__unpackIterator__(Array.from(this.__value__.values()));
     }
 
     forEach(callback, thisArg) {
