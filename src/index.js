@@ -34,6 +34,7 @@ if (globalCtx.__Mutable){
         Function,
         Reference,
         validation,
+        Map: Es5Map,
         Es5Map,
         PropsBase,
         LifeCycleManager,

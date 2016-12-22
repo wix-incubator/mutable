@@ -1,10 +1,10 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-
+import {ArrayWrapper} from './array-wrapper';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
-import {clone, shouldAssign} from './utils';
+import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
 import BaseType from './base-type';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked} from 'mobx';
@@ -13,6 +13,14 @@ const MAILBOX = getMailBox('Mutable.List');
 function isArray(val){
     return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
 }
+
+class ArrayReference extends ArrayWrapper{
+    constructor(rootReference, path, thisType){
+        super(() => getValueFromRootRef(rootReference, path),
+            (value, idx) => getReferenceWrapper(thisType, thisType.options.subTypes, rootReference, path.concat(idx), value));
+    }
+}
+
 class _List extends BaseType {
 
     static defaults() { return []; }
@@ -123,7 +131,7 @@ class _List extends BaseType {
         return {
             level,
             entryPoint,
-            path: 'List' + generics.toString(generics.normalizeTypes(options.subTypes))
+            path: 'List' + generics.toString(generics.typesAsArray(options.subTypes))
         }
     }
 
@@ -134,11 +142,18 @@ class _List extends BaseType {
         }
     }
 
+    static byReference(provider, path = []){
+        // wrap provider
+        const result = new this();
+        result.__value__ = new ArrayReference(provider, path, this);
+        return result;
+    }
+
     constructor(value = [], options = {}, errorContext) {
         if (!errorContext) {
             errorContext = _List.createErrorContext('List constructor error', 'error', options);
         }
-        options.subTypes = generics.normalizeTypes(options.subTypes);
+        options.subTypes = generics.typesAsArray(options.subTypes);
         super(value, options, errorContext);
     }
 
@@ -450,7 +465,8 @@ class _List extends BaseType {
      */
     // consider optimizing if array is of primitive type only
     $dirtyableElementsIterator(yielder) {
-        for (let element of this.__value__) {
+        for (let i = 0; i < this.__value__.length; i++) {
+            let element = this.__value__[i];
             if (element && _.isFunction(element.$setManager)) {
                 yielder(this, element);
             }
@@ -466,7 +482,6 @@ class _List extends BaseType {
         this.__value__.length = newLength;
     }
 }
-
 export default defineType('List', {
     spec: function() {
         return {};

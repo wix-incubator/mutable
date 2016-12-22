@@ -2,10 +2,12 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import defineType from './define-type';
+import {getValueFromRootRef, getReferenceWrapper} from './utils';
 import BaseType from './base-type';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
+import {MapWrapperOverDictionary} from './map-wrapper';
 import {observable, asFlat, asMap, untracked} from 'mobx';
 import {shouldAssign} from './utils';
 const MAILBOX = getMailBox('Mutable.Es5Map');
@@ -38,6 +40,15 @@ function safeAsReadOnlyOrArr(item) {
 function isIterable(value) {
     return value && (_.isArray(value) || value instanceof Map || typeof value[Symbol.iterator] === 'function');
 }
+
+
+class MapReferenceToDictionary extends MapWrapperOverDictionary{
+    constructor(rootReference, path, thisType){
+        super(() => getValueFromRootRef(rootReference, path),
+            (value, idx) => getReferenceWrapper(thisType, thisType.options.subTypes, rootReference, path.concat(idx), value));
+    }
+}
+
 
 class _Es5Map extends BaseType {
 
@@ -161,10 +172,10 @@ class _Es5Map extends BaseType {
                 definitionError = { path: arrow + 'Es5Map', message: 'Missing types for map. Use Es5Map<SomeType>' };
                 break;
             case 1:
-                subTypes = generics.normalizeTypes(subTypes);
+                subTypes = generics.typesAsArray(subTypes);
                 break;
             default:
-                subTypes = generics.normalizeTypes(subTypes);
+                subTypes = generics.typesAsArray(subTypes);
                 definitionError = { path: `Es5Map<${generics.toUnwrappedString(subTypes)},${arrow}unallowed>`, message: `Too many types for map (${arguments.length}). Use Es5Map<SomeType>` };
         }
         return this.withDefault(undefined, undefined, { subTypes, definitionError: definitionError });
@@ -173,10 +184,11 @@ class _Es5Map extends BaseType {
 
 
     static createErrorContext(entryPoint, level, options) {
+        options = options || this.options || this.__options__;
         return {
             entryPoint,
             level,
-            path: 'Es5Map' + generics.toString(options.subTypes)
+            path: 'Es5Map' + generics.toString(options? options.subTypes : [])
         }
     }
 
@@ -187,11 +199,18 @@ class _Es5Map extends BaseType {
         }
     }
 
+    static byReference(provider, path = []){
+        // wrap provider
+        const result = new this();
+        result.__value__ = new MapReferenceToDictionary(provider, path, this);
+        return result;
+    }
+
     constructor(value = [], options = { subTypes: {} }, errorContext = null) {
         if (!errorContext) {
             errorContext = _Es5Map.createErrorContext('Es5Map constructor error', 'error', options);
         }
-        options.subTypes = generics.normalizeTypes(options.subTypes);
+        options.subTypes = generics.typesAsArray(options.subTypes);
         super(value, options, errorContext);
     }
 
@@ -332,15 +351,15 @@ class _Es5Map extends BaseType {
     }
 
     entries() {
-        return this.__unpackIterator__(this.__value__.entries());
+        return this.__unpackIterator__(Array.from(this.__value__.entries()));
     }
 
     keys() {
-        return this.__unpackIterator__(this.__value__.keys());
+        return this.__unpackIterator__(Array.from(this.__value__.keys()));
     }
 
     values() {
-        return this.__unpackIterator__(this.__value__.values());
+        return this.__unpackIterator__(Array.from(this.__value__.values()));
     }
 
     forEach(callback, thisArg) {
