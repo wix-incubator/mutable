@@ -1,5 +1,6 @@
 import * as Mutable from '../src';
 import {expect} from 'chai';
+import {forEach} from 'lodash';
 import * as sinon from 'sinon';
 
 describe("setting NaN value", ()=>{
@@ -131,6 +132,9 @@ describe("setting NaN value", ()=>{
             otherChangeSpy = sinon.spy();
             instance = new Container();
             instance.__value__ = {
+                keys(){
+                    return Object.keys(currValue);
+                },
                 get(key){
                     return currValue[key];
                 },
@@ -144,6 +148,9 @@ describe("setting NaN value", ()=>{
                 },
                 merge(newValue){
                     setter(newValue.bingo === undefined? newValue.get('bingo') : newValue.bingo);
+                },
+                forEach(cb){
+                    forEach(this, cb);
                 }
             }
         });

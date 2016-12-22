@@ -6,7 +6,8 @@ import BaseType from './base-type';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
-import {observable, asFlat, asMap} from 'mobx';
+import {observable, asFlat, asMap, untracked} from 'mobx';
+import {shouldAssign} from './utils';
 const MAILBOX = getMailBox('Mutable.Es5Map');
 
 function entries(map){
@@ -14,8 +15,8 @@ function entries(map){
 }
 // because Object.entries is too tall an order
 function objEntries(obj) {
-     return Object.keys(obj).reduce((prevValue, key) => {
-       if(key !== '_type') {
+    return Object.keys(obj).reduce((prevValue, key) => {
+        if(key !== '_type') {
             prevValue.push([key, obj[key]]);
         }
         return prevValue;
@@ -198,16 +199,18 @@ class _Es5Map extends BaseType {
     setValue(newValue, errorContext = null) {
         let changed = false;
         if (this.$isDirtyable()) {
-            errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
-            newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
-            newValue.forEach((val, key) => {
-                changed = changed || (this.__value__.get(key) !== val);
-            });
-            if (!changed) {
-                this.__value__.forEach((val, key) => {
-                    changed = changed || val !== newValue.get(key);
+            untracked(() => {
+                errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
+                newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
+                newValue.forEach((val, key) => {
+                    changed = changed || shouldAssign(this.__value__.get(key), val);
                 });
-            }
+                if (!changed) {
+                    this.__value__.forEach((val, key) => {
+                        changed = changed || shouldAssign(val, newValue.get(key));
+                    });
+                }
+            });
             // apply changes only after no error was thrown.
             // otherwise we can get an inconsistent map
             if (changed) {
@@ -218,61 +221,61 @@ class _Es5Map extends BaseType {
         return changed;
     }
 
-    __setValueDeepHandler__(result, key, val, errorContext) {
-        let changed = false;
+    __setValueDeepHandler__(toSet, toSetValueDeep, key, val, errorContext) {
         if (key !== '_type') {
             let oldVal = this.__value__.get(key);
-            if (oldVal !== val) {
+            if (shouldAssign(this.__value__.get(key), val)) {
                 if (oldVal && typeof oldVal.setValueDeep === 'function' && !oldVal.$isReadOnly() &&
                     (oldVal.constructor.allowPlainVal(val) || oldVal.constructor.validateType(val))) {
-                    changed = oldVal.setValueDeep(val);
-                    val = oldVal;
-                } else {
+                    toSetValueDeep[key]=[oldVal, val];
+                } else if (shouldAssign(this.__value__.get(key), val)) {
                     val = this.constructor._wrapEntryValue(val, this.__options__, this.__lifecycleManager__, errorContext);
-                    changed = true;
+                    toSet[key] = val;
                 }
             }
-            result[key] = val;
         }
-        return changed;
     }
 
     // deep merge native javascript data into the map
     setValueDeep(newValue, errorContext = null) {
-        const result = {};
-        let changed = false;
+        const toSet = {};
+        const toSetValueDeep = {};
+        let toDelete = {};
+        let changed;
         if (this.$isDirtyable()) {
-            errorContext = errorContext || this.constructor.createErrorContext('Es5Map setValue error', 'error', this.__options__);
-            // TODO this code has the same structure as wrapValue, combine both together
-            const newEntriesVisitor = (val, key) => {
-                changed = this.__setValueDeepHandler__(result, key, val, errorContext) || changed;
-            };
-            if (BaseType.validateType(newValue)) {
-                newValue.__value__.forEach(newEntriesVisitor);
-            } else if (isIterable(newValue)) {
-                for (let [key, val] of newValue) {
-                    newEntriesVisitor(val, key);
-                }
-            } else if (_.isObject(newValue)) {
-                for (let key in newValue) {
-                    if (newValue.hasOwnProperty(key)) {
-						const val = newValue[key];
+            // collect data for change
+            untracked(() => {
+                errorContext = errorContext || this.constructor.createErrorContext('Es5Map setValue error', 'error', this.__options__);
+                // TODO this code has the same structure as wrapValue, combine both together
+                this.__value__.keys().forEach(key => toDelete[key] = true);
+                const newEntriesVisitor = (val, key) => {
+                    delete toDelete[key];
+                    this.__setValueDeepHandler__(toSet, toSetValueDeep, key, val, errorContext);
+                };
+                if (BaseType.validateType(newValue)) {
+                    newValue.__value__.forEach(newEntriesVisitor);
+                } else if (isIterable(newValue)) {
+                    for (let [key, val] of newValue) {
                         newEntriesVisitor(val, key);
                     }
+                } else if (_.isObject(newValue)) {
+                    for (let key in newValue) {
+                        if (newValue.hasOwnProperty(key)) {
+                            const val = newValue[key];
+                            newEntriesVisitor(val, key);
+                        }
+                    }
+                } else {
+                    MAILBOX.error('Unknown or incompatible Es5Map value : ' + JSON.stringify(newValue));
                 }
-            } else {
-                MAILBOX.error('Unknown or incompatible Es5Map value : ' + JSON.stringify(newValue));
-            }
-            if (!changed) {
-                this.__value__.forEach((val, key) => {
-                    changed = changed || result[key] === undefined;
-                });
-            }
-            // apply changes only after no error was thrown.
-            // otherwise we can get an inconsistent map
-            if (changed) {
-                this.__value__.clear();
-                this.__value__.merge(result);
+            });
+
+            // apply changes
+            _.forEach(toSetValueDeep, ([oldVal, val], key) => changed = oldVal.setValueDeep(val, errorContext) || changed);
+            if (Object.keys(toSet).length || Object.keys(toDelete).length) {
+                Object.keys(toDelete).forEach(key => this.__value__.delete(key));
+                _.forEach(toSet, (val, key) => this.__value__.set(key, val));
+                changed = true;
             }
         }
         return changed;
@@ -309,7 +312,9 @@ class _Es5Map extends BaseType {
             let errorContext = this.constructor.createErrorContext('Es5Map set error', 'error', this.__options__);
             this.constructor._validateEntryKey(key, errorContext);
             value = this.constructor._wrapEntryValue(value, this.__options__, this.__lifecycleManager__, errorContext);
-            this.__value__.set(key, value);
+            if (untracked(() => shouldAssign(this.__value__.get(key), value))) {
+                this.__value__.set(key, value);
+            }
         }
         return this;
     }

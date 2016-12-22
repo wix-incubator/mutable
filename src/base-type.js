@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import config from './config';
 import {makeDirtyable, optionalSetManager} from './lifecycle';
 import PrimitiveBase from './primitive-base';
-import {getFieldDef, clone, getPrimeType} from './utils';
+import {getFieldDef, clone, getPrimeType, shouldAssign} from './utils';
 import {isAssignableFrom, validateNullValue, validateValue, misMatchMessage} from './validation';
 import {validateAndWrap, isDataMatching} from './type-match';
 import {observable, asReference, untracked} from 'mobx';
@@ -179,18 +179,14 @@ export default class BaseType extends PrimitiveBase {
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
     setValue(newValue, errorContext = null) {
         if (this.$isDirtyable()) {
-            var changed = false;
+            let changed = false;
             errorContext = errorContext || this.constructor.createErrorContext('setValue error', 'error');
             _.forEach(newValue, (fieldValue, fieldName) => {
-                var fieldSpec = getFieldDef(this.constructor, fieldName);
+                const fieldSpec = getFieldDef(this.constructor, fieldName);
                 if (fieldSpec) {
-                    let fieldErrorContext = _.defaults({path: errorContext.path + '.' + fieldName }, errorContext);
-                    var newVal = fieldSpec._matchValue(fieldValue, fieldErrorContext).wrap();
-                    optionalSetManager(newVal, this.__lifecycleManager__);
-                    if (this.__value__[fieldName] !== newVal) {
-                        changed = true;
-                        this.__value__[fieldName] = newVal;
-                    }
+                    const fieldErrorContext = _.defaults({path: errorContext.path + '.' + fieldName }, errorContext);
+                    const newValue = fieldSpec._matchValue(fieldValue, fieldErrorContext).wrap();
+                    changed = this.$assignField(fieldName, newValue, fieldErrorContext) || changed;
                 }
             });
             return changed;
@@ -201,21 +197,24 @@ export default class BaseType extends PrimitiveBase {
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
     setValueDeep(newValue, errorContext = null) {
         if (this.$isDirtyable()) {
-            var changed = false;
+            let changed = false;
             errorContext = errorContext || this.constructor.createErrorContext('setValueDeep error', 'error');
             _.forEach(this.constructor._spec, (fieldSpec, fieldName) => {
-                var fieldValue = (newValue[fieldName] !== undefined) ? newValue[fieldName] : fieldSpec.defaults();
+                const fieldValue = (newValue[fieldName] !== undefined) ? newValue[fieldName] : fieldSpec.defaults();
                 if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
                     changed = this.$assignField(fieldName, fieldValue) || changed;
-                }else if(this.__value__[fieldName] && this.__value__[fieldName].setValueDeep && !this.__value__[fieldName].$isReadOnly()){
-                    changed = this.__value__[fieldName].setValueDeep(fieldValue, errorContext) || changed;
-                }else{
-                    const fieldErrorContext = {
-                        level: errorContext.level,
-                        entryPoint: errorContext.entryPoint,
-                        path: errorContext.path + '.' + fieldName
-                    };
-                    changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, fieldErrorContext), fieldErrorContext) || changed;
+                }else {
+                    const value = untracked(() => this.__value__[fieldName]);
+                    if(value && value.setValueDeep && !value.$isReadOnly()){
+                        changed = value.setValueDeep(fieldValue, errorContext) || changed;
+                    }else{
+                        const fieldErrorContext = {
+                            level: errorContext.level,
+                            entryPoint: errorContext.entryPoint,
+                            path: errorContext.path + '.' + fieldName
+                        };
+                        changed = this.$assignField(fieldName, validateAndWrap(fieldValue, fieldSpec, this.__lifecycleManager__, fieldErrorContext), fieldErrorContext) || changed;
+                    }
                 }
             });
             return changed;
@@ -228,14 +227,13 @@ export default class BaseType extends PrimitiveBase {
     // returns whether the field value has changed
     $assignField(fieldName, newValue, errorContext = null) {
         // don't assign if input is the same as existing value
-        return untracked(() => {
-			if (this.__value__[fieldName] !== newValue) {
-				var fieldDef = getFieldDef(this.constructor, fieldName);
-				var typedField = isAssignableFrom(BaseType, fieldDef);
+        if(untracked(() => {
+			if (shouldAssign(this.__value__[fieldName], newValue)) {
+				const fieldDef = getFieldDef(this.constructor, fieldName);
+				const typedField = isAssignableFrom(BaseType, fieldDef);
 				// for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
 				if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
 					// validation passed set the value
-					this.__value__[fieldName] = newValue;
 					optionalSetManager(newValue, this.__lifecycleManager__);
 					return true;
 				} else {
@@ -247,7 +245,11 @@ export default class BaseType extends PrimitiveBase {
 				}
 			}
 			return false;
-        });
+        })){
+            this.__value__[fieldName] = newValue;
+            return true;
+        }
+        return false;
     }
 
 

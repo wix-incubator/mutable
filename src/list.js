@@ -4,11 +4,11 @@ import {getMailBox} from 'escalate';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
-import {clone} from './utils';
+import {clone, shouldAssign} from './utils';
 import BaseType from './base-type';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked} from 'mobx';
-
+import {optionalSetManager} from './lifecycle';
 const MAILBOX = getMailBox('Mutable.List');
 function isArray(val){
     return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
@@ -284,13 +284,22 @@ class _List extends BaseType {
         }
     }
 
+    $assignCell(index, newValue, errorContext){
+        if (untracked(() => shouldAssign(this.__value__[index], newValue))) {
+            optionalSetManager(newValue, this.__lifecycleManager__);
+            this.__value__[index] = newValue;
+            return true;
+        }
+        return false;
+    }
+
     set(index, element) {
         if (this.$isDirtyable()) {
-            let errorContext = this.constructor.createErrorContext('List set error', 'error', this.__options__);
-            return this.__value__[index] = this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__, errorContext);
-        } else {
-            return null;
+            const  errorContext = this.constructor.createErrorContext('List set error', 'error', this.__options__);
+            const newValue = this.constructor._wrapSingleItem(element, this.__options__, this.__lifecycleManager__, errorContext);
+            return this.$assignCell(index, newValue, errorContext) ? newValue : null;
         }
+        return null;
     }
 
     // Accessor methods
@@ -370,12 +379,12 @@ class _List extends BaseType {
     }
 
     setValue(newValue, errorContext) {
-            var changed = false;
+            let changed = false;
             if (newValue instanceof _List) {
                 newValue = newValue.__getValueArr__();
             }
             if (isArray(newValue)) {
-                var lengthDiff = this.__value__.length - newValue.length;
+                const lengthDiff = this.__value__.length - newValue.length;
                 if (lengthDiff > 0) {
                     // current array is longer than newValue, fill the excess cells with undefined
                     changed = true;
@@ -385,13 +394,12 @@ class _List extends BaseType {
                 _.forEach(newValue, (itemValue, idx) => {
                     let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
                     errorContext.path += `[${idx}]`;
-                    var newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                    const newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                     if (this.__value__.length <= idx){
                         this.__value__.push(newItemVal);
                         changed = true;
                     } else {
-                        changed = changed || newItemVal != this.__value__[idx];
-                        this.__value__[idx] = newItemVal;
+                        changed = this.$assignCell(idx, newItemVal, errorContext) || changed;
                     }
                 });
                 this.__value__.length = newValue.length;
@@ -411,23 +419,24 @@ class _List extends BaseType {
                 let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
                 _.forEach(newValue, (itemValue, newValIndex) => {
                     const isPassedArrayLength = this.length <= assignIndex;
-                    const currentItem = isPassedArrayLength? undefined : this.__value__[assignIndex];
+                    const currentItem = isPassedArrayLength? undefined : untracked(() => this.__value__[assignIndex]);
                     if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
                         MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
                     } else if (isPassedArrayLength) {
+                        changed = true;
                         this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                     } else if(this.__options__.subTypes.validateType(itemValue)){
-                        this.__value__[assignIndex] = itemValue;
+                        changed = this.$assignCell(assignIndex, itemValue, errorContext) || changed;
                     } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
                         if (currentItem.constructor.allowPlainVal(itemValue)) {
                             changed = currentItem.setValueDeep(itemValue) || changed;
                         } else {
-                            changed = true;
-                            this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                            const newValue = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                            changed = this.$assignCell(assignIndex, newValue, errorContext) || changed;
                         }
                     } else {
-                        changed = changed || itemValue !== currentItem;
-                        this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                        const newValue = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                        changed = this.$assignCell(assignIndex, newValue, errorContext) || changed;
                     }
                     assignIndex++;
                 });

@@ -18,27 +18,7 @@ function mapEntries(map) {
 function objEntries(obj) {
     return  Object.keys(obj).map((key) => [key, obj[key]]);
 }
-function arrFromIterable(iterable) {
-    if (_.isArray(iterable)) {
-        return iterable;
-    }
-    var iterator = (typeof iterable.next === 'function' && iterable) || (hasSymbols && iterable[Symbol.iterator]);
-    if (iterator && iterator.next) {
-        var result = [];
-        var item = iterator.next();
-        while (!item.done) {
-            result.push(item.value);
-            item = iterator.next();
-        }
-        return result;
-    }
-    throw new Error('unknown argument type ' + JSON.stringify(iterable));
-}
-
 function testReadFunctionality(builders, isReadonly) {
-    function getNewUsers(usersIterable) {
-        return arrFromIterable(usersIterable).map(e => new builders.UserType(e));
-    }
     describe(typeOfObj(isReadonly) + ' instance', () => {
         var userA, userB, usersMap, usersMapInitialState;
         beforeEach('init example data', () => {
@@ -363,10 +343,7 @@ function testReadFunctionality(builders, isReadonly) {
                 } else {
                     it('should change data of map to new state', function() {
                         expect(usersMap.size).to.eql(3);
-                        expect(getNewUsers(usersMap.values()), 'values of map')
-                            .to.eql(getNewUsers(new Map(newValue).values()));
-                        expect(getNewUsers(usersMap.keys()), 'data of keys of map')
-                            .to.eql(getNewUsers(new Map(newValue).keys()));
+                        expect(usersMap.toJSON(), 'data in map').to.eql(builders.aUserTypeMap(newValue).toJSON());
                     });
                     it('should not replace instances of existing mappings', function() {
                         expect(usersMap.get('userA')).to.equal(userA);
@@ -394,10 +371,9 @@ function testReadFunctionality(builders, isReadonly) {
                     });
                     it('should change data of map to new state', function() {
                         map.setValueDeep(newValue);
-                        expect(map.size).to.eql(2);
-                        expect(getNewUsers(map.values()), 'values of map')
-                            .to.eql(getNewUsers(new Map(newValue).values()));
-                        expect(arrFromIterable(map.keys()), 'data of keys of map').to.eql(['a', 'b']);
+                        expect(map.size, 'map.size').to.eql(2);
+                        expect(map.toJSON(), 'data of map').to.eql(builders.aUnionTypeMap(newValue).toJSON());
+                        expect(map.keys(), 'data of keys of map').to.eql(['a', 'b']);
                     });
                     it('should not replace instances of existing mappings', function() {
                         map.setValueDeep(newValue);
