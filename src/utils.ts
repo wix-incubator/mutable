@@ -84,6 +84,9 @@ function namedInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:str
     return type;
 }
 
+export function shouldAssign(a:any, b:any){
+    return b !== undefined && a !== b && !(_.isNaN(a) && _.isNaN(b));
+}
 export const inherit = isDevMode() ? namedInherit : anonymousInherit;
 
 function clonedPreSuper<R extends Type<T, S>, T extends Mutable<S>|null, S>(type:R, value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext){

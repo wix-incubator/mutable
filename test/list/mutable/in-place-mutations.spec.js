@@ -10,14 +10,10 @@ describe('List', function() {
 
         describe('reverse', function() {
             it('should reverse the order of elements in a List', function() {
-                var numberList = aNumberList();
-                var newList = numberList.concat();
-
-                newList.reverse();
-
+                const numberList = aNumberList();
+                const newList = numberList.reverse();
                 expect(newList).to.be.instanceOf(Mutable.List);
-
-                for (var i = 0; i < numberList.length; i++) {
+                for (let i = 0; i < numberList.length; i++) {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
                 }
             });
