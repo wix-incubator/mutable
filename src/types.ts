@@ -1,6 +1,7 @@
 import {Level} from 'escalate';
 import {BaseAtom} from 'mobx';
 import {TypeMatch} from "./type-match";
+import {LifeCycleManager} from "./lifecycle";
 
 
 export type DeepPartial<T> = {
@@ -89,11 +90,14 @@ export interface Validator<T> {
     (value: any): value is T;
 }
 
-export type LifeCycleManager = {};
+export function isMutable(obj:any):obj is MutableObj{
+    return obj && obj.$setManager && typeof obj.$setManager === 'function';
+}
 
 export interface MutableObj{
+    $isReadOnly():boolean;
     __lifecycleManager__? : LifeCycleManager;
-    $setManager(newManager:LifeCycleManager):void;
+    $setManager(newManager?:LifeCycleManager|null):void;
     $dirtyableElementsIterator: (yielder:DirtyableYielder)=>void;
     $atomsIterator: (yielder:AtomYielder)=>void;
 }

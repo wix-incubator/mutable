@@ -1,15 +1,14 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {misMatchMessage, validateNotNullValue} from './validation';
-import {optionalSetManager} from './lifecycle';
+import {optionalSetManager, LifeCycleManager} from './lifecycle';
 import {PrimitiveBase} from './primitive-base';
 import {Type, ErrorDetails, ErrorContext, Class, CompositeType, isCompositeType} from "./types";
 
 const MAILBOX = getMailBox('Mutable.type-match');
 
-type LifecycleManager = {};
 
-export function validateAndWrap<T>(itemValue:any, type:Type<T, any>, lifeCycle:LifecycleManager|undefined|null, errorContext:ErrorContext, errorTemplate?:string) :T{
+export function validateAndWrap<T>(itemValue:any, type:Type<T, any>, lifeCycle:LifeCycleManager|undefined|null, errorContext:ErrorContext, errorTemplate?:string) :T{
     itemValue = matchValueToType(itemValue, type).wrap(itemValue, type, errorContext, errorTemplate);
     optionalSetManager(itemValue, lifeCycle);
     return itemValue;
