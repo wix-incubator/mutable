@@ -13,6 +13,7 @@ export function isType(type:any):type is Type<any, any> {
 }
 export interface Type<T, S>{
     __proto__:any;
+    prototype:T;
     id:string;
     options:ClassOptions;
     _prime?:this;
@@ -30,12 +31,24 @@ export interface Type<T, S>{
     preConstructor?():void;
 }
 
+
+export function isMutable(obj:any):obj is Mutable<any>{
+    return obj &&
+        obj.$setManager && typeof obj.$setManager === 'function' &&
+        obj.$isReadOnly && typeof obj.$isReadOnly === 'function';
+}
+
 // wrapped object : class instance, list, map
-export type Mutable<T> = {
-    [P in keyof T]:T[P];
-    } & {
+export interface Mutable<T>{
     toJS: ()=>T; // also other methods, WIP
-};
+    $isDirtyable():boolean;
+    $isReadOnly():boolean;
+    __isReadOnly__:boolean;
+    __lifecycleManager__? : LifeCycleManager;
+    $setManager(newManager?:LifeCycleManager|null):void;
+    $dirtyableElementsIterator: (yielder:DirtyableYielder)=>void;
+    $atomsIterator: (yielder:AtomYielder)=>void;
+}
 
 type DefaultSource<T> = (()=>DeepPartial<T>)|DeepPartial<T>;
 
@@ -90,18 +103,6 @@ export interface Validator<T> {
     (value: any): value is T;
 }
 
-export function isMutable(obj:any):obj is MutableObj{
-    return obj && obj.$setManager && typeof obj.$setManager === 'function';
-}
-
-export interface MutableObj{
-    $isReadOnly():boolean;
-    __lifecycleManager__? : LifeCycleManager;
-    $setManager(newManager?:LifeCycleManager|null):void;
-    $dirtyableElementsIterator: (yielder:DirtyableYielder)=>void;
-    $atomsIterator: (yielder:AtomYielder)=>void;
-}
-
 export interface ErrorContext {
     level: Level;
     entryPoint : string;
@@ -117,6 +118,6 @@ export interface ErrorDetails {
     expected:any;
     path:string;
 }
-export type DirtyableYielder = (container:MutableObj, element:MutableObj)=>void;
+export type DirtyableYielder = (container:Mutable<any>, element:Mutable<any>)=>void;
 
 export type AtomYielder = (atom:BaseAtom)=>void;
