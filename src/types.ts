@@ -1,7 +1,7 @@
 import {Level} from 'escalate';
 import {BaseAtom} from 'mobx';
 import {TypeMatch} from "./type-match";
-import {LifeCycleManager} from "./lifecycle";
+import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 
 
 export type DeepPartial<T> = {
@@ -95,6 +95,7 @@ export interface Class<T> extends CompositeType<Mutable<T>, T> {
 export function cast<T>(ref:any): T{
     return ref as T;
 }
+
 export interface ClassOptions{
     nullable?:boolean;
 }
@@ -118,6 +119,3 @@ export interface ErrorDetails {
     expected:any;
     path:string;
 }
-export type DirtyableYielder = (container:Mutable<any>, element:Mutable<any>)=>void;
-
-export type AtomYielder = (atom:BaseAtom)=>void;

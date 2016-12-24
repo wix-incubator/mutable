@@ -86,4 +86,6 @@ export function optionalSetManager(itemValue:any, lifeCycle?:LifeCycleManager|nu
     }
 }
 
+export type DirtyableYielder = (container:Mutable<any>, element:Mutable<any>)=>void;
 
+export type AtomYielder = (atom:BaseAtom)=>void;

@@ -4,7 +4,7 @@ import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
 import {forEach, isFunction} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
-import {untracked} from 'mobx';
+import {untracked, extras} from 'mobx';
 
 // ---- typify imports
 
@@ -130,10 +130,7 @@ function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>
     proto.$atomsIterator = function atomsIterator(yielder) {
         for (let c in spec) {
             if (spec.hasOwnProperty(c)) {
-                let a = this.__value__.$mobx.values[c];
-                if (a && isFunction(a.reportObserved)) {
-                    yielder(a);
-                }
+                yielder(extras.getAtom(this.__value__, c) as any);
             }
         }
         parent && isFunction(parent.$atomsIterator) && parent.$atomsIterator.call(this, yielder);

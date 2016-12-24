@@ -404,6 +404,10 @@ class _Es5Map extends BaseType {
             }
         });
     }
+    $atomsIterator(yielder){
+        yielder(extras.getAtom(this.__value__));
+        var disposeMeOrIWillLeak = autorun(() => this.__value__.keys().forEach(key => yielder(extras.getAtom(this.__value__, key))));
+    }
     get size() {
         return this.__value__.size;
     }
