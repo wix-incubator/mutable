@@ -473,7 +473,7 @@ class _List extends BaseType {
         }
     }
     $atomsIterator(yielder) {
-        yielder(extras.getAtom(this.__value__) as any);
+        yielder(extras.getAtom(this.__value__));
     }
     get length(){
         return this.__value__.length;
