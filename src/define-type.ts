@@ -1,10 +1,10 @@
-import {MutableObj, Spec, cast, Type, Class, isCompositeType, ReferenceType} from './types';
+import {Spec, cast, Type, Class, isCompositeType, ReferenceType, Mutable} from './types';
 import _BaseType from './base-type';
 import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
 import {forEach, isFunction} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
-import {untracked} from 'mobx';
+import {untracked, extras} from 'mobx';
 
 // ---- typify imports
 
@@ -29,6 +29,7 @@ interface Metadata{
 
 
 const MAILBOX = getMailBox('Mutable.extend');
+const RESERVED_FIELDS = Object.keys(BaseType.prototype);
 
 export default function defineType<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
     const ParentType:Class<any> = TypeConstructor || _ParentType || BaseType;
@@ -79,7 +80,7 @@ function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fie
     let error;
     const errorContext = BaseType.createErrorContext(`Type definition error`, 'fatal');
     let path = `${type.id}.${fieldName}`;
-    if (BaseType.prototype[fieldName]){
+    if (~RESERVED_FIELDS.indexOf(fieldName)){
         error = 'is a reserved field.';
     } else if (parentSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism
         error = `already exists on super ${parentName}`;
@@ -110,7 +111,7 @@ function generateSpec(id:string, spec:Schema, baseSpec:Spec) {
     return baseSpec;
 }
 
-function setSchemaIterators(proto:MutableObj, spec:Schema, parent:MutableObj) {
+function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>) {
     const complex:Array<string> = [];
     for (let k in spec) {
         if (isCompositeType(spec[k])) {
@@ -129,10 +130,7 @@ function setSchemaIterators(proto:MutableObj, spec:Schema, parent:MutableObj) {
     proto.$atomsIterator = function atomsIterator(yielder) {
         for (let c in spec) {
             if (spec.hasOwnProperty(c)) {
-                let a = this.__value__.$mobx.values[c];
-                if (a && isFunction(a.reportObserved)) {
-                    yielder(a);
-                }
+                yielder(extras.getAtom(this.__value__, c) as any);
             }
         }
         parent && isFunction(parent.$atomsIterator) && parent.$atomsIterator.call(this, yielder);

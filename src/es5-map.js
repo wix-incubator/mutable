@@ -8,7 +8,7 @@ import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {MapWrapperOverDictionary} from './map-wrapper';
-import {observable, asFlat, asMap, untracked} from 'mobx';
+import {observable, asFlat, asMap, untracked, extras, autorun} from 'mobx';
 import {shouldAssign} from './utils';
 const MAILBOX = getMailBox('Mutable.Es5Map');
 
@@ -403,6 +403,10 @@ class _Es5Map extends BaseType {
                 yielder(this, value);
             }
         });
+    }
+    $atomsIterator(yielder){
+        yielder(extras.getAtom(this.__value__));
+        var disposeMeOrIWillLeak = autorun(() => this.__value__.keys().forEach(key => yielder(extras.getAtom(this.__value__, key))));
     }
     get size() {
         return this.__value__.size;

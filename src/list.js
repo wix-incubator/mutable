@@ -7,7 +7,7 @@ import {validateAndWrap} from './type-match';
 import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
 import BaseType from './base-type';
 import * as generics from './generic-types';
-import {observable, asFlat, untracked} from 'mobx';
+import {observable, asFlat, untracked, extras} from 'mobx';
 import {optionalSetManager} from './lifecycle';
 const MAILBOX = getMailBox('Mutable.List');
 function isArray(val){
@@ -473,7 +473,7 @@ class _List extends BaseType {
         }
     }
     $atomsIterator(yielder) {
-        yielder(this.__value__.$mobx.atom);
+        yielder(extras.getAtom(this.__value__));
     }
     get length(){
         return this.__value__.length;

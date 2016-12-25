@@ -1,15 +1,14 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {misMatchMessage, validateNotNullValue} from './validation';
-import {optionalSetManager} from './lifecycle';
+import {optionalSetManager, LifeCycleManager} from './lifecycle';
 import {PrimitiveBase} from './primitive-base';
-import {Type, ErrorDetails, ErrorContext, Class, CompositeType, isCompositeType} from "./types";
+import {Type, ErrorDetails, ErrorContext, Class, CompositeType, isCompositeType, Mutable} from "./types";
 
 const MAILBOX = getMailBox('Mutable.type-match');
 
-type LifecycleManager = {};
 
-export function validateAndWrap<T>(itemValue:any, type:Type<T, any>, lifeCycle:LifecycleManager|undefined|null, errorContext:ErrorContext, errorTemplate?:string) :T{
+export function validateAndWrap<T>(itemValue:any, type:Type<T, any>, lifeCycle:LifeCycleManager|undefined|null, errorContext:ErrorContext, errorTemplate?:string) :T{
     itemValue = matchValueToType(itemValue, type).wrap(itemValue, type, errorContext, errorTemplate);
     optionalSetManager(itemValue, lifeCycle);
     return itemValue;
@@ -76,7 +75,7 @@ export class TypeMatch{
 
 interface MatchType{
     wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
-    byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
+    byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
     worseThan(o:MatchType):boolean;
     best?:boolean
 }
@@ -94,7 +93,7 @@ const matchTypes = {
     },
     NATIVE_JS_VALUE : {
         wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext){ return type.create(itemValue, undefined, errorContext);},
-        byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>){ return type.byReference(provider, path);},
+        byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>){ return type.byReference(provider, path);},
         worseThan: (o:MatchType) => o === matchTypes.PERFECT
     },
     MISMATCH: {
@@ -108,7 +107,7 @@ const matchTypes = {
             MAILBOX.post(errorContext.level, misMatchMessage(errorContext, type, itemValue, errorPath, errorTemplate));
             return type.create();
         },
-        byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate:string = 'reference', errorDetails?:ErrorDetails){
+        byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate:string = 'reference', errorDetails?:ErrorDetails){
             let errorPath = null;
             if (errorDetails){
                 itemValue = errorDetails.actual;

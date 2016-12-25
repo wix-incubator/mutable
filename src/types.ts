@@ -1,6 +1,7 @@
 import {Level} from 'escalate';
 import {BaseAtom} from 'mobx';
 import {TypeMatch} from "./type-match";
+import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 
 
 export type DeepPartial<T> = {
@@ -12,6 +13,7 @@ export function isType(type:any):type is Type<any, any> {
 }
 export interface Type<T, S>{
     __proto__:any;
+    prototype:T;
     id:string;
     options:ClassOptions;
     _prime?:this;
@@ -29,12 +31,24 @@ export interface Type<T, S>{
     preConstructor?():void;
 }
 
+
+export function isMutable(obj:any):obj is Mutable<any>{
+    return obj &&
+        obj.$setManager && typeof obj.$setManager === 'function' &&
+        obj.$isReadOnly && typeof obj.$isReadOnly === 'function';
+}
+
 // wrapped object : class instance, list, map
-export type Mutable<T> = {
-    [P in keyof T]:T[P];
-    } & {
+export interface Mutable<T>{
     toJS: ()=>T; // also other methods, WIP
-};
+    $isDirtyable():boolean;
+    $isReadOnly():boolean;
+    __isReadOnly__:boolean;
+    __lifecycleManager__? : LifeCycleManager;
+    $setManager(newManager?:LifeCycleManager|null):void;
+    $dirtyableElementsIterator: (yielder:DirtyableYielder)=>void;
+    $atomsIterator: (yielder:AtomYielder)=>void;
+}
 
 type DefaultSource<T> = (()=>DeepPartial<T>)|DeepPartial<T>;
 
@@ -81,21 +95,13 @@ export interface Class<T> extends CompositeType<Mutable<T>, T> {
 export function cast<T>(ref:any): T{
     return ref as T;
 }
+
 export interface ClassOptions{
     nullable?:boolean;
 }
 
 export interface Validator<T> {
     (value: any): value is T;
-}
-
-export type LifeCycleManager = {};
-
-export interface MutableObj{
-    __lifecycleManager__? : LifeCycleManager;
-    $setManager(newManager:LifeCycleManager):void;
-    $dirtyableElementsIterator: (yielder:DirtyableYielder)=>void;
-    $atomsIterator: (yielder:AtomYielder)=>void;
 }
 
 export interface ErrorContext {
@@ -113,6 +119,3 @@ export interface ErrorDetails {
     expected:any;
     path:string;
 }
-export type DirtyableYielder = (container:MutableObj, element:MutableObj)=>void;
-
-export type AtomYielder = (atom:BaseAtom)=>void;

@@ -2,8 +2,10 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {cloneType, getReadableValueTypeName} from './utils';
 import {TypeMatch} from './type-match';
-import {ErrorMessage, ErrorContext, ErrorDetails, MutableObj, Validator,
-    ClassOptions, cast, Type} from "./types";
+import {
+    ErrorMessage, ErrorContext, ErrorDetails, Validator,
+    ClassOptions, cast, Type, Mutable
+} from "./types";
 
 const MAILBOX = getMailBox('Mutable.PrimitiveBase');
 
@@ -62,7 +64,7 @@ abstract class _PrimitiveBase {
     static cloneValue(value:any) {
         return value;
     }
-    static withDefault(defaults?:MutableObj, validate?:Validator<any>, options?:ClassOptions){
+    static withDefault(defaults?:Mutable<any>, validate?:Validator<any>, options?:ClassOptions){
         const NewType = cloneType(this.id+'_with_defaults', this as any);
         if (validate) {
             NewType.validate = validate;
