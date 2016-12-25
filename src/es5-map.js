@@ -8,7 +8,7 @@ import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {MapWrapperOverDictionary} from './map-wrapper';
-import {observable, asFlat, asMap, untracked} from 'mobx';
+import {observable, asFlat, asMap, untracked, extras, autorun} from 'mobx';
 import {shouldAssign} from './utils';
 const MAILBOX = getMailBox('Mutable.Es5Map');
 
