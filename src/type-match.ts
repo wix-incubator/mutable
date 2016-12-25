@@ -32,7 +32,7 @@ export class TypeMatch{
     match:MatchType = matchTypes.MISMATCH;
     type:Type<any, any> = PrimitiveBase;
     errorDetails:ErrorDetails;
-    constructor(private value:any, private errorContext:ErrorContext, private errorTemplate?:string){
+    constructor(private value:any, private errorContext?:ErrorContext, private errorTemplate?:string){
         this.errorDetails = {
             path : errorContext? errorContext.path : '',
             expected: PrimitiveBase,
@@ -74,8 +74,8 @@ export class TypeMatch{
 }
 
 interface MatchType{
-    wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
-    byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
+    wrap<T>(itemValue:any, type:Type<T, any>, errorContext?:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
+    byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext?:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
     worseThan(o:MatchType):boolean;
     best?:boolean
 }

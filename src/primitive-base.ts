@@ -15,7 +15,8 @@ function reportErrorInternal(value:any, allowPlain?:boolean, allowInstance?:bool
     }
 }
 
-abstract class _PrimitiveBase {
+export abstract class _PrimitiveBase {
+    static __proto__:Object;
     static id:string;
     static options:ClassOptions = {};
     static _matchValue(value:any, errorContext:ErrorContext){
@@ -41,11 +42,13 @@ abstract class _PrimitiveBase {
     static defaults() {
         MAILBOX.error(this.id + 'did not properly override defaults()');
     }
-    static validate(value:any) {
+    static validate(value:any):boolean {
         MAILBOX.error(this.id + 'did not properly override validate()');
+        return false;
     }
-    static validateType() {
+    static validateType(value:any):boolean {
         MAILBOX.error(this.id + 'did not properly override validateType()');
+        return false;
     }
 
     /**

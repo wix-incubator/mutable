@@ -14,11 +14,13 @@ import {default as PropsBase} from './props-base';
 import {LifeCycleManager} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
 import {either} from './generic-types';
+import {Type} from "./types";
 
+declare const global: {[key:string]:any};
+declare const module: {exports:any};
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
-    (typeof global === 'object' && global.global === global && global) ||
+    (typeof global === 'object' && global['global'] === global && global) ||
     this;
-
 if (globalCtx.__Mutable){
     module.exports = globalCtx.__Mutable;
 } else {

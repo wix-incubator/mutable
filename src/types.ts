@@ -15,12 +15,13 @@ export interface Type<T, S>{
     __proto__:any;
     prototype:T;
     id:string;
+    name?:string;
     options:ClassOptions;
     _prime?:this;
     _matchValue:(value:any, errorContext:ErrorContext) => TypeMatch;
     allowPlainVal(value:any, errorDetails?:ErrorDetails):boolean;
     isNullable():boolean;
-    withDefault(defaults?:DefaultSource<T>, validate?:Validator<T|S>, options?:ClassOptions):this|Type<(T|null), S>;
+    withDefault(defaults?:DefaultSource<T>, validate?:Validator<T|S>, options?:DeepPartial<ClassOptions>):this|Type<(T|null), S>;
     create(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext):T;
     defaults():S;
     cloneValue(value:S):S;
@@ -96,8 +97,10 @@ export function cast<T>(ref:any): T{
     return ref as T;
 }
 
+type GenericSignature = Array<Type<any, any>>;
 export interface ClassOptions{
     nullable?:boolean;
+    subTypes?:GenericSignature
 }
 
 export interface Validator<T> {
