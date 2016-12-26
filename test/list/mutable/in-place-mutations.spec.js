@@ -2,7 +2,6 @@ import {expect} from 'chai';
 
 import * as Mutable from '../../../src';
 import {aNumberList, aStringList, aVeryCompositeContainerList, UserType} from '../builders';
-import lifeCycleAsserter from '../lifecycle.js';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
 
 describe('List', function() {
@@ -17,8 +16,6 @@ describe('List', function() {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
                 }
             });
-
-            lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
         });
 
         describe('sort', function() {
@@ -77,7 +74,27 @@ describe('List', function() {
                 expect(() => numberList.splice(2, 1, {}, { child1: { user: { age: "666" } } }))
                     .to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('splice', 'List<VeryCompositeContainer>[3].child1.user.age', 'number', 'string'));
             });
-            lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
+
+            describe('lifecycleManager', function() {
+                let arr, manager, child;
+                beforeEach(()=>{
+                    manager = new LifeCycleManager();
+                    arr = Mutable.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr.$setManager(manager);
+                    child = new builders.UserType();
+                    sinon.spy(child, '$setManager');
+                });
+                if (context.dirtyableElements) {
+                    it('sets lifecycle manager in newly added elements', function() {
+                        arr.splice(1, 2, child);
+                        expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                    });
+                    it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                        arr.splice(1, 2, child.$asReadOnly());
+                        expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                    });
+                }
+            });
         });
     });
 });

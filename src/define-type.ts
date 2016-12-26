@@ -5,6 +5,8 @@ import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenc
 import {forEach, isFunction} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
 import {untracked, extras} from 'mobx';
+import {DirtyableYielder, AtomYielder} from "./lifecycle";
+import {BaseClass} from "./base-class";
 
 // ---- typify imports
 
@@ -32,7 +34,7 @@ const MAILBOX = getMailBox('Mutable.extend');
 const RESERVED_FIELDS = Object.keys(BaseType.prototype);
 
 export default function defineType<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
-    const ParentType:Class<any> = TypeConstructor || _ParentType || BaseType;
+    const ParentType:Class<any> = TypeConstructor || _ParentType || BaseClass;
     if (!BaseType.isJsAssignableFrom(ParentType)){
         MAILBOX.fatal(`Type definition error: ${id} is not a subclass of core3.Type`);
     }
@@ -53,7 +55,6 @@ export default function defineType<T extends P, P>(id:string, typeDefinition: Me
     return type;
 }
 
-
 function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{
     let result =  defineType('GenericType', {spec: () => ({})})
         .withDefault(source.defaults(), source.validate, source.options);
@@ -61,14 +62,14 @@ function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{
     return result;
 }
 
-function isBaseType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
-    return getPrimeType(fieldDef) === BaseType;
+function isBaseClass(fieldDef:Type<any, any>):fieldDef is Class<{}>{
+    return getPrimeType(fieldDef) === BaseClass;
 }
 
 function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
     forEach(typeSelfSpec, (fieldDef:Type<any, any>, fieldName:string) => {
         if (validateField(type, parentSpec, fieldName, fieldDef, parentName)){
-            if (isBaseType(fieldDef)) {
+            if (isBaseClass(fieldDef)) {
                 typeSelfSpec[fieldName] = defineGenericField(fieldDef);
             }
         }
@@ -118,7 +119,7 @@ function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>
             complex[complex.length] = k;
         }
     }
-    proto.$dirtyableElementsIterator = function typeDirtyableElementsIterator(yielder) {
+    proto.$dirtyableElementsIterator = function typeDirtyableElementsIterator(yielder: DirtyableYielder) {
         for (let c of complex) {
             let k = this.__value__[c];
             if (k && isFunction(k.$setManager)) { // if value is dirtyable
@@ -127,7 +128,7 @@ function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>
         }
         parent && isFunction(parent.$dirtyableElementsIterator) && parent.$dirtyableElementsIterator.call(this, yielder);
     };
-    proto.$atomsIterator = function atomsIterator(yielder) {
+    proto.$atomsIterator = function atomsIterator(yielder:AtomYielder) {
         for (let c in spec) {
             if (spec.hasOwnProperty(c)) {
                 yielder(extras.getAtom(this.__value__, c) as any);

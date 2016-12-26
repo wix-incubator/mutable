@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import BaseType from './base-type';
+import {BaseClass} from './base-class';
 import defineType from './define-type';
 import {validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Mutable.Reference');
 
-class _Reference extends BaseType {
+class _Reference extends BaseClass {
 
 // allow any object as long as it adhers to the entire schema
     static allowPlainVal(value, errorDetails = null) {
@@ -23,7 +23,7 @@ class _Reference extends BaseType {
         }
     }
 
-    static wrapValue(refVal, spec, options = {}) {
+    static wrapValue(refVal, options = {}) {
         var isValid = Object.keys(this._spec).every(key => {
             if (refVal[key] === undefined) {
                 MAILBOX.error(`${this.id} cannot accept value with missing field "${key}"`);

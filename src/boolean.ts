@@ -1,18 +1,19 @@
-import {_PrimitiveBase} from './primitive-base';
+import PrimitiveBase from './primitive-base';
 import {validateNullValue} from './validation';
 import {Type} from "./types";
 
-export default (class _Boolean extends _PrimitiveBase {
+export default class _Boolean extends PrimitiveBase {
     static id = 'boolean';
     static defaults() { return false; }
-    static validate(this:Type<boolean, boolean>, v:any) {
-        return typeof v === 'boolean' || validateNullValue(this, v);
+    static validate(value:any):value is boolean {
+        return typeof value === 'boolean' || validateNullValue(this, value);
     }
-    static validateType(this:Type<boolean, boolean>, value:any) {
+    static validateType(value:any):value is boolean {
         return this.validate(value);
     }
     constructor(value?:boolean) {
         super();
         return Boolean(value);
     }
-}) as any as Type<boolean, boolean>;
+}
+const asType: Type<boolean, boolean> = _Boolean;

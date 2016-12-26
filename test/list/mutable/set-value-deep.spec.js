@@ -1,11 +1,10 @@
 import {expect} from 'chai';
 
 import * as Mutable from '../../../src';
-import {either, LifeCycleManager} from '../../../src';
-import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
-import {aDataTypeWithSpec, getMobxLogOf} from '../../../test-kit/test-drivers';
+import {either} from '../../../src';
+import {UserType, AddressType} from '../builders';
+import {getMobxLogOf} from '../../../test-kit/test-drivers';
 import modifyTestSuite from './modify-test-suite';
-import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports';
 
 function complexSubTypeTests() {
     it('single subtype List should allow setting data with json', function() {

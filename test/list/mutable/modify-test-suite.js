@@ -5,13 +5,32 @@ import {LifeCycleManager} from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
 import {aDataTypeWithSpec, getMobxLogOf} from '../../../test-kit/test-drivers';
 import {either} from '../../../src/generic-types';
-import lifeCycleAsserter from '../lifecycle';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports';
 
 export default function modifyTestSuite(command, { complexSubTypeTests }) {
 
     describe(`List ${command}`, function() {
-        lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr[command]([elemFactory(), elemFactory()]), command);
+
+        describe('lifecycleManager', function() {
+            let arr, manager, child;
+            beforeEach(()=>{
+                manager = new LifeCycleManager();
+                arr = Mutable.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                arr.$setManager(manager);
+                child = new builders.UserType();
+                sinon.spy(child, '$setManager');
+            });
+            if (context.dirtyableElements) {
+                it('sets lifecycle manager in newly added elements', function() {
+                    arr[command]([child]);
+                    expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                });
+                it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                    arr[command]([child.$asReadOnly()]);
+                    expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                });
+            }
+        });
 
         it('should not get dirty if values are not changed', function() {
             var numberList = aNumberList([1]);

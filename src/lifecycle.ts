@@ -49,7 +49,7 @@ export class LifeCycleManager {
 }
 
 // called when a new lifecycle manager is introduced to this object
-function setManager(lifecycleManager:LifeCycleManager) {
+export function setManager(lifecycleManager:LifeCycleManager) {
     if (lifecycleManager) {
         if (this.__lifecycleManager__ && this.__lifecycleManager__ !== lifecycleManager) {
             MAILBOX.error('Moving mutable private state instances between containers');
@@ -71,13 +71,8 @@ function setManagerToDirtyableElement(container:Mutable<any>, element:any) {
 }
 
 // used by setters to determine if changes are allowed to the dirty flag
-function isDirtyable(this:Mutable<any>) {
+export function isDirtyable(this:Mutable<any>) {
     return !this.__isReadOnly__ && (!this.__lifecycleManager__ || this.__lifecycleManager__.isDirtyable());
-}
-
-export function makeDirtyable(type:CompositeType<Mutable<any>, any>) {
-    type.prototype.$setManager = setManager;
-    type.prototype.$isDirtyable = isDirtyable;
 }
 
 export function optionalSetManager(itemValue:any, lifeCycle?:LifeCycleManager|null) {

@@ -3,67 +3,49 @@ import {expect} from 'chai';
 
 import * as Mutable from '../src';
 import {aDataTypeWithSpec, getMobxLogOf} from '../test-kit/test-drivers';
-import {lifecycleContract} from './lifecycle.contract.spec';
 import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE, ERROR_IN_SET_VALUE_DEEP, ERROR_ATTEMPTING_TO_OVERRIDE_READONLY} from '../test-kit/test-drivers/reports';
 
-var User = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    age: Mutable.Number.withDefault(10),
-    address: Mutable.String.withDefault('no address')
-}, 'User');
-
-var UserWithChild = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child: User.withDefault({ name: 'bobi', age: 13 })
-}, 'UserWithChild');
-
-var UserWithNullableChild = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child: User.nullable().withDefault(null)
-}, 'UserWithNullableChild');
-
-var CompositeContainer = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child1: User,
-    child2: User
-}, 'CompositeContainer');
-
-var VeryCompositeContainer = aDataTypeWithSpec({
-    child1: UserWithChild
-}, 'VeryCompositeContainer');
-
-var PrimitivesContainer = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child1: Mutable.String,
-    child2: Mutable.String
-}, 'PrimitivesContainer');
-
-var WithNonSerializable = aDataTypeWithSpec({
-    func: Mutable.Function,
-    str: Mutable.String
-}, 'WithNonSerializable');
-
-var lifeCycleAsserter = lifecycleContract();
-(() => {
-    lifeCycleAsserter.addFixture(
-        (u1, u2) => {
-            var result = new CompositeContainer();
-            result.child1 = u1;
-            result.child2 = u2;
-            return result;
-        },
-        () => new User(),
-        'object with mutable elements');
-    var counter = 0;
-    lifeCycleAsserter.addFixture(
-        (u1, u2) => new PrimitivesContainer({ child1: u1, child2: u2 }),
-        () => 'foobar' + (counter++),
-        'object with primitive elements'
-    );
-})();
-
 describe('Custom data', function() {
+    let User, UserWithChild, UserWithNullableChild, CompositeContainer, VeryCompositeContainer, PrimitivesContainer, WithNonSerializable;
+    before(() => {
+        User = aDataTypeWithSpec({
+            name: Mutable.String.withDefault('leon'),
+            age: Mutable.Number.withDefault(10),
+            address: Mutable.String.withDefault('no address')
+        }, 'User');
 
+        UserWithChild = aDataTypeWithSpec({
+            name: Mutable.String.withDefault('leon'),
+            child: User.withDefault({ name: 'bobi', age: 13 })
+        }, 'UserWithChild');
+
+        UserWithNullableChild = aDataTypeWithSpec({
+            name: Mutable.String.withDefault('leon'),
+            child: User.nullable().withDefault(null)
+        }, 'UserWithNullableChild');
+
+        CompositeContainer = aDataTypeWithSpec({
+            name: Mutable.String.withDefault('leon'),
+            child1: User,
+            child2: User
+        }, 'CompositeContainer');
+
+        VeryCompositeContainer = aDataTypeWithSpec({
+            child1: UserWithChild
+        }, 'VeryCompositeContainer');
+
+        PrimitivesContainer = aDataTypeWithSpec({
+            name: Mutable.String.withDefault('leon'),
+            child1: Mutable.String,
+            child2: Mutable.String
+        }, 'PrimitivesContainer');
+
+        WithNonSerializable = aDataTypeWithSpec({
+            func: Mutable.Function,
+            str: Mutable.String
+        }, 'WithNonSerializable');
+
+    });
     describe('Type Class', function() {
         it('should be able to describe itself', function() {
             expect(User).to.have.field('name').with.defaults('leon').of.type(Mutable.String);
@@ -71,8 +53,32 @@ describe('Custom data', function() {
         });
     });
 
-    describe('lifecycle:', function() {
-        lifeCycleAsserter.assertDirtyContract();
+    describe('$setManager', function() {
+        let object, manager;
+        beforeEach(()=>{
+            manager = new Mutable.LifeCycleManager();
+            object = new UserWithChild();
+            sinon.spy(object.child, '$setManager');
+        });
+        it('with existing different manager does not change the manager and reports error', function() {
+            object.__lifecycleManager__ = manager;
+            expect(() => object.$setManager(new Mutable.LifeCycleManager())).to.report({ level: /error/ });
+            expect(object.__lifecycleManager__, 'container manager').to.equal(manager);
+        });
+        it('when no existing manager changes the manager field', function() {
+            expect(() => object.$setManager(manager)).not.to.report({ level: /error/ });
+            expect(object.__lifecycleManager__, 'container manager').to.equal(manager);
+        });
+        it('when no existing manager changes the manager field of child elements', function() {
+            expect(() => object.$setManager(manager)).not.to.report({ level: /error/ });
+            expect(object.child.$setManager).to.have.been.calledWithExactly(manager);
+        });
+        it('in readonly form does not report an error', function() {
+            expect(() => object.$asReadOnly().$setManager(manager)).to.not.report({ level: /error/ });
+        });
+        it('with invalid type reports an error', function() {
+            expect(() => object.$setManager({})).to.report({ level: /error/ });
+        });
     });
 
     describe('toJSON', function() {
@@ -365,9 +371,29 @@ describe('Custom data', function() {
 
                     expect(state.title).to.be.equal('new title');
                 });
-                lifeCycleAsserter.assertMutatorContract((obj) => obj.name = 'johnny', 'assignment on primitive field');
             });
-            lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
+
+            describe('assigning a complex value to field', function() {
+                let object, manager, child;
+                beforeEach(()=>{
+                    manager = new Mutable.LifeCycleManager();
+                    object = new UserWithChild();
+                    object.$setManager(manager);
+                    child = new User();
+                    sinon.spy(child, '$setManager');
+                });
+                if (context.dirtyableElements) {
+                    it('sets lifecycle manager in newly added elements', function() {
+                        object.child = child;
+                        expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                    });
+                    it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                        object.child = child.$asReadOnly();
+                        expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                    });
+                }
+            });
+
         });
 
         function valueSetterSuite(setterName) {
@@ -407,7 +433,27 @@ describe('Custom data', function() {
                     expect(log).to.be.empty;
                 });
 
-                lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj[setterName]({ child: elemFactory() }), setterName + ' which assigns to element field');
+
+                describe('assigning a complex value to field via '+setterName, function() {
+                    let object, manager, child;
+                    beforeEach(()=>{
+                        manager = new Mutable.LifeCycleManager();
+                        object = new UserWithChild();
+                        object.$setManager(manager);
+                        child = new User();
+                        sinon.spy(child, '$setManager');
+                    });
+                    if (context.dirtyableElements) {
+                        it('sets lifecycle manager in newly added elements', function() {
+                            object[setterName]({child});
+                            expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                        });
+                        it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                            object[setterName]({child:child.$asReadOnly()});
+                            expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                        });
+                    }
+                });
             });
             describe('with mutable input', function() {
                 it('should set replace all values from an incoming object with mutable fields according to schema', function() {

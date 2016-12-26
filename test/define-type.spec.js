@@ -216,17 +216,11 @@ describe('defining', () => {
                         parent: Node.nullable()
                     })
                 });
-
                 const node = new NodeType();
-
                 expect(node.toJSON()).to.eql({ children: [], parent: null });
-
                 node.parent = new NodeType();
-
                 expect(node.toJSON()).to.eql({ children: [], parent: { children: [], parent: null } });
-
                 node.children.push(new NodeType());
-
                 expect(node.toJSON()).to.eql({ children: [{ children: [], parent: null }], parent: { children: [], parent: null } });
             });
 

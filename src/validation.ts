@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
 import {getReadableValueTypeName} from './utils';
-import {ErrorContext, Class, Type} from "./types";
+import {ErrorContext, Class, Type, CompositeType, isCompositeType} from "./types";
 
 export function misMatchMessage(errorContext:ErrorContext, expected:{id:string}|string, actual:any, overridepath?:string|null, template?:string) {
     const expectedMessage = template ? `expected ${template} of type` : 'expected type';
     return `${errorContext.entryPoint}: "${overridepath || errorContext.path}" ${expectedMessage} ${typeof expected === 'string'? expected : expected.id} but got ${getReadableValueTypeName(actual)}`
 }
 
-export function isAssignableFrom(toType:Type<any, any>, type:Class<any>) {
-    return type && toType && (type.id === toType.id || (type.ancestors && _.includes(type.ancestors, toType.id)));
+export function isAssignableFrom(toType:Type<any, any>, type:Type<any, any>) {
+    return type && toType && (type.id === toType.id || (isCompositeType(type) && type.ancestors && _.includes(type.ancestors, toType.id)));
 }
 
 export function isNullable(type:Type<any, any>) {

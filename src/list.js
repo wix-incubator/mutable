@@ -65,7 +65,7 @@ class _List extends BaseType {
             });
     }
 
-    static wrapValue(value, spec, options, errorContext) {
+    static wrapValue(value, options, errorContext) {
         if (this.validateType(value)) {
             if (value.__value__.map) {
                 return observable(asFlat(value.__value__.map((itemValue) => {

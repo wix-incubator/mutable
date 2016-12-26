@@ -6,7 +6,7 @@ import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
 import {toString, toUnwrappedString} from './generic-types';
-import {Type, Class, cast, ErrorDetails, ErrorContext, ClassOptions, Mutable} from "./types";
+import {Type, Class, cast, ErrorDetails, ErrorContext, ClassOptions, Mutable, CompositeType} from "./types";
 const MAILBOX = getMailBox('Mutable.Union');
 
 const BaseType : Class<{}> = cast<Class<{}>>(_BaseType);
@@ -23,7 +23,7 @@ function getTypeName(type:Type<any, any>):string {
     return result;
 }
 
-const Union = (class _Union extends BaseType {
+class Union extends BaseType {
     static defaults() {
         if (!this.options || !this.options.subTypes) {
             MAILBOX.error('Untyped Unions are not supported. please state union of types in the format string|number');
@@ -107,7 +107,8 @@ const Union = (class _Union extends BaseType {
         MAILBOX.error('Instantiating a union type is not supported');
         super.preConstructor();
     }
-}) as any as Class<any>;
+}
+const asType: CompositeType<any, any> = Union;
 
 export default defineType('Union', {
     spec: function(Union) {return {};}

@@ -1,16 +1,16 @@
-import {_PrimitiveBase} from './primitive-base';
+import PrimitiveBase from './primitive-base';
 import {validateNullValue} from './validation';
 import {Type} from "./types";
 
-export default (class _String extends _PrimitiveBase {
+export default class _String extends PrimitiveBase {
     static id = 'string';
     static defaults() { return ''; }
 
-    static validate(this:Type<string, string>, v:any) {
-        return typeof v === 'string' || validateNullValue(this, v);
+    static validate(value:any):value is string {
+        return typeof value === 'string' || validateNullValue(this, value);
     }
 
-    static validateType(this:Type<string, string>, value:any) {
+    static validateType(value:any):value is string {
         return this.validate(value);
     }
 
@@ -19,5 +19,5 @@ export default (class _String extends _PrimitiveBase {
         return String(value);
     }
 
-}) as any as Type<string, string>;
-
+}
+const asType: Type<string, string> = _String;

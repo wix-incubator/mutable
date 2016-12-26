@@ -6,6 +6,7 @@ import {
     ErrorMessage, ErrorContext, ErrorDetails, Validator,
     ClassOptions, cast, Type, Mutable
 } from "./types";
+import isUndefined = require("lodash/isUndefined");
 
 const MAILBOX = getMailBox('Mutable.PrimitiveBase');
 
@@ -15,14 +16,14 @@ function reportErrorInternal(value:any, allowPlain?:boolean, allowInstance?:bool
     }
 }
 
-export abstract class _PrimitiveBase {
+export default class PrimitiveBase {
     static __proto__:Object;
     static id:string;
     static options:ClassOptions = {};
     static _matchValue(value:any, errorContext:ErrorContext){
         return new TypeMatch(value, errorContext).tryType(this as any as Type<any, any>);
     }
-    static allowPlainVal(value:any, errorDetails?:ErrorDetails) {
+    static allowPlainVal(value:any, errorDetails?:ErrorDetails):boolean {
         if(this.validate(value)){
             return true;
         } else {
@@ -40,14 +41,14 @@ export abstract class _PrimitiveBase {
         return this.validate(v) ? v : this.defaults();
     }
     static defaults() {
-        MAILBOX.error(this.id + 'did not properly override defaults()');
+        MAILBOX.error('type ' + this.id + ' did not properly override defaults()');
     }
-    static validate(value:any):boolean {
-        MAILBOX.error(this.id + 'did not properly override validate()');
+    static validate(value:any):value is any {
+        MAILBOX.error('type ' + this.id + ' did not properly override validate()');
         return false;
     }
-    static validateType(value:any):boolean {
-        MAILBOX.error(this.id + 'did not properly override validateType()');
+    static validateType(value:any):value is any {
+        MAILBOX.error('type ' + this.id + ' did not properly override validateType()');
         return false;
     }
 
@@ -55,7 +56,7 @@ export abstract class _PrimitiveBase {
      * Determines whether an instance of a specified type can be assigned to the current type
      * @param otherType
      */
-    static isJsAssignableFrom(otherType:any){
+    static isJsAssignableFrom(otherType:any):otherType is any{
         return otherType && (this.prototype === otherType.prototype || this.prototype.isPrototypeOf(otherType.prototype));
     }
 
@@ -67,7 +68,7 @@ export abstract class _PrimitiveBase {
     static cloneValue(value:any) {
         return value;
     }
-    static withDefault(defaults?:Mutable<any>, validate?:Validator<any>, options?:ClassOptions){
+    static withDefault(defaults?:any, validate?:Validator<any>, options?:ClassOptions){
         const NewType = cloneType(this.id+'_with_defaults', this as any);
         if (validate) {
             NewType.validate = validate;
@@ -85,8 +86,8 @@ export abstract class _PrimitiveBase {
         }
         return NewType;
     }
-    static reportDefinitionErrors() {
-        return null;
+    static reportDefinitionErrors():ErrorMessage|undefined {
+        return undefined;
     }
     static reportSetValueErrors(value:any) {
         return reportErrorInternal.call(this, value, true, true);
@@ -102,6 +103,4 @@ export abstract class _PrimitiveBase {
         }
     }
 }
-export const PrimitiveBase = _PrimitiveBase as any as Type<any, any>;
-
-export default PrimitiveBase;
+const asType: Type<any, any> = PrimitiveBase;

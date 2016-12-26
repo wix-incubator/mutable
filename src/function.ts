@@ -1,20 +1,22 @@
-import {_PrimitiveBase} from './primitive-base';
+import PrimitiveBase from './primitive-base';
 import {validateNullValue} from './validation';
-import {Type, cast} from "./types";
+import {Type} from "./types";
 
 function noop() { }
 
-export default (class _Function extends _PrimitiveBase {
+export default class _Function extends PrimitiveBase {
     static id = 'function';
     static defaults() { return noop; }
-    static validate(this:Type<Function, Function>, v:any) {
-        return typeof v === 'function' || validateNullValue(this, v) ;
+    static validate(value:any):value is Function {
+        return typeof value === 'function' || validateNullValue(this, value) ;
     }
-    static validateType(this:Type<Function, Function>, value:any) {
+    static validateType(value:any):value is Function {
         return this.validate(value);
     }
     constructor(value:Function) {
         super();
-        return cast<Type<Function, Function>>(_Function).validate(value) ? value : noop;
+        return _Function.validate(value) ? value : noop;
     }
-}) as any as Type<Function, Function>;
+}
+
+const asType: Type<Function, Function> = _Function;

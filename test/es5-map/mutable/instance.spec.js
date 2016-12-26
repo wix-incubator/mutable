@@ -1,12 +1,10 @@
 import {expect} from 'chai';
 import * as sinon from 'sinon';
-import * as _ from 'lodash';
 
 import * as Mutable from '../../../src';
 import {getMobxLogOf} from '../../../test-kit/test-drivers';
 
 import * as builders from '../builders';
-import lifeCycleAsserter from '../lifecycle';
 
 var hasSymbols = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol';
 
@@ -173,10 +171,6 @@ function testReadFunctionality(builders, isReadonly) {
                     });
                 }
             });
-            if (!isReadonly) {
-                lifeCycleAsserter.assertMutatorContract(
-                    (map, elemFactory) => map.delete(Object.keys(map.toJSON())[0]), 'delete');
-            }
         });
         describe('entries', () => {
             it('should return an array of the map elements', () => {
@@ -265,8 +259,26 @@ function testReadFunctionality(builders, isReadonly) {
                     usersMap.set('userA', userB).set('userB', userB).set('userA', userA);
                     expect(usersMap.toJSON(false)).to.eql({userB, userA});
                 });
-                lifeCycleAsserter.assertMutatorContract(
-                    (map, elemFactory) => map.set('foo', elemFactory()), 'set');
+                describe('lifecycleManager', function() {
+                    let map, manager, child;
+                    beforeEach(()=>{
+                        manager = new LifeCycleManager();
+                        map = new Mutable.Es5Map.of(builders.UserType)({child});
+                        map.$setManager(manager);
+                        child = new builders.UserType();
+                        sinon.spy(child, '$setManager');
+                    });
+                    if (context.dirtyableElements) {
+                        it('sets lifecycle manager in newly added elements', function() {
+                            map.set('foo', child);
+                            expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                        });
+                        it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                            map.set('foo', child.$asReadOnly());
+                            expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                        });
+                    }
+                });
             }
             it('should return the map', () => {
                 var numbers = builders.aNumberMap({ a: 5 });
@@ -313,8 +325,26 @@ function testReadFunctionality(builders, isReadonly) {
                     it('should set map as dirty', function() {
                         expect(log).not.to.be.empty;
                     });
-                    lifeCycleAsserter.assertMutatorContract(
-                        (map, elemFactory) => map.setValue([['foo', elemFactory()]]), 'setValue');
+                    describe('lifecycleManager', function() {
+                        let map, manager, child;
+                        beforeEach(()=>{
+                            manager = new LifeCycleManager();
+                            map = new Mutable.Es5Map.of(builders.UserType)({child});
+                            map.$setManager(manager);
+                            child = new builders.UserType();
+                            sinon.spy(child, '$setManager');
+                        });
+                        if (context.dirtyableElements) {
+                            it('sets lifecycle manager in newly added elements', function() {
+                                map.setValue([['foo', child]]);
+                                expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                            });
+                            it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                                map.setValue([['foo', child.$asReadOnly()]]);
+                                expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                            });
+                        }
+                    });
                 }
             });
 
@@ -355,8 +385,26 @@ function testReadFunctionality(builders, isReadonly) {
                     it('should set map as dirty', function() {
                         expect(log).not.to.be.empty;
                     });
-                    lifeCycleAsserter.assertMutatorContract(
-                        (map, elemFactory) => map.setValueDeep([['foo', elemFactory()]]), 'setValueDeep');
+                    describe('lifecycleManager', function() {
+                        let map, manager, child;
+                        beforeEach(()=>{
+                            manager = new LifeCycleManager();
+                            map = new Mutable.Es5Map.of(builders.UserType)({child});
+                            map.$setManager(manager);
+                            child = new builders.UserType();
+                            sinon.spy(child, '$setManager');
+                        });
+                        if (context.dirtyableElements) {
+                            it('sets lifecycle manager in newly added elements', function() {
+                                map.setValueDeep([['foo', child]]);
+                                expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                            });
+                            it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                                map.setValueDeep([['foo', child.$asReadOnly()]]);
+                                expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                            });
+                        }
+                    });
                 }
             });
             if (!isReadonly) {
