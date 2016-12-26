@@ -23,12 +23,12 @@ class _Reference extends BaseClass {
         }
     }
 
-    static wrapValue(refVal, options = {}) {
-        var isValid = Object.keys(this._spec).every(key => {
+    static wrapValue(refVal, spec, options = {}) {
+        var isValid = Object.keys(spec).every(key => {
             if (refVal[key] === undefined) {
                 MAILBOX.error(`${this.id} cannot accept value with missing field "${key}"`);
                 return false;
-            } else if (!this._spec[key].validateType(refVal[key])) {
+            } else if (!spec[key].validateType(refVal[key])) {
                 MAILBOX.error(`${this.id} field "${key}" cannot accept value with mismatched type`);
                 return false;
             }

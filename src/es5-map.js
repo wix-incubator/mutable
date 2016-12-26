@@ -136,7 +136,7 @@ class _Es5Map extends BaseType {
         return validateValue(this, value) || isIterable(value) || value instanceof Object;
     }
 
-    static wrapValue(value, options, errorContext) {
+    static makeValue(value, options, errorContext) {
         if (super.validateType(value)) {
             return this._wrapIterable(value.__value__.entries(), options, null, errorContext);
         }
@@ -220,7 +220,7 @@ class _Es5Map extends BaseType {
         if (this.$isDirtyable()) {
             untracked(() => {
                 errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
-                newValue = this.constructor.wrapValue(newValue, this.__options__, errorContext);
+                newValue = this.constructor.makeValue(newValue, this.__options__, errorContext);
                 newValue.forEach((val, key) => {
                     changed = changed || shouldAssign(this.__value__.get(key), val);
                 });
@@ -265,7 +265,7 @@ class _Es5Map extends BaseType {
             // collect data for change
             untracked(() => {
                 errorContext = errorContext || this.constructor.createErrorContext('Es5Map setValue error', 'error', this.__options__);
-                // TODO this code has the same structure as wrapValue, combine both together
+                // TODO this code has the same structure as makeValue, combine both together
                 this.__value__.keys().forEach(key => toDelete[key] = true);
                 const newEntriesVisitor = (val, key) => {
                     delete toDelete[key];

@@ -93,7 +93,11 @@ export class BaseClass<T> extends BaseType<T>{
         return result;
     }
 
-    static wrapValue<T extends Object>(value:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext):T|null {
+    static makeValue<T extends Object>(value:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext):T|null {
+        return this.wrapValue<T>(value, this._spec, options, errorContext);
+    }
+
+    static wrapValue<T extends Object>(value:DeepPartial<T>|null, spec:Spec, options?:ClassOptions, errorContext?:ErrorContext):T|null {
         if (value === null){
             return null;
         }
@@ -112,6 +116,7 @@ export class BaseClass<T> extends BaseType<T>{
         });
         return observable(newValue);
     }
+
     protected __ctor__:Class<T>;
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {

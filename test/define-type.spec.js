@@ -40,6 +40,7 @@ describe('defining', () => {
     describe('a basic type', () => {
 
         typeCompatibilityTest(() => Type2);
+
         describe('that is isomorphic to another type', () => {
             it('should result in two compatible types', () => {
                 new Type2(new Type1({ foo: "bar" }));

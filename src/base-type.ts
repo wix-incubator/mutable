@@ -36,7 +36,7 @@ abstract class BaseType<T> extends PrimitiveBase implements Mutable<T> {
     static uniqueId:string;
     static __refType: ReferenceType<any>;
     static byReference: (provider:() => any, path?:Array<string|number>) => any;
-    protected static wrapValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>any;
+    protected static makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>any;
     static defaults:(circularFlags?:string)=> any;
 
     // TODO: move out
@@ -99,7 +99,7 @@ abstract class BaseType<T> extends PrimitiveBase implements Mutable<T> {
         this.__readWriteInstance__ = this;
         this.__options__ = options;
 
-        this.__value__ = this.__ctor__.wrapValue(
+        this.__value__ = this.__ctor__.makeValue(
             (value === undefined) ? this.__ctor__.defaults() : value,
             options,
             errorContext

@@ -80,7 +80,7 @@ export interface CompositeType<T extends Mutable<S>|null, S> extends Type<T, S> 
     uniqueId:string;
     preConstructor():void;
     __refType: ReferenceType<T>;
-    wrapValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>S;
+    makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>S;
     byReference: (provider:() => any, path?:Array<string|number>) => T;
     new(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext): T;
 }
@@ -99,6 +99,7 @@ export interface ReferenceType<T>{
     new(provider:() => any, path:Array<string|number>):T
 }
 export interface Class<T> extends CompositeType<Mutable<T>, T> {
+    wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
     _spec:Spec;
     getFieldsSpec():Spec;
 }
