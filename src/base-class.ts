@@ -102,11 +102,11 @@ export class BaseClass<T> extends BaseType<T>{
             return null;
         }
         const newValue:T = {} as T;
-        _.each(this._spec, (fieldSpec:Type<any, any>, key:keyof T) => {
+        _.each(spec, (fieldSpec:Type<any, any>, key:keyof T) => {
             let fieldVal = value[key];
 
             if (fieldVal === undefined) {
-                fieldVal = this._spec[key].defaults();
+                fieldVal = spec[key].defaults();
             }
             let fieldErrorContext:ErrorContext = errorContext?
                 _.defaults({path: errorContext.path + '.' + key }, errorContext) :
