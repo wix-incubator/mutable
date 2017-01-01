@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {ArrayWrapper} from './array-wrapper';
-import defineType from './define-type';
+import {defineNonPrimitive} from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
 import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
@@ -482,9 +482,5 @@ class _List extends NonPrimitive {
         this.__value__.length = newLength;
     }
 }
-export default defineType('List', {
-    spec: function() {
-        return {};
-    }
-}, null, _List);
+export default defineNonPrimitive('List', _List);
 

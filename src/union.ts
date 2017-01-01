@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {NonPrimitive} from './non-primitive';
-import defineType from './define-type';
+import {defineNonPrimitive} from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
 import {toString, toUnwrappedString} from './generic-types';
@@ -116,7 +116,5 @@ class Union extends NonPrimitive<any> {
 }
 const asType: CompositeType<any, any> = Union;
 
-export default defineType('Union', {
-    spec: function(Union) {return {};}
-}, undefined, Union);
+export default defineNonPrimitive('Union', Union);
 

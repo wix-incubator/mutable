@@ -1,4 +1,4 @@
-import {Spec, cast, Type, Class, isCompositeType, ReferenceType, Mutable} from './types';
+import {Spec, cast, Type, Class, isCompositeType, ReferenceType, Mutable, CompositeType} from './types';
 import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
 import {forEach, isFunction, extend} from 'lodash';
@@ -7,8 +7,6 @@ import {untracked, extras} from 'mobx';
 import {DirtyableYielder, AtomYielder} from "./lifecycle";
 import {BaseClass} from "./base-class";
 import {NonPrimitive} from './non-primitive';
-
-// ----- typify module I/O
 
 /**
  * the schema of the class to define (input format)
@@ -22,37 +20,48 @@ interface Schema{
 interface Metadata{
     spec(self:Class<any>) : Schema;
 }
-// done typify module I/O
 
 
 const MAILBOX = getMailBox('Mutable.extend');
 const RESERVED_FIELDS = Object.keys(extend({}, BaseClass.prototype));
 
-// TODO: separate to two: one for registering / defining a type and another for extending a class
-export default function defineType<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
-    const ParentType:Class<any> = TypeConstructor || _ParentType || BaseClass;
-    if (!NonPrimitive.isJsAssignableFrom(ParentType)){
-        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of core3.Type`);
-    }
-    const type = inherit(id, ParentType);
-    type.ancestors = ParentType.ancestors.concat([ParentType.id]);
-    type.id = id;
-    type.uniqueId = ''+generateClassId();
 
-    // values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
+    const ParentType:Class<any> = TypeConstructor || _ParentType || BaseClass;
+    if (!BaseClass.isJsAssignableFrom(ParentType)){
+        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of BaseClass`);
+    }
+    const type = defineNonPrimitive(id, ParentType);
+
+    calculateSchemaProperties(typeDefinition, type, ParentType, id);
+    return type;
+}
+
+// values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
+function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, ParentType: Class<any>, id: string) {
     const typeSelfSpec = typeDefinition.spec(type);
     const baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
     normalizeSchema(type, baseSpec, typeSelfSpec, ParentType.id);
-    type.__proto__ = Object.create(ParentType); // inherint non-enumerable static properties
     type._spec = generateSpec(id, typeSelfSpec, baseSpec);
     setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
     generateFieldsOn(type.prototype, typeSelfSpec);
     type.__refType = generateRefType(type);
+}
+
+export function defineNonPrimitive<T, C extends CompositeType<Mutable<T>, T>>(id:string, jsClass: C):C {
+    if (!NonPrimitive.isJsAssignableFrom(jsClass)){
+        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of NonPrimitive`);
+    }
+    const type = inherit(id, jsClass);
+    type.ancestors = jsClass.ancestors.concat([jsClass.id]);
+    type.id = id;
+    type.uniqueId = '' + generateClassId();
+    type.__proto__ = Object.create(jsClass); // inherint non-enumerable static properties
     return type;
 }
 
 function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{
-    let result =  defineType('GenericType', {spec: () => ({})})
+    let result =  defineClass('GenericType', {spec: () => ({})})
         .withDefault(source.defaults(), source.validate, source.options);
     result.validateType = (value:any):value is Type<{}|null, {}|null> => validateValue(source, value);
     return result;

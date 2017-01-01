@@ -1,5 +1,5 @@
 import {default as config} from './config';
-import {default as define} from './define-type';
+import {defineClass as define} from './define-type';
 import {NonPrimitive} from './non-primitive';
 import {default as PrimitiveBase} from './primitive-base';
 import {default as String} from './string';

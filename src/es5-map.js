@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import defineType from './define-type';
+import {defineNonPrimitive} from './define-type';
 import {getValueFromRootRef, getReferenceWrapper} from './utils';
 import {NonPrimitive} from './non-primitive';
 import * as generics from './generic-types';
@@ -413,8 +413,4 @@ class _Es5Map extends NonPrimitive {
     }
 }
 
-export default defineType('Es5Map', {
-    spec: function() {
-        return {};
-    }
-}, null, _Es5Map);
+export default defineNonPrimitive('Es5Map', _Es5Map);

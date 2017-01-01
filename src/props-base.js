@@ -1,3 +1,3 @@
-import defineType from './define-type';
+import {defineClass} from './define-type';
 
-export default defineType('PropsBase', { spec: () => ({}) });
+export default defineClass('PropsBase', { spec: () => ({}) });

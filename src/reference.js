@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import {BaseClass} from './base-class';
-import defineType from './define-type';
+import {defineNonPrimitive} from './define-type';
 import {validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Mutable.Reference');
@@ -40,8 +40,4 @@ class _Reference extends BaseClass {
     static cloneValue(value) { return value; }
 }
 
-export default defineType('Reference', {
-    spec: function(Reference) {
-        return {};
-    }
-}, null, _Reference);
+export default defineNonPrimitive('Reference', _Reference);
