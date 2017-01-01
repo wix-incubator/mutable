@@ -1,6 +1,6 @@
 import {default as config} from './config';
 import {default as define} from './define-type';
-import {default as BaseType} from './base-type';
+import {NonPrimitive} from './non-primitive';
 import {default as PrimitiveBase} from './primitive-base';
 import {default as String} from './string';
 import {default as Boolean} from './boolean';
@@ -27,7 +27,7 @@ if (globalCtx.__Mutable){
     module.exports = globalCtx.__Mutable = {
         config,
         define,
-        BaseType:BaseClass,
+        NonPrimitive,
         BaseClass,
         PrimitiveBase,
         String,

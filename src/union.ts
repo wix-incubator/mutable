@@ -1,15 +1,13 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-
-import _BaseType from './base-type';
+import {NonPrimitive} from './non-primitive';
 import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
 import {toString, toUnwrappedString} from './generic-types';
 import {Type, Class, cast, ErrorDetails, ErrorContext, ClassOptions, Mutable, CompositeType} from "./types";
+import {AtomYielder, DirtyableYielder} from "./lifecycle";
 const MAILBOX = getMailBox('Mutable.Union');
-
-const BaseType : Class<{}> = cast<Class<{}>>(_BaseType);
 
 function getTypeName(type:Type<any, any>):string {
     let result = type.id || type.name || type.id;
@@ -23,7 +21,8 @@ function getTypeName(type:Type<any, any>):string {
     return result;
 }
 
-class Union extends BaseType {
+class Union extends NonPrimitive<any> {
+
     static defaults() {
         if (!this.options || !this.options.subTypes) {
             MAILBOX.error('Untyped Unions are not supported. please state union of types in the format string|number');
@@ -107,6 +106,13 @@ class Union extends BaseType {
         MAILBOX.error('Instantiating a union type is not supported');
         super.preConstructor();
     }
+
+    $dirtyableElementsIterator(yielder: DirtyableYielder): void {MAILBOX.error('Instantiating a union type is not supported');}
+    $atomsIterator(yielder: AtomYielder): void {MAILBOX.error('Instantiating a union type is not supported');}
+    setValue(newValue: any, errorContext?: ErrorContext): boolean {MAILBOX.error('Instantiating a union type is not supported'); return false;}
+    setValueDeep(newValue: any, errorContext?: ErrorContext): boolean {MAILBOX.error('Instantiating a union type is not supported');return false;}
+    toJSON(recursive?: boolean, typed?: boolean): any {MAILBOX.error('Instantiating a union type is not supported');}
+    toJS(typed?: boolean): any {MAILBOX.error('Instantiating a union type is not supported');}
 }
 const asType: CompositeType<any, any> = Union;
 

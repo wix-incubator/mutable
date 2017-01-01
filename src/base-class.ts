@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import BaseType from "./base-type";
+import {NonPrimitive} from "./non-primitive";
 import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Mutable, Class} from "./types";
 import {getMailBox} from "escalate";
 import {clone, getFieldDef, shouldAssign} from "./utils";
@@ -11,7 +11,7 @@ import {optionalSetManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 const MAILBOX = getMailBox('Mutable.BaseClass');
 
 
-export class BaseClass<T> extends BaseType<T>{
+export class BaseClass<T> extends NonPrimitive<T>{
 
     static _spec: Spec = Object.freeze(Object.create(null));
 
@@ -179,7 +179,7 @@ export class BaseClass<T> extends BaseType<T>{
         if(untracked(() => {
                 if (shouldAssign(this.__value__[fieldName], newValue)) {
                     const fieldDef = getFieldDef(this.__ctor__, fieldName);
-                    const typedField = isAssignableFrom(BaseType, fieldDef);
+                    const typedField = isAssignableFrom(NonPrimitive, fieldDef);
                     // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
                     if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
                         // validation passed set the value

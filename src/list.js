@@ -5,7 +5,7 @@ import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
 import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
-import BaseType from './base-type';
+import {NonPrimitive} from './non-primitive';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';
 import {optionalSetManager} from './lifecycle';
@@ -21,7 +21,7 @@ class ArrayReference extends ArrayWrapper{
     }
 }
 
-class _List extends BaseType {
+class _List extends NonPrimitive {
 
     static defaults() { return []; }
 
@@ -114,7 +114,7 @@ class _List extends BaseType {
         if (!this.options || !this.options.subTypes) {
             return { path: '', message: `Untyped Lists are not supported please state type of list item in the format core3.List<string>` }
         } else {
-            var error = generics.reportDefinitionErrors(this.options.subTypes, BaseType.reportFieldDefinitionError);
+            var error = generics.reportDefinitionErrors(this.options.subTypes, NonPrimitive.reportFieldDefinitionError);
             if (error) {
                 return {
                     path: `<${error.path}>`,
@@ -159,7 +159,7 @@ class _List extends BaseType {
 
     toJSON(recursive = true, typed = false) {
         return this.__value__.map(item => {
-            return (recursive && BaseType.validateType(item)) ? item.toJSON(true, typed) : item;
+            return (recursive && NonPrimitive.validateType(item)) ? item.toJSON(true, typed) : item;
         });
     }
 
@@ -321,7 +321,7 @@ class _List extends BaseType {
     at(index) {
        if (index >= 0 && untracked(() => this.__value__.length > index)) {
             var item = this.__value__[index];
-            return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+            return (NonPrimitive.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
        }
     }
 
@@ -442,7 +442,7 @@ class _List extends BaseType {
                         this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                     } else if(this.__options__.subTypes.validateType(itemValue)){
                         changed = this.$assignCell(assignIndex, itemValue, errorContext) || changed;
-                    } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
+                    } else if (currentItem.setValueDeep && !NonPrimitive.validateType(itemValue) && !currentItem.$isReadOnly()) {
                         if (currentItem.constructor.allowPlainVal(itemValue)) {
                             changed = currentItem.setValueDeep(itemValue) || changed;
                         } else {

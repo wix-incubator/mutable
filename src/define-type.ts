@@ -1,17 +1,12 @@
 import {Spec, cast, Type, Class, isCompositeType, ReferenceType, Mutable} from './types';
-import _BaseType from './base-type';
 import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
-import {forEach, isFunction} from 'lodash';
+import {forEach, isFunction, extend} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
 import {untracked, extras} from 'mobx';
 import {DirtyableYielder, AtomYielder} from "./lifecycle";
 import {BaseClass} from "./base-class";
-
-// ---- typify imports
-
-const BaseType : Class<{}> = cast<Class<{}>>(_BaseType);
-// done typifying imports
+import {NonPrimitive} from './non-primitive';
 
 // ----- typify module I/O
 
@@ -31,11 +26,12 @@ interface Metadata{
 
 
 const MAILBOX = getMailBox('Mutable.extend');
-const RESERVED_FIELDS = Object.keys(BaseType.prototype);
+const RESERVED_FIELDS = Object.keys(extend({}, BaseClass.prototype));
 
+// TODO: separate to two: one for registering / defining a type and another for extending a class
 export default function defineType<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
     const ParentType:Class<any> = TypeConstructor || _ParentType || BaseClass;
-    if (!BaseType.isJsAssignableFrom(ParentType)){
+    if (!NonPrimitive.isJsAssignableFrom(ParentType)){
         MAILBOX.fatal(`Type definition error: ${id} is not a subclass of core3.Type`);
     }
     const type = inherit(id, ParentType);
@@ -62,14 +58,14 @@ function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{
     return result;
 }
 
-function isBaseClass(fieldDef:Type<any, any>):fieldDef is Class<{}>{
+function isAnyType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
     return getPrimeType(fieldDef) === BaseClass;
 }
 
 function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
     forEach(typeSelfSpec, (fieldDef:Type<any, any>, fieldName:string) => {
         if (validateField(type, parentSpec, fieldName, fieldDef, parentName)){
-            if (isBaseClass(fieldDef)) {
+            if (isAnyType(fieldDef)) {
                 typeSelfSpec[fieldName] = defineGenericField(fieldDef);
             }
         }
@@ -79,14 +75,14 @@ function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, 
 
 function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fieldDef:Type<any, any>, parentName:string):boolean {
     let error;
-    const errorContext = BaseType.createErrorContext(`Type definition error`, 'fatal');
+    const errorContext = BaseClass.createErrorContext(`Type definition error`, 'fatal');
     let path = `${type.id}.${fieldName}`;
     if (~RESERVED_FIELDS.indexOf(fieldName)){
         error = 'is a reserved field.';
     } else if (parentSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism
         error = `already exists on super ${parentName}`;
     } else {
-        const err = BaseType.reportFieldDefinitionError(fieldDef);
+        const err = BaseClass.reportFieldDefinitionError(fieldDef);
         if (err) {
             error = err.message;
             if (err.path) {

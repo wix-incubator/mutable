@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {inherit, getPrimeType} from './utils';
 
-import BaseType from './base-type';
 import PrimitiveBase from './primitive-base';
 
 const MAILBOX = getMailBox('Mutable.defineEnum');

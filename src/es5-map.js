@@ -3,7 +3,7 @@ import {getMailBox} from 'escalate';
 
 import defineType from './define-type';
 import {getValueFromRootRef, getReferenceWrapper} from './utils';
-import BaseType from './base-type';
+import {NonPrimitive} from './non-primitive';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
@@ -50,7 +50,7 @@ class MapReferenceToDictionary extends MapWrapperOverDictionary{
 }
 
 
-class _Es5Map extends BaseType {
+class _Es5Map extends NonPrimitive {
 
     static defaults() { return {}; }
 
@@ -158,7 +158,7 @@ class _Es5Map extends BaseType {
         if (!ops || !ops.subTypes) {
             return { path: arrow + 'Es5Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>` }
         } else {
-            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, BaseType.reportFieldDefinitionError, 'value');
+            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, NonPrimitive.reportFieldDefinitionError, 'value');
             if (valueTypeError) {
                 return { path: `Es5Map<${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes)}>`, message: valueTypeError.message };
             }
@@ -271,7 +271,7 @@ class _Es5Map extends BaseType {
                     delete toDelete[key];
                     this.__setValueDeepHandler__(toSet, toSetValueDeep, key, val, errorContext);
                 };
-                if (BaseType.validateType(newValue)) {
+                if (NonPrimitive.validateType(newValue)) {
                     newValue.__value__.forEach(newEntriesVisitor);
                 } else if (isIterable(newValue)) {
                     for (let [key, val] of newValue) {
@@ -374,7 +374,7 @@ class _Es5Map extends BaseType {
     toJSON(recursive = true, typed = false) {
         let result = {};
         this.__value__.forEach((value, key) => {
-            result[key] = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
+            result[key] = (recursive && value && NonPrimitive.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
         });
         if (typed) {
             result._type = this.constructor.id;

@@ -2,7 +2,7 @@ import {Level} from 'escalate';
 import {TypeMatch} from "./type-match";
 import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 import PrimitiveBase from "./primitive-base";
-import BaseType from "./base-type";
+import {NonPrimitive} from "./non-primitive";
 
 
 export type DeepPartial<T> = {
@@ -62,7 +62,7 @@ export interface MutableObj<T>{
 type DefaultSource<T> = (()=>DeepPartial<T>)|DeepPartial<T>;
 
 export function isCompositeType(type:any):type is CompositeType<any, any>{
-    return type && type.byReference && BaseType.isJsAssignableFrom(type);
+    return type && type.byReference && NonPrimitive.isJsAssignableFrom(type);
 }
 
 // array of constructor arguments

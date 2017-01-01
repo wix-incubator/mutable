@@ -6,10 +6,10 @@ export default function(chai, utils) {
         var Type = this._obj;
 
         this.assert(
-            Mutable.BaseType.prototype.isPrototypeOf(Type.prototype),
+            Mutable.BaseClass.prototype.isPrototypeOf(Type.prototype),
             'expected a Type but got #{act}',
             'expected not a Type but got #{act}',
-            Mutable.BaseType,
+            Mutable.BaseClass,
             Type,
             true
         );

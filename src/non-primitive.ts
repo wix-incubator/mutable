@@ -13,7 +13,7 @@ import {
 } from "./types";
 import {Level} from "escalate";
 
-const MAILBOX = getMailBox('Mutable.BaseType');
+const MAILBOX = getMailBox('Mutable.NonPrimitive');
 
 function createReadOnly<T>(source:Mutable<T>):ReadonlyMutable<T> {
     const result = Object.create(source);
@@ -29,14 +29,14 @@ function generateId() {
     return dataCounter++;
 }
 
-abstract class BaseType<T> extends PrimitiveBase implements Mutable<T> {
+export abstract class NonPrimitive<T> extends PrimitiveBase implements Mutable<T> {
     static ancestors = [];
-    static id = 'BaseType';
+    static id = 'NonPrimitive';
     static name:string;
     static uniqueId:string;
     static __refType: ReferenceType<any>;
     static byReference: (provider:() => any, path?:Array<string|number>) => any;
-    protected static makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>any;
+    static makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>any;
     static defaults:(circularFlags?:string)=> any;
 
     // TODO: move out
@@ -73,9 +73,9 @@ abstract class BaseType<T> extends PrimitiveBase implements Mutable<T> {
 
     // TODO move into constructor
     static preConstructor(){
-        if (BaseType === getPrimeType(this)){
+        if (NonPrimitive === getPrimeType(this)){
             MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
-        } else if (BaseType.uniqueId === getPrimeType(this).uniqueId) {
+        } else if (NonPrimitive.uniqueId === getPrimeType(this).uniqueId) {
             MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
     }
@@ -145,4 +145,3 @@ abstract class BaseType<T> extends PrimitiveBase implements Mutable<T> {
         return isDataMatching(this, other);
     }
 }
-export default BaseType;
