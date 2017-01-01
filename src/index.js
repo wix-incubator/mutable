@@ -26,6 +26,8 @@ if (globalCtx.__Mutable){
         config,
         define,
         BaseType,
+        NonPrimitive: BaseType,
+        BaseClass: BaseType,
         PrimitiveBase,
         String,
         Boolean,
