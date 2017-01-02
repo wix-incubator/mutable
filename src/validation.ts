@@ -15,6 +15,10 @@ export function isNullable(type:Type<any, any>) {
     return !! (type.options && type.options.nullable);
 }
 
+export function isEnum(type:any) {
+    return type.name === 'EnumType';
+}
+
 export function validateValue<S>(type:Type<any, S>, value:any):value is S {
     return validateNullValue(type, value) || validateNotNullValue(type, value);
 }
