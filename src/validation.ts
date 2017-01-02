@@ -34,5 +34,5 @@ export function validateNullValue(type:Type<any, any>, value:any):value is null 
 export const arrow = String.fromCharCode(10144);
 
 export default {
-    isAssignableFrom
+    isAssignableFrom, isNullable, isEnum
 }
