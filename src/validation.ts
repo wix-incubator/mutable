@@ -15,6 +15,10 @@ export function isNullable(type:Type<any, any>) {
     return !! (type.options && type.options.nullable);
 }
 
+export function isEnum(type:any) {
+    return type.name === 'EnumType';
+}
+
 export function validateValue<S>(type:Type<any, S>, value:any):value is S {
     return validateNullValue(type, value) || validateNotNullValue(type, value);
 }
@@ -30,5 +34,5 @@ export function validateNullValue(type:Type<any, any>, value:any):value is null 
 export const arrow = String.fromCharCode(10144);
 
 export default {
-    isAssignableFrom
+    isAssignableFrom, isNullable, isEnum
 }
