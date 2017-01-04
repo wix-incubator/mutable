@@ -1,11 +1,10 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {ArrayWrapper} from './array-wrapper';
-import {defineNonPrimitive} from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
 import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
-import {NonPrimitive} from './non-primitive';
+import {NonPrimitive, defineNonPrimitive} from './non-primitive';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';
 import {optionalSetManager} from './lifecycle';

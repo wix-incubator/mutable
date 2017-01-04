@@ -2,8 +2,8 @@ import {getMailBox} from 'escalate';
 
 import config from './config';
 import {setManager, isDirtyable, DirtyableYielder, AtomYielder, LifeCycleManager} from './lifecycle';
-import PrimitiveBase from './primitive-base';
-import {getPrimeType} from './utils';
+import {Any} from './any';
+import {getPrimeType, inherit, generateClassId} from './utils';
 import {validateValue} from './validation';
 import {isDataMatching} from './type-match';
 import {
@@ -29,8 +29,8 @@ function generateId() {
     return dataCounter++;
 }
 
-export abstract class NonPrimitive<T> extends PrimitiveBase implements Mutable<T> {
-    static ancestors = [];
+export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
+    static ancestors = ['NonPrimitive'];
     static id = 'NonPrimitive';
     static name:string;
     static uniqueId:string;
@@ -80,7 +80,7 @@ export abstract class NonPrimitive<T> extends PrimitiveBase implements Mutable<T
         }
     }
 
-    protected __ctor__ = this.constructor as CompositeType<Mutable<T>, T>;
+    protected __ctor__ = this.constructor as CompositeType<this, T>;
     private __readOnlyInstance__: ReadonlyMutable<T>;
     private __readWriteInstance__: Mutable<T>;
     private __id__: number;
@@ -144,4 +144,16 @@ export abstract class NonPrimitive<T> extends PrimitiveBase implements Mutable<T
     matches(other:any) :boolean{
         return isDataMatching(this, other);
     }
+}
+
+export function defineNonPrimitive<T, C extends CompositeType<Mutable<T>, T>>(id:string, jsClass: C):C {
+    if (!NonPrimitive.isJsAssignableFrom(jsClass)){
+        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of NonPrimitive`);
+    }
+    const type = inherit(id, jsClass);
+    type.ancestors = jsClass.ancestors.concat([jsClass.id]);
+    type.id = id;
+    type.uniqueId = '' + generateClassId();
+    type.__proto__ = Object.create(jsClass); // inherint non-enumerable static properties
+    return type;
 }

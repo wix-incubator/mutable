@@ -8,7 +8,7 @@ import {
 } from "./types";
 import isUndefined = require("lodash/isUndefined");
 
-const MAILBOX = getMailBox('Mutable.PrimitiveBase');
+const MAILBOX = getMailBox('Mutable.Any');
 
 function reportErrorInternal(value:any, allowPlain?:boolean, allowInstance?:boolean) : ErrorMessage|undefined{
     if (value !== undefined && (!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))) {
@@ -16,9 +16,9 @@ function reportErrorInternal(value:any, allowPlain?:boolean, allowInstance?:bool
     }
 }
 
-export default class PrimitiveBase {
+export class Any {
     static __proto__:Object;
-    static id:string;
+    static id:string = 'Any';
     static options:ClassOptions = {};
     static _matchValue(value:any, errorContext:ErrorContext){
         return new TypeMatch(value, errorContext).tryType(this as any as Type<any, any>);
@@ -103,4 +103,4 @@ export default class PrimitiveBase {
         }
     }
 }
-const asType: Type<any, any> = PrimitiveBase;
+const asType: Type<any, any> = Any;

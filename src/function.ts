@@ -1,10 +1,10 @@
-import PrimitiveBase from './primitive-base';
+import {Any} from './any';
 import {validateNullValue} from './validation';
 import {Type} from "./types";
 
 function noop() { }
 
-export default class _Function extends PrimitiveBase {
+export default class _Function extends Any {
     static id = 'function';
     static defaults() { return noop; }
     static validate(value:any):value is Function {

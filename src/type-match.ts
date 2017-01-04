@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {misMatchMessage, validateNotNullValue} from './validation';
 import {optionalSetManager, LifeCycleManager} from './lifecycle';
-import PrimitiveBase from './primitive-base';
+import {Any} from './any';
 import {Type, ErrorDetails, ErrorContext, Class, CompositeType, isCompositeType, Mutable} from "./types";
 
 const MAILBOX = getMailBox('Mutable.type-match');
@@ -30,12 +30,12 @@ export function isDataMatching(origin:any, other:any):boolean {
 
 export class TypeMatch{
     match:MatchType = matchTypes.MISMATCH;
-    type:Type<any, any> = PrimitiveBase;
+    type:Type<any, any> = Any;
     errorDetails:ErrorDetails;
     constructor(private value:any, private errorContext?:ErrorContext, private errorTemplate?:string){
         this.errorDetails = {
             path : errorContext? errorContext.path : '',
-            expected: PrimitiveBase,
+            expected: Any,
             actual:this.value
         };
         // TODO: search for _type annotation and create match with global type registry

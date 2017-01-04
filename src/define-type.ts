@@ -6,7 +6,7 @@ import {misMatchMessage, validateValue} from './validation';
 import {untracked, extras} from 'mobx';
 import {DirtyableYielder, AtomYielder} from "./lifecycle";
 import {BaseClass} from "./base-class";
-import {NonPrimitive} from './non-primitive';
+import {NonPrimitive, defineNonPrimitive} from './non-primitive';
 
 /**
  * the schema of the class to define (input format)
@@ -25,6 +25,8 @@ interface Metadata{
 const MAILBOX = getMailBox('Mutable.extend');
 const RESERVED_FIELDS = Object.keys(extend({}, BaseClass.prototype));
 
+export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T>;
 
 export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
     const ParentType:Class<any> = TypeConstructor || _ParentType || BaseClass;
@@ -46,18 +48,6 @@ function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, P
     setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
     generateFieldsOn(type.prototype, typeSelfSpec);
     type.__refType = generateRefType(type);
-}
-
-export function defineNonPrimitive<T, C extends CompositeType<Mutable<T>, T>>(id:string, jsClass: C):C {
-    if (!NonPrimitive.isJsAssignableFrom(jsClass)){
-        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of NonPrimitive`);
-    }
-    const type = inherit(id, jsClass);
-    type.ancestors = jsClass.ancestors.concat([jsClass.id]);
-    type.id = id;
-    type.uniqueId = '' + generateClassId();
-    type.__proto__ = Object.create(jsClass); // inherint non-enumerable static properties
-    return type;
 }
 
 function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{

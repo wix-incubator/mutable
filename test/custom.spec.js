@@ -151,6 +151,15 @@ describe('Custom data', function() {
         });
     });
 
+    describe('default', function() {
+        it('should chain', function() {
+            var typeWithDefaultBob = User.withDefault({ name: 'joe' }).withDefault({ name: 'bob' });
+
+            var a = typeWithDefaultBob.defaults();
+
+            expect(a.name).to.equal('bob');
+        });
+    });
     describe('mutable instance', function() {
 
         describe('instantiation', function() {
@@ -353,27 +362,24 @@ describe('Custom data', function() {
                 expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
             });
 
-            describe('primitive', function() {
+            it('should not replace data that does not fit the schema', function() {
+                var state = new StateType();
+                var titlePrevVal = state.product.title;
 
-                it('should not replace data that does not fit the schema', function() {
-                    var state = new StateType();
-                    var titlePrevVal = state.product.title;
+                expect(() => state.product.title = {}).to.report(ERROR_IN_SET('ProductType.title', 'string', 'object'));
 
-                    expect(() => state.product.title = {}).to.report(ERROR_IN_SET('ProductType.title', 'string', 'object'));
-
-                    expect(state.product.title).to.be.equal(titlePrevVal);
-                });
-
-                it('should replace data that fit the schema', function() {
-                    var state = new StateType();
-
-                    state.title = 'new title';
-
-                    expect(state.title).to.be.equal('new title');
-                });
+                expect(state.product.title).to.be.equal(titlePrevVal);
             });
 
-            describe('assigning a complex value to field', function() {
+            it('should replace primitive data that fit the schema', function() {
+                var state = new StateType();
+
+                state.title = 'new title';
+
+                expect(state.title).to.be.equal('new title');
+            });
+
+            describe('complex value', function() {
                 let object, manager, child;
                 beforeEach(()=>{
                     manager = new Mutable.LifeCycleManager();
@@ -382,16 +388,20 @@ describe('Custom data', function() {
                     child = new User();
                     sinon.spy(child, '$setManager');
                 });
-                if (context.dirtyableElements) {
-                    it('sets lifecycle manager in newly added elements', function() {
-                        object.child = child;
-                        expect(child.$setManager).to.have.been.calledWithExactly(manager);
-                    });
-                    it('does not try to set lifecycle manager in read-only newly added elements', function() {
-                        object.child = child.$asReadOnly();
-                        expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
-                    });
-                }
+
+                it('should use passed data object as field value', function() {
+                    object.child = child;
+                    expect(object.child).to.equal(child);
+                });
+
+                it('sets lifecycle manager in newly added elements', function() {
+                    object.child = child;
+                    expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                });
+                it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                    object.child = child.$asReadOnly();
+                    expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                });
             });
 
         });
@@ -604,24 +614,6 @@ describe('Custom data', function() {
                 }).to.throw();
             });
 
-        });
-
-        it('should chain with default calls', function() {
-            var typeWithDefaultBob = User.withDefault({ name: 'joe' }).withDefault({ name: 'bob' });
-
-            var a = typeWithDefaultBob.defaults();
-
-            expect(a.name).to.equal('bob');
-        });
-
-        it('should use passed data object as field value', function() {
-
-            var userData = new UserWithChild();
-
-            let newChild = new User({ name: 'yossi', age: 3 });
-            userData.child = newChild;
-
-            expect(userData.child).to.equal(newChild);
         });
 
         it('should return json value from toJSON()', function() {

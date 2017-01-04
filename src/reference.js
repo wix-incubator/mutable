@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import {BaseClass} from './base-class';
-import {defineNonPrimitive} from './define-type';
+import {defineNonPrimitive} from './non-primitive';
 import {validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Mutable.Reference');

@@ -1,8 +1,8 @@
-import PrimitiveBase from './primitive-base';
+import {Any} from './any';
 import {validateNullValue} from './validation';
 import {Type} from "./types";
 
-export default class _Boolean extends PrimitiveBase {
+export default class _Boolean extends Any {
     static id = 'boolean';
     static defaults() { return false; }
     static validate(value:any):value is boolean {

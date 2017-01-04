@@ -1,8 +1,8 @@
-import PrimitiveBase from './primitive-base';
+import {Any} from './any';
 import {validateNullValue} from './validation';
 import {Type} from "./types";
 
-export default class _String extends PrimitiveBase {
+export default class _String extends Any {
     static id = 'string';
     static defaults() { return ''; }
 

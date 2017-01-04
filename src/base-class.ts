@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
-import {NonPrimitive} from "./non-primitive";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Mutable, Class} from "./types";
+import {NonPrimitive, defineNonPrimitive} from "./non-primitive";
+import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class} from "./types";
 import {getMailBox} from "escalate";
-import {clone, getFieldDef, shouldAssign} from "./utils";
+import {clone, getFieldDef, shouldAssign, getPrimeType} from "./utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "./validation";
 import {validateAndWrap} from "./type-match";
 import {asReference, observable, untracked} from "mobx";
@@ -10,9 +10,12 @@ import {optionalSetManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 
 const MAILBOX = getMailBox('Mutable.BaseClass');
 
+function getClass<T>(inst:_BaseClass<T>): Class<T>{
+    return inst.constructor as Class<T>;
+}
 
-export class BaseClass<T> extends NonPrimitive<T>{
-
+export class _BaseClass<T> extends NonPrimitive<T>{
+    static id = 'Class';
     static _spec: Spec = Object.freeze(Object.create(null));
 
     static getFieldsSpec(){
@@ -117,18 +120,25 @@ export class BaseClass<T> extends NonPrimitive<T>{
         return observable(newValue);
     }
 
-    protected __ctor__:Class<T>;
+    // TODO move into constructor
+    static preConstructor(){
+        if (BaseClass === getPrimeType(this)){
+            MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
+        } else if (BaseClass.uniqueId === getPrimeType(this).uniqueId) {
+            MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
+        }
+    }
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super(value, options, errorContext);
     }
 
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
-    setValue(newValue:DeepPartial<T>, errorContext:ErrorContext=this.__ctor__.createErrorContext('setValue error', 'error')):boolean {
+    setValue(newValue:DeepPartial<T>, errorContext:ErrorContext= getClass(this).createErrorContext('setValue error', 'error')):boolean {
         if (this.$isDirtyable()) {
             let changed = false;
             _.forEach(newValue, (fieldValue, fieldName:keyof T) => {
-                const fieldSpec = getFieldDef(this.__ctor__ as Class<T>, fieldName);
+                const fieldSpec = getFieldDef( getClass(this), fieldName);
                 if (fieldSpec) {
                     const fieldErrorContext = _.defaults({path: errorContext.path + '.' + fieldName }, errorContext);
                     const newValue = fieldSpec._matchValue(fieldValue, fieldErrorContext).wrap();
@@ -140,12 +150,11 @@ export class BaseClass<T> extends NonPrimitive<T>{
         return false;
     }
 
-
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
-    setValueDeep(newValue:DeepPartial<T>, errorContext:ErrorContext = this.__ctor__.createErrorContext('setValueDeep error', 'error')):boolean {
+    setValueDeep(newValue:DeepPartial<T>, errorContext:ErrorContext =  getClass(this).createErrorContext('setValueDeep error', 'error')):boolean {
         if (this.$isDirtyable()) {
             let changed = false;
-            _.forEach(this.__ctor__._spec, (fieldSpec, fieldName:keyof T) => {
+            _.forEach( getClass(this)._spec, (fieldSpec, fieldName:keyof T) => {
                 const inputFieldValue:any = newValue[fieldName];
                 const fieldValue = (inputFieldValue !== undefined) ? inputFieldValue : fieldSpec.defaults();
                 if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
@@ -178,7 +187,7 @@ export class BaseClass<T> extends NonPrimitive<T>{
         // don't assign if input is the same as existing value
         if(untracked(() => {
                 if (shouldAssign(this.__value__[fieldName], newValue)) {
-                    const fieldDef = getFieldDef(this.__ctor__, fieldName);
+                    const fieldDef = getFieldDef( getClass(this), fieldName);
                     const typedField = isAssignableFrom(NonPrimitive, fieldDef);
                     // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
                     if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
@@ -202,25 +211,25 @@ export class BaseClass<T> extends NonPrimitive<T>{
     }
 
     toJSON(recursive = true, typed = false):T {
-        const result:T & {_type:string} = Object.keys(this.__ctor__._spec).reduce((json, key: keyof T) => {
+        const result:T & {_type:string} = Object.keys( getClass(this)._spec).reduce((json, key: keyof T) => {
             var fieldValue:any = this.__value__[key];
             json[key] = recursive && fieldValue && fieldValue.toJSON ? fieldValue.toJSON(true, typed) : fieldValue;
             return json;
         }, {} as T & {_type:string});
         if (typed){
-            result._type = this.__ctor__.id;
+            result._type = getClass(this).id;
         }
         return result;
     }
 
     toJS(typed = false):T {
-        const result: T & {_type:string} = Object.keys(this.__ctor__._spec).reduce((json, key: keyof T) => {
+        const result: T & {_type:string} = Object.keys(getClass(this)._spec).reduce((json, key: keyof T) => {
             const fieldValue:any = this.__value__[key];
             json[key] = fieldValue && fieldValue.toJS ? fieldValue.toJS() : fieldValue;
             return json;
         },  {} as T & {_type:string});
         if (typed){
-            result._type = this.__ctor__.id;
+            result._type = getClass(this).id;
         }
         return result;
     }
@@ -228,4 +237,4 @@ export class BaseClass<T> extends NonPrimitive<T>{
     $dirtyableElementsIterator(yielder: DirtyableYielder): void {}
     $atomsIterator(yielder: AtomYielder): void {}
 }
-const asType: Class<any> = BaseClass;
+export const BaseClass: Class<any> = defineNonPrimitive('Class', _BaseClass);

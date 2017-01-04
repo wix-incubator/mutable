@@ -1,48 +1,23 @@
-import {default as config} from './config';
-import {defineClass as define} from './define-type';
-import {NonPrimitive} from './non-primitive';
-import {default as PrimitiveBase} from './primitive-base';
-import {default as String} from './string';
-import {default as Boolean} from './boolean';
-import {default as Number} from './number';
-import {default as List} from './list';
-import {default as Function} from './function';
-import {default as Reference} from './reference';
-import {default as validation} from './validation';
-import {default as Es5Map} from './es5-map';
-import {default as PropsBase} from './props-base';
-import {LifeCycleManager} from './lifecycle';
-import {defineEnum, EnumBase} from './define-enum';
-import {either} from './generic-types';
-import {BaseClass} from "./base-class";
+export {default as config} from './config';
+export {defineClass as define} from './define-type';
+export {Any} from './any';
+export {default as String} from './string';
+export {default as Boolean} from './boolean';
+export {default as Number} from './number';
+export {default as Function} from './function';
+export {default as Reference} from './reference';
+export {default as validation} from './validation';
+export {default as List} from './list';
+export {default as Es5Map, default as Map} from './es5-map';
+export {NonPrimitive} from './non-primitive';
+export {BaseClass} from "./base-class";
+export {default as PropsBase} from './props-base';
+export {LifeCycleManager} from './lifecycle';
+export {defineEnum, EnumBase} from './define-enum';
+export {either} from './generic-types';
+import {globalModule, globalModuleMiss} from './singleton-module';
 
-declare const global: {[key:string]:any};
 declare const module: {exports:any};
-const globalCtx = (typeof self === 'object' && self.self === self && self) ||
-    (typeof global === 'object' && global['global'] === global && global) ||
-    this;
-if (globalCtx.__Mutable){
-    module.exports = globalCtx.__Mutable;
-} else {
-    module.exports = globalCtx.__Mutable = {
-        config,
-        define,
-        NonPrimitive,
-        BaseClass,
-        PrimitiveBase,
-        String,
-        Boolean,
-        Number,
-        List,
-        Function,
-        Reference,
-        validation,
-        Map: Es5Map,
-        Es5Map,
-        PropsBase,
-        LifeCycleManager,
-        defineEnum,
-        EnumBase,
-        either
-    };
+if (!globalModuleMiss){
+    module.exports = globalModule;
 }

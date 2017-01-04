@@ -1,12 +1,11 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {inherit, getPrimeType} from './utils';
-
-import PrimitiveBase from './primitive-base';
+import {Any} from './any';
 
 const MAILBOX = getMailBox('Mutable.defineEnum');
 
-export class EnumBase extends PrimitiveBase {
+export class EnumBase extends Any {
     static id = 'enum';
     static allowPlainVal(v) { return true; }
     static create(v) { return v; }
@@ -109,7 +108,7 @@ export function defineEnum(def) {
         return _.includes(def, plainVal); // ToDo: is enum nullable? || validateNullValue(this, val);
     };
     enumType.withDefault = function(defaults, validate) {
-        var NewType = PrimitiveBase.withDefault.call(this, defaults, validate);
+        var NewType = Any.withDefault.call(this, defaults, validate);
         NewType.defaults = () => defaults;
         return NewType;
     };

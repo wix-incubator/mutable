@@ -31,11 +31,20 @@ describe('defining', () => {
         }).to.report(ERROR_BAD_TYPE('MyType'));
     });
 
-    it('a defined subclass that uses BaseClass as a generic field (legacy, remove when we offer a generic type)', function() {
-        const GenericType = aDataTypeWithSpec({ wrapped: mutable.BaseClass }, 'GenericType');
-        expect(new GenericType().toJS()).to.eql({wrapped:{}});
+    it('a defined subclass that uses Any as a polymorphic field', function() {
+        const Type = aDataTypeWithSpec({ wrapped: mutable.Any }, 'Type');
+        expect(new Type().toJS()).to.eql({wrapped:{}});
     });
 
+    it('a defined subclass that uses NonPrimitive as a polymorphic field', function() {
+        const Type = aDataTypeWithSpec({ wrapped: mutable.NonPrimitive }, 'Type');
+        expect(new Type().toJS()).to.eql({wrapped:{}});
+    });
+
+    it('a defined subclass that uses BaseClass as a polymorphic field', function() {
+        const Type = aDataTypeWithSpec({ wrapped: mutable.BaseClass }, 'Type');
+        expect(new Type().toJS()).to.eql({wrapped:{}});
+    });
 
     describe('a basic type', () => {
 
@@ -84,7 +93,6 @@ describe('defining', () => {
                 });
             }).to.report(ERROR_IN_FIELD_TYPE('invalid.zagzag'));
         });
-
 
         it('should report error if field type is missing', function() {
             expect(function() {

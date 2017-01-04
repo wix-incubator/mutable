@@ -1,9 +1,8 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import {defineNonPrimitive} from './define-type';
 import {getValueFromRootRef, getReferenceWrapper} from './utils';
-import {NonPrimitive} from './non-primitive';
+import {NonPrimitive, defineNonPrimitive} from './non-primitive';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';

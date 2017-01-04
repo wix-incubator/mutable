@@ -1,16 +1,15 @@
 import {Level} from 'escalate';
 import {TypeMatch} from "./type-match";
 import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
-import PrimitiveBase from "./primitive-base";
+import {Any} from './any';
 import {NonPrimitive} from "./non-primitive";
-
 
 export type DeepPartial<T> = {
     [P in keyof T]?:DeepPartial<T[P]>|null;
 };
 
 export function isType(type:any):type is Type<any, any> {
-    return type && type.id && PrimitiveBase.isJsAssignableFrom(type);
+    return type && type.id && Any.isJsAssignableFrom(type);
 }
 export interface Type<T, S>{
     __proto__:any;
@@ -40,7 +39,7 @@ export function isMutable(obj:any):obj is Mutable<any>{
 }
 
 // wrapped object : class instance, list, map
-export type Mutable<T> = MutableObj<T>; // & T;
+export type Mutable<T> = MutableObj<T>;// & T;
 export type ReadonlyMutable<T> = Mutable<Readonly<T>>;
 
 export interface MutableObj<T>{
@@ -98,7 +97,7 @@ export function isClass(type:any):type is Class<any>{
 export interface ReferenceType<T>{
     new(provider:() => any, path:Array<string|number>):T
 }
-export interface Class<T> extends CompositeType<Mutable<T>, T> {
+export interface Class<T> extends CompositeType<T & Mutable<T>, T> {
     wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
     _spec:Spec;
     getFieldsSpec():Spec;
