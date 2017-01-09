@@ -100,9 +100,6 @@ describe('Nullable custom type', function() {
             expect(() => build.LoginType.withStrictUser(null))
                 .to.report(ERROR_IN_DEFAULT_VALUES('LoginType.user', 'User', 'null'));
         });
-
-
-
     });
 
     describe('toJSON', function() {

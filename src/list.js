@@ -20,12 +20,12 @@ class ArrayReference extends ArrayWrapper{
     }
 }
 
-class _List extends NonPrimitive {
+export default class List extends NonPrimitive {
 
     static defaults() { return []; }
 
     static cloneValue(value) {
-        if (isArray(value) || _List.validateType(value)) {
+        if (isArray(value) || List.validateType(value)) {
             if (!value){
                 return value;
             }
@@ -150,7 +150,7 @@ class _List extends NonPrimitive {
 
     constructor(value = [], options = {}, errorContext) {
         if (!errorContext) {
-            errorContext = _List.createErrorContext('List constructor error', 'error', options);
+            errorContext = List.createErrorContext('List constructor error', 'error', options);
         }
         options.subTypes = generics.typesAsArray(options.subTypes);
         super(value, options, errorContext);
@@ -394,7 +394,7 @@ class _List extends NonPrimitive {
 
     setValue(newValue, errorContext) {
             let changed = false;
-            if (newValue instanceof _List) {
+            if (newValue instanceof List) {
                 newValue = newValue.__getValueArr__();
             }
             if (isArray(newValue)) {
@@ -423,7 +423,7 @@ class _List extends NonPrimitive {
 
     setValueDeep(newValue, errorContext = null) {
             var changed = false;
-            if (newValue instanceof _List) {
+            if (newValue instanceof List) {
                 newValue = newValue.__getValueArr__();
             }
 
@@ -481,5 +481,5 @@ class _List extends NonPrimitive {
         this.__value__.length = newLength;
     }
 }
-export default defineNonPrimitive('List', _List);
+defineNonPrimitive('List', List);
 

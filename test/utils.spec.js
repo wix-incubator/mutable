@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import {expect} from 'chai';
 
 import {cloneType} from '../src/utils';
-import {aDataTypeWithSpec} from '../test-kit/test-drivers';
+import {isAssignableFrom} from '../src/validation';
 
 describe('utils', function() {
 
@@ -24,5 +24,17 @@ describe('utils', function() {
 
         });
 
+        it("two inherited classes should still be isAssignableFrom", function() {
+            class MockType{
+                static options= { a: true };
+                constructor(...args){
+                    spy(...args);
+                }
+            }
+            var CloneType1 = cloneType('CloneType1', MockType);
+            var CloneType2 = cloneType('CloneType2', MockType);
+
+            expect(isAssignableFrom(CloneType1, CloneType2)).to.eql(true);
+        });
     });
 });

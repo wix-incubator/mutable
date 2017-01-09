@@ -9,9 +9,19 @@ import {isDataMatching} from './type-match';
 import {
     Mutable, DeepPartial, ClassOptions, ErrorContext,
     Type, CompositeType, ReadonlyMutable, ErrorMessage,
-    isType, isCompositeType, ReferenceType, MutableObj
+    isType, isCompositeType, ReferenceType, Class
 } from "./types";
 import {Level} from "escalate";
+import {defineClass} from './define-type';
+
+let DefaultClass: Class<{}>|null = null;
+export function defaultNonPrimitive(value:any){
+    if (!DefaultClass){
+        // lazy class definition because `defineClass` is a circular reference
+        DefaultClass = defineClass('Default', { spec: () => ({}) });
+    }
+    return DefaultClass.create(value);
+}
 
 const MAILBOX = getMailBox('Mutable.NonPrimitive');
 
@@ -68,7 +78,11 @@ export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
 
 
     static create<T>(this:CompositeType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
-        return new this(value, options, errorContext);
+        if (NonPrimitive as any === this) {
+            return defaultNonPrimitive(value) as Mutable<T>;
+        } else {
+            return new this(value, options, errorContext);
+        }
     }
 
     // TODO move into constructor
@@ -146,14 +160,15 @@ export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
     }
 }
 
-export function defineNonPrimitive<T, C extends CompositeType<Mutable<T>, T>>(id:string, jsClass: C):C {
+export function defineNonPrimitive<T>(id:string, jsClass: CompositeType<Mutable<T>, T>){
     if (!NonPrimitive.isJsAssignableFrom(jsClass)){
-        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of NonPrimitive`);
+        MAILBOX.fatal(`Type definition error: ${(jsClass as any).id || id} is not a subclass of NonPrimitive`);
     }
-    const type = inherit(id, jsClass);
-    type.ancestors = jsClass.ancestors.concat([jsClass.id]);
-    type.id = id;
-    type.uniqueId = '' + generateClassId();
-    type.__proto__ = Object.create(jsClass); // inherint non-enumerable static properties
-    return type;
+    jsClass.id = id;
+    if (!jsClass.ancestors){
+        jsClass.ancestors = [jsClass.id];
+    } else if(!~jsClass.ancestors.indexOf(jsClass.id)) {
+        jsClass.ancestors = jsClass.ancestors.concat([jsClass.id]);
+    }
+    jsClass.uniqueId = '' + generateClassId();
 }

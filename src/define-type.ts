@@ -33,8 +33,8 @@ export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata,
     if (!BaseClass.isJsAssignableFrom(ParentType)){
         MAILBOX.fatal(`Type definition error: ${id} is not a subclass of BaseClass`);
     }
-    const type = defineNonPrimitive(id, ParentType);
-
+    const type = inherit(id, ParentType);
+    defineNonPrimitive(id, type);
     calculateSchemaProperties(typeDefinition, type, ParentType, id);
     return type;
 }
@@ -50,25 +50,15 @@ function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, P
     type.__refType = generateRefType(type);
 }
 
-function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{
-    let result =  defineClass('GenericType', {spec: () => ({})})
-        .withDefault(source.defaults(), source.validate, source.options);
-    result.validateType = (value:any):value is Type<{}|null, {}|null> => validateValue(source, value);
-    return result;
-}
-
 function isAnyType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
     return getPrimeType(fieldDef) === BaseClass;
 }
 
 function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
     forEach(typeSelfSpec, (fieldDef:Type<any, any>, fieldName:string) => {
-        if (validateField(type, parentSpec, fieldName, fieldDef, parentName)){
-            if (isAnyType(fieldDef)) {
-                typeSelfSpec[fieldName] = defineGenericField(fieldDef);
-            }
+        if (!validateField(type, parentSpec, fieldName, fieldDef, parentName)){
+            // maybe we should delete the field from the spec if it's not valid?
         }
-        // maybe we should delete the field from the spec if it's not valid?
     });
 }
 

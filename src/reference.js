@@ -7,7 +7,7 @@ import {validateNullValue} from './validation';
 
 const MAILBOX = getMailBox('Mutable.Reference');
 
-class _Reference extends BaseClass {
+export default class Reference extends BaseClass {
 
 // allow any object as long as it adhers to the entire schema
     static allowPlainVal(value, errorDetails = null) {
@@ -40,4 +40,4 @@ class _Reference extends BaseClass {
     static cloneValue(value) { return value; }
 }
 
-export default defineNonPrimitive('Reference', _Reference);
+defineNonPrimitive('Reference', Reference);

@@ -20,7 +20,7 @@ function getTypeName(type:Type<any, any>):string {
     return result;
 }
 
-class Union extends NonPrimitive<any> {
+export default class Union extends NonPrimitive<any> {
 
     static defaults() {
         if (!this.options || !this.options.subTypes) {
@@ -113,7 +113,5 @@ class Union extends NonPrimitive<any> {
     toJSON(recursive?: boolean, typed?: boolean): any {MAILBOX.error('Instantiating a union type is not supported');}
     toJS(typed?: boolean): any {MAILBOX.error('Instantiating a union type is not supported');}
 }
-const asType: CompositeType<any, any> = Union;
-
-export default defineNonPrimitive('Union', Union);
+defineNonPrimitive('Union', Union);
 

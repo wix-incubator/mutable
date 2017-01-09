@@ -49,20 +49,20 @@ class MapReferenceToDictionary extends MapWrapperOverDictionary{
 }
 
 
-class _Es5Map extends NonPrimitive {
+export default class Es5Map extends NonPrimitive {
 
     static defaults() { return {}; }
 
     static cloneValue(value) {
-        if (_.isArray(value)  || _Es5Map.validateType(value) || _.isObject(value)) {
+        if (_.isArray(value)  || Es5Map.validateType(value) || _.isObject(value)) {
             if (!value){
                 return value;
             }
             if (!isIterable(value)){
                 value = entries(value);
             }
-            _Es5Map._allowIterable(value, this.options);
-            var result = [];
+            Es5Map._allowIterable(value, this.options);
+            const result = [];
             for (let entry of value) {
                 result.push(entry);
             }
@@ -92,9 +92,9 @@ class _Es5Map extends NonPrimitive {
         if (validateNullValue(this, value)) {
             return true;
         } else if (isIterable(value)) {
-            return _Es5Map._allowIterable(value, this.options, errorDetails);
+            return Es5Map._allowIterable(value, this.options, errorDetails);
         } else if (value instanceof Object) {
-            return _Es5Map._allowIterable(objEntries(value), this.options, errorDetails);
+            return Es5Map._allowIterable(objEntries(value), this.options, errorDetails);
         }
         return false;
     }
@@ -207,7 +207,7 @@ class _Es5Map extends NonPrimitive {
 
     constructor(value = [], options = { subTypes: {} }, errorContext = null) {
         if (!errorContext) {
-            errorContext = _Es5Map.createErrorContext('Es5Map constructor error', 'error', options);
+            errorContext = Es5Map.createErrorContext('Es5Map constructor error', 'error', options);
         }
         options.subTypes = generics.typesAsArray(options.subTypes);
         super(value, options, errorContext);
@@ -412,4 +412,4 @@ class _Es5Map extends NonPrimitive {
     }
 }
 
-export default defineNonPrimitive('Es5Map', _Es5Map);
+defineNonPrimitive('Es5Map', Es5Map);

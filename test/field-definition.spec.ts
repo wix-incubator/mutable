@@ -2,6 +2,66 @@ import {expect} from 'chai';
 import {Type, Class} from "../src/types";
 import * as mutable from '../src';
 
+
+const primitiveClasses: Array<Type<any, any>> = [
+    mutable.String,
+    mutable.Boolean,
+    mutable.Number,
+    mutable.Function
+];
+
+const concreteClasses: Array<Type<any, any>> = primitiveClasses.concat([
+    mutable.Reference,
+    mutable.List.of(mutable.String),
+    mutable.Es5Map.of(mutable.String),
+    mutable.PropsBase // an example for a user class
+]);
+
+const UserClass = mutable.define('UserClass', {spec:(c)=>({
+    foo:mutable.Number
+})});
+const UserClassChild = mutable.define('UserClassChild', {spec:(c)=>({
+    bar:mutable.Number
+})}, UserClass);
+const AnotherUserClass = mutable.define('AnotherUserClass', {spec:(c)=>({
+    foo:mutable.Number
+})});
+describe('field definition', () => {
+    complianceContract(mutable.Any, concreteClasses, []);
+
+    primitiveClasses.forEach(pc => {
+        complianceContract(pc, [pc], concreteClasses.filter(c => c !== pc));
+    });
+
+    complianceContract(mutable.NonPrimitive, [
+        mutable.List.of(mutable.String),
+        mutable.Es5Map.of(mutable.String),
+        UserClass
+    ], [
+        mutable.String,
+        mutable.Boolean,
+        mutable.Number,
+        mutable.Function
+    ]);
+
+    complianceContract(mutable.BaseClass, [
+        UserClass
+    ], [
+        mutable.String,
+        mutable.Boolean,
+        mutable.Number,
+        mutable.Function,
+        mutable.List.of(mutable.String),
+        mutable.Es5Map.of(mutable.String),
+    ]);
+
+    complianceContract(UserClass, [
+        UserClassChild
+    ],
+        concreteClasses.concat([AnotherUserClass])
+    );
+});
+
 function complianceContract<F>(fieldDef:Type<F, any>, subTypes:Array<Type<any, any>>, incompatibleTypes:Array<Type<any, any>>){
     type Fields = {
         field:F
@@ -13,9 +73,6 @@ function complianceContract<F>(fieldDef:Type<F, any>, subTypes:Array<Type<any, a
                 spec: (self:Class<any>) => ({field:fieldDef})
             });
             instance = new ContainerClass();
-        });
-        it(`accepts value of ${fieldDef.id} itself`, ()=>{
-            instance.field = fieldDef.create();
         });
         subTypes.forEach(st => {
             it(`accepts value of ${st.id}`, () => {
@@ -29,55 +86,3 @@ function complianceContract<F>(fieldDef:Type<F, any>, subTypes:Array<Type<any, a
         });
     });
 }
-const primitiveClasses = [
-    mutable.String,
-    mutable.Boolean,
-    mutable.Number,
-    mutable.Function
-];
-
-const concreteClasses = primitiveClasses.concat([
-    mutable.Reference,
-    mutable.List.of(mutable.String),
-    mutable.Es5Map.of(mutable.String),
-    mutable.PropsBase // an example for a user class
-]);
-
-describe('field definition', () => {
-    complianceContract(mutable.Any, [
-        mutable.String,
-        mutable.Boolean,
-        mutable.Number,
-        mutable.Function,
-        mutable.Reference,
-        mutable.List.of(mutable.String),
-        mutable.Es5Map.of(mutable.String),
-        mutable.PropsBase
-    ], []);
-
-    primitiveClasses.forEach(pc => {
-        complianceContract(pc, [], concreteClasses.filter(c => c !== pc));
-    });
-
-    complianceContract(mutable.NonPrimitive, [
-        mutable.List.of(mutable.String),
-        mutable.Es5Map.of(mutable.String),
-        mutable.PropsBase
-    ], [
-        mutable.String,
-        mutable.Boolean,
-        mutable.Number,
-        mutable.Function
-    ]);
-
-    complianceContract(mutable.BaseClass, [
-        mutable.PropsBase
-    ], [
-        mutable.String,
-        mutable.Boolean,
-        mutable.Number,
-        mutable.Function,
-        mutable.List.of(mutable.String),
-        mutable.Es5Map.of(mutable.String),
-    ]);
-});

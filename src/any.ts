@@ -7,6 +7,7 @@ import {
     ClassOptions, cast, Type, Mutable
 } from "./types";
 import isUndefined = require("lodash/isUndefined");
+import {validateNullValue} from "./validation";
 
 const MAILBOX = getMailBox('Mutable.Any');
 
@@ -41,15 +42,13 @@ export class Any {
         return this.validate(v) ? v : this.defaults();
     }
     static defaults() {
-        MAILBOX.error('type ' + this.id + ' did not properly override defaults()');
+        return {};
     }
     static validate(value:any):value is any {
-        MAILBOX.error('type ' + this.id + ' did not properly override validate()');
-        return false;
+        return validateNullValue(this, value) || (value !== null && value !== undefined)
     }
     static validateType(value:any):value is any {
-        MAILBOX.error('type ' + this.id + ' did not properly override validateType()');
-        return false;
+        return this.validate(value);
     }
 
     /**

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import {NonPrimitive, defineNonPrimitive} from "./non-primitive";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class} from "./types";
+import {NonPrimitive, defineNonPrimitive, defaultNonPrimitive} from "./non-primitive";
+import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, CompositeType} from "./types";
 import {getMailBox} from "escalate";
 import {clone, getFieldDef, shouldAssign, getPrimeType} from "./utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "./validation";
@@ -10,11 +10,11 @@ import {optionalSetManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 
 const MAILBOX = getMailBox('Mutable.BaseClass');
 
-function getClass<T>(inst:_BaseClass<T>): Class<T>{
+function getClass<T>(inst:BaseClass<T>): Class<T>{
     return inst.constructor as Class<T>;
 }
 
-export class _BaseClass<T> extends NonPrimitive<T>{
+export class BaseClass<T> extends NonPrimitive<T>{
     static id = 'Class';
     static _spec: Spec = Object.freeze(Object.create(null));
 
@@ -119,7 +119,13 @@ export class _BaseClass<T> extends NonPrimitive<T>{
         });
         return observable(newValue);
     }
-
+    static create<T>(this:CompositeType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext) {
+        if (BaseClass as any === this) {
+            return defaultNonPrimitive(value);
+        } else {
+            return new this(value, options, errorContext);
+        }
+    }
     // TODO move into constructor
     static preConstructor(){
         if (BaseClass === getPrimeType(this)){
@@ -237,4 +243,5 @@ export class _BaseClass<T> extends NonPrimitive<T>{
     $dirtyableElementsIterator(yielder: DirtyableYielder): void {}
     $atomsIterator(yielder: AtomYielder): void {}
 }
-export const BaseClass: Class<any> = defineNonPrimitive('Class', _BaseClass);
+
+defineNonPrimitive('Class', BaseClass);
