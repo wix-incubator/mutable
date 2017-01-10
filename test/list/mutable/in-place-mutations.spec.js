@@ -1,17 +1,17 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../../src';
+import * as mu from '../../../src';
 import {aNumberList, aStringList, aVeryCompositeContainerList, UserType} from '../builders';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
 
 describe('List', function() {
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
 
         describe('reverse', function() {
             it('should reverse the order of elements in a List', function() {
                 const numberList = aNumberList();
                 const newList = numberList.reverse();
-                expect(newList).to.be.instanceOf(Mutable.List);
+                expect(newList).to.be.instanceOf(mu.List);
                 for (let i = 0; i < numberList.length; i++) {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
                 }
@@ -59,7 +59,7 @@ describe('List', function() {
             });
 
             it('Should wrap items for none immutable data (like custom types)', function() {
-                var arr = Mutable.List.of(UserType).create([{ name: 'aag' }, { name: 'dag' }]);
+                var arr = mu.List.of(UserType).create([{ name: 'aag' }, { name: 'dag' }]);
 
                 arr.splice(0, 1, { name: 'zag' });
 
@@ -79,7 +79,7 @@ describe('List', function() {
                 let arr, manager, child;
                 beforeEach(()=>{
                     manager = new LifeCycleManager();
-                    arr = Mutable.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
                     arr.$setManager(manager);
                     child = new builders.UserType();
                     sinon.spy(child, '$setManager');

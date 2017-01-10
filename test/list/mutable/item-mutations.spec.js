@@ -1,13 +1,13 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../../src';
+import * as mu from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, aVeryCompositeContainerList} from '../builders';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
 
-const either = Mutable.either;
+const either = mu.either;
 
 describe('List', function() {
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
 
         describe('pop', function() {
             it('should remove the last element from a List', function() {
@@ -42,13 +42,13 @@ describe('List', function() {
             });
 
             it('should add a typed item for non-primitive data (like custom types)', function() {
-                var arr = Mutable.List.of(UserType).create([]);
+                var arr = mu.List.of(UserType).create([]);
                 arr.push({});
                 expect(arr.at(0)).to.be.instanceOf(UserType);
             });
 
             it('should add a typed item form multiple types if there is _type field', function() {
-                var arr = Mutable.List.of(either(UserType, AddressType)).create([]);
+                var arr = mu.List.of(either(UserType, AddressType)).create([]);
                 arr.push({ _type: 'User' });
                 arr.push({ _type: 'Address' });
                 expect(arr.at(0)).to.be.instanceOf(UserType);
@@ -74,7 +74,7 @@ describe('List', function() {
                 let arr, manager, child;
                 beforeEach(()=>{
                     manager = new LifeCycleManager();
-                    arr = Mutable.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
                     arr.$setManager(manager);
                     child = new builders.UserType();
                     sinon.spy(child, '$setManager');
@@ -124,7 +124,7 @@ describe('List', function() {
                 let arr, manager, child;
                 beforeEach(()=>{
                     manager = new LifeCycleManager();
-                    arr = Mutable.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
                     arr.$setManager(manager);
                     child = new builders.UserType();
                     sinon.spy(child, '$setManager');
@@ -192,7 +192,7 @@ describe('List', function() {
                 let arr, manager, child;
                 beforeEach(()=>{
                     manager = new LifeCycleManager();
-                    arr = Mutable.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
                     arr.$setManager(manager);
                     child = new builders.UserType();
                     sinon.spy(child, '$setManager');

@@ -2,14 +2,14 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import {getValueFromRootRef, getReferenceWrapper} from './utils';
-import {NonPrimitive, defineNonPrimitive} from './non-primitive';
+import {MuBase, defineNonPrimitive} from './base';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {MapWrapperOverDictionary} from './map-wrapper';
 import {observable, asFlat, asMap, untracked, extras, autorun} from 'mobx';
 import {shouldAssign} from './utils';
-const MAILBOX = getMailBox('Mutable.Es5Map');
+const MAILBOX = getMailBox('mutable.Es5Map');
 
 function entries(map){
     return (typeof map.entries === 'function')? map.entries() : objEntries(map);
@@ -49,7 +49,7 @@ class MapReferenceToDictionary extends MapWrapperOverDictionary{
 }
 
 
-export default class Es5Map extends NonPrimitive {
+export default class Es5Map extends MuBase {
 
     static defaults() { return {}; }
 
@@ -157,7 +157,7 @@ export default class Es5Map extends NonPrimitive {
         if (!ops || !ops.subTypes) {
             return { path: arrow + 'Es5Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>` }
         } else {
-            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, NonPrimitive.reportFieldDefinitionError, 'value');
+            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, MuBase.reportFieldDefinitionError, 'value');
             if (valueTypeError) {
                 return { path: `Es5Map<${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes)}>`, message: valueTypeError.message };
             }
@@ -191,13 +191,6 @@ export default class Es5Map extends NonPrimitive {
         }
     }
 
-    static preConstructor(){
-        const report = this.reportDefinitionErrors();
-        if (report) {
-            MAILBOX.error(`Es5Map constructor: "${report.path}" ${report.message}`);
-        }
-    }
-
     static byReference(provider, path = []){
         // wrap provider
         const result = new this();
@@ -211,6 +204,10 @@ export default class Es5Map extends NonPrimitive {
         }
         options.subTypes = generics.typesAsArray(options.subTypes);
         super(value, options, errorContext);
+        const report = this.__ctor__.reportDefinitionErrors();
+        if (report) {
+            MAILBOX.error(`Es5Map constructor: "${report.path}" ${report.message}`);
+        }
     }
 
     // shallow merge native javascript data into the map
@@ -270,7 +267,7 @@ export default class Es5Map extends NonPrimitive {
                     delete toDelete[key];
                     this.__setValueDeepHandler__(toSet, toSetValueDeep, key, val, errorContext);
                 };
-                if (NonPrimitive.validateType(newValue)) {
+                if (MuBase.validateType(newValue)) {
                     newValue.__value__.forEach(newEntriesVisitor);
                 } else if (isIterable(newValue)) {
                     for (let [key, val] of newValue) {
@@ -373,7 +370,7 @@ export default class Es5Map extends NonPrimitive {
     toJSON(recursive = true, typed = false) {
         let result = {};
         this.__value__.forEach((value, key) => {
-            result[key] = (recursive && value && NonPrimitive.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
+            result[key] = (recursive && value && MuBase.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
         });
         if (typed) {
             result._type = this.constructor.id;

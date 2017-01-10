@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import {BaseClass} from './base-class';
-import {defineNonPrimitive} from './non-primitive';
+import {MuObject} from './object';
+import {defineNonPrimitive} from './base';
 import {validateNullValue} from './validation';
 
-const MAILBOX = getMailBox('Mutable.Reference');
+const MAILBOX = getMailBox('mutable.Reference');
 
-export default class Reference extends BaseClass {
+export default class Reference extends MuObject {
 
 // allow any object as long as it adhers to the entire schema
     static allowPlainVal(value, errorDetails = null) {

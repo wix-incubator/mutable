@@ -4,12 +4,11 @@ import {cloneType, getReadableValueTypeName} from './utils';
 import {TypeMatch} from './type-match';
 import {
     ErrorMessage, ErrorContext, ErrorDetails, Validator,
-    ClassOptions, cast, Type, Mutable
-} from "./types";
+    ClassOptions, Type } from "./types";
 import isUndefined = require("lodash/isUndefined");
 import {validateNullValue} from "./validation";
 
-const MAILBOX = getMailBox('Mutable.Any');
+const MAILBOX = getMailBox('mutable.Any');
 
 function reportErrorInternal(value:any, allowPlain?:boolean, allowInstance?:boolean) : ErrorMessage|undefined{
     if (value !== undefined && (!allowPlain || !this.allowPlainVal(value)) && (!allowInstance || !this.validateType(value))) {
@@ -94,12 +93,6 @@ export class Any {
 
     static reportSetErrors(value:any) {
         return reportErrorInternal.call(this, value, false, true);
-    }
-    constructor(){
-        const type = this.constructor as any as Type<any, any>;
-        if (typeof type.preConstructor === 'function'){
-            type.preConstructor();
-        }
     }
 }
 const asType: Type<any, any> = Any;

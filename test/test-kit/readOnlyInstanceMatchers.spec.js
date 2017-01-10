@@ -1,13 +1,13 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../src';
+import * as mu from '../../src';
 import {aDataTypeWithSpec} from '../../test-kit/test-drivers';
 
 describe('Read only instances', () => {
     let UserType, user;
     before('init type and instance', () => {
         UserType = aDataTypeWithSpec({
-            name: Mutable.String
+            name: mu.String
         });
         user = new UserType('momo');
     });

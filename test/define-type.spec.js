@@ -24,11 +24,11 @@ describe('defining', () => {
     describe('Boolean with default value', () => {
         typeCompatibilityTest(() => mutable.Boolean.withDefault(true), true);
     });
-    it('a subclass without propper mutable definition', function() {
-        class MyType extends mutable.BaseClass{}
+    it('a subclass without propper mu definition', function() {
+        class MyType extends mutable.Object{}
         expect(() => {
             new MyType();
-        }).to.report(ERROR_BAD_TYPE('MyType'));
+        }).to.report(ERROR_BAD_TYPE('Object', 'MyType'));
     });
 
     it('a defined subclass that uses Any as a polymorphic field', function() {
@@ -36,13 +36,13 @@ describe('defining', () => {
         expect(new Type().toJS()).to.eql({wrapped:{}});
     });
 
-    it('a defined subclass that uses NonPrimitive as a polymorphic field', function() {
-        const Type = aDataTypeWithSpec({ wrapped: mutable.NonPrimitive }, 'Type');
+    it('a defined subclass that uses MuBase as a polymorphic field', function() {
+        const Type = aDataTypeWithSpec({ wrapped: mutable.Base }, 'Type');
         expect(new Type().toJS()).to.eql({wrapped:{}});
     });
 
-    it('a defined subclass that uses BaseClass as a polymorphic field', function() {
-        const Type = aDataTypeWithSpec({ wrapped: mutable.BaseClass }, 'Type');
+    it('a defined subclass that uses MuObject as a polymorphic field', function() {
+        const Type = aDataTypeWithSpec({ wrapped: mutable.Object }, 'Type');
         expect(new Type().toJS()).to.eql({wrapped:{}});
     });
 
@@ -301,7 +301,7 @@ describe('defining', () => {
             describe("with no sub-types", () => {
                 it('should report error when instantiating', () => {
                     var inValidArrType = mutable.List;
-                    expect(() => new inValidArrType()).to.report(new Report('error', 'Mutable.List', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+                    expect(() => new inValidArrType()).to.report(new Report('error', 'mutable.List', 'List constructor: Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
                 });
             });
             describe('with complex element sub-type', () => {
@@ -309,7 +309,7 @@ describe('defining', () => {
                     return mutable.List.of(UserType);
                 });
                 describe("instantiation", function() {
-                    it('should keep mutable objects passed to it that fit its subtypes', function() {
+                    it('should keep mu objects passed to it that fit its subtypes', function() {
                         var newUser = new UserType();
                         var newAddress = new AddressType();
 
@@ -355,7 +355,7 @@ describe('defining', () => {
                         expect(function() { ListCls.create([{}]) }).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<string>[0]', '<string>', 'object'));
                     });
 
-                    it('should report error when unallowed mutable is added', function() {
+                    it('should report error when unallowed mu is added', function() {
                         var ListCls = mutable.List.of(UserType);
                         expect(function() { ListCls.create([new AddressType()]) }).to.report(ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR('List<User>[0]', '<User>', 'Address'));
                     });
@@ -421,7 +421,7 @@ describe('defining', () => {
                     expect(testType.names.at(3)).to.equal("Christina");
                 });
 
-                it('Should accept Mutable instance as default value', function() {
+                it('Should accept mu.Object as default value', function() {
                     var defaultGroupData = new GroupType({
                         title: 'Title',
                         users: [

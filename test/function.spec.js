@@ -1,4 +1,4 @@
-import * as Mutable from '../src';
+import * as mu from '../src';
 import testKit from '../test-kit';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
@@ -12,7 +12,7 @@ import * as sinon from 'sinon';
 describe('Function data', function() {
     it('wrapped function should execute properly', function() {
 
-        var typedFunction = Mutable.Function.create(function myfunc() {
+        var typedFunction = mu.Function.create(function myfunc() {
             return 1;
         });
 
@@ -20,21 +20,21 @@ describe('Function data', function() {
     });
 
     it('Function.withDefault should return a default function', function() {
-        var typedFunction = Mutable.Function.withDefault(function myfunc() {
+        var typedFunction = mu.Function.withDefault(function myfunc() {
             return 1;
         });
         expect(typedFunction.defaults()()).to.equal(1, 'wrapped function should execute properly');
     });
 
     it('is extendible', function() {
-        var DerivedFunc = testKit.drivers.inheritBabel(Mutable.Function);
+        var DerivedFunc = testKit.drivers.inheritBabel(mu.Function);
         DerivedFunc.of = function of(DataType) {
             var WithDataSpec = this.withDefault(undefined, undefined, { dataType: DataType });
             return WithDataSpec;
         };
         DerivedFunc.id = 'DerivedFunc';
         var innerSpy = sinon.spy();
-        var StringDerivedFunc = DerivedFunc.of(Mutable.String);
+        var StringDerivedFunc = DerivedFunc.of(mu.String);
         var func = new StringDerivedFunc(innerSpy);
 
         expect(func).not.to.throw();

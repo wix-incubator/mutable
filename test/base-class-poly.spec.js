@@ -1,19 +1,14 @@
-/**
- * Created by amira on 21/7/16.
- */
-import * as _ from 'lodash';
-import * as sinon from 'sinon';
 import {expect} from 'chai';
 
 import * as mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
-describe('BaseClass', function() {
+describe('MuObject', function() {
 
     it('should be optionally nullable', function() {
 
         var TestType = aDataTypeWithSpec({
-            poly: mutable.BaseClass.nullable().withDefault(null)
+            poly: mutable.Object.nullable().withDefault(null)
         }, 'Test');
 
         var test = new TestType();
@@ -33,7 +28,7 @@ describe('BaseClass', function() {
         }, 'Possib2');
 
         var TestType = aDataTypeWithSpec({
-            poly: mutable.BaseClass.nullable().withDefault(null)
+            poly: mutable.Object.nullable().withDefault(null)
         }, 'TestType');
 
         var test = new TestType();

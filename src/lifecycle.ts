@@ -1,7 +1,7 @@
 import {getMailBox} from 'escalate';
 import {BaseAtom} from 'mobx';
-import {isMutable, CompositeType, Mutable} from './types';
-const MAILBOX = getMailBox('Mutable.lifecycle');
+import {isMutable, Mutable} from './types';
+const MAILBOX = getMailBox('mutable.lifecycle');
 
 interface BoundableAtom extends BaseAtom{
     $mutableOriginalReportObserved:undefined|(() => void);

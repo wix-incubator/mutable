@@ -8,22 +8,22 @@ import {validateValue} from './validation';
 import {isDataMatching} from './type-match';
 import {
     Mutable, DeepPartial, ClassOptions, ErrorContext,
-    Type, CompositeType, ReadonlyMutable, ErrorMessage,
-    isType, isCompositeType, ReferenceType, Class
+    Type, BaseType, ReadonlyMutable, ErrorMessage,
+    isType, isBaseType, ReferenceType, ClassType
 } from "./types";
 import {Level} from "escalate";
 import {defineClass} from './define-type';
 
-let DefaultClass: Class<{}>|null = null;
+let DefaultClass: ClassType<{}|null>|null = null;
 export function defaultNonPrimitive(value:any){
     if (!DefaultClass){
         // lazy class definition because `defineClass` is a circular reference
-        DefaultClass = defineClass('Default', { spec: () => ({}) });
+        DefaultClass = defineClass('Default', { spec: () => ({}) }).nullable();
     }
     return DefaultClass.create(value);
 }
 
-const MAILBOX = getMailBox('Mutable.NonPrimitive');
+const MAILBOX = getMailBox('mutable.MuBase');
 
 function createReadOnly<T>(source:Mutable<T>):ReadonlyMutable<T> {
     const result = Object.create(source);
@@ -39,9 +39,9 @@ function generateId() {
     return dataCounter++;
 }
 
-export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
-    static ancestors = ['NonPrimitive'];
-    static id = 'NonPrimitive';
+export abstract class MuBase<T> extends Any implements Mutable<T> {
+    static ancestors = ['Base'];
+    static id = 'Base';
     static name:string;
     static uniqueId:string;
     static __refType: ReferenceType<any>;
@@ -53,7 +53,7 @@ export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
     static reportFieldDefinitionError(fieldDef:Type<any, any>):ErrorMessage|undefined{
         if (!isType(fieldDef)) {
             return { message: `must be a primitive type or extend core3.Type`, path: '' };
-        } else if (isCompositeType(fieldDef)) {
+        } else if (isBaseType(fieldDef)) {
             return fieldDef.reportDefinitionErrors();
         }
     }
@@ -77,24 +77,19 @@ export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
     }
 
 
-    static create<T>(this:CompositeType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
-        if (NonPrimitive as any === this) {
-            return defaultNonPrimitive(value) as Mutable<T>;
+    static create<T>(this:BaseType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
+        if (MuBase as any === getPrimeType(this)){
+            if (typeof this.defaults === 'function'){
+                return defaultNonPrimitive(this.defaults()) as Mutable<T>;
+            } else {
+                return defaultNonPrimitive(value) as Mutable<T>;
+            }
         } else {
             return new this(value, options, errorContext);
         }
     }
 
-    // TODO move into constructor
-    static preConstructor(){
-        if (NonPrimitive === getPrimeType(this)){
-            MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
-        } else if (NonPrimitive.uniqueId === getPrimeType(this).uniqueId) {
-            MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
-        }
-    }
-
-    protected __ctor__ = this.constructor as CompositeType<this, T>;
+    protected __ctor__ = this.constructor as BaseType<this, T>;
     private __readOnlyInstance__: ReadonlyMutable<T>;
     private __readWriteInstance__: Mutable<T>;
     private __id__: number;
@@ -109,6 +104,11 @@ export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super();
         errorContext = errorContext || this.__ctor__.createErrorContext('Type constructor error', 'error');
+        if (MuBase as any === getPrimeType(this.__ctor__)){
+            MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" Instantiating the base type is not allowed. You should extend it instead.`);
+        } else if (MuBase.uniqueId === getPrimeType(this.__ctor__).uniqueId) {
+            MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" "${this.__ctor__.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
+        }
         this.__readOnlyInstance__ = createReadOnly(this);
         this.__readWriteInstance__ = this;
         this.__options__ = options;
@@ -160,8 +160,8 @@ export abstract class NonPrimitive<T> extends Any implements Mutable<T> {
     }
 }
 
-export function defineNonPrimitive<T>(id:string, jsClass: CompositeType<Mutable<T>, T>){
-    if (!NonPrimitive.isJsAssignableFrom(jsClass)){
+export function defineNonPrimitive<T>(id:string, jsClass: BaseType<Mutable<T>, T>){
+    if (!MuBase.isJsAssignableFrom(jsClass)){
         MAILBOX.fatal(`Type definition error: ${(jsClass as any).id || id} is not a subclass of NonPrimitive`);
     }
     jsClass.id = id;

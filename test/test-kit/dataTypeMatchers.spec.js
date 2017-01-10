@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../src';
+import * as mu from '../../src';
 import {aDataTypeWithSpec} from '../../test-kit/test-drivers';
 
 describe('Type matchers', () => {
@@ -8,7 +8,7 @@ describe('Type matchers', () => {
     describe('Field matcher', () => {
 
         var UserType = aDataTypeWithSpec({
-            name: Mutable.String
+            name: mu.String
         });
 
         it('should reject types that do not have the requested field', () => {

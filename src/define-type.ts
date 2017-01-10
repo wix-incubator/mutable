@@ -1,12 +1,12 @@
-import {Spec, cast, Type, Class, isCompositeType, ReferenceType, Mutable, CompositeType} from './types';
+import {Spec, Type, ClassType, isBaseType, ReferenceType, Mutable} from './types';
 import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
 import {forEach, isFunction, extend} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
 import {untracked, extras} from 'mobx';
 import {DirtyableYielder, AtomYielder} from "./lifecycle";
-import {BaseClass} from "./base-class";
-import {NonPrimitive, defineNonPrimitive} from './non-primitive';
+import {MuObject} from "./object";
+import {defineNonPrimitive} from './base';
 
 /**
  * the schema of the class to define (input format)
@@ -18,20 +18,20 @@ interface Schema{
  * the metadata of the type to define
  */
 interface Metadata{
-    spec(self:Class<any>) : Schema;
+    spec(self:ClassType<any>) : Schema;
 }
 
 
-const MAILBOX = getMailBox('Mutable.extend');
-const RESERVED_FIELDS = Object.keys(extend({}, BaseClass.prototype));
+const MAILBOX = getMailBox('mutable.extend');
+const RESERVED_FIELDS = Object.keys(extend({}, MuObject.prototype));
 
-export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
-export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T>;
+export function defineClass<T>(id:string, typeDefinition: Metadata):ClassType<T>;
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: ClassType<P>, TypeConstructor?: ClassType<T>):ClassType<T>;
 
-export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
-    const ParentType:Class<any> = TypeConstructor || _ParentType || BaseClass;
-    if (!BaseClass.isJsAssignableFrom(ParentType)){
-        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of BaseClass`);
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: ClassType<P>, TypeConstructor?: ClassType<T>):ClassType<T> {
+    const ParentType:ClassType<any> = TypeConstructor || _ParentType || MuObject;
+    if (!MuObject.isJsAssignableFrom(ParentType)){
+        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of Class`);
     }
     const type = inherit(id, ParentType);
     defineNonPrimitive(id, type);
@@ -40,7 +40,7 @@ export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata,
 }
 
 // values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
-function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, ParentType: Class<any>, id: string) {
+function calculateSchemaProperties(typeDefinition: Metadata, type: ClassType<any>, ParentType: ClassType<any>, id: string) {
     const typeSelfSpec = typeDefinition.spec(type);
     const baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
     normalizeSchema(type, baseSpec, typeSelfSpec, ParentType.id);
@@ -50,11 +50,11 @@ function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, P
     type.__refType = generateRefType(type);
 }
 
-function isAnyType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
-    return getPrimeType(fieldDef) === BaseClass;
+function isAnyType(fieldDef:Type<any, any>):fieldDef is ClassType<{}>{
+    return getPrimeType(fieldDef) === MuObject;
 }
 
-function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
+function normalizeSchema(type:ClassType<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
     forEach(typeSelfSpec, (fieldDef:Type<any, any>, fieldName:string) => {
         if (!validateField(type, parentSpec, fieldName, fieldDef, parentName)){
             // maybe we should delete the field from the spec if it's not valid?
@@ -62,16 +62,16 @@ function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, 
     });
 }
 
-function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fieldDef:Type<any, any>, parentName:string):boolean {
+function validateField(type:ClassType<any>, parentSpec:Schema, fieldName:string, fieldDef:Type<any, any>, parentName:string):boolean {
     let error;
-    const errorContext = BaseClass.createErrorContext(`Type definition error`, 'fatal');
+    const errorContext = MuObject.createErrorContext(`Type definition error`, 'fatal');
     let path = `${type.id}.${fieldName}`;
     if (~RESERVED_FIELDS.indexOf(fieldName)){
         error = 'is a reserved field.';
     } else if (parentSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism
         error = `already exists on super ${parentName}`;
     } else {
-        const err = BaseClass.reportFieldDefinitionError(fieldDef);
+        const err = MuObject.reportFieldDefinitionError(fieldDef);
         if (err) {
             error = err.message;
             if (err.path) {
@@ -100,7 +100,7 @@ function generateSpec(id:string, spec:Schema, baseSpec:Spec) {
 function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>) {
     const complex:Array<string> = [];
     for (let k in spec) {
-        if (isCompositeType(spec[k])) {
+        if (isBaseType(spec[k])) {
             complex[complex.length] = k;
         }
     }
@@ -149,12 +149,12 @@ function generateFieldsOn(proto:any, fieldsDefinition:Schema) {
     });
 }
 
-function getReference<T>(rootReference:() => any, path:Array<string|number>, thisType: Class<any>, fieldDef: Type<T, any>, fieldName: string):T {
+function getReference<T>(rootReference:() => any, path:Array<string|number>, thisType: ClassType<any>, fieldDef: Type<T, any>, fieldName: string):T {
     let value = getValueFromRootRef(rootReference, path);
     return getReferenceWrapper(thisType, fieldDef, rootReference, path.concat(fieldName), value[fieldName]);
 }
 
-function generateRefType<T>(type: Class<T>) :ReferenceType<T>{
+function generateRefType<T>(type: ClassType<T>) :ReferenceType<T>{
     class Reference {
         constructor(public __origin:() => any, public path:Array<string|number>){}
     }

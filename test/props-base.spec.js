@@ -1,9 +1,9 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../src';
+import * as mu from '../src';
 
-describe('Mutable.PropsBase', function() {
+describe('PropsBase', function() {
     it('is defined as stub', function() {
-        expect(Mutable.PropsBase).to.be.a('function');
+        expect(mu.PropsBase).to.be.a('function');
     });
 });

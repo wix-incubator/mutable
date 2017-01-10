@@ -7,7 +7,7 @@ describe('a user class using babel inheritance', () => {
 
     it('should provide default values', function() {
 
-        const UserClass = testKit.drivers.inheritBabel(mutable.BaseClass);
+        const UserClass = testKit.drivers.inheritBabel(mutable.Object);
 
         const Type1 = mutable.define('Type1', {
             spec:() => ({
@@ -23,7 +23,7 @@ describe('a user class using babel inheritance', () => {
             }
         }, Type1);
         const obj = new Type2();
-        expect(obj).to.be.instanceof(mutable.BaseClass);
+        expect(obj).to.be.instanceof(mutable.Object);
         expect(obj).to.be.instanceof(UserClass);
         expect(obj).to.be.instanceof(Type1);
         expect(obj).to.be.instanceof(Type2);
@@ -34,7 +34,7 @@ describe('a user class using babel inheritance', () => {
 
     it('should allow overriding wrapValue', function() {
         const unexpectedValue = function(){};
-        const UserClass = testKit.drivers.inheritBabel(mutable.BaseClass);
+        const UserClass = testKit.drivers.inheritBabel(mutable.Object);
         UserClass.wrapValue = sinon.spy(function wrapValue(value, spec, options = {}, errorContext) {
             return {str:unexpectedValue}
         });

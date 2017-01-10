@@ -1,4 +1,4 @@
-import * as Mutable from '../src';
+import * as mu from '../src';
 import {expect} from 'chai';
 import {forEach} from 'lodash';
 import * as sinon from 'sinon';
@@ -12,7 +12,7 @@ describe("setting NaN value", ()=>{
     describe("in a user type", ()=>{
         let Container, instance;
         before('set up type',() => {
-            Container = Mutable.define('Container', {spec: () => ({num: Mutable.Number})});
+            Container = mu.define('Container', {spec: () => ({num: mu.Number})});
         });
         beforeEach('set up object',() => {
             instance = new Container();
@@ -65,7 +65,7 @@ describe("setting NaN value", ()=>{
     describe("in a list", ()=>{
         let Container, instance;
         before('set up type',() => {
-            Container = Mutable.List.of(Mutable.Number);
+            Container = mu.List.of(mu.Number);
         });
         beforeEach('set up object',() => {
             instance = new Container();
@@ -126,7 +126,7 @@ describe("setting NaN value", ()=>{
     describe("in a map", ()=>{
         let Container, instance, otherChangeSpy;
         before('set up type',() => {
-            Container = Mutable.Es5Map.of(Mutable.Number);
+            Container = mu.Es5Map.of(mu.Number);
         });
         beforeEach('set up object',() => {
             otherChangeSpy = sinon.spy();

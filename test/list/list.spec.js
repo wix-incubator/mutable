@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import * as Mutable from '../../src';
+import * as mu from '../../src';
 import {UserType} from './builders';
 import * as sinon from 'sinon';
 
@@ -7,14 +7,14 @@ describe('List', function() {
     describe('$setManager', function() {
         let list, manager;
         beforeEach(()=>{
-            manager = new Mutable.LifeCycleManager();
+            manager = new mu.LifeCycleManager();
             let child = new UserType();
             sinon.spy(child, '$setManager');
-            list = Mutable.List.of(UserType).create([child]);
+            list = mu.List.of(UserType).create([child]);
         });
         it('with existing different manager does not change the manager and reports error', function() {
             list.__lifecycleManager__ = manager;
-            expect(() => list.$setManager(new Mutable.LifeCycleManager())).to.report({ level: /error/ });
+            expect(() => list.$setManager(new mu.LifeCycleManager())).to.report({ level: /error/ });
             expect(list.__lifecycleManager__, 'container manager').to.equal(manager);
         });
         it('when no existing manager changes the manager field', function() {

@@ -3,7 +3,7 @@ import {getMailBox} from 'escalate';
 import {inherit, getPrimeType} from './utils';
 import {Any} from './any';
 
-const MAILBOX = getMailBox('Mutable.defineEnum');
+const MAILBOX = getMailBox('mutable.defineEnum');
 
 export class EnumBase extends Any {
     static id = 'enum';

@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {Type, Class} from "../src/types";
+import {Type, ClassType} from "../src/types";
 import * as mutable from '../src';
 
 
@@ -33,7 +33,7 @@ describe('field definition', () => {
         complianceContract(pc, [pc], concreteClasses.filter(c => c !== pc));
     });
 
-    complianceContract(mutable.NonPrimitive, [
+    complianceContract(mutable.Base, [
         mutable.List.of(mutable.String),
         mutable.Es5Map.of(mutable.String),
         UserClass
@@ -44,7 +44,7 @@ describe('field definition', () => {
         mutable.Function
     ]);
 
-    complianceContract(mutable.BaseClass, [
+    complianceContract(mutable.Object, [
         UserClass
     ], [
         mutable.String,
@@ -70,7 +70,7 @@ function complianceContract<F>(fieldDef:Type<F, any>, subTypes:Array<Type<any, a
         let instance: Fields;
         before('define type', () => {
             const ContainerClass = mutable.define<Fields>('ContainerClass', {
-                spec: (self:Class<any>) => ({field:fieldDef})
+                spec: (self:ClassType<any>) => ({field:fieldDef})
             });
             instance = new ContainerClass();
         });

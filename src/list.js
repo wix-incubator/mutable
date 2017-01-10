@@ -4,11 +4,11 @@ import {ArrayWrapper} from './array-wrapper';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
 import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
-import {NonPrimitive, defineNonPrimitive} from './non-primitive';
+import {MuBase, defineNonPrimitive} from './base';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';
 import {optionalSetManager} from './lifecycle';
-const MAILBOX = getMailBox('Mutable.List');
+const MAILBOX = getMailBox('mutable.List');
 function isArray(val){
     return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
 }
@@ -20,7 +20,7 @@ class ArrayReference extends ArrayWrapper{
     }
 }
 
-export default class List extends NonPrimitive {
+export default class List extends MuBase {
 
     static defaults() { return []; }
 
@@ -113,7 +113,7 @@ export default class List extends NonPrimitive {
         if (!this.options || !this.options.subTypes) {
             return { path: '', message: `Untyped Lists are not supported please state type of list item in the format core3.List<string>` }
         } else {
-            var error = generics.reportDefinitionErrors(this.options.subTypes, NonPrimitive.reportFieldDefinitionError);
+            var error = generics.reportDefinitionErrors(this.options.subTypes, MuBase.reportFieldDefinitionError);
             if (error) {
                 return {
                     path: `<${error.path}>`,
@@ -134,13 +134,6 @@ export default class List extends NonPrimitive {
         }
     }
 
-    static preConstructor(){
-        const report = this.reportDefinitionErrors();
-        if (report) {
-            MAILBOX.error('List constructor: ' + report.message);
-        }
-    }
-
     static byReference(provider, path = []){
         // wrap provider
         const result = new this();
@@ -153,12 +146,16 @@ export default class List extends NonPrimitive {
             errorContext = List.createErrorContext('List constructor error', 'error', options);
         }
         options.subTypes = generics.typesAsArray(options.subTypes);
-        super(value, options, errorContext);
+        super(value, options, errorContext)
+        const report = this.__ctor__.reportDefinitionErrors();
+        if (report) {
+            MAILBOX.error('List constructor: ' + report.message);
+        }
     }
 
     toJSON(recursive = true, typed = false) {
         return this.__value__.map(item => {
-            return (recursive && NonPrimitive.validateType(item)) ? item.toJSON(true, typed) : item;
+            return (recursive && MuBase.validateType(item)) ? item.toJSON(true, typed) : item;
         });
     }
 
@@ -320,7 +317,7 @@ export default class List extends NonPrimitive {
     at(index) {
        if (index >= 0 && untracked(() => this.__value__.length > index)) {
             var item = this.__value__[index];
-            return (NonPrimitive.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+            return (MuBase.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
        }
     }
 
@@ -441,7 +438,7 @@ export default class List extends NonPrimitive {
                         this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                     } else if(this.__options__.subTypes.validateType(itemValue)){
                         changed = this.$assignCell(assignIndex, itemValue, errorContext) || changed;
-                    } else if (currentItem.setValueDeep && !NonPrimitive.validateType(itemValue) && !currentItem.$isReadOnly()) {
+                    } else if (currentItem.setValueDeep && !MuBase.validateType(itemValue) && !currentItem.$isReadOnly()) {
                         if (currentItem.constructor.allowPlainVal(itemValue)) {
                             changed = currentItem.setValueDeep(itemValue) || changed;
                         } else {

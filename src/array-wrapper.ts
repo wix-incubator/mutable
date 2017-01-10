@@ -1,7 +1,7 @@
 import {getMailBox} from 'escalate';
 import {untracked} from "mobx";
 
-const MAILBOX = getMailBox('Mutable.ArrayWrapper');
+const MAILBOX = getMailBox('mutable.ArrayWrapper');
 
 export interface ReadonlyArrayConstructor {
     new<T> (): ReadonlyArray<T>;

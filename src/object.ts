@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import {NonPrimitive, defineNonPrimitive, defaultNonPrimitive} from "./non-primitive";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, CompositeType} from "./types";
+import {MuBase, defineNonPrimitive, defaultNonPrimitive} from "./base";
+import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, ClassType, BaseType} from "./types";
 import {getMailBox} from "escalate";
 import {clone, getFieldDef, shouldAssign, getPrimeType} from "./utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "./validation";
@@ -8,14 +8,14 @@ import {validateAndWrap} from "./type-match";
 import {asReference, observable, untracked} from "mobx";
 import {optionalSetManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 
-const MAILBOX = getMailBox('Mutable.BaseClass');
+const MAILBOX = getMailBox('mutable.MuObject');
 
-function getClass<T>(inst:BaseClass<T>): Class<T>{
-    return inst.constructor as Class<T>;
+function getClass<T>(inst:MuObject<T>): ClassType<T>{
+    return inst.constructor as ClassType<T>;
 }
 
-export class BaseClass<T> extends NonPrimitive<T>{
-    static id = 'Class';
+export class MuObject<T> extends MuBase<T>{
+    static id = 'Object';
     static _spec: Spec = Object.freeze(Object.create(null));
 
     static getFieldsSpec(){
@@ -119,24 +119,23 @@ export class BaseClass<T> extends NonPrimitive<T>{
         });
         return observable(newValue);
     }
-    static create<T>(this:CompositeType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext) {
-        if (BaseClass as any === this) {
-            return defaultNonPrimitive(value);
+
+    static create<T>(this:BaseType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext){
+        if (MuObject as any === getPrimeType(this)){
+            return defaultNonPrimitive(this.defaults());
         } else {
             return new this(value, options, errorContext);
-        }
-    }
-    // TODO move into constructor
-    static preConstructor(){
-        if (BaseClass === getPrimeType(this)){
-            MAILBOX.error(`Type constructor error: Instantiating the base type is not allowed. You should extend it instead.`);
-        } else if (BaseClass.uniqueId === getPrimeType(this).uniqueId) {
-            MAILBOX.error(`Type definition error: "${this.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
     }
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super(value, options, errorContext);
+        errorContext = errorContext || this.__ctor__.createErrorContext('Type constructor error', 'error');
+        if (MuObject as any === getPrimeType(this.__ctor__)){
+            MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" Instantiating the base type is not allowed. You should extend it instead.`);
+        } else if (MuObject.uniqueId === getPrimeType(this.__ctor__).uniqueId) {
+            MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" "${this.__ctor__.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
+        }
     }
 
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
@@ -194,7 +193,7 @@ export class BaseClass<T> extends NonPrimitive<T>{
         if(untracked(() => {
                 if (shouldAssign(this.__value__[fieldName], newValue)) {
                     const fieldDef = getFieldDef( getClass(this), fieldName);
-                    const typedField = isAssignableFrom(NonPrimitive, fieldDef);
+                    const typedField = isAssignableFrom(MuBase, fieldDef);
                     // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
                     if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
                         // validation passed set the value
@@ -244,4 +243,4 @@ export class BaseClass<T> extends NonPrimitive<T>{
     $atomsIterator(yielder: AtomYielder): void {}
 }
 
-defineNonPrimitive('Class', BaseClass);
+defineNonPrimitive('Object', MuObject);

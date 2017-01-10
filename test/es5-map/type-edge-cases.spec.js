@@ -1,7 +1,4 @@
-import * as sinon from 'sinon';
 import {expect} from 'chai';
-
-import * as Mutable from '../../src';
 import * as builders from './builders';
 import {ERROR_KEY_MISMATCH_IN_MAP_METHOD, ERROR_VALUE_MISMATCH_IN_MAP_METHOD} from '../../test-kit/test-drivers/reports'
 

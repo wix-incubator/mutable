@@ -2,7 +2,7 @@ import {Level} from 'escalate';
 import {TypeMatch} from "./type-match";
 import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 import {Any} from './any';
-import {NonPrimitive} from "./non-primitive";
+import {MuBase} from "./base";
 
 export type DeepPartial<T> = {
     [P in keyof T]?:DeepPartial<T[P]>|null;
@@ -20,6 +20,7 @@ export interface Type<T, S>{
     _matchValue:(value:any, errorContext:ErrorContext) => TypeMatch;
     allowPlainVal(value:any, errorDetails?:ErrorDetails):boolean;
     isNullable():boolean;
+    nullable():this;
     withDefault(defaults?:DefaultSource<T>, validate?:Validator<T|S>, options?:DeepPartial<ClassOptions>):this|Type<(T|null), S>;
     create(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext):T;
     defaults():S;
@@ -28,7 +29,6 @@ export interface Type<T, S>{
     validateType:Validator<T|S>;
     isJsAssignableFrom(other:any):other is this;
     reportSetValueErrors(value:any):ErrorMessage;
-    preConstructor?():void;
 }
 
 
@@ -43,7 +43,7 @@ export type Mutable<T> = MutableObj<T>;// & T;
 export type ReadonlyMutable<T> = Mutable<Readonly<T>>;
 
 export interface MutableObj<T>{
-  //  constructor:CompositeType<Mutable<T>, T>;
+  //  constructor:BaseType<Mutable<T>, T>;
     toJS(typed?:boolean):T;
     toJSON(recursive?:boolean, typed?:boolean):T;
     $isDirtyable():boolean;
@@ -60,16 +60,16 @@ export interface MutableObj<T>{
 
 type DefaultSource<T> = (()=>DeepPartial<T>)|DeepPartial<T>;
 
-export function isCompositeType(type:any):type is CompositeType<any, any>{
-    return type && type.byReference && NonPrimitive.isJsAssignableFrom(type);
+export function isBaseType(type:any):type is BaseType<any, any>{
+    return type && type.byReference && MuBase.isJsAssignableFrom(type);
 }
 
 // array of constructor arguments
 // value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext
 export type CtorArgs<T extends Mutable<S>|null, S> = [T|DeepPartial<S>|undefined, ClassOptions|undefined, ErrorContext|undefined];
 
-// class / list / map
-export interface CompositeType<T extends Mutable<S>|null, S> extends Type<T, S> {
+// obj / list / map
+export interface BaseType<T extends Mutable<S>|null, S> extends Type<T, S> {
     ancestors : string[];
     prototype:T;
     createErrorContext(entryPoint:string, level:Level):ErrorContext;
@@ -77,7 +77,6 @@ export interface CompositeType<T extends Mutable<S>|null, S> extends Type<T, S> 
     // this is not the right place for reportFieldDefinitionError
     reportFieldDefinitionError(field:Type<any, any>):ErrorMessage|undefined;
     uniqueId:string;
-    preConstructor():void;
     __refType: ReferenceType<T>;
     makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>S;
     byReference: (provider:() => any, path?:Array<string|number>) => T;
@@ -90,14 +89,14 @@ export interface CompositeType<T extends Mutable<S>|null, S> extends Type<T, S> 
 export interface Spec{
     [fieldName:string] : Type<any, any>;
 }
-export function isClass(type:any):type is Class<any>{
-    return type && type._spec && isCompositeType(type);
+export function isClass(type:any):type is ClassType<any>{
+    return type && type._spec && isBaseType(type);
 }
 
 export interface ReferenceType<T>{
     new(provider:() => any, path:Array<string|number>):T
 }
-export interface Class<T> extends CompositeType<T & Mutable<T>, T> {
+export interface ClassType<T> extends BaseType<T & Mutable<T>, T> {
     wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
     _spec:Spec;
     getFieldsSpec():Spec;

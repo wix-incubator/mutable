@@ -1,8 +1,7 @@
 import * as _ from 'lodash';
-import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Mutable from '../src';
+import * as mu from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import {lifecycleContract} from './lifecycle.contract.spec';
 import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE, ERROR_IN_DEFAULT_VALUES} from '../test-kit/test-drivers/reports';
@@ -12,7 +11,7 @@ describe('Nullable custom type initialize', function() {
     it('should create primitive types with null', function() {
 
         var UserType = aDataTypeWithSpec({
-            name: Mutable.String.nullable().withDefault(null)
+            name: mu.String.nullable().withDefault(null)
         }, 'User');
 
         var user = new UserType();
@@ -27,11 +26,11 @@ describe('Nullable custom type initialize', function() {
     it('should create complex types with null (readOnly)', function() {
 
         var Friend = aDataTypeWithSpec({
-            name: Mutable.String.nullable().withDefault(null)
+            name: mu.String.nullable().withDefault(null)
         }, 'User');
 
         var UserType = aDataTypeWithSpec({
-            name: Mutable.String.nullable().withDefault(null),
+            name: mu.String.nullable().withDefault(null),
             friend: Friend.nullable().withDefault(null)
         }, 'User');
 
@@ -53,9 +52,9 @@ describe('Nullable custom type', function() {
     };
 
     var UserType = aDataTypeWithSpec({
-        name: Mutable.String.withDefault(defaultUser.name),
-        age: Mutable.Number.withDefault(defaultUser.age),
-        address: Mutable.String.withDefault(defaultUser.address)
+        name: mu.String.withDefault(defaultUser.name),
+        age: mu.Number.withDefault(defaultUser.age),
+        address: mu.String.withDefault(defaultUser.address)
     }, 'User');
 
     var build = {
@@ -112,7 +111,7 @@ describe('Nullable custom type', function() {
     describe('toJS', function() {
         it('produces correct value for nullable field', function() {
             var NullFieldWithNoSerialization = aDataTypeWithSpec({
-                func: Mutable.Function.nullable().withDefault(null)
+                func: mu.Function.nullable().withDefault(null)
             }, 'NullFieldWithNoSerialization');
             var data = new NullFieldWithNoSerialization({func:null});
 
@@ -120,7 +119,7 @@ describe('Nullable custom type', function() {
         });
     });
 
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
 
         describe('instantiation', function() {
 
@@ -208,24 +207,24 @@ describe('Nullable primitive type', function() {
         UserType: {
             withNullableFields: defaultValue =>
                 aDataTypeWithSpec({
-                    name: Mutable.String.nullable().withDefault(pickDefValue(defaultValue, defaultUser.name)),
-                    age: Mutable.Number.nullable().withDefault(pickDefValue(defaultValue, defaultUser.age)),
-                    loggedIn: Mutable.Boolean.nullable().withDefault(pickDefValue(defaultValue, defaultUser.loggedIn)),
-                    onLogIn: Mutable.Function.nullable().withDefault(pickDefValue(defaultValue, defaultUser.onLogIn))
+                    name: mu.String.nullable().withDefault(pickDefValue(defaultValue, defaultUser.name)),
+                    age: mu.Number.nullable().withDefault(pickDefValue(defaultValue, defaultUser.age)),
+                    loggedIn: mu.Boolean.nullable().withDefault(pickDefValue(defaultValue, defaultUser.loggedIn)),
+                    onLogIn: mu.Function.nullable().withDefault(pickDefValue(defaultValue, defaultUser.onLogIn))
                 }, 'User'),
             withStrictFields: defaultValue =>
                 aDataTypeWithSpec({
-                    name: Mutable.String.withDefault(pickDefValue(defaultValue, defaultUser.name)),
-                    age: Mutable.Number.withDefault(pickDefValue(defaultValue, defaultUser.age)),
-                    loggedIn: Mutable.Boolean.withDefault(pickDefValue(defaultValue, defaultUser.loggedIn)),
-                    onLogIn: Mutable.Function.withDefault(pickDefValue(defaultValue, defaultUser.onLogIn))
+                    name: mu.String.withDefault(pickDefValue(defaultValue, defaultUser.name)),
+                    age: mu.Number.withDefault(pickDefValue(defaultValue, defaultUser.age)),
+                    loggedIn: mu.Boolean.withDefault(pickDefValue(defaultValue, defaultUser.loggedIn)),
+                    onLogIn: mu.Function.withDefault(pickDefValue(defaultValue, defaultUser.onLogIn))
                 }, 'User'),
             withStrictName: defaultValue =>
                 aDataTypeWithSpec({
-                    name: Mutable.String.withDefault(pickDefValue(defaultValue, defaultUser.name)),
-                    age: Mutable.Number.nullable().withDefault(defaultUser.age),
-                    loggedIn: Mutable.Boolean.nullable().withDefault(defaultUser.loggedIn),
-                    onLogIn: Mutable.Function.nullable().withDefault(defaultUser.onLogIn)
+                    name: mu.String.withDefault(pickDefValue(defaultValue, defaultUser.name)),
+                    age: mu.Number.nullable().withDefault(defaultUser.age),
+                    loggedIn: mu.Boolean.nullable().withDefault(defaultUser.loggedIn),
+                    onLogIn: mu.Function.nullable().withDefault(defaultUser.onLogIn)
                 }, 'User')
         },
         user: {
@@ -238,17 +237,17 @@ describe('Nullable primitive type', function() {
 
     describe('type definition', function() {
         it('is able to describe itself (no defaults override)', function() {
-            expect(build.UserType.withNullableFields()).to.have.field('name').of.type(Mutable.String);
-            expect(build.UserType.withNullableFields()).to.have.field('age').of.type(Mutable.Number);
-            expect(build.UserType.withNullableFields()).to.have.field('loggedIn').of.type(Mutable.Boolean);
-            expect(build.UserType.withNullableFields()).to.have.field('onLogIn').of.type(Mutable.Function);
+            expect(build.UserType.withNullableFields()).to.have.field('name').of.type(mu.String);
+            expect(build.UserType.withNullableFields()).to.have.field('age').of.type(mu.Number);
+            expect(build.UserType.withNullableFields()).to.have.field('loggedIn').of.type(mu.Boolean);
+            expect(build.UserType.withNullableFields()).to.have.field('onLogIn').of.type(mu.Function);
         });
 
         it('is able to describe itself (null defaults override)', function() {
-            expect(build.UserType.withNullableFields(null)).to.have.field('name').of.type(Mutable.String);
-            expect(build.UserType.withNullableFields(null)).to.have.field('age').of.type(Mutable.Number);
-            expect(build.UserType.withNullableFields(null)).to.have.field('loggedIn').of.type(Mutable.Boolean);
-            expect(build.UserType.withNullableFields(null)).to.have.field('onLogIn').of.type(Mutable.Function);
+            expect(build.UserType.withNullableFields(null)).to.have.field('name').of.type(mu.String);
+            expect(build.UserType.withNullableFields(null)).to.have.field('age').of.type(mu.Number);
+            expect(build.UserType.withNullableFields(null)).to.have.field('loggedIn').of.type(mu.Boolean);
+            expect(build.UserType.withNullableFields(null)).to.have.field('onLogIn').of.type(mu.Function);
         });
 
         it('reports error if trying to initialize non-nullable with a null', function() {
@@ -267,7 +266,7 @@ describe('Nullable primitive type', function() {
         });
     });
 
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
 
         describe('instantiation', function() {
 
@@ -352,28 +351,27 @@ describe('Nullable primitive type', function() {
 
 
             });
-            describe.skip('with mutable input', function() {
-                // This is weird, the input is mutable objects in a plain object - wtf?
-                it('sets null value from a mutable object', function() {
+            describe('with mu input', function() {
+                // This is weird, the input is mu objects in a plain object - wtf?
+                it('sets null value from a mu object', function() {
                     var source = build.user.withNullableFields(null);
                     var user = build.user.withNullableFields();
-                    user.setValue(source);
-                    expect(user).to.deep.equal(nullUser);
-                    expect(user).to.be.dirty;
+                    user.setValue(source.toJSON());
+                    expect(user.toJSON()).to.deep.equal(nullUser);
                 });
-                it('fails to set null value to non-nullable field from a (nullable) mutable object and reports', function() {
-                    var source = new (LoginType.withNullableUser())({ user: null });
-                    var login = new (LoginType.withStrictUser())();
-                    expect(() => login.setValue(source))
-                        .to.report(ERROR_IN_SET_VALUE('LoginType.user', 'User', 'null'));
-                    expect(login.user).not.to.be.null;
-
+                it('fails to set null value to non-nullable field from a (nullable) mu object and reports', function() {
+                    var source = new (build.UserType.withNullableFields())({ name: null });
+                    var user = new (build.UserType.withStrictFields())();
+                    expect(() => user.setValue(source.toJSON()))
+                        .to.report(ERROR_IN_SET_VALUE('User.name', 'string', 'null'));
+                    expect(user.name).not.to.be.null;
+                });
+                it('fails to set null value to non-nullable field from a (nullable) mu object and reports', function() {
                     var source = build.user.withNullableFields(null);
                     var user = build.user.withStrictFields();
-                    expect(() => user.setValue(source))
-                        .to.report(ERROR_IN_SET_VALUE('LoginType.user', 'User', 'null'));
+                    expect(() => user.setValue(source.toJSON()))
+                        .to.report(ERROR_IN_SET_VALUE('User.name', 'string', 'null'));
                     expect(user).not.to.deep.equal(nullUser);
-                    expect(user).not.to.be.dirty;
                 });
             })
         });

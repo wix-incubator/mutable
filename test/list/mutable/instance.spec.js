@@ -1,10 +1,10 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../../src';
+import * as mu from '../../../src';
 import {aNumberList, aStringList, UserType, AddressType, UserWithAddressType} from '../builders';
 
 describe('List', function() {
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
 
         it('Should have default length', function() {
             var numberList = aNumberList([1, 2, 3]);
@@ -14,11 +14,11 @@ describe('List', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Mutable.config.freezeInstance = true;
+                mu.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Mutable.config.freezeInstance = false;
+                mu.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {
@@ -34,11 +34,11 @@ describe('List', function() {
         describe('as field on data object', function() {
             var GroupType;
             beforeEach(() => {
-                GroupType = Mutable.define('GroupType', {
+                GroupType = mu.define('GroupType', {
                     spec: function() {
                         return {
-                            title: Mutable.String,
-                            users: Mutable.List.of(UserType)
+                            title: mu.String,
+                            users: mu.List.of(UserType)
                         };
                     }
                 });
@@ -47,7 +47,7 @@ describe('List', function() {
             it('Should be modified from json ', function() {
                 var groupData = new GroupType();
 
-                groupData.users = Mutable.List.of(UserType).create([
+                groupData.users = mu.List.of(UserType).create([
                     { 'name': 'tom', 'age': 25 },
                     { 'name': 'omri', 'age': 35 }
                 ]);

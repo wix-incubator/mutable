@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 
-import * as Mutable from '../../../src';
+import * as mu from '../../../src';
 import {getMobxLogOf} from '../../../test-kit/test-drivers';
 
 import * as builders from '../builders';
@@ -28,10 +28,10 @@ function testReadFunctionality(builders, isReadonly) {
 
         describe("with global freeze config", () => {
             before("set global freeze configuration", () => {
-                Mutable.config.freezeInstance = true;
+                mu.config.freezeInstance = true;
             });
             after("clear global freeze configuration", () => {
-                Mutable.config.freezeInstance = false;
+                mu.config.freezeInstance = false;
             });
             it("should throw error on unknown field setter", () => {
                 var numbers = builders.aNumberMap();
@@ -44,11 +44,11 @@ function testReadFunctionality(builders, isReadonly) {
         describe('as field on data object', () => {
             var GroupType;
             before(() => {
-                GroupType = Mutable.define('GroupType', {
+                GroupType = mu.define('GroupType', {
                     spec: function() {
                         return {
-                            title: Mutable.String,
-                            users: Mutable.Es5Map.of(builders.UserType)
+                            title: mu.String,
+                            users: mu.Es5Map.of(builders.UserType)
                         };
                     }
                 });
@@ -58,7 +58,7 @@ function testReadFunctionality(builders, isReadonly) {
             });
             it('Should be modified from json ', () => {
                 var groupData = new GroupType();
-                groupData.users = Mutable.Es5Map.of(builders.UserType).create({
+                groupData.users = mu.Es5Map.of(builders.UserType).create({
                     tom: { 'name': 'tom', 'age': 25 },
                     omri: { 'name': 'omri', 'age': 35 }
                 });
@@ -101,7 +101,7 @@ function testReadFunctionality(builders, isReadonly) {
 
             it('should call toJS on values that implement it', function(){
                 const serializableType = builders.UserType;
-                const Es5Map = Mutable.Es5Map.of(serializableType);
+                const Es5Map = mu.Es5Map.of(serializableType);
 
                 const serializableItem = new serializableType();
                 serializableItem.toJS = () => 'called';
@@ -161,7 +161,7 @@ function testReadFunctionality(builders, isReadonly) {
                         numbers.delete('a');
                         expect(numbers.toJSON()).to.eql({});
                     });
-                    it('should support a mutable object as an argument', () => {
+                    it('should support a mu object as an argument', () => {
                         usersMap.delete('userA');
                         expect(usersMap.toJSON(false)).to.eql({userB});
                     });
@@ -255,7 +255,7 @@ function testReadFunctionality(builders, isReadonly) {
                     numbers.set('a', 42);
                     expect(numbers.toJSON()).to.eql({ a: 42 });
                 });
-                it('should support a mutable object as an argument', () => {
+                it('should support a mu object as an argument', () => {
                     usersMap.set('userA', userB).set('userB', userB).set('userA', userA);
                     expect(usersMap.toJSON(false)).to.eql({userB, userA});
                 });
@@ -263,7 +263,7 @@ function testReadFunctionality(builders, isReadonly) {
                     let map, manager, child;
                     beforeEach(()=>{
                         manager = new LifeCycleManager();
-                        map = new Mutable.Es5Map.of(builders.UserType)({child});
+                        map = new mu.Es5Map.of(builders.UserType)({child});
                         map.$setManager(manager);
                         child = new builders.UserType();
                         sinon.spy(child, '$setManager');
@@ -329,7 +329,7 @@ function testReadFunctionality(builders, isReadonly) {
                         let map, manager, child;
                         beforeEach(()=>{
                             manager = new LifeCycleManager();
-                            map = new Mutable.Es5Map.of(builders.UserType)({child});
+                            map = new mu.Es5Map.of(builders.UserType)({child});
                             map.$setManager(manager);
                             child = new builders.UserType();
                             sinon.spy(child, '$setManager');
@@ -389,7 +389,7 @@ function testReadFunctionality(builders, isReadonly) {
                         let map, manager, child;
                         beforeEach(()=>{
                             manager = new LifeCycleManager();
-                            map = new Mutable.Es5Map.of(builders.UserType)({child});
+                            map = new mu.Es5Map.of(builders.UserType)({child});
                             map.$setManager(manager);
                             child = new builders.UserType();
                             sinon.spy(child, '$setManager');

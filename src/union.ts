@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-import {NonPrimitive, defineNonPrimitive} from './non-primitive';
+import {MuBase, defineNonPrimitive} from './base';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
 import {toString, toUnwrappedString} from './generic-types';
-import {Type, Class, cast, ErrorDetails, ErrorContext, ClassOptions, Mutable, CompositeType} from "./types";
+import {Type, ClassType, cast, ErrorDetails, ErrorContext, ClassOptions} from "./types";
 import {AtomYielder, DirtyableYielder} from "./lifecycle";
-const MAILBOX = getMailBox('Mutable.Union');
+const MAILBOX = getMailBox('mutable.Union');
 
 function getTypeName(type:Type<any, any>):string {
     let result = type.id || type.name || type.id;
@@ -20,7 +20,7 @@ function getTypeName(type:Type<any, any>):string {
     return result;
 }
 
-export default class Union extends NonPrimitive<any> {
+export default class Union extends MuBase<any> {
 
     static defaults() {
         if (!this.options || !this.options.subTypes) {
@@ -47,22 +47,21 @@ export default class Union extends NonPrimitive<any> {
         }
     }
 
-    static allowPlainVal(this:Class<any>, value:any, errorDetails?:ErrorDetails) {
+    static allowPlainVal(this:ClassType<any>, value:any, errorDetails?:ErrorDetails) {
         return validateNullValue(this, value) ||
             !!(this.options && this.options.subTypes &&
             this.options.subTypes.some(typeDef => typeDef.allowPlainVal(value, errorDetails)))
     }
 
     static validate(value:any):value is any {
-        const _this = cast<Class<any>>(this);
-        return validateNullValue(_this, value) ||
-            !!(_this.options && _this.options.subTypes &&
-            _.some(_this.options.subTypes, (typeDef) => {
+        return validateNullValue(this, value) ||
+            !!(this.options && this.options.subTypes &&
+            _.some(this.options.subTypes, (typeDef) => {
                 return typeDef.validate(value);
             }));
     }
 
-    static _matchValue(this:Class<any>, value:any, errorContext?:ErrorContext){
+    static _matchValue(this:ClassType<any>, value:any, errorContext?:ErrorContext){
         if (!this.options || !this.options.subTypes) {
             MAILBOX.error('Untyped Unions are not supported. please state union of types in the format string|number');
         } else if(!this.isNullable() || value !== null) {
@@ -72,11 +71,10 @@ export default class Union extends NonPrimitive<any> {
     }
 
     static validateType(value:any):value is any {
-        const _this = cast<Class<any>>(this);
-        return (_this.options && _this.options.subTypes &&
-            _.some(_this.options.subTypes, (typeDef) => {
+        return (this.options && this.options.subTypes &&
+            _.some(this.options.subTypes, (typeDef) => {
                 return typeDef.validateType(value);
-            })) || validateNullValue(_this, value);
+            })) || validateNullValue(this, value);
     }
 
     static cloneValue(value:any) {
@@ -100,10 +98,9 @@ export default class Union extends NonPrimitive<any> {
             }
         }
     }
-
-    static preConstructor(){
+    constructor(value?:null, options?:ClassOptions, errorContext?:ErrorContext){
         MAILBOX.error('Instantiating a union type is not supported');
-        super.preConstructor();
+        super(value, options, errorContext);
     }
 
     $dirtyableElementsIterator(yielder: DirtyableYielder): void {MAILBOX.error('Instantiating a union type is not supported');}

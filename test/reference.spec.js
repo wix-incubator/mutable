@@ -1,20 +1,18 @@
-import * as sinon from 'sinon';
 import {expect} from 'chai';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR}  from '../test-kit/test-drivers/reports';
-import testKit from "../test-kit";
-import * as Mutable from '../src';
+import * as mu from '../src';
 
 function defineRef(def, id) {
-    return Mutable.define(id || 'unnamedRefType', {
+    return mu.define(id || 'unnamedRefType', {
         spec: function() {
             return def;
         }
-    }, Mutable.Reference);
+    }, mu.Reference);
 }
 
 function defineType(def, id) {
-    return Mutable.define(id || 'unnamedRefType', {
+    return mu.define(id || 'unnamedRefType', {
         spec: function() {
             return def;
         }
@@ -26,7 +24,7 @@ describe("reference type", function() {
     describe('initial value', function() {
 
         it('should warn and ignore value when value has missing fields', function() {
-            var RefType = defineRef({ name: Mutable.String, age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ name: mu.String, age: mu.Number }, 'MyRefType');
             var typeIns;
 
             expect(function() {
@@ -37,7 +35,7 @@ describe("reference type", function() {
         });
 
         it('should warn and ignore value when value does not fit the interface', function() {
-            var RefType = defineRef({ name: Mutable.String, age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ name: mu.String, age: mu.Number }, 'MyRefType');
             var typeIns;
 
             expect(function() {
@@ -48,7 +46,7 @@ describe("reference type", function() {
         });
 
         it('should keep the original value reference', function() {
-            var RefType = defineRef({ age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ age: mu.Number }, 'MyRefType');
             var inputRef = { age: 30 };
 
             var typeIns = new RefType(inputRef);
@@ -58,7 +56,7 @@ describe("reference type", function() {
 
         it('should accept none object classes', function() {
             var MyClass = function() { this.age = 35; };
-            var RefType = defineRef({ age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ age: mu.Number }, 'MyRefType');
             var inputRef = new MyClass();
 
             var typeIns = new RefType(inputRef);
@@ -67,9 +65,9 @@ describe("reference type", function() {
         });
 
         it('should keep the original value reference (from defaults of complex list)', function() {
-            var RefType = defineRef({ age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ age: mu.Number }, 'MyRefType');
             var defaultInputRef = { age: 30 };
-            var listOfRef = Mutable.List.of(RefType).withDefault([defaultInputRef]);
+            var listOfRef = mu.List.of(RefType).withDefault([defaultInputRef]);
 
             var listIns = new listOfRef();
 
@@ -78,9 +76,9 @@ describe("reference type", function() {
 
         it('should accept non-object classes (in list)', function() {
             var MyClass = function() { this.age = 35; };
-            var RefType = defineRef({ age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ age: mu.Number }, 'MyRefType');
             var defaultInputRef = new MyClass();
-            var listOfRef = Mutable.List.of(RefType);
+            var listOfRef = mu.List.of(RefType);
 
             var listIns = new listOfRef([defaultInputRef]);
 
@@ -88,7 +86,7 @@ describe("reference type", function() {
         });
 
         it('should keep original value reference (from defaults of complex type)', function() {
-            var RefType = defineRef({ age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ age: mu.Number }, 'MyRefType');
             var MyType = defineType({ ref: RefType }, 'MyType');
             var myRef = { age: 1 };
             var T = MyType.withDefault({
@@ -102,7 +100,7 @@ describe("reference type", function() {
 
         it('should accept non-object classes (in complex type)', function() {
             var MyClass = function() { this.age = 35; };
-            var RefType = defineRef({ age: Mutable.Number }, 'MyRefType');
+            var RefType = defineRef({ age: mu.Number }, 'MyRefType');
             var defaultInputRef = new MyClass();
             var MyType = defineType({ ref: RefType }, 'MyType');
 
@@ -116,7 +114,7 @@ describe("reference type", function() {
     describe('get field', function() {
 
         it('should proxy according to spec', function() {
-            var RefType = defineRef({ zagzag: Mutable.String, count: Mutable.Number });
+            var RefType = defineRef({ zagzag: mu.String, count: mu.Number });
             var value = { zagzag: "001", count: 5 };
 
             var typeIns = new RefType(value);
@@ -128,7 +126,7 @@ describe("reference type", function() {
         });
 
         it.skip('ask ido about problem with id', function() {
-            var RefType = defineRef({ id: Mutable.String, count: Mutable.Number });
+            var RefType = defineRef({ id: mu.String, count: mu.Number });
             var value = { id: "001", count: 5 };
 
             var typeIns = new RefType(value);
@@ -140,7 +138,7 @@ describe("reference type", function() {
         });
 
         it('should prevent access to none spec fields', function() {
-            var RefType = defineRef({ knownField: Mutable.Number });
+            var RefType = defineRef({ knownField: mu.Number });
             var value = { knownField: 5, UNKNOWN_FIELD: 6 };
 
             var typeIns = new RefType(value);
@@ -153,7 +151,7 @@ describe("reference type", function() {
     describe('set field', function() {
 
         it('should set the proxy value', function() {
-            var RefType = defineRef({ zagzag: Mutable.String, count: Mutable.Number });
+            var RefType = defineRef({ zagzag: mu.String, count: mu.Number });
             var value = { zagzag: "001", count: 5 };
             var typeIns = new RefType(value);
 
@@ -165,7 +163,7 @@ describe("reference type", function() {
         });
 
         it('should no set the proxy value for non spec value', function() {
-            var RefType = defineRef({ id: Mutable.String }, 'ParentType');
+            var RefType = defineRef({ id: mu.String }, 'ParentType');
             var value = { id: "001" };
             var typeIns = new RefType(value);
 
@@ -175,8 +173,8 @@ describe("reference type", function() {
             expect(value.id).to.equal("001");
         });
         it('should no set the proxy value for non spec value with complex values', function() {
-            var RefType = defineRef({ id: Mutable.String }, 'ParentType');
-            var RefType2 = defineRef({ id: Mutable.String }, 'ChildType');
+            var RefType = defineRef({ id: mu.String }, 'ParentType');
+            var RefType2 = defineRef({ id: mu.String }, 'ChildType');
             var value = { id: "001" };
             var typeIns = new RefType(value);
 
@@ -186,7 +184,7 @@ describe("reference type", function() {
             expect(value.id).to.equal("001");
         });
         it('should no set the proxy value for read only copy', function() {
-            var RefType = defineRef({ id: Mutable.String });
+            var RefType = defineRef({ id: mu.String });
             var value = { id: "001" };
             var typeReadOnlyIns = new RefType(value).$asReadOnly();
 
@@ -200,12 +198,12 @@ describe("reference type", function() {
     describe('allowPlainVal', function() {
 
         it('should accept any value that has the spec interface', function(){
-            var RefType = defineRef({ id:Mutable.String });
+            var RefType = defineRef({ id:mu.String });
             expect(RefType.allowPlainVal({id:"001", foo:5}, {path:'foo'})).to.be.true;
         });
 
         it('should not accept any value that does not have the spec interface', function(){
-            var RefType = defineRef({ id:Mutable.String });
+            var RefType = defineRef({ id:mu.String });
             expect(RefType.allowPlainVal({}, {path:'foo'})).to.be.false;
         });
     });
@@ -214,7 +212,7 @@ describe("reference type", function() {
 
         let Type1, Type2;
         before('define types', () => {
-            Type1 = defineRef({ id:Mutable.String }, 'Type1');
+            Type1 = defineRef({ id:mu.String }, 'Type1');
             Type2 = aDataTypeWithSpec({ ref: Type1 }, 'Type2');
         });
 
@@ -226,5 +224,5 @@ describe("reference type", function() {
             expect(() => new Type2({ref:{foo:5}})).to.report(ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR("Type2.ref", "Type1", "object"));
         });
     });
-    
+
 });
