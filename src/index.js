@@ -22,7 +22,7 @@ function isClass(type) {
     return isMutable(type);
 }
 function isEnum(type) {
-    return isMutable(type) && cls.name === 'EnumType';
+    return type.name === 'EnumType';
 }
 function isNullable(type) {
     return type.options && type.options.nullable;
