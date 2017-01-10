@@ -25,7 +25,7 @@ function isEnum(type) {
     return isMutable(type) && cls.name === 'EnumType';
 }
 function isNullable(type) {
-    return isMutable(type) &&type.options && type.options.nullable;
+    return type.options && type.options.nullable;
 }
 
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
