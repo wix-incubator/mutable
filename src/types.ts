@@ -89,14 +89,14 @@ export interface BaseType<T extends Mutable<S>|null, S> extends Type<T, S> {
 export interface Spec{
     [fieldName:string] : Type<any, any>;
 }
-export function isClass(type:any):type is ClassType<any>{
+export function isClass(type:any):type is Class<any>{
     return type && type._spec && isBaseType(type);
 }
 
 export interface ReferenceType<T>{
     new(provider:() => any, path:Array<string|number>):T
 }
-export interface ClassType<T> extends BaseType<T & Mutable<T>, T> {
+export interface Class<T> extends BaseType<T & Mutable<T>, T> {
     wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
     _spec:Spec;
     getFieldsSpec():Spec;

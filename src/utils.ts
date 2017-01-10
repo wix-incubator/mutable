@@ -3,7 +3,7 @@ import {default as config} from './config';
 import {getMailBox} from 'escalate';
 const MAILBOX = getMailBox('mutable.utils');
 
-import {Type, DeepPartial, ClassOptions, ErrorContext, Mutable, ClassType, CtorArgs, cast} from "./types";
+import {Type, DeepPartial, ClassOptions, ErrorContext, Mutable, Class, CtorArgs, cast} from "./types";
 
 export function isDevMode(){
     return config.devMode;
@@ -111,7 +111,7 @@ export function cloneType<R extends Type<T, S>, T extends Mutable<S>|null, S>(id
     return type;
 }
 
-export function getFieldDef(type:ClassType<any>, fieldName:string):Type<any, any> {
+export function getFieldDef(type:Class<any>, fieldName:string):Type<any, any> {
     return type._spec[fieldName];
 }
 
@@ -137,7 +137,7 @@ export function getValueFromRootRef(rootReference: () => any, path: Array<string
     return value;
 }
 
-export function getReferenceWrapper<T>(thisType: ClassType<any>, fieldDef: Type<T, any>, rootReference: () => any, path: Array<string|number>, value: any):T {
+export function getReferenceWrapper<T>(thisType: Class<any>, fieldDef: Type<T, any>, rootReference: () => any, path: Array<string|number>, value: any):T {
     const fieldErrorContext = thisType.createErrorContext('get reference error', 'error');
     return fieldDef._matchValue(value, fieldErrorContext).byReference(rootReference, path);
 }

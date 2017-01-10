@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {Type, ClassType} from "../src/types";
+import {Type, Class} from "../src/types";
 import * as mutable from '../src';
 
 
@@ -70,7 +70,7 @@ function complianceContract<F>(fieldDef:Type<F, any>, subTypes:Array<Type<any, a
         let instance: Fields;
         before('define type', () => {
             const ContainerClass = mutable.define<Fields>('ContainerClass', {
-                spec: (self:ClassType<any>) => ({field:fieldDef})
+                spec: (self:Class<any>) => ({field:fieldDef})
             });
             instance = new ContainerClass();
         });

@@ -20,6 +20,7 @@ import {MuObject} from "./object";
 import {MuBase} from "./base";
 import {isType} from "./types";
 
+// TODO export isType itself
 export function isAny(type:any) {
     return isType(type);
 }

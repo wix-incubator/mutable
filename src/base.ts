@@ -9,12 +9,12 @@ import {isDataMatching} from './type-match';
 import {
     Mutable, DeepPartial, ClassOptions, ErrorContext,
     Type, BaseType, ReadonlyMutable, ErrorMessage,
-    isType, isBaseType, ReferenceType, ClassType
+    isType, isBaseType, ReferenceType, Class
 } from "./types";
 import {Level} from "escalate";
 import {defineClass} from './define-type';
 
-let DefaultClass: ClassType<{}|null>|null = null;
+let DefaultClass: Class<{}|null>|null = null;
 export function defaultNonPrimitive(value:any){
     if (!DefaultClass){
         // lazy class definition because `defineClass` is a circular reference

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {MuBase, defineNonPrimitive, defaultNonPrimitive} from "./base";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, ClassType, BaseType} from "./types";
+import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, BaseType} from "./types";
 import {getMailBox} from "escalate";
 import {clone, getFieldDef, shouldAssign, getPrimeType} from "./utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "./validation";
@@ -10,8 +10,8 @@ import {optionalSetManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 
 const MAILBOX = getMailBox('mutable.MuObject');
 
-function getClass<T>(inst:MuObject<T>): ClassType<T>{
-    return inst.constructor as ClassType<T>;
+function getClass<T>(inst:MuObject<T>): Class<T>{
+    return inst.constructor as Class<T>;
 }
 
 export class MuObject<T> extends MuBase<T>{

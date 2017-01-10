@@ -4,7 +4,7 @@ import {MuBase, defineNonPrimitive} from './base';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
 import {toString, toUnwrappedString} from './generic-types';
-import {Type, ClassType, cast, ErrorDetails, ErrorContext, ClassOptions} from "./types";
+import {Type, Class, cast, ErrorDetails, ErrorContext, ClassOptions} from "./types";
 import {AtomYielder, DirtyableYielder} from "./lifecycle";
 const MAILBOX = getMailBox('mutable.Union');
 
@@ -47,7 +47,7 @@ export default class Union extends MuBase<any> {
         }
     }
 
-    static allowPlainVal(this:ClassType<any>, value:any, errorDetails?:ErrorDetails) {
+    static allowPlainVal(this:Class<any>, value:any, errorDetails?:ErrorDetails) {
         return validateNullValue(this, value) ||
             !!(this.options && this.options.subTypes &&
             this.options.subTypes.some(typeDef => typeDef.allowPlainVal(value, errorDetails)))
@@ -61,7 +61,7 @@ export default class Union extends MuBase<any> {
             }));
     }
 
-    static _matchValue(this:ClassType<any>, value:any, errorContext?:ErrorContext){
+    static _matchValue(this:Class<any>, value:any, errorContext?:ErrorContext){
         if (!this.options || !this.options.subTypes) {
             MAILBOX.error('Untyped Unions are not supported. please state union of types in the format string|number');
         } else if(!this.isNullable() || value !== null) {
