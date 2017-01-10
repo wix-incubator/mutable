@@ -15,6 +15,10 @@ import {LifeCycleManager} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
 import {either} from './generic-types';
 
+function isMutable(type) {
+    return type.prototype instanceof BaseType;
+}
+
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
     this;
@@ -25,10 +29,13 @@ if (globalCtx.__Mutable){
     module.exports = globalCtx.__Mutable = {
         config,
         define,
-        BaseType,
-        NonPrimitive: BaseType,
-        BaseClass: BaseType,
-        PrimitiveBase,
+        Any:PrimitiveBase,
+        PrimitiveBase, // deprecated
+        BaseType, // deprecated
+        NonPrimitive: BaseType, // deprecated
+        Base: BaseType,
+        BaseClass: BaseType, // deprecated
+        Object: BaseType,
         String,
         Boolean,
         Number,
@@ -36,12 +43,13 @@ if (globalCtx.__Mutable){
         Function,
         Reference,
         validation,
+        Es5Map, // deprecated
         Map: Es5Map,
-        Es5Map,
         PropsBase,
         LifeCycleManager,
         defineEnum,
         EnumBase,
-        either
+        either,
+        isMutable
     };
 }
