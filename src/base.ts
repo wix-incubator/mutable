@@ -8,8 +8,8 @@ import {validateValue} from './validation';
 import {isDataMatching} from './type-match';
 import {
     Mutable, DeepPartial, ClassOptions, ErrorContext,
-    Type, BaseType, ReadonlyMutable, ErrorMessage,
-    isType, isBaseType, ReferenceType, Class
+    Type, NonPrimitiveType, ReadonlyMutable, ErrorMessage,
+    isType, isNonPrimitiveType, ReferenceType, Class
 } from "./types";
 import {Level} from "escalate";
 import {defineClass} from './define-type';
@@ -53,7 +53,7 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     static reportFieldDefinitionError(fieldDef:Type<any, any>):ErrorMessage|undefined{
         if (!isType(fieldDef)) {
             return { message: `must be a primitive type or extend core3.Type`, path: '' };
-        } else if (isBaseType(fieldDef)) {
+        } else if (isNonPrimitiveType(fieldDef)) {
             return fieldDef.reportDefinitionErrors();
         }
     }
@@ -77,7 +77,7 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     }
 
 
-    static create<T>(this:BaseType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
+    static create<T>(this:NonPrimitiveType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
         if (MuBase as any === getPrimeType(this)){
             if (typeof this.defaults === 'function'){
                 return defaultNonPrimitive(this.defaults()) as Mutable<T>;
@@ -89,7 +89,7 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
         }
     }
 
-    protected __ctor__ = this.constructor as BaseType<this, T>;
+    protected __ctor__ = this.constructor as NonPrimitiveType<this, T>;
     private __readOnlyInstance__: ReadonlyMutable<T>;
     private __readWriteInstance__: Mutable<T>;
     private __id__: number;
@@ -160,7 +160,7 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     }
 }
 
-export function defineNonPrimitive<T>(id:string, jsClass: BaseType<Mutable<T>, T>){
+export function defineNonPrimitive<T>(id:string, jsClass: NonPrimitiveType<Mutable<T>, T>){
     if (!MuBase.isJsAssignableFrom(jsClass)){
         MAILBOX.fatal(`Type definition error: ${(jsClass as any).id || id} is not a subclass of NonPrimitive`);
     }

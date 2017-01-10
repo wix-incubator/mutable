@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {getReadableValueTypeName} from './utils';
-import {ErrorContext, Type, isClass, isBaseType} from "./types";
+import {ErrorContext, Type, isClass, isNonPrimitiveType} from "./types";
 
 export function misMatchMessage(errorContext:ErrorContext, expected:{id:string}|string, actual:any, overridepath?:string|null, template?:string) {
     const expectedMessage = template ? `expected ${template} of type` : 'expected type';
@@ -8,7 +8,7 @@ export function misMatchMessage(errorContext:ErrorContext, expected:{id:string}|
 }
 
 export function isAssignableFrom(toType:Type<any, any>, type:Type<any, any>) {
-    return type && toType && (type.id === toType.id || (isBaseType(type) && type.ancestors && _.includes(type.ancestors, toType.id)));
+    return type && toType && (type.id === toType.id || (isNonPrimitiveType(type) && type.ancestors && _.includes(type.ancestors, toType.id)));
 }
 
 export function isNullable(type:Type<any, any>) {

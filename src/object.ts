@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {MuBase, defineNonPrimitive, defaultNonPrimitive} from "./base";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, BaseType} from "./types";
+import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, NonPrimitiveType} from "./types";
 import {getMailBox} from "escalate";
 import {clone, getFieldDef, shouldAssign, getPrimeType} from "./utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "./validation";
@@ -120,7 +120,7 @@ export class MuObject<T> extends MuBase<T>{
         return observable(newValue);
     }
 
-    static create<T>(this:BaseType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext){
+    static create<T>(this:NonPrimitiveType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext){
         if (MuObject as any === getPrimeType(this)){
             return defaultNonPrimitive(this.defaults());
         } else {

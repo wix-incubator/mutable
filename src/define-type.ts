@@ -1,4 +1,4 @@
-import {Spec, Type, Class, isBaseType, ReferenceType, Mutable} from './types';
+import {Spec, Type, Class, isNonPrimitiveType, ReferenceType, Mutable} from './types';
 import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
 import {forEach, isFunction, extend} from 'lodash';
@@ -100,7 +100,7 @@ function generateSpec(id:string, spec:Schema, baseSpec:Spec) {
 function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>) {
     const complex:Array<string> = [];
     for (let k in spec) {
-        if (isBaseType(spec[k])) {
+        if (isNonPrimitiveType(spec[k])) {
             complex[complex.length] = k;
         }
     }

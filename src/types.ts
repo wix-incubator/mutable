@@ -43,7 +43,7 @@ export type Mutable<T> = MutableObj<T>;// & T;
 export type ReadonlyMutable<T> = Mutable<Readonly<T>>;
 
 export interface MutableObj<T>{
-  //  constructor:BaseType<Mutable<T>, T>;
+  //  constructor:NonPrimitiveType<Mutable<T>, T>;
     toJS(typed?:boolean):T;
     toJSON(recursive?:boolean, typed?:boolean):T;
     $isDirtyable():boolean;
@@ -60,7 +60,7 @@ export interface MutableObj<T>{
 
 type DefaultSource<T> = (()=>DeepPartial<T>)|DeepPartial<T>;
 
-export function isBaseType(type:any):type is BaseType<any, any>{
+export function isNonPrimitiveType(type:any):type is NonPrimitiveType<any, any>{
     return type && type.byReference && MuBase.isJsAssignableFrom(type);
 }
 
@@ -69,7 +69,7 @@ export function isBaseType(type:any):type is BaseType<any, any>{
 export type CtorArgs<T extends Mutable<S>|null, S> = [T|DeepPartial<S>|undefined, ClassOptions|undefined, ErrorContext|undefined];
 
 // obj / list / map
-export interface BaseType<T extends Mutable<S>|null, S> extends Type<T, S> {
+export interface NonPrimitiveType<T extends Mutable<S>|null, S> extends Type<T, S> {
     ancestors : string[];
     prototype:T;
     createErrorContext(entryPoint:string, level:Level):ErrorContext;
@@ -90,13 +90,13 @@ export interface Spec{
     [fieldName:string] : Type<any, any>;
 }
 export function isClass(type:any):type is Class<any>{
-    return type && type._spec && isBaseType(type);
+    return type && type._spec && isNonPrimitiveType(type);
 }
 
 export interface ReferenceType<T>{
     new(provider:() => any, path:Array<string|number>):T
 }
-export interface Class<T> extends BaseType<T & Mutable<T>, T> {
+export interface Class<T> extends NonPrimitiveType<T & Mutable<T>, T> {
     wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
     _spec:Spec;
     getFieldsSpec():Spec;
