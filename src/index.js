@@ -15,6 +15,10 @@ import {LifeCycleManager} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
 import {either} from './generic-types';
 
+function isMutable(type) {
+    return type.prototype instanceof BaseType;
+}
+
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
     this;
@@ -45,6 +49,7 @@ if (globalCtx.__Mutable){
         LifeCycleManager,
         defineEnum,
         EnumBase,
-        either
+        either,
+        isMutable
     };
 }
