@@ -18,7 +18,11 @@ export {either} from './generic-types';
 import {globalModule, globalModuleMiss} from './singleton-module';
 import {MuObject} from "./object";
 import {MuBase} from "./base";
+import {isType} from "./types";
 
+export function isAny(type:any) {
+    return isType(type);
+}
 export function isMutable(type:any) {
     return type.prototype instanceof MuBase;
 }
