@@ -16,6 +16,21 @@ export {LifeCycleManager} from './lifecycle';
 export {defineEnum, EnumBase} from './define-enum';
 export {either} from './generic-types';
 import {globalModule, globalModuleMiss} from './singleton-module';
+import {MuObject} from "./object";
+import {MuBase} from "./base";
+
+export function isMutable(type:any) {
+    return type.prototype instanceof MuBase;
+}
+export function isClass(type:any) {
+    return type.prototype instanceof MuObject;
+}
+export function isEnum(type:any) {
+    return type.name === 'EnumType';
+}
+export function isNullable(type:any) {
+    return type.options && type.options.nullable;
+}
 
 declare const module: {exports:any};
 if (!globalModuleMiss){
