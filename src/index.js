@@ -15,6 +15,10 @@ import {LifeCycleManager} from './lifecycle';
 import {defineEnum, EnumBase} from './define-enum';
 import {either} from './generic-types';
 
+
+function isAny(type) {
+    return type.prototype instanceof PrimitiveBase;
+}
 function isMutable(type) {
     return type.prototype instanceof BaseType;
 }
@@ -62,6 +66,7 @@ if (globalCtx.__Mutable){
         isMutable,
         isClass,
         isEnum,
-        isNullable
+        isNullable,
+        isAny
     };
 }
