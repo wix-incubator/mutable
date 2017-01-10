@@ -18,6 +18,15 @@ import {either} from './generic-types';
 function isMutable(type) {
     return type.prototype instanceof BaseType;
 }
+function isClass(type) {
+    return isMutable(type);
+}
+function isEnum(type) {
+    return isMutable(type) && cls.name === 'EnumType';
+}
+function isNullable(type) {
+    return isMutable(type) &&type.options && type.options.nullable;
+}
 
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
@@ -50,6 +59,9 @@ if (globalCtx.__Mutable){
         defineEnum,
         EnumBase,
         either,
-        isMutable
+        isMutable,
+        isClass,
+        isEnum,
+        isNullable
     };
 }
