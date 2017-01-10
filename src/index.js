@@ -26,11 +26,11 @@ if (globalCtx.__Mutable){
         config,
         define,
         Any:PrimitiveBase,
-        PrimitiveBase,
-        BaseType,
-        NonPrimitive: BaseType,
+        PrimitiveBase, // deprecated
+        BaseType, // deprecated
+        NonPrimitive: BaseType, // deprecated
         Base: BaseType,
-        BaseClass: BaseType,
+        BaseClass: BaseType, // deprecated
         Object: BaseType,
         String,
         Boolean,
@@ -39,7 +39,7 @@ if (globalCtx.__Mutable){
         Function,
         Reference,
         validation,
-        Es5Map,
+        Es5Map, // deprecated
         Map: Es5Map,
         PropsBase,
         LifeCycleManager,
