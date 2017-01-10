@@ -59,6 +59,9 @@ if (globalCtx.__Mutable){
         defineEnum,
         EnumBase,
         either,
-        isMutable
+        isMutable,
+        isClass,
+        isEnum,
+        isNullable
     };
 }
