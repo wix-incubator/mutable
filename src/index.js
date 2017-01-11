@@ -17,19 +17,19 @@ import {either} from './generic-types';
 
 
 function isAny(type) {
-    return type.prototype instanceof PrimitiveBase;
+    return type && type.prototype instanceof PrimitiveBase;
 }
 function isMutable(type) {
-    return type.prototype instanceof BaseType;
+    return type && type.prototype instanceof BaseType;
 }
 function isClass(type) {
     return isMutable(type);
 }
 function isEnum(type) {
-    return type.name === 'EnumType';
+    return type && type.name === 'EnumType';
 }
 function isNullable(type) {
-    return type.options && type.options.nullable;
+    return type && type.options && type.options.nullable;
 }
 
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
