@@ -32,6 +32,7 @@ function isNullable(type) {
     return type && type.options && type.options.nullable;
 }
 
+
 const globalCtx = (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
     this;
