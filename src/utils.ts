@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {default as config} from './config';
 import {getMailBox} from 'escalate';
-const MAILBOX = getMailBox('Mutable.utils');
+const MAILBOX = getMailBox('mutable.utils');
 
 import {Type, DeepPartial, ClassOptions, ErrorContext, Mutable, Class, CtorArgs, cast} from "./types";
 
@@ -65,29 +65,34 @@ function anonymousInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id
                 superArgsMutator ? superArgsMutator(type, value, options, errorContext) : [value, options, errorContext]
             ) || this;
     }
-    __extends(Type, parent);
     return type;
 }
 const classNameRegExp = /^(?:[\$A-Z_a-z])(?:[\$0-9A-Z_a-z])*$/;
 const unionClassDelimitter = /\|/gi;
 
 function namedInherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, parent:R, superArgsMutator?:PreSuperFunction<R, T, S>):R{
-    id = id.replace(unionClassDelimitter, '_or_');
-    if (!classNameRegExp.test(id)){
-        MAILBOX.info(`illegal class name "${id}", using "Type" instead`);
-        id = 'Type';
+    let safeId = id.replace(unionClassDelimitter, '_or_');
+    if (!classNameRegExp.test(safeId)){
+        MAILBOX.info(`illegal class name "${safeId}", using "Type" instead`);
+        safeId = 'Type';
     }
-    const type = cast<R>(new Function('parent', 'superArgsMutator', `return function ${id}(value, options, errorContext) {
-    return parent.${superArgsMutator ? `apply(this, superArgsMutator(${id}, value, options, errorContext))` : 'call(this, value, options, errorContext)'} || this;
+    const type = cast<R>(new Function('parent', 'superArgsMutator', `return function ${safeId}(value, options, errorContext) {
+    return parent.${superArgsMutator ? `apply(this, superArgsMutator(${safeId}, value, options, errorContext))` : 'call(this, value, options, errorContext)'} || this;
     };`)(parent, superArgsMutator));
-    __extends(type, parent);
     return type;
 }
 
 export function shouldAssign(a:any, b:any){
     return b !== undefined && a !== b && !(_.isNaN(a) && _.isNaN(b));
 }
-export const inherit = isDevMode() ? namedInherit : anonymousInherit;
+const makeSuper = isDevMode() ? namedInherit : anonymousInherit;
+export function inherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, parent:R, superArgsMutator?:PreSuperFunction<R, T, S>):R{
+    const type = makeSuper(id, parent, superArgsMutator);
+    __extends(type, parent);
+    type.__proto__ = Object.create(parent); // inherit static properties of parent's prototype
+    return type;
+
+}
 
 function clonedPreSuper<R extends Type<T, S>, T extends Mutable<S>|null, S>(type:R, value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext){
     return [value === undefined ? type.defaults() : value,

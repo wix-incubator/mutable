@@ -1,19 +1,19 @@
 import {expect} from 'chai';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
-import * as Mutable from '../src';
+import * as mu from '../src';
 import * as sinon from 'sinon';
 
 describe('reference', () => {
     let Type1, Root, reference, state;
     before(() => {
-        Type1 = aDataTypeWithSpec({ foo: Mutable.String }, 'Type1');
+        Type1 = aDataTypeWithSpec({ foo: mu.String }, 'Type1');
         Root = aDataTypeWithSpec({
-            foo: Mutable.String,
+            foo: mu.String,
             complex: Type1,
-            listFoo: Mutable.List.of(Mutable.String),
-            listComplex: Mutable.List.of(Type1),
-            mapFoo: Mutable.Es5Map.of(Mutable.String),
-            mapComplex: Mutable.Es5Map.of(Type1)
+            listFoo: mu.List.of(mu.String),
+            listComplex: mu.List.of(Type1),
+            mapFoo: mu.Es5Map.of(mu.String),
+            mapComplex: mu.Es5Map.of(Type1)
         }, 'Root');
     });
 
@@ -78,7 +78,7 @@ describe('reference', () => {
         describe('list of primitive property', () => {
             it ('has correct value', () => {
                 const list = rootRef.listFoo;
-                expect(list).to.be.instanceOf(Mutable.List);
+                expect(list).to.be.instanceOf(mu.List);
                 expect(reference).to.have.been.calledOnce;
                 expect(list.at(0)).to.eql('foo');
                 expect(list.toJS()).to.eql(['foo', 'bar', 'baz']);
@@ -94,7 +94,7 @@ describe('reference', () => {
         describe('list of complex property', () => {
             it ('has correct value', () => {
                 const list = rootRef.listComplex;
-                expect(list).to.be.instanceOf(Mutable.List);
+                expect(list).to.be.instanceOf(mu.List);
                 expect(reference).to.have.been.calledOnce;
                 const element = list.at(0);
                 expect(element).to.be.instanceOf(Type1);
@@ -112,7 +112,7 @@ describe('reference', () => {
         describe('map of primitive property', () => {
             it ('has correct value', () => {
                 const map = rootRef.mapFoo;
-                expect(map).to.be.instanceOf(Mutable.Es5Map);
+                expect(map).to.be.instanceOf(mu.Es5Map);
                 expect(reference).to.have.been.calledOnce;
                 expect(map.get('foo')).to.eql(state.mapFoo.foo);
                 expect(map.toJS()).to.eql(state.mapFoo);
@@ -128,7 +128,7 @@ describe('reference', () => {
         describe('map of complex property', () => {
             it ('has correct value', () => {
                 const map = rootRef.mapComplex;
-                expect(map).to.be.instanceOf(Mutable.Map);
+                expect(map).to.be.instanceOf(mu.Map);
                 expect(reference).to.have.been.calledOnce;
                 const element = map.get('foo');
                 expect(element).to.be.instanceOf(Type1);

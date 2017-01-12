@@ -1,8 +1,7 @@
 import {expect} from 'chai';
 import {Report} from 'escalate/dist/test-kit/testDrivers';
-
 import {typeCompatibilityTest} from "../type-compatibility.contract";
-import * as Mutable from '../../src';
+import * as mu from '../../src';
 import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR, ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR} from '../../test-kit/test-drivers/reports';
 import {either} from '../../src/generic-types';
 
@@ -11,56 +10,56 @@ describe("defining", () => {
     describe("a es5map type", () => {
         var UserType, AddressType;
         before('define helper types', () => {
-            UserType = Mutable.define('User', {
+            UserType = mu.define('User', {
                 spec: () => ({
-                    name: Mutable.String.withDefault(''),
-                    age: Mutable.Number.withDefault(10)
+                    name: mu.String.withDefault(''),
+                    age: mu.Number.withDefault(10)
                 })
             });
 
-            AddressType = Mutable.define('Address', {
+            AddressType = mu.define('Address', {
                 spec: () => ({
-                    address: Mutable.String.withDefault(''),
-                    code: Mutable.Number.withDefault(10)
+                    address: mu.String.withDefault(''),
+                    code: mu.Number.withDefault(10)
                 })
             });
         });
         describe('as es5map<boolean> field', () => {
-            it('should crash if supplied Mutable type as map default', () => {
-                expect(() => Mutable.define('WithMapUser', {
+            it('should crash if supplied mu type as map default', () => {
+                expect(() => mu.define('WithMapUser', {
                     spec: () => ({
-                        map: Mutable.Es5Map.of(Mutable.Boolean).nullable().withDefault(
-                            new Mutable.Es5Map.of(Mutable.Boolean)()
+                        map: mu.Es5Map.of(mu.Boolean).nullable().withDefault(
+                            new mu.Es5Map.of(mu.Boolean)()
                         )
                     })
                 })).to.throw();
             });
             it('should not crash if supplied empty object as map default', () => {
-                expect(() => Mutable.define('WithMapUser', {
+                expect(() => mu.define('WithMapUser', {
                     spec: () => ({
-                        map: Mutable.Es5Map.of(Mutable.Boolean).nullable().withDefault({})
+                        map: mu.Es5Map.of(mu.Boolean).nullable().withDefault({})
                     })
                 })).not.to.throw();
             });
             describe('allowPlainVal', () => {
 
                 it('should accept empty object', () => {
-                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({});
+                    var allowPlainVal = mu.Es5Map.of(mu.Boolean).nullable().allowPlainVal({});
                     expect(allowPlainVal).to.be.true;
                 });
 
                 it('should accept object with _type', () => {
-                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({_type:'string-value'});
+                    var allowPlainVal = mu.Es5Map.of(mu.Boolean).nullable().allowPlainVal({_type:'string-value'});
                     expect(allowPlainVal).to.be.true;
                 });
 
                 it('should accept object with boolean value', () => {
-                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({someKey:true});
+                    var allowPlainVal = mu.Es5Map.of(mu.Boolean).nullable().allowPlainVal({someKey:true});
                     expect(allowPlainVal).to.be.true;
                 });
 
                 it('should not accept object with mismatched types', () => {
-                    var allowPlainVal = Mutable.Es5Map.of(Mutable.Boolean).nullable().allowPlainVal({someKey:'string-value'});
+                    var allowPlainVal = mu.Es5Map.of(mu.Boolean).nullable().allowPlainVal({someKey:'string-value'});
                     expect(allowPlainVal).to.be.false;
                 });
 
@@ -68,24 +67,24 @@ describe("defining", () => {
 
         });
         describe('with default value', () => {
-            typeCompatibilityTest(() => Mutable.Es5Map.of(Mutable.String).withDefault({ lookAtMe: 'im special!' }));
+            typeCompatibilityTest(() => mu.Es5Map.of(mu.String).withDefault({ lookAtMe: 'im special!' }));
         });
         describe("with missing sub-types", () => {
             it('should report error when instantiating vanilla Map', () => {
-                var invalidMapType = Mutable.Es5Map;
-                expect(() => new invalidMapType()).to.report(new Report('error', 'Mutable.Es5Map', `Es5Map constructor: "➠Es5Map" Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>`));
+                var invalidMapType = mu.Es5Map;
+                expect(() => new invalidMapType()).to.report(new Report('error', 'mutable.Es5Map', `Es5Map constructor: "➠Es5Map" Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>`));
             });
             it('should report error when defining Map with zero types', () => {
-            expect(() => { let map = Mutable.Es5Map.of(); new map() }).to.report(new Report('error', 'Mutable.Es5Map', `Es5Map constructor: "➠Es5Map" Missing types for map. Use Es5Map<SomeType>`));
+            expect(() => { let map = mu.Es5Map.of(); new map() }).to.report(new Report('error', 'mutable.Es5Map', `Es5Map constructor: "➠Es5Map" Missing types for map. Use Es5Map<SomeType>`));
             });
             it('should report error when defining Map with invalid subtype', () => {
-                expect(() => { let map = Mutable.Es5Map.of(Mutable.List); new map() }).to.report(new Report('error', 'Mutable.Es5Map', 'Es5Map constructor: "Es5Map<➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
+                expect(() => { let map = mu.Es5Map.of(mu.List); new map() }).to.report(new Report('error', 'mutable.Es5Map', 'Es5Map constructor: "Es5Map<➠List>" Untyped Lists are not supported please state type of list item in the format core3.List<string>'));
             });
         });
 
         describe('with complex value sub-type', () => {
             function typeFactory() {
-                return Mutable.Es5Map.of(AddressType);
+                return mu.Es5Map.of(AddressType);
             }
 
             typeCompatibilityTest(typeFactory);
@@ -117,17 +116,17 @@ describe("defining", () => {
             it('should report error when when json value with unallowed _type is added', function() {
                 expect(() => typeFactory().create([['baga', { _type: 'User' }]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<Address>', 'object with _type User', 'Es5Map'));
             });
-            it('should report error when unallowed mutable key is added', function() {
+            it('should report error when unallowed mu key is added', function() {
                 expect(() => typeFactory().create([[new UserType(), new AddressType()]])).to.report(ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<string>', 'User', 'Es5Map'));
             });
-            it('should report error when unallowed mutable value is added', function() {
+            it('should report error when unallowed mu value is added', function() {
                 expect(() => typeFactory().create([['gaga', new UserType()]])).to.report(ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR('Es5Map<Address>', '<Address>', 'User', 'Es5Map'));
             });
         });
 
         describe('with union value sub-type', () => {
             function typeFactory() {
-                return Mutable.Es5Map.of(either(UserType, AddressType, Mutable.String));
+                return mu.Es5Map.of(either(UserType, AddressType, mu.String));
             }
             typeCompatibilityTest(typeFactory);
             describe("instantiation", function() {
@@ -137,7 +136,7 @@ describe("defining", () => {
                     newUser2 = new UserType();
                     newAddress = new AddressType();
                 });
-                it('should keep mutable objects passed to it that fit its subtypes', function() {
+                it('should keep mu objects passed to it that fit its subtypes', function() {
                     var mixedMap = typeFactory().create([['newUser', newUser], ['newUser2', newAddress]]);
                     expect(mixedMap.get('newUser')).to.equal(newUser);
                     expect(mixedMap.get('newUser2')).to.equal(newAddress);
@@ -152,7 +151,7 @@ describe("defining", () => {
                     expect(map.get('newUser').address).to.equal('gaga');
                 });
                 it('should NOT validate the _type field on JSON value on create() ', function() {
-                    const StringToNumber = Mutable.Es5Map.of(Mutable.Number);
+                    const StringToNumber = mu.Es5Map.of(mu.Number);
                     const json = new StringToNumber({"key1":5}).toJSON(true, true);
                     expect(json._type).to.be.ok;
                     let map;
@@ -162,7 +161,7 @@ describe("defining", () => {
                     expect(map.get('key1')).to.equal(5);
                 });
                 it('should NOT validate the _type field on JSON value on setValue() ', function() {
-                    const StringToNumber = Mutable.Es5Map.of(Mutable.Number);
+                    const StringToNumber = mu.Es5Map.of(mu.Number);
                     const json = new StringToNumber({"key1":5}).toJSON(true, true);
                     expect(json._type).to.be.ok;
                     let map = new StringToNumber();
@@ -172,7 +171,7 @@ describe("defining", () => {
                     expect(map.get('key1')).to.equal(5);
                 });
                 it('should NOT validate the _type field on JSON value on setValueDeep() ', function() {
-                    const StringToNumber = Mutable.Es5Map.of(Mutable.Number);
+                    const StringToNumber = mu.Es5Map.of(mu.Number);
                     const json = new StringToNumber({"key1":5}).toJSON(true, true);
                     expect(json._type).to.be.ok;
                     let map = new StringToNumber();
@@ -189,7 +188,7 @@ describe("defining", () => {
         });
         describe('with value type that is a union of maps', () => {
             function typeFactory() {
-                return Mutable.Es5Map.of(either(Mutable.Es5Map.of(Mutable.String), Mutable.Es5Map.of(Mutable.Number)));
+                return mu.Es5Map.of(either(mu.Es5Map.of(mu.String), mu.Es5Map.of(mu.Number)));
             }
             typeCompatibilityTest(typeFactory);
             describe("instantiation", function() {

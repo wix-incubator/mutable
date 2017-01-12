@@ -2,10 +2,10 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {misMatchMessage, validateNotNullValue} from './validation';
 import {optionalSetManager, LifeCycleManager} from './lifecycle';
-import {PrimitiveBase} from './primitive-base';
-import {Type, ErrorDetails, ErrorContext, Class, CompositeType, isCompositeType, Mutable} from "./types";
+import {Any} from './any';
+import {Type, ErrorDetails, ErrorContext, NonPrimitiveType, isNonPrimitiveType, Mutable} from "./types";
 
-const MAILBOX = getMailBox('Mutable.type-match');
+const MAILBOX = getMailBox('mutable.type-match');
 
 
 export function validateAndWrap<T>(itemValue:any, type:Type<T, any>, lifeCycle:LifeCycleManager|undefined|null, errorContext:ErrorContext, errorTemplate?:string) :T{
@@ -30,12 +30,12 @@ export function isDataMatching(origin:any, other:any):boolean {
 
 export class TypeMatch{
     match:MatchType = matchTypes.MISMATCH;
-    type:Type<any, any> = PrimitiveBase;
+    type:Type<any, any> = Any;
     errorDetails:ErrorDetails;
-    constructor(private value:any, private errorContext:ErrorContext, private errorTemplate?:string){
+    constructor(private value:any, private errorContext?:ErrorContext, private errorTemplate?:string){
         this.errorDetails = {
             path : errorContext? errorContext.path : '',
-            expected: PrimitiveBase,
+            expected: Any,
             actual:this.value
         };
         // TODO: search for _type annotation and create match with global type registry
@@ -45,7 +45,7 @@ export class TypeMatch{
     }
     byReference(provider:() => any, path:Array<string|number>){
         let match, type;
-        if (isCompositeType(this.type)) {
+        if (isNonPrimitiveType(this.type)) {
             return this.match.byReference(provider, path, this.value, this.type, this.errorContext, this.errorTemplate, this.errorDetails);
         } else {
             return this.value;
@@ -74,8 +74,8 @@ export class TypeMatch{
 }
 
 interface MatchType{
-    wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
-    byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
+    wrap<T>(itemValue:any, type:Type<T, any>, errorContext?:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
+    byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:NonPrimitiveType<T, any>, errorContext?:ErrorContext, errorTemplate?:string, errorDetails?:ErrorDetails):T;
     worseThan(o:MatchType):boolean;
     best?:boolean
 }
@@ -87,13 +87,19 @@ interface MatchType{
 const matchTypes = {
     PERFECT : {
         wrap: (itemValue:any) => itemValue,
-        byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any){ return itemValue},
+        byReference<T>(provider:() => any, path:Array<string|number>, itemValue:any){
+            return itemValue
+        },
         worseThan: (o:MatchType) => false,
         best:true
     },
     NATIVE_JS_VALUE : {
-        wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext){ return type.create(itemValue, undefined, errorContext);},
-        byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>){ return type.byReference(provider, path);},
+        wrap<T>(itemValue:any, type:Type<T, any>, errorContext:ErrorContext){
+            return type.create(itemValue, undefined, errorContext);
+        },
+        byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:NonPrimitiveType<T, any>){
+            return type.byReference(provider, path);
+        },
         worseThan: (o:MatchType) => o === matchTypes.PERFECT
     },
     MISMATCH: {
@@ -107,7 +113,7 @@ const matchTypes = {
             MAILBOX.post(errorContext.level, misMatchMessage(errorContext, type, itemValue, errorPath, errorTemplate));
             return type.create();
         },
-        byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:CompositeType<T, any>, errorContext:ErrorContext, errorTemplate:string = 'reference', errorDetails?:ErrorDetails){
+        byReference<T extends Mutable<any>>(provider:() => any, path:Array<string|number>, itemValue:any, type:NonPrimitiveType<T, any>, errorContext:ErrorContext, errorTemplate:string = 'reference', errorDetails?:ErrorDetails){
             let errorPath = null;
             if (errorDetails){
                 itemValue = errorDetails.actual;

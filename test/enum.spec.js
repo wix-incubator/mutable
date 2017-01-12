@@ -1,38 +1,38 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../src';
+import * as mu from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
 describe('Enum Type', function() {
 
-    it('exists on the mutable object', function() {
-        expect(Mutable.EnumBase).to.be.a("function");
+    it('exists on the mu object', function() {
+        expect(mu.EnumBase).to.be.a("function");
     });
 
     describe("instantiation", function() {
 
         it("should return a class", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             expect(Ape).to.be.a("function");
         });
 
         it("enum cannot be instantiated", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             expect(function() {
                 new Ape();
             }).to.report({ level: /error/ });
         });
 
         it("enum extends EnumBase", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
-            expect(Ape.chimp).to.be.instanceof(Mutable.EnumBase);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
+            expect(Ape.chimp).to.be.instanceof(mu.EnumBase);
         });
 
         it("enum field can be generic by being EnumBase", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
-            var Dog = Mutable.defineEnum(["poodle", "lab"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
+            var Dog = mu.defineEnum(["poodle", "lab"]);
             var TestType = aDataTypeWithSpec({
-                ape: Mutable.EnumBase
+                ape: mu.EnumBase
             });
             var tt = TestType.create({ ape: Ape.chimp });
             expect(tt.ape).to.be.equal(Ape.chimp);
@@ -41,32 +41,32 @@ describe('Enum Type', function() {
         });
 
         it("generic enum has static validate method", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
-            expect(Mutable.EnumBase.validate(Ape.chimp)).to.be.ok;
-            expect(Mutable.EnumBase.validate("sugar booger")).to.not.be.ok;
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
+            expect(mu.EnumBase.validate(Ape.chimp)).to.be.ok;
+            expect(mu.EnumBase.validate("sugar booger")).to.not.be.ok;
         });
 
         it("enum validate method only allows own instance", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             expect(Ape.validate(Ape.chimp)).to.be.ok;
-            var Dog = Mutable.defineEnum(["poodle", "lab"]);
+            var Dog = mu.defineEnum(["poodle", "lab"]);
             expect(Ape.validate(Dog.poodle)).to.not.be.ok;
         });
 
         it("enum can be initialized", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             var ape = Ape.chimp;
             expect(ape).to.be.equal(Ape.chimp);
         });
 
         it("should return value string for toString()", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             expect(Ape.chimp.toString()).to.be.equal("chimp");
             expect(Ape.gorilla.toString()).to.be.equal("gorilla");
         });
 
         it("enum can be initialized as member in a custom type", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({
                 ape: Ape
             });
@@ -75,7 +75,7 @@ describe('Enum Type', function() {
         });
 
         it("enum can be initialized using withDefault", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({
                 ape: Ape.withDefault(Ape.gorilla)
             });
@@ -84,7 +84,7 @@ describe('Enum Type', function() {
         });
 
         it("enum can receive value from create of parent type", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             var TestType = aDataTypeWithSpec({
                 ape: Ape.withDefault(Ape.gorilla)
             });
@@ -93,25 +93,25 @@ describe('Enum Type', function() {
         });
 
         it("each member can have a string value", function() {
-            var Ape = Mutable.defineEnum(["chimp", "gorilla"]);
+            var Ape = mu.defineEnum(["chimp", "gorilla"]);
             expect(Ape.chimp.value).to.be.equal("chimp");
             expect(Ape.gorilla.value).to.be.equal("gorilla");
         });
 
         it("members can have a custom string value", function() {
-            var Ape = Mutable.defineEnum({ chimp: "_chimp_", gorilla: "_gorilla_" });
+            var Ape = mu.defineEnum({ chimp: "_chimp_", gorilla: "_gorilla_" });
             expect("" + Ape.chimp).to.be.equal("_chimp_");
             expect("" + Ape.gorilla).to.be.equal("_gorilla_");
         });
 
         it("members can have number value", function() {
-            var Ape = Mutable.defineEnum({ chimp: 0, gorilla: 1 });
+            var Ape = mu.defineEnum({ chimp: 0, gorilla: 1 });
             expect(Ape.chimp.value).to.be.equal(0);
             expect(Ape.gorilla.value).to.be.equal(1);
         });
 
         it("members can have object values", function() {
-            var Ape = Mutable.defineEnum({
+            var Ape = mu.defineEnum({
                 chimp: { dateOfBirth: "11/11/1980" },
                 gorilla: { dateOfBirth: "12/12/1995" }
             });
@@ -120,24 +120,24 @@ describe('Enum Type', function() {
         });
 
         it("member is immutable", function() {
-            var Ape = Mutable.defineEnum({ chimp: 1, gorilla: 2 });
+            var Ape = mu.defineEnum({ chimp: 1, gorilla: 2 });
             expect(function() {
                 Ape.chimp.blyat = "blyat";
             }).to.throw('object is not extensible');
         });
 
         it("instanceOf works", function() {
-            var Ape = Mutable.defineEnum({ chimp: 1, gorilla: 2 });
+            var Ape = mu.defineEnum({ chimp: 1, gorilla: 2 });
             expect(Ape.chimp).to.be.instanceof(Ape);
         });
 
         it("members have a key which is the originl key in the def", function() {
-            var Ape = Mutable.defineEnum({ chimp: 1, gorilla: 2 });
+            var Ape = mu.defineEnum({ chimp: 1, gorilla: 2 });
             expect(Ape.chimp.key).to.be.equal("chimp");
         });
 
         it("should return current value", function() {
-            var ImageSizing = Mutable.defineEnum({
+            var ImageSizing = mu.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -149,7 +149,7 @@ describe('Enum Type', function() {
         });
 
         it("should initiate from value string", function() {
-            var ImageSizing = Mutable.defineEnum({
+            var ImageSizing = mu.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -161,7 +161,7 @@ describe('Enum Type', function() {
         });
 
         it("should initiate from value string as part of complex data", function() {
-            var ImageSizing = Mutable.defineEnum({
+            var ImageSizing = mu.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -177,7 +177,7 @@ describe('Enum Type', function() {
         });
 
         it("should initiate from default value as part of complex data when no initial value is provided", function() {
-            var ImageSizing = Mutable.defineEnum({
+            var ImageSizing = mu.defineEnum({
                 NONE: null,
                 COVER: "cover",
                 CONTAIN: "contain"
@@ -192,7 +192,7 @@ describe('Enum Type', function() {
         });
 
         it("should not be dirtyable", function() {
-            var ImageSizing = Mutable.defineEnum(["A", "B"]);
+            var ImageSizing = mu.defineEnum(["A", "B"]);
             expect(ImageSizing.$isDirtyable).to.not.be.defined;
             expect(ImageSizing.A.$isDirtyable).to.not.be.defined;
             expect(ImageSizing.B.$isDirtyable).to.not.be.defined;
@@ -203,7 +203,7 @@ describe('Enum Type', function() {
     describe('toJSON', function(){
 
         it('should return the enum value that can initiate the value', function(){
-            var ApeWithValue = Mutable.defineEnum({
+            var ApeWithValue = mu.defineEnum({
                 'CHIMP':'small ape',
                 'GORILLA':'large ape',
             });
@@ -221,7 +221,7 @@ describe('Enum Type', function() {
     describe('toJS', function(){
 
         it('should return the enum value that can initiate the value', function(){
-            var ApeWithValue = Mutable.defineEnum({
+            var ApeWithValue = mu.defineEnum({
                 'CHIMP':'small ape',
                 'GORILLA':'large ape',
             });

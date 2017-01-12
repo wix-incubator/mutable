@@ -1,17 +1,28 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
+import {inherit, getPrimeType} from './utils';
+import {Any} from './any';
 
-import BaseType from './base-type';
-import PrimitiveBase from './primitive-base';
+const MAILBOX = getMailBox('mutable.defineEnum');
 
-const MAILBOX = getMailBox('Mutable.defineEnum');
-
-export class EnumBase extends PrimitiveBase {
+export class EnumBase extends Any {
+    static id = 'enum';
     static allowPlainVal(v) { return true; }
     static create(v) { return v; }
-    static validate(v) { return v == null || v instanceof EnumBase; }
-    static validateType(v) { return v == null || v instanceof EnumBase; }
+    static validate(v) {
+        return v == null || v instanceof EnumBase;
+    }
+    static validateType(v) {
+        return v == null || v instanceof EnumBase;
+    }
     static defaults(v) { return null; }
+
+    toJSON(){
+        return this.value;
+    }
+    toJS(){
+        return this.value;
+    }
 }
 
 function createEnumMember(key, value, proto) {
@@ -37,25 +48,46 @@ function convertToObject(def) {
     });
     return tdef;
 }
+class EnumType extends EnumBase{
 
+    static validate(v) {
+        return this.validateType(v) || this.allowPlainVal(v);
+    }
+    static validateType(v) {
+        return (v instanceof getPrimeType(this) && this[v.key] === v);
+    }
+    static reportDefinitionErrors() {
+        return null;
+    }
+    static reportSetErrors() {
+        return null;
+    }
+    static reportSetValueErrors() {
+        return null;
+    }
+    static withDefault(defaults, validate) {
+        var NewType = super.withDefault(defaults, validate);
+        NewType.defaults = () => defaults;
+        return NewType;
+    };
+    constructor(value, options, errorContext){
+        super(value, options, errorContext);
+        return value;
+    }
+}
 export function defineEnum(def) {
-    var enumType = function EnumType(initValue) {
-        var key = _.findKey(def, value => value === initValue);
-        if (enumType[key]) {
-            return enumType[key];
+
+    const enumType = inherit('EnumType', EnumType, function validateEnum(type, value, options, errorContext) {
+        var key = _.findKey(def, defValue => defValue === value);
+        if (type[key]) {
+            return [type[key], options, errorContext];
         }
         MAILBOX.error(`Enum[${Object.keys(def)}] must be initialized with value.`);
-    };
-    enumType.prototype = Object.create(EnumBase.prototype);
-    enumType.prototype.constructor = enumType;
+        return [undefined, options, errorContext];
+    });
 
-    enumType.prototype.toJSON = function() {
-        return this.value;
-    };
-    enumType.prototype.toJS = function() {
-        // ToDo: should return static ref (this) and accept it in constructor
-        return this.value;
-    };
+    enumType.create = enumType;
+    enumType._prime = enumType;
 
     if (_.isArray(def)) {
         def = convertToObject(def);
@@ -72,34 +104,11 @@ export function defineEnum(def) {
     enumType.defaults = function() {
         return defVal;
     };
-
-    enumType.validate = function(v) {
-        return this.validateType(v) || this.allowPlainVal(v);
-    };
-
-    enumType.validateType = function(v) {
-        return (v instanceof enumType && enumType[v.key] === v);
-    };
-
     enumType.allowPlainVal = function(plainVal) {
         return _.includes(def, plainVal); // ToDo: is enum nullable? || validateNullValue(this, val);
     };
-
-    enumType.id = 'enum';
-    enumType.create = enumType;
-
-    enumType.reportDefinitionErrors = function() {
-        return null;
-    };
-    enumType.reportSetErrors = function() {
-        return null;
-    };
-    enumType.reportSetValueErrors = function() {
-        return null;
-    };
-
     enumType.withDefault = function(defaults, validate) {
-        var NewType = PrimitiveBase.withDefault.call(this, defaults, validate);
+        var NewType = Any.withDefault.call(this, defaults, validate);
         NewType.defaults = () => defaults;
         return NewType;
     };

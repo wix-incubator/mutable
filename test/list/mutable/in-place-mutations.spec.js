@@ -1,24 +1,21 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../../src';
+import * as mu from '../../../src';
 import {aNumberList, aStringList, aVeryCompositeContainerList, UserType} from '../builders';
-import lifeCycleAsserter from '../lifecycle.js';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
 
 describe('List', function() {
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
 
         describe('reverse', function() {
             it('should reverse the order of elements in a List', function() {
                 const numberList = aNumberList();
                 const newList = numberList.reverse();
-                expect(newList).to.be.instanceOf(Mutable.List);
+                expect(newList).to.be.instanceOf(mu.List);
                 for (let i = 0; i < numberList.length; i++) {
                     expect(numberList.at(i)).to.equal(newList.at(newList.length - i - 1));
                 }
             });
-
-            lifeCycleAsserter.assertMutatorContract((arr) => arr.reverse(), 'reverse');
         });
 
         describe('sort', function() {
@@ -62,7 +59,7 @@ describe('List', function() {
             });
 
             it('Should wrap items for none immutable data (like custom types)', function() {
-                var arr = Mutable.List.of(UserType).create([{ name: 'aag' }, { name: 'dag' }]);
+                var arr = mu.List.of(UserType).create([{ name: 'aag' }, { name: 'dag' }]);
 
                 arr.splice(0, 1, { name: 'zag' });
 
@@ -77,7 +74,27 @@ describe('List', function() {
                 expect(() => numberList.splice(2, 1, {}, { child1: { user: { age: "666" } } }))
                     .to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('splice', 'List<VeryCompositeContainer>[3].child1.user.age', 'number', 'string'));
             });
-            lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.splice(1, 2, elemFactory()), 'splice');
+
+            describe('lifecycleManager', function() {
+                let arr, manager, child;
+                beforeEach(()=>{
+                    manager = new LifeCycleManager();
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr.$setManager(manager);
+                    child = new builders.UserType();
+                    sinon.spy(child, '$setManager');
+                });
+                if (context.dirtyableElements) {
+                    it('sets lifecycle manager in newly added elements', function() {
+                        arr.splice(1, 2, child);
+                        expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                    });
+                    it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                        arr.splice(1, 2, child.$asReadOnly());
+                        expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                    });
+                }
+            });
         });
     });
 });

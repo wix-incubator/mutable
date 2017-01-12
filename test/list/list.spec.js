@@ -1,11 +1,36 @@
 import {expect} from 'chai';
-
-import lifeCycleAsserter from './lifecycle.js';
+import * as mu from '../../src';
+import {UserType} from './builders';
+import * as sinon from 'sinon';
 
 describe('List', function() {
-
-    describe('lifecycle:', function() {
-        lifeCycleAsserter.assertDirtyContract();
+    describe('$setManager', function() {
+        let list, manager;
+        beforeEach(()=>{
+            manager = new mu.LifeCycleManager();
+            let child = new UserType();
+            sinon.spy(child, '$setManager');
+            list = mu.List.of(UserType).create([child]);
+        });
+        it('with existing different manager does not change the manager and reports error', function() {
+            list.__lifecycleManager__ = manager;
+            expect(() => list.$setManager(new mu.LifeCycleManager())).to.report({ level: /error/ });
+            expect(list.__lifecycleManager__, 'container manager').to.equal(manager);
+        });
+        it('when no existing manager changes the manager field', function() {
+            expect(() => list.$setManager(manager)).not.to.report({ level: /error/ });
+            expect(list.__lifecycleManager__, 'container manager').to.equal(manager);
+        });
+        it('when no existing manager changes the manager field of child elements', function() {
+            expect(() => list.$setManager(manager)).not.to.report({ level: /error/ });
+            expect(list.at(0).$setManager).to.have.been.calledWithExactly(manager);
+        });
+        it('in readonly form does not report an error', function() {
+            expect(() => list.$asReadOnly().$setManager(manager)).to.not.report({ level: /error/ });
+        });
+        it('with invalid type reports an error', function() {
+            expect(() => list.$setManager({})).to.report({ level: /error/ });
+        });
     });
 });
 

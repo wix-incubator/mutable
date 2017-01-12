@@ -1,16 +1,15 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../../src';
-import {either, LifeCycleManager} from '../../../src';
-import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
-import {aDataTypeWithSpec, getMobxLogOf} from '../../../test-kit/test-drivers';
+import * as mu from '../../../src';
+import {either} from '../../../src';
+import {UserType, AddressType} from '../builders';
+import {getMobxLogOf} from '../../../test-kit/test-drivers';
 import modifyTestSuite from './modify-test-suite';
-import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports';
 
 function complexSubTypeTests() {
     it('single subtype List should allow setting data with json', function() {
         var address = new AddressType({ address: 'gaga' });
-        var list = Mutable.List.of(AddressType).create([address]);
+        var list = mu.List.of(AddressType).create([address]);
         var log = getMobxLogOf(()=> list.setValueDeep([{ code: 5 }]));
 
         expect(list.at(0)).to.be.instanceOf(AddressType);
@@ -23,15 +22,15 @@ function complexSubTypeTests() {
 
     it('single not be dirty if nothing changed', function() {
         var address = new AddressType({ address: 'gaga' });
-        var list = Mutable.List.of(AddressType).create([address]);
+        var list = mu.List.of(AddressType).create([address]);
         var log = getMobxLogOf(()=> list.setValueDeep([list.at(0).toJSON()]));
         expect(log).to.be.empty;
     });
 
-    it('should keep mutable instances', function() {
+    it('should keep mu instances', function() {
         var newUser = new UserType();
         var newAddress = new AddressType();
-        var mixedList = Mutable.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
+        var mixedList = mu.List.of(either(UserType, AddressType)).create([newUser, newAddress]);
         var log = getMobxLogOf(()=> mixedList.setValueDeep([{ age: 65 }, { code: 999 }]));
 
         expect(mixedList.at(0)).to.equal(newUser);
@@ -44,7 +43,7 @@ function complexSubTypeTests() {
     it('should replace item for mismatch type', function() {
         const aUser = new UserType();
         const anAddress = new AddressType();
-        const mixedList = Mutable.List.of(either(UserType, AddressType)).create([aUser, anAddress]);
+        const mixedList = mu.List.of(either(UserType, AddressType)).create([aUser, anAddress]);
         const log = getMobxLogOf(()=> mixedList.setValueDeep([{ _type: 'Address', age: 65 }, { code: 999 }]));
 
         expect(mixedList.at(0)).to.be.an.instanceOf(AddressType);
@@ -56,7 +55,7 @@ function complexSubTypeTests() {
 
     it('should create new item if item is read only', function() {
         var address = new AddressType({ address: 'gaga' });
-        var list = Mutable.List.of(AddressType).create([address.$asReadOnly()]);
+        var list = mu.List.of(AddressType).create([address.$asReadOnly()]);
         var log = getMobxLogOf(()=> list.setValueDeep([{ code: 5 }]));
 
         expect(list.at(0)).to.not.be.equal(address);

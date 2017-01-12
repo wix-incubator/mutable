@@ -1,9 +1,6 @@
 import {expect} from 'chai';
-
-import * as Mutable from '../../../src';
+import * as mu from '../../../src';
 import * as builders from '../builders';
-
-const either = Mutable.either;
 
 function testViewFunctionality(builders, isReadonly) {
 
@@ -46,7 +43,7 @@ function testViewFunctionality(builders, isReadonly) {
 
             expect(slicedList.toJSON()).to.eql([1, 2]);
         });
-        it('should return mutable List', function() {
+        it('should return mu List', function() {
             var numberList = builders.aNumberList([1, 2, 3]);
 
             var slicedList = numberList.slice();
@@ -75,12 +72,12 @@ function testViewFunctionality(builders, isReadonly) {
             expect(numberList.$asReadWrite()).to.eql(oldList);
         });
 
-        it('should return a mutable List', function() {
+        it('should return a mu List', function() {
             var numberList = builders.aNumberList();
 
             var concattedList = numberList.concat(1, 1);
 
-            expect(concattedList).to.be.instanceOf(Mutable.List);
+            expect(concattedList).to.be.instanceOf(mu.List);
             expect(concattedList.$isReadOnly()).to.be.false;
 
         });
@@ -138,13 +135,13 @@ function testViewFunctionality(builders, isReadonly) {
     });
 
     describe('toJSON', function() {
-        it('should take a mutable List of primitives, and return a native js List of primitives', function() {
+        it('should take a mu List of primitives, and return a native js List of primitives', function() {
             var arrA = builders.aStringList(['a', 'b']);
 
             expect(arrA.toJSON(), 'toJSON() called').to.eql(['a', 'b']);
             expect(arrA.toJSON(false), 'toJSON (non-recursive) called').to.eql(['a', 'b']);
         });
-        it('should take a mutable List of custom types, and return a native js List of objects', function() {
+        it('should take a mu List of custom types, and return a native js List of objects', function() {
             var arrA = builders.aUserList([{ age: 11 }, { age: 12 }]);
 
             expect(arrA.toJSON(), 'toJSON() called').to.eql([{ age: 11, name: new builders.UserType().name }, {
@@ -164,7 +161,7 @@ function testViewFunctionality(builders, isReadonly) {
 
         it('should call toJS on items that implement it', function(){
             const serializableType = builders.UserType;
-            const List = Mutable.List.of([serializableType, Mutable.Function]);
+            const List = mu.List.of([serializableType, mu.Function]);
 
             const funcItem = () => {};
             const serializableItem = new serializableType();
@@ -189,7 +186,7 @@ function testViewFunctionality(builders, isReadonly) {
 }
 
 describe('List', function() {
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
         testViewFunctionality(builders, false);
 
     });

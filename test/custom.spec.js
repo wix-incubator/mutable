@@ -1,82 +1,88 @@
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Mutable from '../src';
+import * as mu from '../src';
 import {aDataTypeWithSpec, getMobxLogOf} from '../test-kit/test-drivers';
-import {lifecycleContract} from './lifecycle.contract.spec';
 import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, ERROR_IN_SET_VALUE, ERROR_IN_SET_VALUE_DEEP, ERROR_ATTEMPTING_TO_OVERRIDE_READONLY} from '../test-kit/test-drivers/reports';
 
-var User = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    age: Mutable.Number.withDefault(10),
-    address: Mutable.String.withDefault('no address')
-}, 'User');
-
-var UserWithChild = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child: User.withDefault({ name: 'bobi', age: 13 })
-}, 'UserWithChild');
-
-var UserWithNullableChild = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child: User.nullable().withDefault(null)
-}, 'UserWithNullableChild');
-
-var CompositeContainer = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child1: User,
-    child2: User
-}, 'CompositeContainer');
-
-var VeryCompositeContainer = aDataTypeWithSpec({
-    child1: UserWithChild
-}, 'VeryCompositeContainer');
-
-var PrimitivesContainer = aDataTypeWithSpec({
-    name: Mutable.String.withDefault('leon'),
-    child1: Mutable.String,
-    child2: Mutable.String
-}, 'PrimitivesContainer');
-
-var WithNonSerializable = aDataTypeWithSpec({
-    func: Mutable.Function,
-    str: Mutable.String
-}, 'WithNonSerializable');
-
-var lifeCycleAsserter = lifecycleContract();
-(() => {
-    lifeCycleAsserter.addFixture(
-        (u1, u2) => {
-            var result = new CompositeContainer();
-            result.child1 = u1;
-            result.child2 = u2;
-            return result;
-        },
-        () => new User(),
-        'object with mutable elements');
-    var counter = 0;
-    lifeCycleAsserter.addFixture(
-        (u1, u2) => new PrimitivesContainer({ child1: u1, child2: u2 }),
-        () => 'foobar' + (counter++),
-        'object with primitive elements'
-    );
-})();
-
 describe('Custom data', function() {
+    let User, UserWithChild, UserWithNullableChild, CompositeContainer, VeryCompositeContainer, PrimitivesContainer, WithNonSerializable;
+    before(() => {
+        User = aDataTypeWithSpec({
+            name: mu.String.withDefault('leon'),
+            age: mu.Number.withDefault(10),
+            address: mu.String.withDefault('no address')
+        }, 'User');
 
-    describe('Type Class', function() {
+        UserWithChild = aDataTypeWithSpec({
+            name: mu.String.withDefault('leon'),
+            child: User.withDefault({ name: 'bobi', age: 13 })
+        }, 'UserWithChild');
+
+        UserWithNullableChild = aDataTypeWithSpec({
+            name: mu.String.withDefault('leon'),
+            child: User.nullable().withDefault(null)
+        }, 'UserWithNullableChild');
+
+        CompositeContainer = aDataTypeWithSpec({
+            name: mu.String.withDefault('leon'),
+            child1: User,
+            child2: User
+        }, 'CompositeContainer');
+
+        VeryCompositeContainer = aDataTypeWithSpec({
+            child1: UserWithChild
+        }, 'VeryCompositeContainer');
+
+        PrimitivesContainer = aDataTypeWithSpec({
+            name: mu.String.withDefault('leon'),
+            child1: mu.String,
+            child2: mu.String
+        }, 'PrimitivesContainer');
+
+        WithNonSerializable = aDataTypeWithSpec({
+            func: mu.Function,
+            str: mu.String
+        }, 'WithNonSerializable');
+
+    });
+    describe('Type MuObject', function() {
         it('should be able to describe itself', function() {
-            expect(User).to.have.field('name').with.defaults('leon').of.type(Mutable.String);
-            expect(User).to.have.field('age').with.defaults(10).of.type(Mutable.Number);
+            expect(User).to.have.field('name').with.defaults('leon').of.type(mu.String);
+            expect(User).to.have.field('age').with.defaults(10).of.type(mu.Number);
         });
     });
 
-    describe('lifecycle:', function() {
-        lifeCycleAsserter.assertDirtyContract();
+    describe('$setManager', function() {
+        let object, manager;
+        beforeEach(()=>{
+            manager = new mu.LifeCycleManager();
+            object = new UserWithChild();
+            sinon.spy(object.child, '$setManager');
+        });
+        it('with existing different manager does not change the manager and reports error', function() {
+            object.__lifecycleManager__ = manager;
+            expect(() => object.$setManager(new mu.LifeCycleManager())).to.report({ level: /error/ });
+            expect(object.__lifecycleManager__, 'container manager').to.equal(manager);
+        });
+        it('when no existing manager changes the manager field', function() {
+            expect(() => object.$setManager(manager)).not.to.report({ level: /error/ });
+            expect(object.__lifecycleManager__, 'container manager').to.equal(manager);
+        });
+        it('when no existing manager changes the manager field of child elements', function() {
+            expect(() => object.$setManager(manager)).not.to.report({ level: /error/ });
+            expect(object.child.$setManager).to.have.been.calledWithExactly(manager);
+        });
+        it('in readonly form does not report an error', function() {
+            expect(() => object.$asReadOnly().$setManager(manager)).to.not.report({ level: /error/ });
+        });
+        it('with invalid type reports an error', function() {
+            expect(() => object.$setManager({})).to.report({ level: /error/ });
+        });
     });
 
     describe('toJSON', function() {
-        it('should take a mutable object, and return a native object', function() {
+        it('should take a mu object, and return a native object', function() {
             var container = new UserWithChild({ child: { age: 11 } });
 
             expect(container.toJSON(), 'toJSON() called').to.eql(
@@ -145,7 +151,16 @@ describe('Custom data', function() {
         });
     });
 
-    describe('mutable instance', function() {
+    describe('default', function() {
+        it('should chain', function() {
+            var typeWithDefaultBob = User.withDefault({ name: 'joe' }).withDefault({ name: 'bob' });
+
+            var a = typeWithDefaultBob.defaults();
+
+            expect(a.name).to.equal('bob');
+        });
+    });
+    describe('mu instance', function() {
 
         describe('instantiation', function() {
 
@@ -158,8 +173,8 @@ describe('Custom data', function() {
 
             it("should not modify original json object", function() {
                 var CustomType = aDataTypeWithSpec({
-                    name: Mutable.String.withDefault("Gordon Shumway"),
-                    planet: Mutable.String.withDefault("Melmac")
+                    name: mu.String.withDefault("Gordon Shumway"),
+                    planet: mu.String.withDefault("Melmac")
                 }, "CustomType");
                 var original = { name: "Lilo" };
                 var inst = new CustomType(original);
@@ -168,8 +183,8 @@ describe('Custom data', function() {
 
             it("should not keep references to original json objects", function() {
                 var CustomType = aDataTypeWithSpec({
-                    name: Mutable.String.withDefault("Gordon Shumway"),
-                    planet: Mutable.String.withDefault("Melmac")
+                    name: mu.String.withDefault("Gordon Shumway"),
+                    planet: mu.String.withDefault("Melmac")
                 }, "CustomType");
                 var original = { name: "Lilo" };
                 var inst = new CustomType(original);
@@ -180,7 +195,7 @@ describe('Custom data', function() {
             it("should not keep references to original json objects, even deep ones", function() {
 
                 var InnerType = aDataTypeWithSpec({
-                    name: Mutable.String.withDefault("Gordon Shumway")
+                    name: mu.String.withDefault("Gordon Shumway")
                 }, "InnerType");
                 var OuterType = aDataTypeWithSpec({
                     name: InnerType
@@ -194,7 +209,7 @@ describe('Custom data', function() {
 
             it("should not modify original List", function() {
                 var CustomType = aDataTypeWithSpec({
-                    names: Mutable.List.of(Mutable.String)
+                    names: mu.List.of(mu.String)
                 }, "CustomType");
 
                 var original = { names: ["Lilo", "Stitch"] };
@@ -204,7 +219,7 @@ describe('Custom data', function() {
 
             it("should not keep references to original List", function() {
                 var CustomType = aDataTypeWithSpec({
-                    names: Mutable.List.of(Mutable.String)
+                    names: mu.List.of(mu.String)
                 }, "CustomType");
                 var original = { names: ["Lilo", "Stitch"] };
                 var inst = new CustomType(original);
@@ -242,7 +257,7 @@ describe('Custom data', function() {
                 expect(instance.numOfHeads).to.be.undefined;
             });
 
-            it('should reference matching mutable objects passed as value', function() {
+            it('should reference matching mu objects passed as value', function() {
                 var instance = new User();
 
                 var container = new CompositeContainer({ child1: instance });
@@ -281,12 +296,12 @@ describe('Custom data', function() {
 
             before('setup types', () => {
                 ImageType = aDataTypeWithSpec({
-                    src: Mutable.String.withDefault('default.jpg')
+                    src: mu.String.withDefault('default.jpg')
                 }, 'ImageType');
 
                 ProductType = aDataTypeWithSpec({
                     image: ImageType,
-                    title: Mutable.String.withDefault('default title')
+                    title: mu.String.withDefault('default title')
                 }, 'ProductType');
 
                 StateType = aDataTypeWithSpec({
@@ -294,8 +309,8 @@ describe('Custom data', function() {
                         image: { src: 'original.jpg' },
                         title: 'original title'
                     }),
-                    relatedProducts: Mutable.List.of(ProductType),
-                    stringAndNumbers: Mutable.List.of([Mutable.String, Mutable.Number])
+                    relatedProducts: mu.List.of(ProductType),
+                    stringAndNumbers: mu.List.of([mu.String, mu.Number])
                 }, 'StateType');
             });
 
@@ -323,7 +338,7 @@ describe('Custom data', function() {
             //TODO: what to do?
             xit('should not set data that has different options', function() {
                 var state = new StateType();
-                var booleanList = new (Mutable.List.of(Mutable.Boolean))([]);
+                var booleanList = new (mu.List.of(mu.Boolean))([]);
                 var relatedProductsPrevRef = state.relatedProducts;
                 var stringAndNumbersPrevRef = state.stringAndNumbers;
 
@@ -336,8 +351,8 @@ describe('Custom data', function() {
 
             it('should set data that has equivalent options', function() {
                 var state = new StateType();
-                var productList = new (Mutable.List.of(ProductType))([]);
-                var stringAndNumbersList = new (Mutable.List.of([Mutable.String, Mutable.Number]))([]);
+                var productList = new (mu.List.of(ProductType))([]);
+                var stringAndNumbersList = new (mu.List.of([mu.String, mu.Number]))([]);
                 var relatedProductsPrevRef = state.relatedProducts;
                 var stringAndNumbersPrevRef = state.stringAndNumbers;
                 state.relatedProducts = productList;
@@ -347,27 +362,48 @@ describe('Custom data', function() {
                 expect(state.stringAndNumbers).to.be.equal(stringAndNumbersList);
             });
 
-            describe('primitive', function() {
+            it('should not replace data that does not fit the schema', function() {
+                var state = new StateType();
+                var titlePrevVal = state.product.title;
 
-                it('should not replace data that does not fit the schema', function() {
-                    var state = new StateType();
-                    var titlePrevVal = state.product.title;
+                expect(() => state.product.title = {}).to.report(ERROR_IN_SET('ProductType.title', 'string', 'object'));
 
-                    expect(() => state.product.title = {}).to.report(ERROR_IN_SET('ProductType.title', 'string', 'object'));
-
-                    expect(state.product.title).to.be.equal(titlePrevVal);
-                });
-
-                it('should replace data that fit the schema', function() {
-                    var state = new StateType();
-
-                    state.title = 'new title';
-
-                    expect(state.title).to.be.equal('new title');
-                });
-                lifeCycleAsserter.assertMutatorContract((obj) => obj.name = 'johnny', 'assignment on primitive field');
+                expect(state.product.title).to.be.equal(titlePrevVal);
             });
-            lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj.child1 = elemFactory(), 'assignment to element field');
+
+            it('should replace primitive data that fit the schema', function() {
+                var state = new StateType();
+
+                state.title = 'new title';
+
+                expect(state.title).to.be.equal('new title');
+            });
+
+            describe('complex value', function() {
+                let object, manager, child;
+                beforeEach(()=>{
+                    manager = new mu.LifeCycleManager();
+                    object = new UserWithChild();
+                    object.$setManager(manager);
+                    child = new User();
+                    sinon.spy(child, '$setManager');
+                });
+
+                it('should use passed data object as field value', function() {
+                    object.child = child;
+                    expect(object.child).to.equal(child);
+                });
+
+                it('sets lifecycle manager in newly added elements', function() {
+                    object.child = child;
+                    expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                });
+                it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                    object.child = child.$asReadOnly();
+                    expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                });
+            });
+
         });
 
         function valueSetterSuite(setterName) {
@@ -407,10 +443,30 @@ describe('Custom data', function() {
                     expect(log).to.be.empty;
                 });
 
-                lifeCycleAsserter.assertMutatorContract((obj, elemFactory) => obj[setterName]({ child: elemFactory() }), setterName + ' which assigns to element field');
+
+                describe('assigning a complex value to field via '+setterName, function() {
+                    let object, manager, child;
+                    beforeEach(()=>{
+                        manager = new mu.LifeCycleManager();
+                        object = new UserWithChild();
+                        object.$setManager(manager);
+                        child = new User();
+                        sinon.spy(child, '$setManager');
+                    });
+                    if (context.dirtyableElements) {
+                        it('sets lifecycle manager in newly added elements', function() {
+                            object[setterName]({child});
+                            expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                        });
+                        it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                            object[setterName]({child:child.$asReadOnly()});
+                            expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                        });
+                    }
+                });
             });
-            describe('with mutable input', function() {
-                it('should set replace all values from an incoming object with mutable fields according to schema', function() {
+            describe('with mu input', function() {
+                it('should set replace all values from an incoming object with mu fields according to schema', function() {
                     var instance = new UserWithChild();
                     var childInstance = new User({ name: 'zaphod', age: 42 });
                     instance[setterName]({ child: childInstance });
@@ -493,18 +549,18 @@ describe('Custom data', function() {
                 let StartField, StartData, EndField, EndData;
                 let startInstance, endInstance, inputValue;
                 before(() => {
-                    StartField = Mutable.define("StartField", { spec: function() { return {
-                        validProp: Mutable.String,
-                        invalidProp: Mutable.Number
+                    StartField = mu.define("StartField", { spec: function() { return {
+                        validProp: mu.String,
+                        invalidProp: mu.Number
                     }; }});
-                    StartData = Mutable.define("StartData", { spec: function() { return {
+                    StartData = mu.define("StartData", { spec: function() { return {
                         field: StartField.nullable(true)
                     }; }});
-                    EndField = Mutable.define("EndField", { spec: function() { return {
-                        validProp: Mutable.String,
-                        invalidProp: Mutable.String
+                    EndField = mu.define("EndField", { spec: function() { return {
+                        validProp: mu.String,
+                        invalidProp: mu.String
                     }; }});
-                    EndData = Mutable.define("EndData", { spec: function() { return {
+                    EndData = mu.define("EndData", { spec: function() { return {
                         field: EndField.nullable(true)
                     }; }});
                 });
@@ -540,16 +596,16 @@ describe('Custom data', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Mutable.config.freezeInstance = true;
+                mu.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Mutable.config.freezeInstance = false;
+                mu.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {
                 var ImageType = aDataTypeWithSpec({
-                    src: Mutable.String.withDefault('default.jpg')
+                    src: mu.String.withDefault('default.jpg')
                 }, 'ImageType');
                 var image = new ImageType();
 
@@ -558,24 +614,6 @@ describe('Custom data', function() {
                 }).to.throw();
             });
 
-        });
-
-        it('should chain with default calls', function() {
-            var typeWithDefaultBob = User.withDefault({ name: 'joe' }).withDefault({ name: 'bob' });
-
-            var a = typeWithDefaultBob.defaults();
-
-            expect(a.name).to.equal('bob');
-        });
-
-        it('should use passed data object as field value', function() {
-
-            var userData = new UserWithChild();
-
-            let newChild = new User({ name: 'yossi', age: 3 });
-            userData.child = newChild;
-
-            expect(userData.child).to.equal(newChild);
         });
 
         it('should return json value from toJSON()', function() {
@@ -722,16 +760,16 @@ describe('Custom data', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Mutable.config.freezeInstance = true;
+                mu.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Mutable.config.freezeInstance = false;
+                mu.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {
                 var ImageType = aDataTypeWithSpec({
-                    src: Mutable.String.withDefault('default.jpg')
+                    src: mu.String.withDefault('default.jpg')
                 }, 'ImageType');
                 var image = new ImageType().$asReadOnly();
 

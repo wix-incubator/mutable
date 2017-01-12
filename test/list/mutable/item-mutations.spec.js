@@ -1,14 +1,13 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../../src';
+import * as mu from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, aVeryCompositeContainerList} from '../builders';
-import lifeCycleAsserter from '../lifecycle';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports'
 
-const either = Mutable.either;
+const either = mu.either;
 
 describe('List', function() {
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
 
         describe('pop', function() {
             it('should remove the last element from a List', function() {
@@ -29,8 +28,6 @@ describe('List', function() {
                 expect(valueRemoved).to.be.undefined;
 
             });
-
-            lifeCycleAsserter.assertMutatorContract((arr) => arr.pop(), 'pop');
         });
 
         describe('push', function() {
@@ -45,13 +42,13 @@ describe('List', function() {
             });
 
             it('should add a typed item for non-primitive data (like custom types)', function() {
-                var arr = Mutable.List.of(UserType).create([]);
+                var arr = mu.List.of(UserType).create([]);
                 arr.push({});
                 expect(arr.at(0)).to.be.instanceOf(UserType);
             });
 
             it('should add a typed item form multiple types if there is _type field', function() {
-                var arr = Mutable.List.of(either(UserType, AddressType)).create([]);
+                var arr = mu.List.of(either(UserType, AddressType)).create([]);
                 arr.push({ _type: 'User' });
                 arr.push({ _type: 'Address' });
                 expect(arr.at(0)).to.be.instanceOf(UserType);
@@ -72,7 +69,27 @@ describe('List', function() {
                 expect(() => aList.push({}, { child1: { user: { age: "666" } } }))
                     .to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('push', 'List<VeryCompositeContainer>[3].child1.user.age', 'number', 'string'));
             });
-            lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.push(elemFactory()), 'push');
+
+            describe('lifecycleManager', function() {
+                let arr, manager, child;
+                beforeEach(()=>{
+                    manager = new LifeCycleManager();
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr.$setManager(manager);
+                    child = new builders.UserType();
+                    sinon.spy(child, '$setManager');
+                });
+                if (context.dirtyableElements) {
+                    it('sets lifecycle manager in newly added elements', function() {
+                        arr.push(child);
+                        expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                    });
+                    it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                        arr.push(child.$asReadOnly());
+                        expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                    });
+                }
+            });
         });
 
         describe('set', function() {
@@ -103,7 +120,26 @@ describe('List', function() {
                     .to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('set', 'List<VeryCompositeContainer>.child1.user.age', 'number', 'string'));
             });
 
-            lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.set(0, elemFactory()), 'set');
+            describe('lifecycleManager', function() {
+                let arr, manager, child;
+                beforeEach(()=>{
+                    manager = new LifeCycleManager();
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr.$setManager(manager);
+                    child = new builders.UserType();
+                    sinon.spy(child, '$setManager');
+                });
+                if (context.dirtyableElements) {
+                    it('sets lifecycle manager in newly added elements', function() {
+                        arr.set(0, child);
+                        expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                    });
+                    it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                        arr.set(0, child.$asReadOnly());
+                        expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                    });
+                }
+            });
         });
 
         describe('shift', function() {
@@ -124,8 +160,6 @@ describe('List', function() {
 
                 expect(numberList.length).to.equal(lengthBeforeShift - 1);
             });
-
-            lifeCycleAsserter.assertMutatorContract((arr) => arr.shift(), 'shift');
         });
 
 
@@ -154,8 +188,26 @@ describe('List', function() {
                     .to.report(ERROR_FIELD_MISMATCH_IN_LIST_METHOD('unshift', 'List<VeryCompositeContainer>[1].child1.user.age', 'number', 'string'));
             });
 
-            lifeCycleAsserter.assertMutatorContract((arr, elemFactory) => arr.unshift(elemFactory(), elemFactory()), 'unshift');
-
+            describe('lifecycleManager', function() {
+                let arr, manager, child;
+                beforeEach(()=>{
+                    manager = new LifeCycleManager();
+                    arr = mu.List.of(UserType).create([new builders.UserType(), new builders.UserType(), new builders.UserType()]);
+                    arr.$setManager(manager);
+                    child = new builders.UserType();
+                    sinon.spy(child, '$setManager');
+                });
+                if (context.dirtyableElements) {
+                    it('sets lifecycle manager in newly added elements', function() {
+                        arr.unshift(child);
+                        expect(child.$setManager).to.have.been.calledWithExactly(manager);
+                    });
+                    it('does not try to set lifecycle manager in read-only newly added elements', function() {
+                        arr.unshift(child.$asReadOnly());
+                        expect(child.$setManager).to.have.not.been.calledWithExactly(manager);
+                    });
+                }
+            });
         });
     });
 });

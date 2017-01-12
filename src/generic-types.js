@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {arrow} from './validation';
 import Union from './union';
-const MAILBOX = getMailBox('Mutable.genericTypes');
+const MAILBOX = getMailBox('mutable.genericTypes');
 
 /**
  * try to match a type to a value

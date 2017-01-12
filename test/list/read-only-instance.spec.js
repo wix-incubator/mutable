@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../../src';
+import * as mu from '../../src';
 import * as b from './builders';
 
 const builders = b.asReadOnly();
@@ -31,11 +31,11 @@ describe('List', function() {
         describe("with global freeze config", function() {
 
             before("set global freeze configuration", function() {
-                Mutable.config.freezeInstance = true;
+                mu.config.freezeInstance = true;
             });
 
             after("clear global freeze configuration", function() {
-                Mutable.config.freezeInstance = false;
+                mu.config.freezeInstance = false;
             });
 
             it("should throw error on unknown field setter", function() {

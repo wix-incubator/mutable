@@ -1,9 +1,7 @@
 import {expect} from 'chai';
-
-import * as Mutable from '../../../src';
-import {LifeCycleManager, either} from '../../../src';
-import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
-import {aDataTypeWithSpec} from '../../../test-kit/test-drivers';
+import * as mu from '../../../src';
+import {either} from '../../../src';
+import {AddressType, aVeryCompositeContainerList} from '../builders';
 import modifyTestSuite from './modify-test-suite';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports';
 
@@ -11,7 +9,7 @@ import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-driver
 function complexSubTypeTests() {
     it('List should allow setting data with json', function() {
         var address = new AddressType({ address: 'gaga' });
-        var list = Mutable.List.of(AddressType).create([address]);
+        var list = mu.List.of(AddressType).create([address]);
 
         list.setValue([{ code: 5 }]);
 
@@ -23,7 +21,7 @@ function complexSubTypeTests() {
     });
 
     it('List should allow adding data with json', function() {
-        var list = Mutable.List.of(AddressType).create();
+        var list = mu.List.of(AddressType).create();
 
         list.setValue([{ code: 5 }]);
 

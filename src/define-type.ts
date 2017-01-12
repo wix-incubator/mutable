@@ -1,17 +1,12 @@
-import {Spec, cast, Type, Class, isCompositeType, ReferenceType, Mutable} from './types';
-import _BaseType from './base-type';
+import {Spec, Type, Class, isNonPrimitiveType, ReferenceType, Mutable} from './types';
 import {getMailBox} from 'escalate';
 import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
-import {forEach, isFunction} from 'lodash';
+import {forEach, isFunction, extend} from 'lodash';
 import {misMatchMessage, validateValue} from './validation';
 import {untracked, extras} from 'mobx';
-
-// ---- typify imports
-
-const BaseType : Class<{}> = cast<Class<{}>>(_BaseType);
-// done typifying imports
-
-// ----- typify module I/O
+import {DirtyableYielder, AtomYielder} from "./lifecycle";
+import {MuObject} from "./object";
+import {defineNonPrimitive} from './base';
 
 /**
  * the schema of the class to define (input format)
@@ -25,67 +20,58 @@ interface Schema{
 interface Metadata{
     spec(self:Class<any>) : Schema;
 }
-// done typify module I/O
 
 
-const MAILBOX = getMailBox('Mutable.extend');
-const RESERVED_FIELDS = Object.keys(BaseType.prototype);
+const MAILBOX = getMailBox('mutable.extend');
+const RESERVED_FIELDS = Object.keys(extend({}, MuObject.prototype));
 
-export default function defineType<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
-    const ParentType:Class<any> = TypeConstructor || _ParentType || BaseType;
-    if (!BaseType.isJsAssignableFrom(ParentType)){
-        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of core3.Type`);
+export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T>;
+
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
+    const ParentType:Class<any> = TypeConstructor || _ParentType || MuObject;
+    if (!MuObject.isJsAssignableFrom(ParentType)){
+        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of Class`);
     }
     const type = inherit(id, ParentType);
-    type.ancestors = ParentType.ancestors.concat([ParentType.id]);
-    type.id = id;
-    type.uniqueId = ''+generateClassId();
+    defineNonPrimitive(id, type);
+    calculateSchemaProperties(typeDefinition, type, ParentType, id);
+    return type;
+}
 
-    // values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
+// values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
+function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, ParentType: Class<any>, id: string) {
     const typeSelfSpec = typeDefinition.spec(type);
     const baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
     normalizeSchema(type, baseSpec, typeSelfSpec, ParentType.id);
-    type.__proto__ = Object.create(ParentType); // inherint non-enumerable static properties
     type._spec = generateSpec(id, typeSelfSpec, baseSpec);
     setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
     generateFieldsOn(type.prototype, typeSelfSpec);
     type.__refType = generateRefType(type);
-    return type;
 }
 
-
-function defineGenericField(source:Class<{}>):Type<{}|null, {}|null>{
-    let result =  defineType('GenericType', {spec: () => ({})})
-        .withDefault(source.defaults(), source.validate, source.options);
-    result.validateType = (value:any):value is Type<{}|null, {}|null> => validateValue(source, value);
-    return result;
-}
-
-function isBaseType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
-    return getPrimeType(fieldDef) === BaseType;
+function isAnyType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
+    return getPrimeType(fieldDef) === MuObject;
 }
 
 function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
     forEach(typeSelfSpec, (fieldDef:Type<any, any>, fieldName:string) => {
-        if (validateField(type, parentSpec, fieldName, fieldDef, parentName)){
-            if (isBaseType(fieldDef)) {
-                typeSelfSpec[fieldName] = defineGenericField(fieldDef);
-            }
+        if (!validateField(type, parentSpec, fieldName, fieldDef, parentName)){
+            // maybe we should delete the field from the spec if it's not valid?
         }
-        // maybe we should delete the field from the spec if it's not valid?
     });
 }
 
 function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fieldDef:Type<any, any>, parentName:string):boolean {
     let error;
-    const errorContext = BaseType.createErrorContext(`Type definition error`, 'fatal');
+    const errorContext = MuObject.createErrorContext(`Type definition error`, 'fatal');
     let path = `${type.id}.${fieldName}`;
     if (~RESERVED_FIELDS.indexOf(fieldName)){
         error = 'is a reserved field.';
     } else if (parentSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism
         error = `already exists on super ${parentName}`;
     } else {
-        const err = BaseType.reportFieldDefinitionError(fieldDef);
+        const err = MuObject.reportFieldDefinitionError(fieldDef);
         if (err) {
             error = err.message;
             if (err.path) {
@@ -114,11 +100,11 @@ function generateSpec(id:string, spec:Schema, baseSpec:Spec) {
 function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>) {
     const complex:Array<string> = [];
     for (let k in spec) {
-        if (isCompositeType(spec[k])) {
+        if (isNonPrimitiveType(spec[k])) {
             complex[complex.length] = k;
         }
     }
-    proto.$dirtyableElementsIterator = function typeDirtyableElementsIterator(yielder) {
+    proto.$dirtyableElementsIterator = function typeDirtyableElementsIterator(yielder: DirtyableYielder) {
         for (let c of complex) {
             let k = this.__value__[c];
             if (k && isFunction(k.$setManager)) { // if value is dirtyable
@@ -127,7 +113,7 @@ function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>
         }
         parent && isFunction(parent.$dirtyableElementsIterator) && parent.$dirtyableElementsIterator.call(this, yielder);
     };
-    proto.$atomsIterator = function atomsIterator(yielder) {
+    proto.$atomsIterator = function atomsIterator(yielder:AtomYielder) {
         for (let c in spec) {
             if (spec.hasOwnProperty(c)) {
                 yielder(extras.getAtom(this.__value__, c) as any);

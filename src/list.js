@@ -1,15 +1,14 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {ArrayWrapper} from './array-wrapper';
-import defineType from './define-type';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
 import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
-import BaseType from './base-type';
+import {MuBase, defineNonPrimitive} from './base';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';
 import {optionalSetManager} from './lifecycle';
-const MAILBOX = getMailBox('Mutable.List');
+const MAILBOX = getMailBox('mutable.List');
 function isArray(val){
     return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
 }
@@ -21,12 +20,12 @@ class ArrayReference extends ArrayWrapper{
     }
 }
 
-class _List extends BaseType {
+export default class List extends MuBase {
 
     static defaults() { return []; }
 
     static cloneValue(value) {
-        if (isArray(value) || _List.validateType(value)) {
+        if (isArray(value) || List.validateType(value)) {
             if (!value){
                 return value;
             }
@@ -65,7 +64,7 @@ class _List extends BaseType {
             });
     }
 
-    static wrapValue(value, spec, options, errorContext) {
+    static makeValue(value, options, errorContext) {
         if (this.validateType(value)) {
             if (value.__value__.map) {
                 return observable(asFlat(value.__value__.map((itemValue) => {
@@ -114,7 +113,7 @@ class _List extends BaseType {
         if (!this.options || !this.options.subTypes) {
             return { path: '', message: `Untyped Lists are not supported please state type of list item in the format core3.List<string>` }
         } else {
-            var error = generics.reportDefinitionErrors(this.options.subTypes, BaseType.reportFieldDefinitionError);
+            var error = generics.reportDefinitionErrors(this.options.subTypes, MuBase.reportFieldDefinitionError);
             if (error) {
                 return {
                     path: `<${error.path}>`,
@@ -135,13 +134,6 @@ class _List extends BaseType {
         }
     }
 
-    static preConstructor(){
-        const report = this.reportDefinitionErrors();
-        if (report) {
-            MAILBOX.error('List constructor: ' + report.message);
-        }
-    }
-
     static byReference(provider, path = []){
         // wrap provider
         const result = new this();
@@ -151,15 +143,19 @@ class _List extends BaseType {
 
     constructor(value = [], options = {}, errorContext) {
         if (!errorContext) {
-            errorContext = _List.createErrorContext('List constructor error', 'error', options);
+            errorContext = List.createErrorContext('List constructor error', 'error', options);
         }
         options.subTypes = generics.typesAsArray(options.subTypes);
-        super(value, options, errorContext);
+        super(value, options, errorContext)
+        const report = this.__ctor__.reportDefinitionErrors();
+        if (report) {
+            MAILBOX.error('List constructor: ' + report.message);
+        }
     }
 
     toJSON(recursive = true, typed = false) {
         return this.__value__.map(item => {
-            return (recursive && BaseType.validateType(item)) ? item.toJSON(true, typed) : item;
+            return (recursive && MuBase.validateType(item)) ? item.toJSON(true, typed) : item;
         });
     }
 
@@ -321,7 +317,7 @@ class _List extends BaseType {
     at(index) {
        if (index >= 0 && untracked(() => this.__value__.length > index)) {
             var item = this.__value__[index];
-            return (BaseType.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
+            return (MuBase.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
        }
     }
 
@@ -395,7 +391,7 @@ class _List extends BaseType {
 
     setValue(newValue, errorContext) {
             let changed = false;
-            if (newValue instanceof _List) {
+            if (newValue instanceof List) {
                 newValue = newValue.__getValueArr__();
             }
             if (isArray(newValue)) {
@@ -424,7 +420,7 @@ class _List extends BaseType {
 
     setValueDeep(newValue, errorContext = null) {
             var changed = false;
-            if (newValue instanceof _List) {
+            if (newValue instanceof List) {
                 newValue = newValue.__getValueArr__();
             }
 
@@ -442,7 +438,7 @@ class _List extends BaseType {
                         this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                     } else if(this.__options__.subTypes.validateType(itemValue)){
                         changed = this.$assignCell(assignIndex, itemValue, errorContext) || changed;
-                    } else if (currentItem.setValueDeep && !BaseType.validateType(itemValue) && !currentItem.$isReadOnly()) {
+                    } else if (currentItem.setValueDeep && !MuBase.validateType(itemValue) && !currentItem.$isReadOnly()) {
                         if (currentItem.constructor.allowPlainVal(itemValue)) {
                             changed = currentItem.setValueDeep(itemValue) || changed;
                         } else {
@@ -482,9 +478,5 @@ class _List extends BaseType {
         this.__value__.length = newLength;
     }
 }
-export default defineType('List', {
-    spec: function() {
-        return {};
-    }
-}, null, _List);
+defineNonPrimitive('List', List);
 

@@ -1,4 +1,4 @@
-import dataTypeMatchers from "./dataTypeMatchers";
+import dataTypeMatchers from "./class-matchers";
 import dataInstanceMatchers from "./dataInstanceMatchers";
 import readOnlyInstanceMatchers from "./readOnlyInstanceMatchers";
 

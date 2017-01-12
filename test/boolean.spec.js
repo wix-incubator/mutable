@@ -1,18 +1,18 @@
 import {expect} from 'chai';
 
-import * as Mutable from '../src';
+import * as mu from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
 describe('Boolean Type', function() {
 
-    var Boolean = Mutable.Boolean;
+    var Boolean = mu.Boolean;
 
     describe('js value is strictly boolean', function() {
 
         var BooleanValues = aDataTypeWithSpec({
-            yes: Mutable.Boolean.withDefault(true),
-            no: Mutable.Boolean.withDefault(false),
-            default: Mutable.Boolean
+            yes: mu.Boolean.withDefault(true),
+            no: mu.Boolean.withDefault(false),
+            default: mu.Boolean
         }, 'BooleanValues');
 
         var booleans;
@@ -40,8 +40,8 @@ describe('Boolean Type', function() {
         var booleans;
         before(() => {
             BooleanValues = aDataTypeWithSpec({
-                yes: Mutable.Boolean.withDefault(1),
-                no: Mutable.Boolean.withDefault(0)
+                yes: mu.Boolean.withDefault(1),
+                no: mu.Boolean.withDefault(0)
             }, 'BooleanValues');
 
             booleans = new BooleanValues()

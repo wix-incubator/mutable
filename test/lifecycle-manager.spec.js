@@ -1,12 +1,12 @@
 import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Mutable from '../src';
+import * as mu from '../src';
 
 describe('LifecycleManager', function() {
     var lifecycleManager;
     beforeEach('init', () => {
-        lifecycleManager = new Mutable.LifeCycleManager();
+        lifecycleManager = new mu.LifeCycleManager();
     });
     describe('manages change', () => {
         it('.forbidChange() sets __readOnly__ to true', () => {

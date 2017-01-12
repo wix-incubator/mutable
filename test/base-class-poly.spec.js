@@ -1,19 +1,14 @@
-/**
- * Created by amira on 21/7/16.
- */
-import * as _ from 'lodash';
-import * as sinon from 'sinon';
 import {expect} from 'chai';
 
-import * as Typorama from '../src';
+import * as mutable from '../src';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 
-describe('BaseType', function() {
+describe('MuObject', function() {
 
     it('should be optionally nullable', function() {
 
         var TestType = aDataTypeWithSpec({
-            poly: Typorama.BaseType.nullable().withDefault(null)
+            poly: mutable.Object.nullable().withDefault(null)
         }, 'Test');
 
         var test = new TestType();
@@ -24,16 +19,16 @@ describe('BaseType', function() {
     it('should allow various types', function() {
 
         var Possib1 = aDataTypeWithSpec({
-            value: Typorama.String.withDefault('possib1')
+            value: mutable.String.withDefault('possib1')
         }, 'Possib1');
 
         var Possib2 = aDataTypeWithSpec({
-            count: Typorama.Number.withDefault(3.14),
-            value: Typorama.String.withDefault('possib2')
+            count: mutable.Number.withDefault(3.14),
+            value: mutable.String.withDefault('possib2')
         }, 'Possib2');
 
         var TestType = aDataTypeWithSpec({
-            poly: Typorama.BaseType.nullable().withDefault(null)
+            poly: mutable.Object.nullable().withDefault(null)
         }, 'TestType');
 
         var test = new TestType();

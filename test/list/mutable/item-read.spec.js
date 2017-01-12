@@ -6,11 +6,11 @@ import {either} from '../../../src';
 function testReadFunctionality(builders, isReadonly) {
     describe('at', function() {
 
-        it('should return a number for native immutable Mutable.Number', function() {
+        it('should return a number for native immutable mu.Number', function() {
             expect(builders.aNumberList().at(0)).to.equal(1);
         });
 
-        it('should return a string for native immutable Mutable.String', function() {
+        it('should return a string for native immutable mu.String', function() {
             expect(builders.aStringList().at(0)).to.equal('John');
         });
 
@@ -106,7 +106,7 @@ function testReadFunctionality(builders, isReadonly) {
 }
 
 describe('List', function() {
-    describe('mutable instance', function() {
+    describe('mu instance', function() {
         testReadFunctionality(builders, false);
     });
     describe('read-only instance', function() {

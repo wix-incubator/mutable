@@ -1,16 +1,15 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import defineType from './define-type';
 import {getValueFromRootRef, getReferenceWrapper} from './utils';
-import BaseType from './base-type';
+import {MuBase, defineNonPrimitive} from './base';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {MapWrapperOverDictionary} from './map-wrapper';
 import {observable, asFlat, asMap, untracked, extras, autorun} from 'mobx';
 import {shouldAssign} from './utils';
-const MAILBOX = getMailBox('Mutable.Es5Map');
+const MAILBOX = getMailBox('mutable.Es5Map');
 
 function entries(map){
     return (typeof map.entries === 'function')? map.entries() : objEntries(map);
@@ -50,20 +49,20 @@ class MapReferenceToDictionary extends MapWrapperOverDictionary{
 }
 
 
-class _Es5Map extends BaseType {
+export default class Es5Map extends MuBase {
 
     static defaults() { return {}; }
 
     static cloneValue(value) {
-        if (_.isArray(value)  || _Es5Map.validateType(value) || _.isObject(value)) {
+        if (_.isArray(value)  || Es5Map.validateType(value) || _.isObject(value)) {
             if (!value){
                 return value;
             }
             if (!isIterable(value)){
                 value = entries(value);
             }
-            _Es5Map._allowIterable(value, this.options);
-            var result = [];
+            Es5Map._allowIterable(value, this.options);
+            const result = [];
             for (let entry of value) {
                 result.push(entry);
             }
@@ -93,9 +92,9 @@ class _Es5Map extends BaseType {
         if (validateNullValue(this, value)) {
             return true;
         } else if (isIterable(value)) {
-            return _Es5Map._allowIterable(value, this.options, errorDetails);
+            return Es5Map._allowIterable(value, this.options, errorDetails);
         } else if (value instanceof Object) {
-            return _Es5Map._allowIterable(objEntries(value), this.options, errorDetails);
+            return Es5Map._allowIterable(objEntries(value), this.options, errorDetails);
         }
         return false;
     }
@@ -136,7 +135,7 @@ class _Es5Map extends BaseType {
         return validateValue(this, value) || isIterable(value) || value instanceof Object;
     }
 
-    static wrapValue(value, spec, options, errorContext) {
+    static makeValue(value, options, errorContext) {
         if (super.validateType(value)) {
             return this._wrapIterable(value.__value__.entries(), options, null, errorContext);
         }
@@ -158,7 +157,7 @@ class _Es5Map extends BaseType {
         if (!ops || !ops.subTypes) {
             return { path: arrow + 'Es5Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>` }
         } else {
-            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, BaseType.reportFieldDefinitionError, 'value');
+            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, MuBase.reportFieldDefinitionError, 'value');
             if (valueTypeError) {
                 return { path: `Es5Map<${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes)}>`, message: valueTypeError.message };
             }
@@ -192,13 +191,6 @@ class _Es5Map extends BaseType {
         }
     }
 
-    static preConstructor(){
-        const report = this.reportDefinitionErrors();
-        if (report) {
-            MAILBOX.error(`Es5Map constructor: "${report.path}" ${report.message}`);
-        }
-    }
-
     static byReference(provider, path = []){
         // wrap provider
         const result = new this();
@@ -208,10 +200,14 @@ class _Es5Map extends BaseType {
 
     constructor(value = [], options = { subTypes: {} }, errorContext = null) {
         if (!errorContext) {
-            errorContext = _Es5Map.createErrorContext('Es5Map constructor error', 'error', options);
+            errorContext = Es5Map.createErrorContext('Es5Map constructor error', 'error', options);
         }
         options.subTypes = generics.typesAsArray(options.subTypes);
         super(value, options, errorContext);
+        const report = this.__ctor__.reportDefinitionErrors();
+        if (report) {
+            MAILBOX.error(`Es5Map constructor: "${report.path}" ${report.message}`);
+        }
     }
 
     // shallow merge native javascript data into the map
@@ -220,7 +216,7 @@ class _Es5Map extends BaseType {
         if (this.$isDirtyable()) {
             untracked(() => {
                 errorContext = errorContext || this.constructor.createErrorContext('Map setValue error', 'error', this.__options__);
-                newValue = this.constructor.wrapValue(newValue, null, this.__options__, errorContext);
+                newValue = this.constructor.makeValue(newValue, this.__options__, errorContext);
                 newValue.forEach((val, key) => {
                     changed = changed || shouldAssign(this.__value__.get(key), val);
                 });
@@ -265,13 +261,13 @@ class _Es5Map extends BaseType {
             // collect data for change
             untracked(() => {
                 errorContext = errorContext || this.constructor.createErrorContext('Es5Map setValue error', 'error', this.__options__);
-                // TODO this code has the same structure as wrapValue, combine both together
+                // TODO this code has the same structure as makeValue, combine both together
                 this.__value__.keys().forEach(key => toDelete[key] = true);
                 const newEntriesVisitor = (val, key) => {
                     delete toDelete[key];
                     this.__setValueDeepHandler__(toSet, toSetValueDeep, key, val, errorContext);
                 };
-                if (BaseType.validateType(newValue)) {
+                if (MuBase.validateType(newValue)) {
                     newValue.__value__.forEach(newEntriesVisitor);
                 } else if (isIterable(newValue)) {
                     for (let [key, val] of newValue) {
@@ -374,7 +370,7 @@ class _Es5Map extends BaseType {
     toJSON(recursive = true, typed = false) {
         let result = {};
         this.__value__.forEach((value, key) => {
-            result[key] = (recursive && value && BaseType.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
+            result[key] = (recursive && value && MuBase.validateType(value)) ? value.toJSON(true, typed) : this.__exposeInner__(value);
         });
         if (typed) {
             result._type = this.constructor.id;
@@ -413,8 +409,4 @@ class _Es5Map extends BaseType {
     }
 }
 
-export default defineType('Es5Map', {
-    spec: function() {
-        return {};
-    }
-}, null, _Es5Map);
+defineNonPrimitive('Es5Map', Es5Map);

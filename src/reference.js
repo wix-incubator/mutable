@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import BaseType from './base-type';
-import defineType from './define-type';
+import {MuObject} from './object';
+import {defineNonPrimitive} from './base';
 import {validateNullValue} from './validation';
 
-const MAILBOX = getMailBox('Mutable.Reference');
+const MAILBOX = getMailBox('mutable.Reference');
 
-class _Reference extends BaseType {
+export default class Reference extends MuObject {
 
 // allow any object as long as it adhers to the entire schema
     static allowPlainVal(value, errorDetails = null) {
@@ -24,11 +24,11 @@ class _Reference extends BaseType {
     }
 
     static wrapValue(refVal, spec, options = {}) {
-        var isValid = Object.keys(this._spec).every(key => {
+        var isValid = Object.keys(spec).every(key => {
             if (refVal[key] === undefined) {
                 MAILBOX.error(`${this.id} cannot accept value with missing field "${key}"`);
                 return false;
-            } else if (!this._spec[key].validateType(refVal[key])) {
+            } else if (!spec[key].validateType(refVal[key])) {
                 MAILBOX.error(`${this.id} field "${key}" cannot accept value with mismatched type`);
                 return false;
             }
@@ -40,8 +40,4 @@ class _Reference extends BaseType {
     static cloneValue(value) { return value; }
 }
 
-export default defineType('Reference', {
-    spec: function(Reference) {
-        return {};
-    }
-}, null, _Reference);
+defineNonPrimitive('Reference', Reference);

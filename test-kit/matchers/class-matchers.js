@@ -1,4 +1,4 @@
-import * as Mutable from '../../src';
+import * as mu from '../../src';
 
 export default function(chai, utils) {
 
@@ -6,10 +6,10 @@ export default function(chai, utils) {
         var Type = this._obj;
 
         this.assert(
-            Mutable.BaseType.prototype.isPrototypeOf(Type.prototype),
+            mu.Object.prototype.isPrototypeOf(Type.prototype),
             'expected a Type but got #{act}',
             'expected not a Type but got #{act}',
-            Mutable.BaseType,
+            mu.Object,
             Type,
             true
         );
