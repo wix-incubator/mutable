@@ -25,16 +25,16 @@ export function isAny(type:any) {
     return isType(type);
 }
 export function isMutable(type:any) {
-    return type.prototype instanceof MuBase;
+    return type && type.prototype instanceof MuBase;
 }
 export function isClass(type:any) {
-    return type.prototype instanceof MuObject;
+    return type && type.prototype instanceof MuObject;
 }
 export function isEnum(type:any) {
-    return type.name === 'EnumType';
+    return type && type.name === 'EnumType';
 }
 export function isNullable(type:any) {
-    return type.options && type.options.nullable;
+    return type && type.options && type.options.nullable;
 }
 
 declare const module: {exports:any};
