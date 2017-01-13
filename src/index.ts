@@ -15,7 +15,7 @@ export {PropsBase} from './props-base';
 export {LifeCycleManager} from './lifecycle';
 export {defineEnum, EnumBase} from './define-enum';
 export {either} from './generic-types';
-import {globalModule, globalModuleMiss} from './singleton-module';
+import {setGlobalModule} from './singleton-module';
 import {MuObject} from "./object";
 import {MuBase} from "./base";
 import {isType} from "./types";
@@ -34,10 +34,8 @@ export function isEnum(type:any) {
     return type && type.name === 'EnumType';
 }
 export function isNullable(type:any) {
-    return type && type.options && type.options.nullable;
+    return !!(type && type.options && type.options.nullable);
 }
 
 declare const module: {exports:any};
-if (!globalModuleMiss){
-    module.exports = globalModule;
-}
+module.exports = setGlobalModule(module.exports);
