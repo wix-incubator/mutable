@@ -56,6 +56,8 @@ export interface MutableObj<T>{
     $setManager(newManager?:LifeCycleManager|null):void;
     $dirtyableElementsIterator: (yielder:DirtyableYielder)=>void;
     $atomsIterator: (yielder:AtomYielder)=>void;
+    setValue(value:DeepPartial<T>, errorContext?:ErrorContext):boolean
+    setValueDeep(value:DeepPartial<T>, errorContext?:ErrorContext):boolean
 }
 
 type DefaultSource<T> = (()=>DeepPartial<T>)|DeepPartial<T>;
