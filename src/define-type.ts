@@ -29,11 +29,16 @@ export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
 export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T>;
 
 export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
-    const ParentType:Class<any> = TypeConstructor || _ParentType || MuObject;
-    if (!MuObject.isJsAssignableFrom(ParentType)){
-        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of Class`);
+    const ParentType:Class<any> = _ParentType || MuObject;
+    let type;
+    if (TypeConstructor){
+        type = TypeConstructor;
+    } else {
+        if (!MuObject.isJsAssignableFrom(ParentType)){
+            MAILBOX.fatal(`Type definition error: ${id} is not a subclass of Class`);
+        }
+        type = inherit(id, ParentType);
     }
-    const type = inherit(id, ParentType);
     defineNonPrimitive(id, type);
     calculateSchemaProperties(typeDefinition, type, ParentType, id);
     return type;

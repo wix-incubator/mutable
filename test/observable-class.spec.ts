@@ -12,7 +12,7 @@ describe('user defined class', () => {
         expect(listener).to.have.been.calledWith(sinon.match(eventMatcher));
     }
     beforeEach(()=>{
-        listener = sinon.spy((change:any)=>console.log(change));
+        listener = sinon.spy();
         spyDestroy = spy(listener);
     });
     afterEach(()=>{
