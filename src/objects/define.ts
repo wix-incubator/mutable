@@ -1,12 +1,12 @@
-import {Spec, Type, Class, isNonPrimitiveType, ReferenceType, Mutable} from '../types';
+import {Type, isNonPrimitiveType, ReferenceType} from '../types';
 import {getMailBox} from 'escalate';
-import {getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from '../utils';
-import {forEach, isFunction, extend} from 'lodash';
+import {inherit, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from '../utils';
+import {forEach, extend, clone} from 'lodash';
 import {misMatchMessage} from '../validation';
-import {untracked, extras} from 'mobx';
-import {DirtyableYielder, AtomYielder} from "../lifecycle";
 import {MuObject} from "./object";
 import {defineNonPrimitive} from '../base';
+import {Class} from "./types";
+import {nonPrimitiveElementsIterator, atomsIterator, fieldAttribute} from "./template-object-methods";
 
 /**
  * the schema of the class to define (input format)
@@ -26,45 +26,39 @@ const MAILBOX = getMailBox('mutable.extend');
 const RESERVED_FIELDS = Object.keys(extend({}, MuObject.prototype));
 
 export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
-export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T>;
-
-export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, _ParentType?: Class<P>, TypeConstructor?: Class<T>):Class<T> {
-    const ParentType:Class<any> = _ParentType || MuObject;
-    let type;
-    if (TypeConstructor){
-        type = TypeConstructor;
-    } else {
-        if (!MuObject.isJsAssignableFrom(ParentType)){
-            MAILBOX.fatal(`Type definition error: ${id} is not a subclass of Class`);
-        }
-        type = inherit(id, ParentType);
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent?: Class<P>, jsType?: Class<T>):Class<T> {
+    parent = parent || MuObject as any as Class<P>;
+    const type = jsType || inherit(id, parent as Class<any>);
+    if (!MuObject.isJsAssignableFrom(type)) {
+        MAILBOX.fatal(`Type definition error: ${id} is not a subclass of Object`);
     }
     defineNonPrimitive(id, type);
-    calculateSchemaProperties(typeDefinition, type, ParentType, id);
+    calculateSchemaProperties(typeDefinition, type, parent, id);
     return type;
 }
 
 // values that are calculated from spec require Type to be defined (for recursive types) so they are attached to the class after definition
-function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, ParentType: Class<any>, id: string) {
-    const typeSelfSpec = typeDefinition.spec(type);
-    const baseSpec = ParentType && ParentType.getFieldsSpec ? ParentType.getFieldsSpec() : {};
-    normalizeSchema(type, baseSpec, typeSelfSpec, ParentType.id);
-    type._spec = generateSpec(id, typeSelfSpec, baseSpec);
-    setSchemaIterators(type.prototype, typeSelfSpec, ParentType.prototype);
-    generateFieldsOn(type.prototype, typeSelfSpec);
-    type.__refType = generateRefType(type);
-}
-
-function isAnyType(fieldDef:Type<any, any>):fieldDef is Class<{}>{
-    return getPrimeType(fieldDef) === MuObject;
-}
-
-function normalizeSchema(type:Class<any>, parentSpec:Spec, typeSelfSpec:Schema, parentName:string) {
-    forEach(typeSelfSpec, (fieldDef:Type<any, any>, fieldName:string) => {
-        if (!validateField(type, parentSpec, fieldName, fieldDef, parentName)){
-            // maybe we should delete the field from the spec if it's not valid?
+function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, parent: Class<any>, id: string) {
+    const definedSpec = typeDefinition.spec(type);
+    const effectiveSpec = parent && parent._spec? clone(parent._spec): {};
+    forEach(definedSpec, (fieldDef:Type<any, any>, fieldName:string) => {
+        if (validateField(type, parent._spec, fieldName, fieldDef, parent.id)){
+            effectiveSpec[fieldName] = fieldDef;
         }
     });
+    type._spec = effectiveSpec;
+    const complex:Array<string> = [];
+    for (let k in definedSpec) {
+        if (isNonPrimitiveType(definedSpec[k])) {
+            complex[complex.length] = k;
+        }
+    }
+    type.prototype.$dirtyableElementsIterator = nonPrimitiveElementsIterator(complex, parent.prototype);
+    type.prototype.$atomsIterator = atomsIterator(definedSpec, parent.prototype);
+    forEach(definedSpec, function(fieldDef:Type<any, any>, fieldName:string) {
+        Object.defineProperty(type.prototype, fieldName, fieldAttribute(fieldName));
+    });
+    type.__refType = generateRefType(type);
 }
 
 function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fieldDef:Type<any, any>, parentName:string):boolean {
@@ -76,7 +70,7 @@ function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fie
     } else if (parentSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism
         error = `already exists on super ${parentName}`;
     } else {
-        const err = MuObject.reportFieldDefinitionError(fieldDef);
+        const err = reportFieldDefinitionError(fieldDef);
         if (err) {
             error = err.message;
             if (err.path) {
@@ -95,64 +89,7 @@ function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fie
     return !error;
 }
 
-function generateSpec(id:string, spec:Schema, baseSpec:Spec) {
-    forEach(spec, (field:Type<any, any>, fieldName:string) => {
-        baseSpec[fieldName] = field;
-    });
-    return baseSpec;
-}
-
-function setSchemaIterators(proto:Mutable<any>, spec:Schema, parent:Mutable<any>) {
-    const complex:Array<string> = [];
-    for (let k in spec) {
-        if (isNonPrimitiveType(spec[k])) {
-            complex[complex.length] = k;
-        }
-    }
-    proto.$dirtyableElementsIterator = function typeDirtyableElementsIterator(yielder: DirtyableYielder) {
-        for (let c of complex) {
-            let k = this.__value__[c];
-            if (k && isFunction(k.$setManager)) { // if value is dirtyable
-                yielder(this, k);
-            }
-        }
-        parent && isFunction(parent.$dirtyableElementsIterator) && parent.$dirtyableElementsIterator.call(this, yielder);
-    };
-    proto.$atomsIterator = function atomsIterator(yielder:AtomYielder) {
-        for (let c in spec) {
-            if (spec.hasOwnProperty(c)) {
-                yielder(extras.getAtom(this.__value__, c) as any);
-            }
-        }
-        parent && isFunction(parent.$atomsIterator) && parent.$atomsIterator.call(this, yielder);
-    };
-}
-
-function generateFieldsOn(proto:any, fieldsDefinition:Schema) {
-    forEach(fieldsDefinition, function(fieldDef:Type<any, any>, fieldName:string) {
-        Object.defineProperty(proto, fieldName, {
-            get: function() {
-                const value = this.__value__[fieldName];
-                if (!this.__isReadOnly__ || value===null || value===undefined || !value.$asReadOnly) {
-                    return value;
-                } else {
-                    return value.$asReadOnly();
-                }
-            },
-            set: function(newValue) {
-                if (this.$isDirtyable()) {
-                    this.$assignField(fieldName, newValue);
-                } else {
-                    untracked(() => {
-                        MAILBOX.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
-                    });
-                }
-            },
-            enumerable: true,
-            configurable: false
-        });
-    });
-}
+// TODO: find a place for the reference type
 
 function getReference<T>(rootReference:() => any, path:Array<string|number>, thisType: Class<any>, fieldDef: Type<T, any>, fieldName: string):T {
     let value = getValueFromRootRef(rootReference, path);

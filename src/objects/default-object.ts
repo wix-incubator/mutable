@@ -1,5 +1,5 @@
 import {defineClass} from './define';
-import {Class} from "../types";
+import {Class} from "./types";
 
 let DefaultClass: Class<{}|null>|null = null;
 export function defaultObject(value:any){

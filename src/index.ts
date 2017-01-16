@@ -6,7 +6,7 @@ export {default as String} from './string';
 export {default as Boolean} from './boolean';
 export {default as Number} from './number';
 export {default as Function} from './function';
-export {default as Reference} from './reference';
+export {default as Reference} from './objects/reference';
 export {default as validation} from './validation';
 export {default as List} from './list';
 export {default as Es5Map, default as Map} from './es5-map';

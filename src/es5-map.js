@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import {getValueFromRootRef, getReferenceWrapper} from './utils';
+import {getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from './utils';
 import {MuBase, defineNonPrimitive} from './base';
 import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
@@ -157,7 +157,7 @@ export default class Es5Map extends MuBase {
         if (!ops || !ops.subTypes) {
             return { path: arrow + 'Es5Map', message: `Untyped Maps are not supported please state types of key and value in the format core3.Es5Map<SomeType>` }
         } else {
-            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, MuBase.reportFieldDefinitionError, 'value');
+            var valueTypeError = generics.reportDefinitionErrors(ops.subTypes, reportFieldDefinitionError, 'value');
             if (valueTypeError) {
                 return { path: `Es5Map<${valueTypeError.path || arrow + generics.toUnwrappedString(ops.subTypes)}>`, message: valueTypeError.message };
             }

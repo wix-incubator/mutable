@@ -3,7 +3,12 @@ import {default as config} from './config';
 import {getMailBox} from 'escalate';
 const MAILBOX = getMailBox('mutable.utils');
 
-import {Type, DeepPartial, ClassOptions, ErrorContext, Mutable, Class, CtorArgs, cast} from "./types";
+import {
+    Type, DeepPartial, ClassOptions, ErrorContext, Mutable, CtorArgs, cast, NonPrimitiveType,
+    ErrorMessage, isType, isNonPrimitiveType
+} from "./types";
+import {Class} from "./objects/types";
+import {Level} from "escalate";
 
 export function isDevMode(){
     return config.devMode;
@@ -111,10 +116,6 @@ export function cloneType<R extends Type<T, S>, T extends Mutable<S>|null, S>(id
     return type;
 }
 
-export function getFieldDef(type:Class<any>, fieldName:string):Type<any, any> {
-    return type._spec[fieldName];
-}
-
 export function getReadableValueTypeName(value:any):string {
     if (value === null)
         return 'null';
@@ -137,7 +138,15 @@ export function getValueFromRootRef(rootReference: () => any, path: Array<string
     return value;
 }
 
-export function getReferenceWrapper<T>(thisType: Class<any>, fieldDef: Type<T, any>, rootReference: () => any, path: Array<string|number>, value: any):T {
+export function getReferenceWrapper<T>(thisType: NonPrimitiveType<any, any>, fieldDef: Type<T, any>, rootReference: () => any, path: Array<string|number>, value: any):T {
     const fieldErrorContext = thisType.createErrorContext('get reference error', 'error');
     return fieldDef._matchValue(value, fieldErrorContext).byReference(rootReference, path);
+}
+
+export function reportFieldDefinitionError(fieldDef:Type<any, any>):ErrorMessage|undefined{
+    if (!isType(fieldDef)) {
+        return { message: `must be a primitive type or extend core3.Type`, path: '' };
+    } else if (isNonPrimitiveType(fieldDef)) {
+        return fieldDef.reportDefinitionErrors();
+    }
 }

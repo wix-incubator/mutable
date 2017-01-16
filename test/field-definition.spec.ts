@@ -1,6 +1,7 @@
 import {expect} from 'chai';
-import {Type, Class} from "../src/types";
+import {Type} from "../src/types";
 import * as mutable from '../src';
+import {Class} from "../src/objects/types";
 
 
 const primitiveClasses: Array<Type<any, any>> = [

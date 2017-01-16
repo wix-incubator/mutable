@@ -16,7 +16,7 @@ export default function(chai, utils) {
 
         var TypeName = Type.displayName || Type;
 
-        var spec = Type.getFieldsSpec()[name];
+        var spec = Type._spec[name];
 
         this.assert(
             spec !== undefined,

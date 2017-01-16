@@ -3,6 +3,7 @@ import {TypeMatch} from "./type-match";
 import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 import {Any} from './any';
 import {MuBase} from "./base";
+import {FieldAtom} from "./objects/field-atom";
 
 export type DeepPartial<T> = {
     [P in keyof T]?:DeepPartial<T[P]>|null;
@@ -76,8 +77,6 @@ export interface NonPrimitiveType<T extends Mutable<S>|null, S> extends Type<T, 
     prototype:T;
     createErrorContext(entryPoint:string, level:Level):ErrorContext;
     reportDefinitionErrors():ErrorMessage|undefined;
-    // this is not the right place for reportFieldDefinitionError
-    reportFieldDefinitionError(field:Type<any, any>):ErrorMessage|undefined;
     uniqueId:string;
     __refType: ReferenceType<T>;
     makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>S;
@@ -85,24 +84,10 @@ export interface NonPrimitiveType<T extends Mutable<S>|null, S> extends Type<T, 
     new(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext): T;
 }
 
-/**
- * the internal schema of a defined class
- */
-export interface Spec{
-    [fieldName:string] : Type<any, any>;
-}
-export function isClass(type:any):type is Class<any>{
-    return type && type._spec && isNonPrimitiveType(type);
-}
-
 export interface ReferenceType<T>{
     new(provider:() => any, path:Array<string|number>):T
 }
-export interface Class<T> extends NonPrimitiveType<T & Mutable<T>, T> {
-    wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
-    _spec:Spec;
-    getFieldsSpec():Spec;
-}
+
 
 export function cast<T>(ref:any): T{
     return ref as T;

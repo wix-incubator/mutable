@@ -37,15 +37,6 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     static defaults:(circularFlags?:string)=> any;
 
     // TODO: move out
-    static reportFieldDefinitionError(fieldDef:Type<any, any>):ErrorMessage|undefined{
-        if (!isType(fieldDef)) {
-            return { message: `must be a primitive type or extend core3.Type`, path: '' };
-        } else if (isNonPrimitiveType(fieldDef)) {
-            return fieldDef.reportDefinitionErrors();
-        }
-    }
-
-    // TODO: move out
     static createErrorContext(entryPoint:string, level:Level):ErrorContext{
         return {
             level,

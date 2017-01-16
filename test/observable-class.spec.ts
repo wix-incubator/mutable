@@ -2,7 +2,7 @@ import * as mutable from '../src';
 import {expect} from 'chai';
 import {spy, Lambda} from 'mobx';
 import * as sinon from 'sinon';
-import {Class} from "../src/types";
+import {Class} from "../src/objects/types";
 
 describe('user defined class', () => {
     let listener:(change: any) => void;

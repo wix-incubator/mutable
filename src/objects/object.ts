@@ -1,13 +1,15 @@
 import * as _ from 'lodash';
 import {MuBase, defineNonPrimitive} from "../base";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, NonPrimitiveType} from "../types";
+import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, NonPrimitiveType} from "../types";
 import {getMailBox} from "escalate";
-import {clone, getFieldDef, shouldAssign, getPrimeType} from "../utils";
+import {shouldAssign, getPrimeType} from "../utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "../validation";
 import {validateAndWrap} from "../type-match";
 import {asReference, observable, untracked, IAtom} from "mobx";
 import {optionalSetManager, DirtyableYielder, AtomYielder} from "../lifecycle";
 import {defaultObject} from "./default-object";
+import {FieldAtom} from "./field-atom";
+import {Class, Spec} from "./types";
 
 const MAILBOX = getMailBox('mutable.MuObject');
 
@@ -18,10 +20,6 @@ function getClass<T>(inst:MuObject<T>): Class<T>{
 export class MuObject<T extends {}> extends MuBase<T>{
     static id = 'Object';
     static _spec: Spec = Object.freeze(Object.create(null));
-
-    static getFieldsSpec(){
-        return clone(this._spec);
-    }
 
     static cloneValue(value:{[key:string]:any}) {
         if (!_.isObject(value)) { return {}; }
@@ -102,7 +100,11 @@ export class MuObject<T extends {}> extends MuBase<T>{
     }
 
     static makeAtoms(){
-        return {};
+        const atoms:{[k:string]:FieldAtom} = {};
+        _.each(this._spec, (fieldSpec:Type<any, any>, key:string) => {
+            atoms[key] = new FieldAtom('somePath.'+key);
+        });
+        return atoms;
     }
 
     static wrapValue<T extends Object>(value:DeepPartial<T>|null, spec:Spec, options?:ClassOptions, errorContext?:ErrorContext):T|null {
@@ -132,7 +134,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
             return new this(value, options, errorContext);
         }
     }
-    protected __atoms__: {[l:string/*keyof T*/]:IAtom};
+    protected __atoms__: {[l:string/*keyof T*/]:FieldAtom};
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super(value, options, errorContext);
@@ -150,7 +152,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
         if (this.$isDirtyable()) {
             let changed = false;
             _.forEach(newValue, (fieldValue, fieldName:keyof T) => {
-                const fieldSpec = getFieldDef( getClass(this), fieldName);
+                const fieldSpec = getClass(this)._spec[fieldName];
                 if (fieldSpec) {
                     const fieldErrorContext = _.defaults({path: errorContext.path + '.' + fieldName }, errorContext);
                     const newValue = fieldSpec._matchValue(fieldValue, fieldErrorContext).wrap();
@@ -199,7 +201,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
         // don't assign if input is the same as existing value
         if(untracked(() => {
                 if (shouldAssign(this.__value__[fieldName], newValue)) {
-                    const fieldDef = getFieldDef( getClass(this), fieldName);
+                    const fieldDef = getClass(this)._spec[fieldName];
                     const typedField = isAssignableFrom(MuBase, fieldDef);
                     // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
                     if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
