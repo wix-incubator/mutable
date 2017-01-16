@@ -26,6 +26,7 @@ const MAILBOX = getMailBox('mutable.extend');
 const RESERVED_FIELDS = Object.keys(extend({}, MuObject.prototype));
 
 export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent: Class<P>):Class<T>;
 export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent?: Class<P>, jsType?: Class<T>):Class<T> {
     parent = parent || MuObject as any as Class<P>;
     const type = jsType || inherit(id, parent as Class<any>);
@@ -62,9 +63,10 @@ function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, p
 }
 
 function validateField(type:Class<any>, parentSpec:Schema, fieldName:string, fieldDef:Type<any, any>, parentName:string):boolean {
-    let error;
+    let error: any = null;
     const errorContext = MuObject.createErrorContext(`Type definition error`, 'fatal');
     let path = `${type.id}.${fieldName}`;
+    // TODO validate (sanitize) field name against js injection
     if (~RESERVED_FIELDS.indexOf(fieldName)){
         error = 'is a reserved field.';
     } else if (parentSpec[fieldName]) { // todo add '&& !isAssignableFrom(...) check to allow polymorphism

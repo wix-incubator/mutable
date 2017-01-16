@@ -12,9 +12,9 @@ interface Schema{
 }
 const MAILBOX = getMailBox('mutable.extend');
 
-export function nonPrimitiveElementsIterator(complex: Array<string>, parent: Mutable<any>) {
+export function nonPrimitiveElementsIterator(nonPrimitiveFields: Array<string>, parent: Mutable<any>) {
     return function typeDirtyableElementsIterator(yielder: DirtyableYielder) {
-        for (let c of complex) {
+        for (let c of nonPrimitiveFields) {
             let k = this.__value__[c];
             if (k && isFunction(k.$setManager)) { // if value is dirtyable
                 yielder(this, k);
