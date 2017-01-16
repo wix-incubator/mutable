@@ -593,28 +593,6 @@ describe('Custom data', function() {
             });
 
         });
-        describe("with global freeze config", function() {
-
-            before("set global freeze configuration", function() {
-                mu.config.freezeInstance = true;
-            });
-
-            after("clear global freeze configuration", function() {
-                mu.config.freezeInstance = false;
-            });
-
-            it("should throw error on unknown field setter", function() {
-                var ImageType = aDataTypeWithSpec({
-                    src: mu.String.withDefault('default.jpg')
-                }, 'ImageType');
-                var image = new ImageType();
-
-                expect(function() {
-                    image.notAField = "there is no notAField";
-                }).to.throw();
-            });
-
-        });
 
         it('should return json value from toJSON()', function() {
             var userData = new UserWithChild();
@@ -756,28 +734,6 @@ describe('Custom data', function() {
                 var readOnly = instance.$asReadOnly();
                 expect(readOnly.getRuntimeId()).to.equal(instance.getRuntimeId());
             });
-        });
-        describe("with global freeze config", function() {
-
-            before("set global freeze configuration", function() {
-                mu.config.freezeInstance = true;
-            });
-
-            after("clear global freeze configuration", function() {
-                mu.config.freezeInstance = false;
-            });
-
-            it("should throw error on unknown field setter", function() {
-                var ImageType = aDataTypeWithSpec({
-                    src: mu.String.withDefault('default.jpg')
-                }, 'ImageType');
-                var image = new ImageType().$asReadOnly();
-
-                expect(function() {
-                    image.notAField = "there is no notAField";
-                }).to.throw();
-            });
-
         });
     });
 });

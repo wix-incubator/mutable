@@ -5,7 +5,7 @@ import {getMailBox} from "escalate";
 import {clone, getFieldDef, shouldAssign, getPrimeType} from "../utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "../validation";
 import {validateAndWrap} from "../type-match";
-import {asReference, observable, untracked} from "mobx";
+import {asReference, observable, untracked, IAtom} from "mobx";
 import {optionalSetManager, DirtyableYielder, AtomYielder} from "../lifecycle";
 import {defaultObject} from "./default-object";
 
@@ -15,7 +15,7 @@ function getClass<T>(inst:MuObject<T>): Class<T>{
     return inst.constructor as Class<T>;
 }
 
-export class MuObject<T> extends MuBase<T>{
+export class MuObject<T extends {}> extends MuBase<T>{
     static id = 'Object';
     static _spec: Spec = Object.freeze(Object.create(null));
 
@@ -101,6 +101,10 @@ export class MuObject<T> extends MuBase<T>{
         return this.wrapValue<T>(value, this._spec, options, errorContext);
     }
 
+    static makeAtoms(){
+        return {};
+    }
+
     static wrapValue<T extends Object>(value:DeepPartial<T>|null, spec:Spec, options?:ClassOptions, errorContext?:ErrorContext):T|null {
         if (value === null){
             return null;
@@ -128,10 +132,12 @@ export class MuObject<T> extends MuBase<T>{
             return new this(value, options, errorContext);
         }
     }
+    protected __atoms__: {[l:string/*keyof T*/]:IAtom};
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super(value, options, errorContext);
         errorContext = errorContext || this.__ctor__.createErrorContext('Type constructor error', 'error');
+        this.__atoms__ = getClass(this).makeAtoms();
         if (MuObject as any === getPrimeType(this.__ctor__)){
             MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" Instantiating the base type is not allowed. You should extend it instead.`);
         } else if (MuObject.uniqueId === getPrimeType(this.__ctor__).uniqueId) {

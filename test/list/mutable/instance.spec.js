@@ -11,26 +11,6 @@ describe('List', function() {
             expect(numberList.length).to.equal(3);
         });
 
-        describe("with global freeze config", function() {
-
-            before("set global freeze configuration", function() {
-                mu.config.freezeInstance = true;
-            });
-
-            after("clear global freeze configuration", function() {
-                mu.config.freezeInstance = false;
-            });
-
-            it("should throw error on unknown field setter", function() {
-                var names = aStringList();
-
-                expect(function() {
-                    names[4] = "there is no 4 - only at()";
-                }).to.throw('object is not extensible');
-            });
-
-        });
-
         describe('as field on data object', function() {
             var GroupType;
             beforeEach(() => {

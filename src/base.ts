@@ -18,9 +18,6 @@ const MAILBOX = getMailBox('mutable.MuBase');
 function createReadOnly<T>(source:Mutable<T>):ReadonlyMutable<T> {
     const result = Object.create(source);
     result.__isReadOnly__ = true;
-    if (config.freezeInstance) {
-        Object.freeze(result);
-    }
     return result;
 }
 
@@ -108,9 +105,6 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
             options,
             errorContext
         );
-        if (config.freezeInstance) {
-            Object.freeze(this);
-        }
     }
 
     abstract $dirtyableElementsIterator(yielder:DirtyableYielder):void;

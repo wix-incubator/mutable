@@ -28,26 +28,6 @@ describe('List', function() {
             expect(numberList.$asReadOnly()).to.equal(numberList.$asReadOnly());
         });
 
-        describe("with global freeze config", function() {
-
-            before("set global freeze configuration", function() {
-                mu.config.freezeInstance = true;
-            });
-
-            after("clear global freeze configuration", function() {
-                mu.config.freezeInstance = false;
-            });
-
-            it("should throw error on unknown field setter", function() {
-                var names = builders.aStringList();
-
-                expect(function() {
-                    names[4] = "there is no 4 - only at()";
-                }).to.throw('object is not extensible');
-            });
-
-        });
-
         describe('__value__', function() {
             it('should be synced with the readonly', function() {
                 var readOnly = builders.aUserList();
