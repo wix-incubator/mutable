@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import {MuObject} from './object';
+import {MuObject} from './objects/object';
 import {defineNonPrimitive} from './base';
 import {validateNullValue} from './validation';
 import {ErrorDetails, DeepPartial, ClassOptions, Spec, ErrorContext} from "./types";

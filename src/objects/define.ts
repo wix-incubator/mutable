@@ -1,12 +1,12 @@
-import {Spec, Type, Class, isNonPrimitiveType, ReferenceType, Mutable} from './types';
+import {Spec, Type, Class, isNonPrimitiveType, ReferenceType, Mutable} from '../types';
 import {getMailBox} from 'escalate';
-import {generateClassId, getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from './utils';
+import {getPrimeType, inherit, getValueFromRootRef, getReferenceWrapper} from '../utils';
 import {forEach, isFunction, extend} from 'lodash';
-import {misMatchMessage, validateValue} from './validation';
+import {misMatchMessage} from '../validation';
 import {untracked, extras} from 'mobx';
-import {DirtyableYielder, AtomYielder} from "./lifecycle";
+import {DirtyableYielder, AtomYielder} from "../lifecycle";
 import {MuObject} from "./object";
-import {defineNonPrimitive} from './base';
+import {defineNonPrimitive} from '../base';
 
 /**
  * the schema of the class to define (input format)
