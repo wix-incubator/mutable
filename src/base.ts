@@ -3,25 +3,15 @@ import {getMailBox} from 'escalate';
 import config from './config';
 import {setManager, isDirtyable, DirtyableYielder, AtomYielder, LifeCycleManager} from './lifecycle';
 import {Any} from './any';
-import {getPrimeType, inherit, generateClassId} from './utils';
+import {getPrimeType, generateClassId} from './utils';
 import {validateValue} from './validation';
 import {isDataMatching} from './type-match';
 import {
     Mutable, DeepPartial, ClassOptions, ErrorContext,
     Type, NonPrimitiveType, ReadonlyMutable, ErrorMessage,
-    isType, isNonPrimitiveType, ReferenceType, Class
-} from "./types";
+    isType, isNonPrimitiveType, ReferenceType} from "./types";
 import {Level} from "escalate";
-import {defineClass} from './define-type';
-
-let DefaultClass: Class<{}|null>|null = null;
-export function defaultNonPrimitive(value:any){
-    if (!DefaultClass){
-        // lazy class definition because `defineClass` is a circular reference
-        DefaultClass = defineClass('Default', { spec: () => ({}) }).nullable();
-    }
-    return DefaultClass.create(value);
-}
+import {defaultObject} from "./objects/default-object";
 
 const MAILBOX = getMailBox('mutable.MuBase');
 
@@ -80,9 +70,9 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     static create<T>(this:NonPrimitiveType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
         if (MuBase as any === getPrimeType(this)){
             if (typeof this.defaults === 'function'){
-                return defaultNonPrimitive(this.defaults()) as Mutable<T>;
+                return defaultObject(this.defaults()) as Mutable<T>;
             } else {
-                return defaultNonPrimitive(value) as Mutable<T>;
+                return defaultObject(value) as Mutable<T>;
             }
         } else {
             return new this(value, options, errorContext);

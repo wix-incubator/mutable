@@ -1,12 +1,13 @@
 import * as _ from 'lodash';
-import {MuBase, defineNonPrimitive, defaultNonPrimitive} from "./base";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, NonPrimitiveType} from "./types";
+import {MuBase, defineNonPrimitive} from "../base";
+import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, Spec, Class, NonPrimitiveType} from "../types";
 import {getMailBox} from "escalate";
-import {clone, getFieldDef, shouldAssign, getPrimeType} from "./utils";
-import {validateNullValue, isAssignableFrom, misMatchMessage} from "./validation";
-import {validateAndWrap} from "./type-match";
+import {clone, getFieldDef, shouldAssign, getPrimeType} from "../utils";
+import {validateNullValue, isAssignableFrom, misMatchMessage} from "../validation";
+import {validateAndWrap} from "../type-match";
 import {asReference, observable, untracked} from "mobx";
-import {optionalSetManager, DirtyableYielder, AtomYielder} from "./lifecycle";
+import {optionalSetManager, DirtyableYielder, AtomYielder} from "../lifecycle";
+import {defaultObject} from "./default-object";
 
 const MAILBOX = getMailBox('mutable.MuObject');
 
@@ -38,7 +39,7 @@ export class MuObject<T> extends MuBase<T>{
         const isCircular = ~circularFlags.indexOf(';' + this.uniqueId + ';');
         if (isCircular) {
             if (!this.options || !this.options.nullable) {
-                MAILBOX.warn('DEFAULT CYRCULAR DATA! resolving value as null - please add better error/warning');
+                MAILBOX.warn('DEFAULT CIRCULAR DATA! resolving value as null - please add better error/warning');
             }
             return null;
         } else {
@@ -122,7 +123,7 @@ export class MuObject<T> extends MuBase<T>{
 
     static create<T>(this:NonPrimitiveType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext){
         if (MuObject as any === getPrimeType(this)){
-            return defaultNonPrimitive(this.defaults());
+            return defaultObject(this.defaults());
         } else {
             return new this(value, options, errorContext);
         }
