@@ -13,5 +13,6 @@ export function isClass(type:any):type is Class<any>{
 export interface Class<T> extends NonPrimitiveType<T & Mutable<T>, T> {
     wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
     _spec:Spec;
+    getFieldsSpec:()=>Spec;
     makeAtoms():{[k:string]:FieldAtom};
 }

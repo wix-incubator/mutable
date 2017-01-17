@@ -49,6 +49,10 @@ export class MuObject<T extends {}> extends MuBase<T>{
         }
     }
 
+    static getFieldsSpec(){
+        return _.clone(this._spec);
+    }
+
     static validate(value:any):value is any {
         if(value===undefined){
             return false;
