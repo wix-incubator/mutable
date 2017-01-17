@@ -1,82 +1,126 @@
 import * as mutable from '../../src';
 import {expect} from 'chai';
-import {spy, Lambda} from 'mobx';
+import {spy, Lambda, Reaction} from 'mobx';
 import * as sinon from 'sinon';
-import {Class} from "../../src/objects/types";
+import {Class, MutableObj} from "../../src/objects/types";
+import {SinonSpy} from 'sinon';
+
+type Parent = {foo:number};
+type Child = Parent & {bar:number};
 
 describe('user defined class', () => {
-    let listener:(change: any) => void;
-    let spyDestroy:Lambda;
-    function expectMobxReported(expected: {[k:string]:any}) {
-        const eventMatcher = (change:{[k:string]:any}) => Object.keys(expected).every(k => change[k] === expected[k]);
-        expect(listener).to.have.been.calledWith(sinon.match(eventMatcher));
-    }
-    beforeEach(()=>{
-        listener = sinon.spy();
-        spyDestroy = spy(listener);
-    });
-    afterEach(()=>{
-        spyDestroy();
-    });
-    let Child:Class<{foo:number, bar:number}>;
+    let Child:Class<Child>;
+    let child:MutableObj<Child>;
+
     before(()=>{
-        const Parent = mutable.define<{foo:number}>('Parent', {spec:(c)=>({
+        const Parent = mutable.define<Parent>('Parent', {spec:(c)=>({
             foo:mutable.Number
         })});
-        Child = mutable.define<{foo:number, bar:number}, {foo:number}>('Child', {spec:(c)=>({
+        Child = mutable.define<Child, Parent>('Child', {spec:(c)=>({
             bar:mutable.Number
         })}, Parent);
     });
-    it('own field assignment is observed by mobx', () => {
-        const child = new Child();
-        child.bar = 2;
-        expectMobxReported({
-            type: 'update',
-            oldValue: 0,
-            newValue: 2,
-            name: 'bar'
+    beforeEach(() => {
+        child = new Child();
+    });
+
+    describe('reports to mobx spy on', () => {
+        let listener:(change: any) => void;
+        let spyDestroy:Lambda;
+        function expectMobxReported(expected: {[k:string]:any}) {
+            const eventMatcher = (change:{[k:string]:any}) => Object.keys(expected).every(k => change[k] === expected[k]);
+            expect(listener).to.have.been.calledWith(sinon.match(eventMatcher));
+        }
+        beforeEach(()=>{
+            listener = sinon.spy();
+            spyDestroy = spy(listener);
+        });
+        afterEach(()=>{
+            spyDestroy();
+        });
+        it('own field assignment', () => {
+            child.bar = 2;
+            expectMobxReported({
+                type: 'update',
+                oldValue: 0,
+                newValue: 2,
+                name: 'bar'
+            });
+        });
+        it('inherited field assignment', () => {
+            child.foo = 2;
+            expectMobxReported({
+                type: 'update',
+                oldValue: 0,
+                newValue: 2,
+                name: 'foo'
+            });
+        });
+        it('setValue', () => {
+            child.setValue({foo : 2, bar : 2});
+            expectMobxReported({
+                type: 'update',
+                oldValue: 0,
+                newValue: 2,
+                name: 'foo'
+            });
+            expectMobxReported({
+                type: 'update',
+                oldValue: 0,
+                newValue: 2,
+                name: 'bar'
+            });
+        });
+        it('setValueDeep', () => {
+            child.setValueDeep({foo : 2, bar : 2});
+            expectMobxReported({
+                type: 'update',
+                oldValue: 0,
+                newValue: 2,
+                name: 'foo'
+            });
+            expectMobxReported({
+                type: 'update',
+                oldValue: 0,
+                newValue: 2,
+                name: 'bar'
+            });
         });
     });
-    it('inherited field assignment is observed by mobx', () => {
-        const child = new Child();
-        child.foo = 2;
-        expectMobxReported({
-            type: 'update',
-            oldValue: 0,
-            newValue: 2,
-            name: 'foo'
+
+    describe('triggers mobx on changes to', () => {
+        let fooSpy:SinonSpy, fooReaction:Reaction, barSpy:SinonSpy, barReaction:Reaction;
+        beforeEach(() => {
+            fooSpy = sinon.spy();
+            fooReaction = new Reaction('foo', fooSpy);
+            fooReaction.track(() => child.foo);
+            barSpy = sinon.spy();
+            barReaction = new Reaction('bar', barSpy);
+            barReaction.track(() => child.bar);
         });
-    });
-    it('setValue is observed by mobx', () => {
-        const child = new Child();
-        child.setValue({foo : 2, bar : 2});
-        expectMobxReported({
-            type: 'update',
-            oldValue: 0,
-            newValue: 2,
-            name: 'foo'
+        afterEach(() => {
+            fooReaction.dispose();
+            barReaction.dispose();
         });
-        expectMobxReported({
-            type: 'update',
-            oldValue: 0,
-            newValue: 2,
-            name: 'bar'
+        it('own field assignment', () => {
+            child.bar = 2;
+            expect(barSpy).to.have.been.callCount(1);
         });
-    });
-    it('setValueDeep is observed by mobx', () => {
-        const child = new Child();
-        child.setValueDeep({foo : 2, bar : 2});
-        expectMobxReported({
-            type: 'update',
-            oldValue: 0,
-            newValue: 2,
-            name: 'foo'
+        it('inherited field assignment', () => {
+            child.foo = 2;
+            expect(fooSpy).to.have.been.callCount(1);
         });
-        expectMobxReported({
-            type: 'update',
-            oldValue: 0,
-            newValue: 2,
-            name: 'bar'
+
+        it('setValue', () => {
+            child.setValue({foo : 2, bar : 2});
+            expect(fooSpy).to.have.been.callCount(1);
+            expect(barSpy).to.have.been.callCount(1);
+        });
+
+        it('setValueDeep', () => {
+            child.setValueDeep({foo : 2, bar : 2});
+            expect(fooSpy).to.have.been.callCount(1);
+            expect(barSpy).to.have.been.callCount(1);
         });
     });
 });

@@ -202,6 +202,27 @@ export class MuObject<T extends {}> extends MuBase<T>{
     // will report error for undefined fields
     // returns whether the field value has changed
     $assignField(fieldName:keyof T, newValue:any, errorContext?:ErrorContext) {
+        /*
+         // don't assign if input is the same as existing value
+         if (shouldAssign(this.__value__[fieldName], newValue)) {
+         const fieldDef = getClass(this)._spec[fieldName];
+         const typedField = isAssignableFrom(MuBase, fieldDef);
+         // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
+         if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
+         // validation passed set the value
+         this.__value__[fieldName] = newValue;
+         optionalSetManager(newValue, this.__lifecycleManager__);
+         return true;
+         } else {
+         if (!errorContext){
+         errorContext = this.__ctor__.createErrorContext('Set error', 'error');
+         errorContext.path  = errorContext.path + '.'+fieldName;
+         }
+         MAILBOX.post(errorContext.level, misMatchMessage(errorContext,fieldDef, newValue));
+         }
+         }
+         return false;
+         */
         // don't assign if input is the same as existing value
         if(untracked(() => {
                 if (shouldAssign(this.__value__[fieldName], newValue)) {

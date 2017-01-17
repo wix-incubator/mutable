@@ -40,16 +40,15 @@ export function isMutable(obj:any):obj is Mutable<any>{
 }
 
 // wrapped object : class instance, list, map
-export type Mutable<T> = MutableObj<T>;// & T;
 export type ReadonlyMutable<T> = Mutable<Readonly<T>>;
 
-export interface MutableObj<T>{
+export interface Mutable<T>{
   //  constructor:NonPrimitiveType<Mutable<T>, T>;
     toJS(typed?:boolean):T;
     toJSON(recursive?:boolean, typed?:boolean):T;
     $isDirtyable():boolean;
     $isReadOnly():boolean;
-    $asReadOnly(): ReadonlyMutable<T>;
+    $asReadOnly(): ReadonlyMutable<T>; // TODO improve for MutableObj
     getRuntimeId():number;
     matches(other:any) :boolean;
     __isReadOnly__:boolean;
