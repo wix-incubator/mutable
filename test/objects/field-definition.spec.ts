@@ -1,8 +1,7 @@
 import {expect} from 'chai';
-import {Type} from "../src/types";
-import * as mutable from '../src';
-import {Class} from "../src/objects/types";
-
+import {Type} from "../../src/types";
+import * as mutable from '../../src';
+import {Class} from "../../src/objects/types";
 
 const primitiveClasses: Array<Type<any, any>> = [
     mutable.String,

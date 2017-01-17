@@ -1,4 +1,4 @@
-import * as mutable from '../src';
+import * as mutable from '../../src';
 import {expect} from 'chai';
 
 describe('user defined class', () => {
