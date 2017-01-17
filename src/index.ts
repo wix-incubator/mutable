@@ -11,7 +11,7 @@ export {default as validation} from './validation';
 export {default as List} from './list';
 export {default as Es5Map, default as Map} from './es5-map';
 export {MuBase as Base} from './base';
-export {PropsBase} from './props-base';
+export {propsBase as PropsBase} from './props-base';
 export {LifeCycleManager} from './lifecycle';
 export {defineEnum, EnumBase} from './define-enum';
 export {either} from './generic-types';
