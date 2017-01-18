@@ -8,7 +8,7 @@ import {SinonSpy} from 'sinon';
 type Parent = {foo:number};
 type Child = Parent & {bar:number};
 
-describe.only('user defined class', () => {
+describe('user defined class', () => {
     let Child:Class<Child>;
     let child:MutableObj<Child>;
 
