@@ -17,7 +17,7 @@ function complexSubTypeTests() {
         expect(list.at(0).address).to.be.eql('');
         expect(list.at(0)).to.be.equal(address);
         expect(log.filter(change => change.object === list.__value__)).to.be.empty;
-        expect(log.filter(change => change.object === list.at(0).__value__)).not.to.be.empty;
+        expect(log.filter(change => change.object === list.at(0))).not.to.be.empty;
     });
 
     it('single not be dirty if nothing changed', function() {
@@ -36,8 +36,8 @@ function complexSubTypeTests() {
         expect(mixedList.at(0)).to.equal(newUser);
         expect(mixedList.at(1)).to.equal(newAddress);
         expect(log.filter(change => change.object === mixedList.__value__)).to.be.empty;
-        expect(log.filter(change => change.object === mixedList.at(0).__value__)).not.to.be.empty;
-        expect(log.filter(change => change.object === mixedList.at(1).__value__)).not.to.be.empty;
+        expect(log.filter(change => change.object === mixedList.at(0))).not.to.be.empty;
+        expect(log.filter(change => change.object === mixedList.at(1))).not.to.be.empty;
     });
 
     it('should replace item for mismatch type', function() {
@@ -49,20 +49,21 @@ function complexSubTypeTests() {
         expect(mixedList.at(0)).to.be.an.instanceOf(AddressType);
         expect(mixedList.at(1)).to.equal(anAddress);
         expect(log.filter(change => change.object === mixedList.__value__)).not.to.be.empty;
-        expect(log.filter(change => change.object === aUser.__value__)).to.be.empty;
-        expect(log.filter(change => change.object === mixedList.at(1).__value__)).not.to.be.empty;
+        expect(log.filter(change => change.object === aUser)).to.be.empty;
+        expect(log.filter(change => change.object === mixedList.at(1))).not.to.be.empty;
     });
 
     it('should create new item if item is read only', function() {
         var address = new AddressType({ address: 'gaga' });
         var list = mu.List.of(AddressType).create([address.$asReadOnly()]);
+
         var log = getMobxLogOf(()=> list.setValueDeep([{ code: 5 }]));
 
         expect(list.at(0)).to.not.be.equal(address);
 
         expect(log.filter(change => change.object === list.__value__)).not.to.be.empty;
-        expect(log.filter(change => change.object === list.at(0).__value__)).not.to.be.empty;
-        expect(log.filter(change => change.object === address.__value__)).to.be.empty;
+        expect(log.filter(change => change.object === list.at(0))).not.to.be.empty;
+        expect(log.filter(change => change.object === address)).to.be.empty;
     });
 }
 modifyTestSuite('setValueDeep', { complexSubTypeTests });

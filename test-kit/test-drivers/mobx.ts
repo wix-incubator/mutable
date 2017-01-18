@@ -1,7 +1,7 @@
 import * as mobx from 'mobx';
 
-export function getMobxLogOf(action, subject) {
-    var log = [];
+export function getMobxLogOf(action:Function, subject?:any):any[] {
+    let log:any[] = [];
     let unRegister = mobx.spy(change => log.push(change));
     try {
         action();

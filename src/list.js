@@ -315,10 +315,10 @@ export default class List extends MuBase {
 
     // Accessor methods
     at(index) {
-       if (index >= 0 && untracked(() => this.__value__.length > index)) {
+        if (index >= 0 && untracked(() => this.__value__.length > index)) {
             var item = this.__value__[index];
             return (MuBase.validateType(item) && this.__isReadOnly__) ? item.$asReadOnly() : item;
-       }
+        }
     }
 
     concat(...addedArrays) {
@@ -390,70 +390,70 @@ export default class List extends MuBase {
     }
 
     setValue(newValue, errorContext) {
-            let changed = false;
-            if (newValue instanceof List) {
-                newValue = newValue.__getValueArr__();
+        let changed = false;
+        if (newValue instanceof List) {
+            newValue = newValue.__getValueArr__();
+        }
+        if (isArray(newValue)) {
+            const lengthDiff = this.__value__.length - newValue.length;
+            if (lengthDiff > 0) {
+                // current array is longer than newValue, fill the excess cells with undefined
+                changed = true;
+                this.__value__.splice(newValue.length, lengthDiff);
             }
-            if (isArray(newValue)) {
-                const lengthDiff = this.__value__.length - newValue.length;
-                if (lengthDiff > 0) {
-                    // current array is longer than newValue, fill the excess cells with undefined
-                    changed = true;
-                    this.__value__.splice(newValue.length, lengthDiff);
-                }
 
-                _.forEach(newValue, (itemValue, idx) => {
-                    let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
-                    errorContext.path += `[${idx}]`;
-                    const newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                    if (this.__value__.length <= idx){
-                        this.__value__.push(newItemVal);
-                        changed = true;
-                    } else {
-                        changed = this.$assignCell(idx, newItemVal, errorContext) || changed;
-                    }
-                });
-                this.__value__.length = newValue.length;
-            }
-            return changed;
+            _.forEach(newValue, (itemValue, idx) => {
+                let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValue error', 'error', this.__options__);
+                errorContext.path += `[${idx}]`;
+                const newItemVal = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                if (this.__value__.length <= idx){
+                    this.__value__.push(newItemVal);
+                    changed = true;
+                } else {
+                    changed = this.$assignCell(idx, newItemVal, errorContext) || changed;
+                }
+            });
+            this.__value__.length = newValue.length;
+        }
+        return changed;
     }
 
     setValueDeep(newValue, errorContext = null) {
-            var changed = false;
-            if (newValue instanceof List) {
-                newValue = newValue.__getValueArr__();
-            }
+        var changed = false;
+        if (newValue instanceof List) {
+            newValue = newValue.__getValueArr__();
+        }
 
-            if (isArray(newValue)) {
-                changed = this.length !== newValue.length;
-                let assignIndex = 0;
-                let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
-                _.forEach(newValue, (itemValue, newValIndex) => {
-                    const isPassedArrayLength = this.length <= assignIndex;
-                    const currentItem = isPassedArrayLength? undefined : untracked(() => this.__value__[assignIndex]);
-                    if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
-                        MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
-                    } else if (isPassedArrayLength) {
-                        changed = true;
-                        this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                    } else if(this.__options__.subTypes.validateType(itemValue)){
-                        changed = this.$assignCell(assignIndex, itemValue, errorContext) || changed;
-                    } else if (currentItem.setValueDeep && !MuBase.validateType(itemValue) && !currentItem.$isReadOnly()) {
-                        if (currentItem.constructor.allowPlainVal(itemValue)) {
-                            changed = currentItem.setValueDeep(itemValue) || changed;
-                        } else {
-                            const newValue = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
-                            changed = this.$assignCell(assignIndex, newValue, errorContext) || changed;
-                        }
+        if (isArray(newValue)) {
+            changed = this.length !== newValue.length;
+            let assignIndex = 0;
+            let errorContext = errorContext ? clone(errorContext) : this.constructor.createErrorContext('List setValueDeep error', 'error', this.__options__);
+            _.forEach(newValue, (itemValue, newValIndex) => {
+                const isPassedArrayLength = this.length <= assignIndex;
+                const currentItem = isPassedArrayLength? undefined : untracked(() => this.__value__[assignIndex]);
+                if (!isPassedArrayLength && (typeof currentItem === 'null' || typeof currentItem === 'undefined')) {
+                    MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" List setValueDeep() is not implemented for null cells yet`);
+                } else if (isPassedArrayLength) {
+                    changed = true;
+                    this.__value__[assignIndex] = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                } else if(this.__options__.subTypes.validateType(itemValue)){
+                    changed = this.$assignCell(assignIndex, itemValue, errorContext) || changed;
+                } else if (currentItem.setValueDeep && !MuBase.validateType(itemValue) && !currentItem.$isReadOnly()) {
+                    if (currentItem.constructor.allowPlainVal(itemValue)) {
+                        changed = currentItem.setValueDeep(itemValue) || changed;
                     } else {
                         const newValue = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
                         changed = this.$assignCell(assignIndex, newValue, errorContext) || changed;
                     }
-                    assignIndex++;
-                });
-                this.__value__.length = newValue.length;
-            }
-            return changed;
+                } else {
+                    const newValue = this.constructor._wrapSingleItem(itemValue, this.__options__, this.__lifecycleManager__, errorContext);
+                    changed = this.$assignCell(assignIndex, newValue, errorContext) || changed;
+                }
+                assignIndex++;
+            });
+            this.__value__.length = newValue.length;
+        }
+        return changed;
     }
 
     /**

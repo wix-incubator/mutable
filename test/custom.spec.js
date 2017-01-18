@@ -512,14 +512,14 @@ describe('Custom data', function() {
 
                 var instance = new UserWithChild({ child: childInstance });
 
-                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance.__value__);
+                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance);
                 expect(log).to.not.be.empty;
                 expect(childInstance).to.not.be.equal(instance.child);
             });
             it('should create new child if child is null', function() {
 
                 var instance = new UserWithNullableChild({ child: null });
-                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance.__value__);
+                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance);
                 expect(log).to.not.be.empty;
             });
             it('complex children props should be set to default if not specified', function() {
@@ -531,7 +531,7 @@ describe('Custom data', function() {
             });
             it('should not invalidate item if child has not changed', function() {
                 var instance = new UserWithChild({ child: { name: 'zagzag' } });
-                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance.__value__);
+                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance);
                 expect(log).to.be.empty;
             });
             it('should not invalidate item if null child was set to null', function() {
@@ -542,8 +542,8 @@ describe('Custom data', function() {
             it('should invalidate if child has changed', function() {
                 var instance = new UserWithChild({ child: { name: 'zagzag' } });
                 var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'not zagzag' } }));
-                expect(log.filter(change => change.object === instance.__value__)).to.be.empty;
-                expect(log.filter(change => change.object === instance.child.__value__)).not.to.be.empty;
+                expect(log.filter(change => change.object === instance)).to.be.empty;
+                expect(log.filter(change => change.object === instance.child)).not.to.be.empty;
             });
             describe('setting values of wrong type', () => {
                 let StartField, StartData, EndField, EndData;

@@ -9,6 +9,7 @@ import {optionalSetManager, DirtyableYielder, AtomYielder} from "../lifecycle";
 import {defaultObject} from "./default-object";
 import {FieldAtom} from "./field-atom";
 import {Class, Spec} from "./types";
+import {extras} from "mobx";
 
 const MAILBOX = getMailBox('mutable.MuObject');
 
@@ -204,10 +205,21 @@ export class MuObject<T extends {}> extends MuBase<T>{
             const typedField = isAssignableFrom(MuBase, fieldDef);
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
             if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
-                // validation passed set the value
-                this.$mobx[fieldName].reportChanged();
+                const notifySpy = extras.isSpyEnabled();
+                if (notifySpy) {
+                    extras.spyReportStart({
+                        type: "update",
+                        object: this,
+                        name:fieldName,
+                        newValue,
+                        oldValue: this.__value__[fieldName]
+                    });
+                }
                 this.__value__[fieldName] = newValue;
                 optionalSetManager(newValue, this.__lifecycleManager__);
+                this.$mobx[fieldName].reportChanged();
+                if (notifySpy)
+                    extras.spyReportEnd();
                 return true;
             } else {
                 if (!errorContext){
