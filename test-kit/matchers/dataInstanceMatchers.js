@@ -11,7 +11,7 @@ export default function(chai, utils) {
 
         fields(expectFunction) {
             var instance = this._obj;
-            var fieldsSpec = instance.constructor.getFieldsSpec();
+            var fieldsSpec = instance.constructor._spec;
 
             _.forEach(fieldsSpec, (fieldSpec, fieldName) => {
                 expectFunction(new DataInstanceFieldAssertion({

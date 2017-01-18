@@ -3,6 +3,7 @@ import {TypeMatch} from "./type-match";
 import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 import {Any} from './any';
 import {MuBase} from "./base";
+import {FieldAtom} from "./objects/field-atom";
 
 export type DeepPartial<T> = {
     [P in keyof T]?:DeepPartial<T[P]>|null;
@@ -39,16 +40,15 @@ export function isMutable(obj:any):obj is Mutable<any>{
 }
 
 // wrapped object : class instance, list, map
-export type Mutable<T> = MutableObj<T>;// & T;
 export type ReadonlyMutable<T> = Mutable<Readonly<T>>;
 
-export interface MutableObj<T>{
+export interface Mutable<T>{
   //  constructor:NonPrimitiveType<Mutable<T>, T>;
     toJS(typed?:boolean):T;
     toJSON(recursive?:boolean, typed?:boolean):T;
     $isDirtyable():boolean;
     $isReadOnly():boolean;
-    $asReadOnly(): ReadonlyMutable<T>;
+    $asReadOnly(): ReadonlyMutable<T>; // TODO improve for MutableObj
     getRuntimeId():number;
     matches(other:any) :boolean;
     __isReadOnly__:boolean;
@@ -76,8 +76,6 @@ export interface NonPrimitiveType<T extends Mutable<S>|null, S> extends Type<T, 
     prototype:T;
     createErrorContext(entryPoint:string, level:Level):ErrorContext;
     reportDefinitionErrors():ErrorMessage|undefined;
-    // this is not the right place for reportFieldDefinitionError
-    reportFieldDefinitionError(field:Type<any, any>):ErrorMessage|undefined;
     uniqueId:string;
     __refType: ReferenceType<T>;
     makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>S;
@@ -85,24 +83,10 @@ export interface NonPrimitiveType<T extends Mutable<S>|null, S> extends Type<T, 
     new(value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext): T;
 }
 
-/**
- * the internal schema of a defined class
- */
-export interface Spec{
-    [fieldName:string] : Type<any, any>;
-}
-export function isClass(type:any):type is Class<any>{
-    return type && type._spec && isNonPrimitiveType(type);
-}
-
 export interface ReferenceType<T>{
     new(provider:() => any, path:Array<string|number>):T
 }
-export interface Class<T> extends NonPrimitiveType<T & Mutable<T>, T> {
-    wrapValue:(value:any, spec: Spec, options?:ClassOptions, errorContext?:ErrorContext)=>T;
-    _spec:Spec;
-    getFieldsSpec():Spec;
-}
+
 
 export function cast<T>(ref:any): T{
     return ref as T;

@@ -141,7 +141,7 @@ describe('defining', () => {
             });
 
             it('spec should include all fields', function() {
-                expect(TypeWithInheritance.getFieldsSpec()).to.eql({
+                expect(TypeWithInheritance._spec).to.eql({
                     titles: StringList,
                     subTitles: StringList
                 })

@@ -18,9 +18,6 @@ const MAILBOX = getMailBox('mutable.MuBase');
 function createReadOnly<T>(source:Mutable<T>):ReadonlyMutable<T> {
     const result = Object.create(source);
     result.__isReadOnly__ = true;
-    if (config.freezeInstance) {
-        Object.freeze(result);
-    }
     return result;
 }
 
@@ -38,15 +35,6 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     static byReference: (provider:() => any, path?:Array<string|number>) => any;
     static makeValue:(value:any, options?:ClassOptions, errorContext?:ErrorContext)=>any;
     static defaults:(circularFlags?:string)=> any;
-
-    // TODO: move out
-    static reportFieldDefinitionError(fieldDef:Type<any, any>):ErrorMessage|undefined{
-        if (!isType(fieldDef)) {
-            return { message: `must be a primitive type or extend core3.Type`, path: '' };
-        } else if (isNonPrimitiveType(fieldDef)) {
-            return fieldDef.reportDefinitionErrors();
-        }
-    }
 
     // TODO: move out
     static createErrorContext(entryPoint:string, level:Level):ErrorContext{
@@ -108,9 +96,6 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
             options,
             errorContext
         );
-        if (config.freezeInstance) {
-            Object.freeze(this);
-        }
     }
 
     abstract $dirtyableElementsIterator(yielder:DirtyableYielder):void;

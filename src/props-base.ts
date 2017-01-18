@@ -1,3 +1,3 @@
 import {defineClass} from './objects/define';
 
-export const PropsBase = defineClass('PropsBase', { spec: () => ({}) });
+export const propsBase = defineClass('propsBase', { spec: () => ({}) }) as any;

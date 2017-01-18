@@ -4,8 +4,9 @@ import {MuBase, defineNonPrimitive} from './base';
 import {validateNullValue, misMatchMessage} from './validation';
 import {TypeMatch} from './type-match';
 import {toString, toUnwrappedString} from './generic-types';
-import {Type, Class, cast, ErrorDetails, ErrorContext, ClassOptions} from "./types";
+import {Type, ErrorDetails, ErrorContext, ClassOptions} from "./types";
 import {AtomYielder, DirtyableYielder} from "./lifecycle";
+import {Class} from "./objects/types";
 const MAILBOX = getMailBox('mutable.Union');
 
 function getTypeName(type:Type<any, any>):string {
@@ -47,7 +48,7 @@ export default class Union extends MuBase<any> {
         }
     }
 
-    static allowPlainVal(this:Class<any>, value:any, errorDetails?:ErrorDetails) {
+    static allowPlainVal(value:any, errorDetails?:ErrorDetails) :boolean{
         return validateNullValue(this, value) ||
             !!(this.options && this.options.subTypes &&
             this.options.subTypes.some(typeDef => typeDef.allowPlainVal(value, errorDetails)))

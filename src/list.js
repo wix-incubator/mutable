@@ -3,7 +3,7 @@ import {getMailBox} from 'escalate';
 import {ArrayWrapper} from './array-wrapper';
 import {validateNullValue, misMatchMessage} from './validation';
 import {validateAndWrap} from './type-match';
-import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper} from './utils';
+import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from './utils';
 import {MuBase, defineNonPrimitive} from './base';
 import * as generics from './generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';
@@ -113,7 +113,7 @@ export default class List extends MuBase {
         if (!this.options || !this.options.subTypes) {
             return { path: '', message: `Untyped Lists are not supported please state type of list item in the format core3.List<string>` }
         } else {
-            var error = generics.reportDefinitionErrors(this.options.subTypes, MuBase.reportFieldDefinitionError);
+            var error = generics.reportDefinitionErrors(this.options.subTypes, reportFieldDefinitionError);
             if (error) {
                 return {
                     path: `<${error.path}>`,

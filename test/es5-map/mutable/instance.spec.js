@@ -26,21 +26,6 @@ function testReadFunctionality(builders, isReadonly) {
             usersMap = builders.aUserTypeMap(usersMapInitialState);
         });
 
-        describe("with global freeze config", () => {
-            before("set global freeze configuration", () => {
-                mu.config.freezeInstance = true;
-            });
-            after("clear global freeze configuration", () => {
-                mu.config.freezeInstance = false;
-            });
-            it("should throw error on unknown field setter", () => {
-                var numbers = builders.aNumberMap();
-                expect(function() {
-                    numbers['boo'] = 4;
-                }).to.throw('object is not extensible');
-            });
-        });
-
         describe('as field on data object', () => {
             var GroupType;
             before(() => {
