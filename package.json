@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.212",
+  "version": "1.0.215",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -42,7 +42,7 @@
     "chai": "3.5.0",
     "deep-is": "0.1.3",
     "difflet": "1.0.1",
-    "karma": "1.3.0",
+    "karma": "1.4.0",
     "karma-chrome-launcher": "2.0.0",
     "karma-env-reporter": "1.0.13",
     "karma-mocha": "1.3.0",
@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "lodash": "4.17.4",
-    "escalate": "0.0.225",
+    "escalate": "0.0.227",
     "mobx": "2.7.0"
   },
   "keywords": [
