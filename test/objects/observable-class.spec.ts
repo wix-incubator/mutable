@@ -1,6 +1,6 @@
 import * as mutable from '../../src';
 import {expect} from 'chai';
-import {spy, Lambda, Reaction} from 'mobx';
+import {spy, Lambda, Reaction, observe} from 'mobx';
 import * as sinon from 'sinon';
 import {Class, MutableObj} from "../../src/objects/types";
 import {SinonSpy} from 'sinon';
@@ -154,18 +154,26 @@ describe('user defined class', () => {
         });
     });
 
-    describe('reports to mobx spy on', () => {
-        let listener:(change: any) => void;
+    describe('reports to mobx spy and observer on', () => {
+        let spyListener:(change: any) => void;
+        let observeListener:(change: any) => void;
         let spyDestroy:Lambda;
+        let observeDestroy:Lambda;
         function expectMobxReported(expected: {[k:string]:any}) {
             const eventMatcher = (change:{[k:string]:any}) => Object.keys(expected).every(k => change[k] === expected[k]);
-            expect(listener).to.have.been.calledWith(sinon.match(eventMatcher));
+            expect(spyListener).to.have.been.called;
+            expect(observeListener).to.have.been.called;
+            expect(spyListener).to.have.been.calledWith(sinon.match(eventMatcher));
+            expect(observeListener).to.have.been.calledWith(sinon.match(eventMatcher));
         }
         beforeEach(()=>{
-            listener = sinon.spy();
-            spyDestroy = spy(listener);
+            observeListener = sinon.spy();
+            observeDestroy = observe((child as any).__value__, observeListener);
+            spyListener = sinon.spy();
+            spyDestroy = spy(spyListener);
         });
         afterEach(()=>{
+            observeDestroy();
             spyDestroy();
         });
         it('own field assignment', () => {
