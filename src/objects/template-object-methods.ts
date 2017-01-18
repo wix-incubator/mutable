@@ -1,8 +1,10 @@
 import {isFunction, extend} from 'lodash';
 import {Mutable, Type} from "../types";
 import {DirtyableYielder, AtomYielder} from "../lifecycle";
-import {extras, untracked} from "mobx";
 import {getMailBox} from "escalate";
+import {MuObject} from "./object";
+import {FieldAtom} from "./field-atom";
+import {Class} from "./types";
 
 /**
  * the schema of the class to define (input format)
@@ -10,6 +12,12 @@ import {getMailBox} from "escalate";
 interface Schema{
     [fieldName:string] :  Type<any, any>;
 }
+
+type  PrivilegedMuObject<T> = MuObject<T> & {
+    $mobx: {[l:string]:FieldAtom};
+    __value__ : {[l:string]:any};
+}
+
 const MAILBOX = getMailBox('mutable.extend');
 
 export function nonPrimitiveElementsIterator(nonPrimitiveFields: Array<string>, parent: Mutable<any>) {
@@ -28,16 +36,53 @@ export function atomsIterator(spec: Schema, parent: Mutable<any>) {
     return function atomsIterator(yielder: AtomYielder) {
         for (let c in spec) {
             if (spec.hasOwnProperty(c)) {
-                yielder(extras.getAtom(this.__value__, c) as any);
+                yielder(this.$mobx[c]);
             }
         }
         parent && isFunction(parent.$atomsIterator) && parent.$atomsIterator.call(this, yielder);
     };
 }
+function deepClone<T>(clazz:Class<T>, recCaller:Function){
+    return function (this:PrivilegedMuObject<T>, recursive = true, typed = false):T {
+        const result:T & {_type:string} = Object.keys(clazz._spec).reduce((clone, key: keyof T) => {
+            this.$mobx[key].reportObserved();
+            const fieldValue:any = this.__value__[key];
+            clone[key] = recursive ? recCaller(fieldValue, typed) : fieldValue;
+            return clone;
+        }, {} as T & {_type:string});
+        if (typed){
+            result._type = clazz.id;
+        }
+        return result;
+    };
+}
+
+function recursiveCallToJs(fieldValue:any, typed:boolean){
+    return (fieldValue && fieldValue.toJS) ? fieldValue.toJS(typed) : fieldValue;
+}
+
+function recursiveCallToJson(fieldValue:any, typed:boolean){
+    return (fieldValue && fieldValue.toJSON) ? fieldValue.toJSON(true, typed) : fieldValue;
+}
+
+export function toJS<T>(clazz:Class<T>) {
+    const cloneFn = deepClone(clazz, recursiveCallToJs);
+    return function toJS(typed = false){
+        return cloneFn.call(this, true, typed);
+    }
+}
+
+export function toJSON<T>(clazz:Class<T>){
+    const cloneFn = deepClone(clazz, recursiveCallToJson);
+    return function toJSON(recursive = true, typed = false){
+        return cloneFn.call(this, recursive, typed);
+    }
+}
 
 export function fieldAttribute(fieldName: string) {
     return {
-        get: function () {
+        get: function (this:PrivilegedMuObject<any>) {
+            this.$mobx[fieldName].reportObserved();
             const value = this.__value__[fieldName];
             if (!this.__isReadOnly__ || value === null || value === undefined || !value.$asReadOnly) {
                 return value;
@@ -49,9 +94,7 @@ export function fieldAttribute(fieldName: string) {
             if (this.$isDirtyable()) {
                 this.$assignField(fieldName, newValue);
             } else {
-                untracked(() => {
-                    MAILBOX.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
-                });
+                MAILBOX.warn(`Attempt to override a read only value ${JSON.stringify(this.__value__[fieldName])} at ${this.constructor.id}.${fieldName} with ${JSON.stringify(newValue)}`);
             }
         },
         enumerable: true,

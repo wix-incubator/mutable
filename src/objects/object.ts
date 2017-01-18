@@ -5,7 +5,6 @@ import {getMailBox} from "escalate";
 import {shouldAssign, getPrimeType} from "../utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "../validation";
 import {validateAndWrap} from "../type-match";
-import {asReference, observable, untracked, IAtom} from "mobx";
 import {optionalSetManager, DirtyableYielder, AtomYielder} from "../lifecycle";
 import {defaultObject} from "./default-object";
 import {FieldAtom} from "./field-atom";
@@ -125,10 +124,9 @@ export class MuObject<T extends {}> extends MuBase<T>{
             let fieldErrorContext:ErrorContext = errorContext?
                 _.defaults({path: errorContext.path + '.' + key }, errorContext) :
                 this.createErrorContext(key, 'warn');
-            const newField = validateAndWrap(fieldVal, fieldSpec, undefined, fieldErrorContext);
-            newValue[key] = asReference(newField); // we use asReference because it's stronger than asFlat: it does not treat functions as computed values
+            newValue[key] = validateAndWrap(fieldVal, fieldSpec, undefined, fieldErrorContext);
         });
-        return observable(newValue);
+        return newValue;
     }
 
     static create<T>(this:NonPrimitiveType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext){
@@ -138,12 +136,12 @@ export class MuObject<T extends {}> extends MuBase<T>{
             return new this(value, options, errorContext);
         }
     }
-    protected __atoms__: {[l:string/*keyof T*/]:FieldAtom};
+    protected $mobx: {[l:string/*keyof T*/]:FieldAtom};
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super(value, options, errorContext);
         errorContext = errorContext || this.__ctor__.createErrorContext('Type constructor error', 'error');
-        this.__atoms__ = getClass(this).makeAtoms();
+        this.$mobx = getClass(this).makeAtoms();
         if (MuObject as any === getPrimeType(this.__ctor__)){
             MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" Instantiating the base type is not allowed. You should extend it instead.`);
         } else if (MuObject.uniqueId === getPrimeType(this.__ctor__).uniqueId) {
@@ -178,7 +176,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
                 if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
                     changed = this.$assignField(fieldName, fieldValue) || changed;
                 }else {
-                    const value:any = untracked(() => this.__value__[fieldName]);
+                    const value:any = this.__value__[fieldName];
                     if(value && value.setValueDeep && !value.$isReadOnly()){
                         changed = value.setValueDeep(fieldValue, errorContext) || changed;
                     }else{
@@ -196,83 +194,34 @@ export class MuObject<T extends {}> extends MuBase<T>{
         return false;
     }
 
-
-
     // validates and assigns input to field.
     // will report error for undefined fields
     // returns whether the field value has changed
     $assignField(fieldName:keyof T, newValue:any, errorContext?:ErrorContext) {
-        /*
-         // don't assign if input is the same as existing value
-         if (shouldAssign(this.__value__[fieldName], newValue)) {
-         const fieldDef = getClass(this)._spec[fieldName];
-         const typedField = isAssignableFrom(MuBase, fieldDef);
-         // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
-         if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
-         // validation passed set the value
-         this.__value__[fieldName] = newValue;
-         optionalSetManager(newValue, this.__lifecycleManager__);
-         return true;
-         } else {
-         if (!errorContext){
-         errorContext = this.__ctor__.createErrorContext('Set error', 'error');
-         errorContext.path  = errorContext.path + '.'+fieldName;
-         }
-         MAILBOX.post(errorContext.level, misMatchMessage(errorContext,fieldDef, newValue));
-         }
-         }
-         return false;
-         */
         // don't assign if input is the same as existing value
-        if(untracked(() => {
-                if (shouldAssign(this.__value__[fieldName], newValue)) {
-                    const fieldDef = getClass(this)._spec[fieldName];
-                    const typedField = isAssignableFrom(MuBase, fieldDef);
-                    // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
-                    if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
-                        // validation passed set the value
-                        optionalSetManager(newValue, this.__lifecycleManager__);
-                        return true;
-                    } else {
-                        if (!errorContext){
-                            errorContext = this.__ctor__.createErrorContext('Set error', 'error');
-                            errorContext.path  = errorContext.path + '.'+fieldName;
-                        }
-                        MAILBOX.post(errorContext.level, misMatchMessage(errorContext,fieldDef, newValue));
-                    }
+        if (shouldAssign(this.__value__[fieldName], newValue)) {
+            const fieldDef = getClass(this)._spec[fieldName];
+            const typedField = isAssignableFrom(MuBase, fieldDef);
+            // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
+            if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
+                // validation passed set the value
+                this.$mobx[fieldName].reportChanged();
+                this.__value__[fieldName] = newValue;
+                optionalSetManager(newValue, this.__lifecycleManager__);
+                return true;
+            } else {
+                if (!errorContext){
+                    errorContext = this.__ctor__.createErrorContext('Set error', 'error');
+                    errorContext.path  = errorContext.path + '.'+fieldName;
                 }
-                return false;
-            })){
-            this.__value__[fieldName] = newValue;
-            return true;
+                MAILBOX.post(errorContext.level, misMatchMessage(errorContext,fieldDef, newValue));
+            }
         }
         return false;
     }
 
-    toJSON(recursive = true, typed = false):T {
-        const result:T & {_type:string} = Object.keys( getClass(this)._spec).reduce((json, key: keyof T) => {
-            var fieldValue:any = this.__value__[key];
-            json[key] = recursive && fieldValue && fieldValue.toJSON ? fieldValue.toJSON(true, typed) : fieldValue;
-            return json;
-        }, {} as T & {_type:string});
-        if (typed){
-            result._type = getClass(this).id;
-        }
-        return result;
-    }
-
-    toJS(typed = false):T {
-        const result: T & {_type:string} = Object.keys(getClass(this)._spec).reduce((json, key: keyof T) => {
-            const fieldValue:any = this.__value__[key];
-            json[key] = fieldValue && fieldValue.toJS ? fieldValue.toJS() : fieldValue;
-            return json;
-        },  {} as T & {_type:string});
-        if (typed){
-            result._type = getClass(this).id;
-        }
-        return result;
-    }
-
+    toJS(typed = false):T { return {} as any};
+    toJSON(recursive = true, typed = false):T {return {} as any;}
     $dirtyableElementsIterator(yielder: DirtyableYielder): void {}
     $atomsIterator(yielder: AtomYielder): void {}
 }

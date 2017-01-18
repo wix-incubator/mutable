@@ -6,7 +6,7 @@ import {misMatchMessage} from '../validation';
 import {MuObject} from "./object";
 import {defineNonPrimitive} from '../base';
 import {Class} from "./types";
-import {nonPrimitiveElementsIterator, atomsIterator, fieldAttribute} from "./template-object-methods";
+import {nonPrimitiveElementsIterator, atomsIterator, fieldAttribute, toJSON, toJS} from "./template-object-methods";
 
 /**
  * the schema of the class to define (input format)
@@ -56,6 +56,8 @@ function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, p
     }
     type.prototype.$dirtyableElementsIterator = nonPrimitiveElementsIterator(complex, parent.prototype);
     type.prototype.$atomsIterator = atomsIterator(definedSpec, parent.prototype);
+    type.prototype.toJSON = toJSON(type);
+    type.prototype.toJS = toJS(type);
     forEach(definedSpec, function(fieldDef:Type<any, any>, fieldName:string) {
         Object.defineProperty(type.prototype, fieldName, fieldAttribute(fieldName));
     });
