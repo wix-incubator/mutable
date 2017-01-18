@@ -7,15 +7,20 @@ import {validateNullValue, isAssignableFrom, misMatchMessage} from "../validatio
 import {validateAndWrap} from "../type-match";
 import {optionalSetManager, DirtyableYielder, AtomYielder} from "../lifecycle";
 import {defaultObject} from "./default-object";
-import {FieldAtom} from "./field-atom";
-import {Class, Spec} from "./types";
-import {extras} from "mobx";
+import {Class, Spec, ObjectAdministrator, MutableObj} from "./types";
+import {extras, BaseAtom} from "mobx";
 
 const MAILBOX = getMailBox('mutable.MuObject');
 
 function getClass<T>(inst:MuObject<T>): Class<T>{
     return inst.constructor as Class<T>;
 }
+
+class FakeObjectAdministrator implements ObjectAdministrator{
+    atoms:{[k:string]:BaseAtom} = {};
+    constructor(public name:string){}
+}
+(FakeObjectAdministrator.prototype as any)["isMobXObservableObjectAdministration"] = true;
 
 export class MuObject<T extends {}> extends MuBase<T>{
     static id = 'Object';
@@ -103,12 +108,12 @@ export class MuObject<T extends {}> extends MuBase<T>{
         return this.wrapValue<T>(value, this._spec, options, errorContext);
     }
 
-    static makeAtoms(){
-        const atoms:{[k:string]:FieldAtom} = {};
+    static makeAdmin(name:string){
+        const $mobx = new FakeObjectAdministrator(name);
         _.each(this._spec, (fieldSpec:Type<any, any>, key:string) => {
-            atoms[key] = new FieldAtom('somePath.'+key);
+            $mobx.atoms[key] = new BaseAtom(`[${name}].${key}`);
         });
-        return atoms;
+        return $mobx;
     }
 
     static wrapValue<T extends Object>(value:DeepPartial<T>|null, spec:Spec, options?:ClassOptions, errorContext?:ErrorContext):T|null {
@@ -137,17 +142,32 @@ export class MuObject<T extends {}> extends MuBase<T>{
             return new this(value, options, errorContext);
         }
     }
-    protected $mobx: {[l:string/*keyof T*/]:FieldAtom};
+    protected $mobx: FakeObjectAdministrator;
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super(value, options, errorContext);
         errorContext = errorContext || this.__ctor__.createErrorContext('Type constructor error', 'error');
-        this.$mobx = getClass(this).makeAtoms();
         if (MuObject as any === getPrimeType(this.__ctor__)){
             MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" Instantiating the base type is not allowed. You should extend it instead.`);
         } else if (MuObject.uniqueId === getPrimeType(this.__ctor__).uniqueId) {
             MAILBOX.post(errorContext.level, `${errorContext.entryPoint}: "${errorContext.path}" "${this.__ctor__.name}" is not inherited correctly. Did you remember to import core3-runtime?`);
         }
+        this.$mobx = getClass(this).makeAdmin(this.getName());
+        if (extras.isSpyEnabled()) {
+            _.forEach(getClass(this)._spec, (fieldValue, fieldName:keyof T) => {
+                extras.spyReportStart({
+                    type: "add",
+                    object: this,
+                    name:fieldName,
+                    newValue: (this as any as T)[fieldName]
+                });
+                extras.spyReportEnd();
+            });
+        }
+    }
+
+    getName():string {
+        return getClass(this).id + '#' + this.getRuntimeId();
     }
 
     // this method traverses the input recursively until it reaches mutable values (then it sets them)
@@ -171,7 +191,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
     setValueDeep(newValue:DeepPartial<T>, errorContext:ErrorContext =  getClass(this).createErrorContext('setValueDeep error', 'error')):boolean {
         if (this.$isDirtyable()) {
             let changed = false;
-            _.forEach( getClass(this)._spec, (fieldSpec, fieldName:keyof T) => {
+            _.forEach(getClass(this)._spec, (fieldSpec, fieldName:keyof T) => {
                 const inputFieldValue:any = newValue[fieldName];
                 const fieldValue = (inputFieldValue !== undefined) ? inputFieldValue : fieldSpec.defaults();
                 if(fieldValue === null ||  fieldSpec.validateType(fieldValue)){
@@ -217,7 +237,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
                 }
                 this.__value__[fieldName] = newValue;
                 optionalSetManager(newValue, this.__lifecycleManager__);
-                this.$mobx[fieldName].reportChanged();
+                this.$mobx.atoms[fieldName].reportChanged();
                 if (notifySpy)
                     extras.spyReportEnd();
                 return true;

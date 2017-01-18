@@ -2,9 +2,7 @@ import {isFunction, extend} from 'lodash';
 import {Mutable, Type} from "../types";
 import {DirtyableYielder, AtomYielder} from "../lifecycle";
 import {getMailBox} from "escalate";
-import {MuObject} from "./object";
-import {FieldAtom} from "./field-atom";
-import {Class} from "./types";
+import {Class, MutableObj} from "./types";
 
 /**
  * the schema of the class to define (input format)
@@ -13,8 +11,7 @@ interface Schema{
     [fieldName:string] :  Type<any, any>;
 }
 
-type  PrivilegedMuObject<T> = MuObject<T> & {
-    $mobx: {[l:string]:FieldAtom};
+type  PrivilegedMuObject<T> = MutableObj<T> & {
     __value__ : {[l:string]:any};
 }
 
@@ -36,7 +33,7 @@ export function atomsIterator(spec: Schema, parent: Mutable<any>) {
     return function atomsIterator(yielder: AtomYielder) {
         for (let c in spec) {
             if (spec.hasOwnProperty(c)) {
-                yielder(this.$mobx[c]);
+                yielder(this.$mobx.atoms[c]);
             }
         }
         parent && isFunction(parent.$atomsIterator) && parent.$atomsIterator.call(this, yielder);
@@ -45,7 +42,7 @@ export function atomsIterator(spec: Schema, parent: Mutable<any>) {
 function deepClone<T>(clazz:Class<T>, recCaller:Function){
     return function (this:PrivilegedMuObject<T>, recursive = true, typed = false):T {
         const result:T & {_type:string} = Object.keys(clazz._spec).reduce((clone, key: keyof T) => {
-            this.$mobx[key].reportObserved();
+            this.$mobx.atoms[key].reportObserved();
             const fieldValue:any = this.__value__[key];
             clone[key] = recursive ? recCaller(fieldValue, typed) : fieldValue;
             return clone;
@@ -82,7 +79,7 @@ export function toJSON<T>(clazz:Class<T>){
 export function fieldAttribute(fieldName: string) {
     return {
         get: function (this:PrivilegedMuObject<any>) {
-            this.$mobx[fieldName].reportObserved();
+            this.$mobx.atoms[fieldName].reportObserved();
             const value = this.__value__[fieldName];
             if (!this.__isReadOnly__ || value === null || value === undefined || !value.$asReadOnly) {
                 return value;

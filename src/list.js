@@ -155,12 +155,18 @@ export default class List extends MuBase {
 
     toJSON(recursive = true, typed = false) {
         return this.__value__.map(item => {
+            if (MuBase.validateType(item) && this.__isReadOnly__) {
+                item = item.$asReadOnly();
+            }
             return (recursive && MuBase.validateType(item)) ? item.toJSON(true, typed) : item;
         });
     }
 
     toJS(typed = false){
         return this.__value__.map(item => {
+            if (MuBase.validateType(item) && this.__isReadOnly__) {
+                item = item.$asReadOnly();
+            }
             return item && item.toJS ? item.toJS(typed) : item;
         });
     }

@@ -14,3 +14,4 @@ export function getMobxLogOf(action:Function, subject?:any):any[] {
     }
     return log;
 }
+

@@ -21,7 +21,7 @@ function createReadOnly<T>(source:Mutable<T>):ReadonlyMutable<T> {
     return result;
 }
 
-var dataCounter = 0;
+let dataCounter = 0;
 function generateId() {
     return dataCounter++;
 }
@@ -57,11 +57,7 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
 
     static create<T>(this:NonPrimitiveType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
         if (MuBase as any === getPrimeType(this)){
-            if (typeof this.defaults === 'function'){
-                return defaultObject(this.defaults()) as Mutable<T>;
-            } else {
-                return defaultObject(value) as Mutable<T>;
-            }
+            return defaultObject((typeof this.defaults === 'function')? this.defaults() : value) as any ;
         } else {
             return new this(value, options, errorContext);
         }

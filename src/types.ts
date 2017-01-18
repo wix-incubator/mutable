@@ -3,7 +3,6 @@ import {TypeMatch} from "./type-match";
 import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
 import {Any} from './any';
 import {MuBase} from "./base";
-import {FieldAtom} from "./objects/field-atom";
 
 export type DeepPartial<T> = {
     [P in keyof T]?:DeepPartial<T[P]>|null;
