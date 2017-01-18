@@ -1,6 +1,6 @@
 import * as mutable from '../../src';
 import {expect} from 'chai';
-import {spy, Lambda, Reaction, observe, _, isObservableObject, extras} from 'mobx';
+import {spy, Lambda, Reaction, _, isObservableObject, extras} from 'mobx';
 import * as sinon from 'sinon';
 import {Class, MutableObj} from "../../src/objects/types";
 import {SinonSpy} from 'sinon';

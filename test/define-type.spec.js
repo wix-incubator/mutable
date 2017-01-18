@@ -24,7 +24,8 @@ describe('defining', () => {
     describe('Boolean with default value', () => {
         typeCompatibilityTest(() => mutable.Boolean.withDefault(true), true);
     });
-    it('a subclass without propper mu definition', function() {
+
+    it('a subclass without propper mutable definition', function() {
         class MyType extends mutable.Object{}
         expect(() => {
             new MyType();
@@ -44,6 +45,36 @@ describe('defining', () => {
     it('a defined subclass that uses MuObject as a polymorphic field', function() {
         const Type = aDataTypeWithSpec({ wrapped: mutable.Object }, 'Type');
         expect(new Type().toJS()).to.eql({wrapped:{}});
+    });
+
+    describe('a defined subclass that declares overriding methods', function() {
+        let Parent, Child;
+        beforeEach(() => {
+           class Foo extends mutable.Object{
+                static wrapValue(){return 'foo';}
+                toJS(...args){return 'bar';}
+            }
+            Parent = mutable.define('Parent', {
+                staticTransitiveOverrides:['wrapValue'],
+                transitiveOverrides:['toJS'],
+                spec: ()=>({})
+            }, undefined, Foo);
+            Child = mutable.define('Child', {
+                spec: ()=>({ wrapped: mutable.Number })
+            }, Parent);
+        });
+        it('prevents mutable from from overriding a static method.', function() {
+            expect(Parent.wrapValue()).to.eql('foo');
+        });
+        it('prevents mutable from from overriding an instance method.', function() {
+            expect(new Parent().toJS()).to.eql('bar');
+        });
+        it('prevents mutable from from overriding a static method for sub classes', function() {
+            expect(Child.wrapValue()).to.eql('foo');
+        });
+        it('prevents mutable from from overriding an instance method for sub classes', function() {
+            expect(new Child().toJS()).to.eql('bar');
+        });
     });
 
     describe('a basic type', () => {
@@ -263,7 +294,6 @@ describe('defining', () => {
 
             expect(customDefaultType).not.to.equal(originalType);
             expect(customDefaultType.options).not.to.equal(originalType.options);
-            expect(customDefaultType.options.randomConfig).not.to.equal(originalType.options.randomConfig);
             expect(customDefaultType.options).to.eql({
                 randomConfig: { someOption: true },
                 nullable: true

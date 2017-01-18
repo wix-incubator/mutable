@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-import {cloneType, getReadableValueTypeName} from './utils';
+import {cloneType, getReadableValueTypeName, defaultClassOptions} from './utils';
 import {TypeMatch} from './type-match';
 import {
     ErrorMessage, ErrorContext, ErrorDetails, Validator,
-    ClassOptions, Type } from "./types";
+    ClassOptions, Type, DeepPartial
+} from "./types";
 import isUndefined = require("lodash/isUndefined");
 import {validateNullValue} from "./validation";
 
@@ -19,7 +20,7 @@ function reportErrorInternal(value:any, allowPlain?:boolean, allowInstance?:bool
 export class Any {
     static __proto__:Object;
     static id:string = 'Any';
-    static options:ClassOptions = {};
+    static options:ClassOptions = defaultClassOptions;
     static _matchValue(value:any, errorContext:ErrorContext){
         return new TypeMatch(value, errorContext).tryType(this as any as Type<any, any>);
     }
@@ -59,22 +60,16 @@ export class Any {
     }
 
     static nullable() {
-        const NullableType = cloneType(this.id+'|null', this as any);
-        NullableType.options.nullable = true;
-        return NullableType;
+        return cloneType(this.id+'|null', this as any, {nullable:true});
     }
     static cloneValue(value:any) {
         return value;
     }
-    static withDefault(defaults?:any, validate?:Validator<any>, options?:ClassOptions){
-        const NewType = cloneType(this.id+'_with_defaults', this as any);
+    static withDefault(defaults?:any, validate?:Validator<any>, options?:DeepPartial<ClassOptions>){
+        const NewType = cloneType(this.id+'_with_defaults', this as any, options);
         if (validate) {
             NewType.validate = validate;
         }
-        if (options) {
-            NewType.options = _.assign({}, this.options, options);
-        }
-
         if (defaults !== undefined) {
             if (defaults === null || _.isFunction(defaults)) {
                 NewType.defaults = () => defaults;

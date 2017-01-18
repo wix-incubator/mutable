@@ -93,8 +93,10 @@ export function cast<T>(ref:any): T{
 
 type GenericSignature = Array<Type<any, any>>;
 export interface ClassOptions{
-    nullable?:boolean;
+    nullable:boolean;
     subTypes?:GenericSignature
+    staticTransitiveOverrides:string[];
+    transitiveOverrides:string[];
 }
 
 export interface Validator<T> {

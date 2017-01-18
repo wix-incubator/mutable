@@ -6,6 +6,7 @@ import {misMatchMessage} from '../validation';
 import {MuObject} from "./object";
 import {defineNonPrimitive} from '../base';
 import {Class} from "./types";
+import {defaults} from 'lodash';
 import {nonPrimitiveElementsIterator, atomsIterator, fieldAttribute, toJSON, toJS} from "./template-object-methods";
 
 /**
@@ -19,6 +20,8 @@ interface Schema{
  */
 interface Metadata{
     spec(self:Class<any>) : Schema;
+    staticTransitiveOverrides?:string[];
+    transitiveOverrides?:string[];
 }
 
 
@@ -27,9 +30,9 @@ const RESERVED_FIELDS = Object.keys(extend({}, MuObject.prototype));
 
 export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
 export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent: Class<P>):Class<T>;
-export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent?: Class<P>, jsType?: Class<T>):Class<T> {
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent?: Class<P>, jsType?: {new(...args:any[]):T}):Class<T> {
     parent = parent || MuObject as any as Class<P>;
-    const type = jsType || inherit(id, parent as Class<any>);
+    const type: Class<any> = jsType as Class<any> || inherit(id, parent as Class<any>);
     if (!MuObject.isJsAssignableFrom(type)) {
         MAILBOX.fatal(`Type definition error: ${id} is not a subclass of Object`);
     }
@@ -54,10 +57,20 @@ function calculateSchemaProperties(typeDefinition: Metadata, type: Class<any>, p
             complex[complex.length] = k;
         }
     }
+    if (typeDefinition.transitiveOverrides){
+        type.options = defaults({transitiveOverrides : type.options.transitiveOverrides.concat(typeDefinition.transitiveOverrides)}, type.options);
+    }
+    if (typeDefinition.staticTransitiveOverrides){
+        type.options = defaults({staticTransitiveOverrides : type.options.staticTransitiveOverrides.concat(typeDefinition.staticTransitiveOverrides)}, type.options);
+    }
     type.prototype.$dirtyableElementsIterator = nonPrimitiveElementsIterator(complex, parent.prototype);
     type.prototype.$atomsIterator = atomsIterator(definedSpec, parent.prototype);
-    type.prototype.toJSON = toJSON(type);
-    type.prototype.toJS = toJS(type);
+    if (!~type.options.transitiveOverrides.indexOf('toJSON')){
+        type.prototype.toJSON = toJSON(type);
+    }
+    if (!~type.options.transitiveOverrides.indexOf('toJS')) {
+        type.prototype.toJS = toJS(type);
+    }
     forEach(definedSpec, function(fieldDef:Type<any, any>, fieldName:string) {
         Object.defineProperty(type.prototype, fieldName, fieldAttribute(fieldName));
     });

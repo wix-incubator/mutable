@@ -19,7 +19,7 @@ export function generateClassId() {
     return ClassesCounter++;
 }
 
-const CLONE_KEY = 'isActiveClone';
+const CLONE_KEY = '@activeClone';
 interface Complex extends Object{
     [k:string]:any;
     [k:number]:any;
@@ -105,13 +105,19 @@ function clonedPreSuper<R extends Type<T, S>, T extends Mutable<S>|null, S>(type
         errorContext];
 }
 
+export const defaultClassOptions:ClassOptions = {
+    nullable:false,
+    staticTransitiveOverrides:[],
+    transitiveOverrides:[]
+};
+
 /**
  * js inheritence for configuration override (used for .nullable(), .of(), .withDefault()...)
  */
-export function cloneType<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, TypeToClone:R):R {
+export function cloneType<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, TypeToClone:R, options?:DeepPartial<ClassOptions>):R {
     const type = inherit<R, T, S>(id, TypeToClone, clonedPreSuper as PreSuperFunction<R, T, S>);
     type._prime = getPrimeType(TypeToClone);
-    type.options = TypeToClone.options ? clone(TypeToClone.options, true) : {};
+    type.options = _.defaults(options || {}, TypeToClone.options);
     type.__proto__ = Object.create(TypeToClone);  // inherint non-enumerable static properties
     return type;
 }
