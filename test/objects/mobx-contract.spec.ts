@@ -8,7 +8,7 @@ const {getAdministration} = _;
 type Parent = {foo:number};
 type Child = Parent & {bar:number};
 
-describe('user defined class', () => {
+describe('[mobx contract] user defined class', () => {
     let Child:Class<Child>;
     let child:MutableObj<Child>;
 
