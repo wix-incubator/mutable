@@ -43,7 +43,7 @@ function testViewFunctionality(builders, isReadonly) {
 
             expect(slicedList.toJSON()).to.eql([1, 2]);
         });
-        it('should return mu List', function() {
+        it('should return mutable List', function() {
             var numberList = builders.aNumberList([1, 2, 3]);
 
             var slicedList = numberList.slice();
@@ -72,7 +72,7 @@ function testViewFunctionality(builders, isReadonly) {
             expect(numberList.$asReadWrite()).to.eql(oldList);
         });
 
-        it('should return a mu List', function() {
+        it('should return a mutable List', function() {
             var numberList = builders.aNumberList();
 
             var concattedList = numberList.concat(1, 1);
@@ -135,23 +135,23 @@ function testViewFunctionality(builders, isReadonly) {
     });
 
     describe('toJSON', function() {
-        it('should take a mu List of primitives, and return a native js List of primitives', function() {
+        it('should take a mutable List of primitives, and return a native js List of primitives', function() {
             var arrA = builders.aStringList(['a', 'b']);
 
             expect(arrA.toJSON(), 'toJSON() called').to.eql(['a', 'b']);
             expect(arrA.toJSON(false), 'toJSON (non-recursive) called').to.eql(['a', 'b']);
         });
-        it('should take a mu List of custom types, and return a native js List of objects', function() {
-            var arrA = builders.aUserList([{ age: 11 }, { age: 12 }]);
+        it('should take a mutable List of custom types, and return a native js List of objects', function() {
+            const list = builders.aUserList([{ age: 11 }, { age: 12 }]);
 
-            expect(arrA.toJSON(), 'toJSON() called').to.eql([{ age: 11, name: new builders.UserType().name }, {
+            expect(list.toJSON(), 'toJSON() called').to.eql([{ age: 11, name: new builders.UserType().name }, {
                 age: 12,
                 name: new builders.UserType().name
             }]);
 
-            expect(arrA.toJSON(false), 'toJSON (non-recursive) called').to.eql([new builders.UserType({ age: 11 }), new builders.UserType({ age: 12 })]);
+            expect(list.toJSON(false), 'toJSON (non-recursive) called').to.eql([list.at(0), list.at(1)]);
 
-            expect(arrA.toJSON(true, true), 'toJSON (with types) called').to.eql([
+            expect(list.toJSON(true, true), 'toJSON (with types) called').to.eql([
                 new builders.UserType({ age: 11 }).toJSON(true, true),
                 new builders.UserType({ age: 12 }).toJSON(true, true)
             ]);

@@ -28,7 +28,8 @@ describe('a type with union type field', function() {
             const Type = defineType();
             expect(new Type({foo:'bar'}).foo).to.eql('bar');
             expect(new Type({foo:2}).foo).to.eql(2);
-            expect(new Type({foo:new TypeA()}).foo).to.eql(new TypeA());
+            const foo = new TypeA();
+            expect(new Type({foo}).foo).to.eql(foo);
         });
         it('should not accept unknown type', function() {
             const Type = defineType();
@@ -54,8 +55,9 @@ describe('a type with union type field', function() {
             expect(instance.foo).to.eql('bar');
             instance.foo = 2;
             expect(instance.foo).to.eql(2);
-            instance.foo = new TypeA();
-            expect(instance.foo).to.eql(new TypeA());
+            const foo = new TypeA();
+            instance.foo = foo;
+            expect(instance.foo).to.eql(foo);
         });
         it('should not accept unknown type', function () {
             const Type = defineType();

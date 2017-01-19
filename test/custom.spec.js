@@ -82,7 +82,7 @@ describe('Custom data', function() {
     });
 
     describe('toJSON', function() {
-        it('should take a mu object, and return a native object', function() {
+        it('should take a mutable object, and return a native object', function() {
             var container = new UserWithChild({ child: { age: 11 } });
 
             expect(container.toJSON(), 'toJSON() called').to.eql(
@@ -160,7 +160,7 @@ describe('Custom data', function() {
             expect(a.name).to.equal('bob');
         });
     });
-    describe('mu instance', function() {
+    describe('mutable instance', function() {
 
         describe('instantiation', function() {
 
@@ -257,7 +257,7 @@ describe('Custom data', function() {
                 expect(instance.numOfHeads).to.be.undefined;
             });
 
-            it('should reference matching mu objects passed as value', function() {
+            it('should reference matching mutable objects passed as value', function() {
                 var instance = new User();
 
                 var container = new CompositeContainer({ child1: instance });
@@ -465,8 +465,8 @@ describe('Custom data', function() {
                     }
                 });
             });
-            describe('with mu input', function() {
-                it('should set replace all values from an incoming object with mu fields according to schema', function() {
+            describe('with mutable input', function() {
+                it('should set replace all values from an incoming object with mutable fields according to schema', function() {
                     var instance = new UserWithChild();
                     var childInstance = new User({ name: 'zaphod', age: 42 });
                     instance[setterName]({ child: childInstance });
@@ -512,14 +512,14 @@ describe('Custom data', function() {
 
                 var instance = new UserWithChild({ child: childInstance });
 
-                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance.__value__);
+                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance);
                 expect(log).to.not.be.empty;
                 expect(childInstance).to.not.be.equal(instance.child);
             });
             it('should create new child if child is null', function() {
 
                 var instance = new UserWithNullableChild({ child: null });
-                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance.__value__);
+                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance);
                 expect(log).to.not.be.empty;
             });
             it('complex children props should be set to default if not specified', function() {
@@ -531,7 +531,7 @@ describe('Custom data', function() {
             });
             it('should not invalidate item if child has not changed', function() {
                 var instance = new UserWithChild({ child: { name: 'zagzag' } });
-                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance.__value__);
+                var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'zagzag' } }), instance);
                 expect(log).to.be.empty;
             });
             it('should not invalidate item if null child was set to null', function() {
@@ -542,12 +542,12 @@ describe('Custom data', function() {
             it('should invalidate if child has changed', function() {
                 var instance = new UserWithChild({ child: { name: 'zagzag' } });
                 var log = getMobxLogOf(()=> instance.setValueDeep({ child: { name: 'not zagzag' } }));
-                expect(log.filter(change => change.object === instance.__value__)).to.be.empty;
-                expect(log.filter(change => change.object === instance.child.__value__)).not.to.be.empty;
+                expect(log.filter(change => change.object === instance)).to.be.empty;
+                expect(log.filter(change => change.object === instance.child)).not.to.be.empty;
             });
             describe('setting values of wrong type', () => {
                 let StartField, StartData, EndField, EndData;
-                let startInstance, endInstance, inputValue;
+                let startInstance, endInstance, typedInputValue, untypedInputValue;
                 before(() => {
                     StartField = mu.define("StartField", { spec: function() { return {
                         validProp: mu.String,
@@ -567,23 +567,29 @@ describe('Custom data', function() {
                 beforeEach(() => {
                     startInstance = new StartData({field:{validProp:'start',invalidProp:5}});
                     endInstance = new EndData({field:null});
-                    inputValue = startInstance.toJS(true);
+                    untypedInputValue = startInstance.toJS();
+                    typedInputValue = startInstance.toJS(true);
+                });
+
+                it("(by _type annotation) should report correct level, path and context", function() {
+                    expect (() => endInstance.setValueDeep(typedInputValue)).to.throw;
+                    expect (() => endInstance.setValueDeep(typedInputValue)).to.report(ERROR_IN_SET_VALUE_DEEP('EndData.field', 'EndField', 'object with _type StartField'));
                 });
 
                 it("should report correct level, path and context", function() {
-                    expect (() => endInstance.setValueDeep(inputValue)).to.throw;
-                    expect (() => endInstance.setValueDeep(inputValue)).to.report(ERROR_IN_SET_VALUE_DEEP('EndData.field.invalidProp', 'string', 'number'));
+                    expect (() => endInstance.setValueDeep(untypedInputValue)).to.throw;
+                    expect (() => endInstance.setValueDeep(untypedInputValue)).to.report(ERROR_IN_SET_VALUE_DEEP('EndData.field.invalidProp', 'string', 'number'));
                 });
 
                 it("should allow report override", function() {
                     const errorContext = endInstance.constructor.createErrorContext('custom','info');
-                    expect (() => endInstance.setValueDeep(inputValue, errorContext)).not.to.throw;
-                    expect (() => endInstance.setValueDeep(inputValue, errorContext)).to.report({ level: 'info', params: `custom: "EndData.field.invalidProp" expected type string but got number` });
+                    expect (() => endInstance.setValueDeep(untypedInputValue, errorContext)).not.to.throw;
+                    expect (() => endInstance.setValueDeep(untypedInputValue, errorContext)).to.report({ level: 'info', params: `custom: "EndData.field.invalidProp" expected type string but got number` });
                 });
 
                 it("if not throws, should apply partial fitting value from sub-field", function() {
                     const errorContext = endInstance.constructor.createErrorContext('custom','info');
-                    endInstance.setValueDeep(inputValue, errorContext);
+                    endInstance.setValueDeep(untypedInputValue, errorContext);
                     expect(endInstance.toJSON(true)).to.eql({
                         field:{
                             validProp:'start',

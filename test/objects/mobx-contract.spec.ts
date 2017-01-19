@@ -1,14 +1,14 @@
 import * as mutable from '../../src';
 import {expect} from 'chai';
-import {spy, Lambda, Reaction, observe} from 'mobx';
+import {spy, Lambda, Reaction, _, isObservableObject, extras} from 'mobx';
 import * as sinon from 'sinon';
 import {Class, MutableObj} from "../../src/objects/types";
 import {SinonSpy} from 'sinon';
-
+const {getAdministration} = _;
 type Parent = {foo:number};
 type Child = Parent & {bar:number};
 
-describe('user defined class', () => {
+describe('[mobx contract] user defined class', () => {
     let Child:Class<Child>;
     let child:MutableObj<Child>;
 
@@ -25,10 +25,9 @@ describe('user defined class', () => {
     });
 
     describe('tracks', () => {
-        let objSpy:SinonSpy, reaction:Reaction;
+        let reaction:Reaction;
         beforeEach(() => {
-            objSpy = sinon.spy();
-            reaction = new Reaction('obj', objSpy);
+            reaction = new Reaction('obj', ()=>{});
             expect(reaction.observing.length).to.eql(0);
         });
         afterEach(() => {
@@ -162,19 +161,32 @@ describe('user defined class', () => {
         function expectMobxReported(expected: {[k:string]:any}) {
             const eventMatcher = (change:{[k:string]:any}) => Object.keys(expected).every(k => change[k] === expected[k]);
             expect(spyListener).to.have.been.called;
-            expect(observeListener).to.have.been.called;
+            //    expect(observeListener).to.have.been.called;
             expect(spyListener).to.have.been.calledWith(sinon.match(eventMatcher));
-            expect(observeListener).to.have.been.calledWith(sinon.match(eventMatcher));
+            //    expect(observeListener).to.have.been.calledWith(sinon.match(eventMatcher));
         }
         beforeEach(()=>{
             observeListener = sinon.spy();
-            observeDestroy = observe((child as any).__value__, observeListener);
+            //    observeDestroy = observe(child, observeListener);
             spyListener = sinon.spy();
             spyDestroy = spy(spyListener);
         });
         afterEach(()=>{
-            observeDestroy();
+            //    observeDestroy();
             spyDestroy();
+        });
+        it('fields initialization', () => {
+            child = new Child({bar:2});
+            expectMobxReported({
+                type: 'add',
+                newValue: 2,
+                name: 'bar'
+            });
+            expectMobxReported({
+                type: 'add',
+                newValue: 0,
+                name: 'foo'
+            });
         });
         it('own field assignment', () => {
             child.bar = 2;
@@ -223,6 +235,37 @@ describe('user defined class', () => {
                 newValue: 2,
                 name: 'bar'
             });
+        });
+    });
+
+    describe('satisfies mobx-react-devtools contract', () => {
+        it('has a recognised administrator object', ()=>{
+            expect(getAdministration(child)).to.be.ok;
+        });
+
+        it('satisfies mobx.isObservableObject()', ()=>{
+            expect(isObservableObject(child)).to.eql(true);
+        });
+
+        it('provides a meaningful result to getDebugName()', ()=>{
+            expect(extras.getDebugName(child)).to.eql(child.getName());
+        });
+
+        it('has meaningful $mobx.name (otherwise constructor.name is used)', ()=>{
+            expect((child as any).$mobx.name).to.eql(child.getName());
+        });
+
+        it('shows on reaction\'s getDependencyTree()', ()=>{
+            const name = 'obj';
+            const reaction = new Reaction(name, ()=>{});
+            try {
+                reaction.track(() => {
+                    child.foo;
+                });
+                expect(extras.getDependencyTree(reaction)).to.eql({name, dependencies:[{name:`[${child.getName()}].foo`}]})
+            } finally {
+                reaction.dispose();
+            }
         });
     });
 });

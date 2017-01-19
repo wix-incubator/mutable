@@ -32,7 +32,7 @@ export default class Union extends MuBase<any> {
     }
 
     static of(subTypes:Array<Type<any, any>>) {
-        const result = this.withDefault(undefined, undefined, { subTypes });
+        const result = this.withDefault(undefined, undefined,  { subTypes });
         result.id = subTypes.map(toUnwrappedString).join('|');
         return result;
     };
