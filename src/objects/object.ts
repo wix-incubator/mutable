@@ -217,7 +217,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
         // don't assign if input is the same as existing value
         if (shouldAssign(this.__value__[fieldName], newValue)) {
             const fieldDef = getClass(this)._spec[fieldName];
-            const checkTyped = newValue instanceof MuBase;
+            const checkTyped = newValue instanceof MuBase || isAssignableFrom(MuBase, fieldDef);
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
             if ((checkTyped && fieldDef.validateType(newValue)) || (!checkTyped && fieldDef.validate(newValue))) {
                 const notifySpy = extras.isSpyEnabled();
