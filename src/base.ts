@@ -4,7 +4,7 @@ import config from './config';
 import {setManager, isDirtyable, DirtyableYielder, AtomYielder, LifeCycleManager} from './lifecycle';
 import {Any} from './any';
 import {getPrimeType, generateClassId} from './utils';
-import {validateValue} from './validation';
+import {validateValue, validateNullValue} from './validation';
 import {isDataMatching} from './type-match';
 import {
     Mutable, DeepPartial, ClassOptions, ErrorContext,
@@ -53,7 +53,9 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     static validateType(value:any):value is any {
         return validateValue(this, value);
     }
-
+    static validate(value:any):value is any {
+        return validateNullValue(this, value) || !!(value && typeof value === 'object');
+    }
 
     static create<T>(this:NonPrimitiveType<any, T>, value?:DeepPartial<T>, options?:ClassOptions, errorContext?:ErrorContext):Mutable<T> {
         if (MuBase as any === getPrimeType(this)){

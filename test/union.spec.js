@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import * as mu from '../src';
 import {either} from '../src/generic-types';
-import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET, arrow} from '../test-kit/test-drivers/reports';
+import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET} from '../test-kit/test-drivers/reports';
 import {typeCompatibilityTest} from "./type-compatibility.contract";
 
 const TypeA = aDataTypeWithSpec({ bar: mu.String }, 'TypeA');
@@ -47,17 +47,35 @@ describe('a type with union type field', function() {
 
     });
     describe('setter', function() {
-
         it('should accept either type', function () {
             const Type = defineType();
             const instance = new Type();
             instance.foo = 'bar';
-            expect(instance.foo).to.eql('bar');
+            expect(instance.foo).to.equal('bar');
             instance.foo = 2;
-            expect(instance.foo).to.eql(2);
+            expect(instance.foo).to.equal(2);
             const foo = new TypeA();
             instance.foo = foo;
-            expect(instance.foo).to.eql(foo);
+            expect(instance.foo).to.equal(foo);
+        });
+
+        /**
+         *  simulation of
+         *  https://github.com/wix/mutable/issues/85
+         *  The bug only happens when there is a List field in the type of the complex value, as List.validate does not accept List instances.
+         */
+        it('should accept type (regression - list field in the type)', function () {
+            const TypeC = aDataTypeWithSpec({ bar: mu.List.of(mu.String) }, 'TypeC');
+
+            const Type = mu.define('Type', {
+                spec: () => ({
+                    foo: either(TypeA, TypeC)
+                })
+            });
+            const instance = new Type();
+            let foo = new TypeC(['a', 'b']);
+            instance.foo = foo;
+            expect(instance.foo).to.equal(foo);
         });
         it('should not accept unknown type', function () {
             const Type = defineType();

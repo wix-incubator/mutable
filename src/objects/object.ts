@@ -59,13 +59,8 @@ export class MuObject<T extends {}> extends MuBase<T>{
     }
 
     static validate(value:any):value is any {
-        if(value===undefined){
-            return false;
-        }
         return validateNullValue(this, value) ||
-            Object.keys(this._spec).every(function(key) {
-                return this._spec[key].validate(value[key])
-            }, this);
+            super.validate(value) && !!(value && Object.keys(this._spec).every(key=>this._spec[key].validate(value[key])));
     }
 
     static allowPlainVal(value:any, errorDetails?:ErrorDetails):boolean {
@@ -222,9 +217,9 @@ export class MuObject<T extends {}> extends MuBase<T>{
         // don't assign if input is the same as existing value
         if (shouldAssign(this.__value__[fieldName], newValue)) {
             const fieldDef = getClass(this)._spec[fieldName];
-            const typedField = isAssignableFrom(MuBase, fieldDef);
+            const checkTyped = newValue instanceof MuBase || isAssignableFrom(MuBase, fieldDef);
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
-            if ((typedField && fieldDef.validateType(newValue)) || (!typedField && fieldDef.validate(newValue))) {
+            if ((checkTyped && fieldDef.validateType(newValue)) || (!checkTyped && fieldDef.validate(newValue))) {
                 const notifySpy = extras.isSpyEnabled();
                 if (notifySpy) {
                     extras.spyReportStart({
