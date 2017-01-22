@@ -4,6 +4,19 @@ import {UserType} from './builders';
 import * as sinon from 'sinon';
 
 describe('List', function() {
+    describe('as a field', function() {
+        let container;
+        beforeEach(()=>{
+            const Container = mu.define('Container', {spec:()=>({
+                users: mu.List.of(mu.String)
+            })});
+            container = new Container();
+        });
+        it('reject assignment of native array', ()=>{
+            expect(() => {container.users = [];}).to.report({level:'error'});
+            expect(container.users.length).to.eql(0);
+        });
+    });
     describe('$setManager', function() {
         let list, manager;
         beforeEach(()=>{
