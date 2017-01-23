@@ -67,23 +67,23 @@ export default class List extends MuBase {
     static makeValue(value, options, errorContext) {
         if (this.validateType(value)) {
             if (value.__value__.map) {
-                return observable(asFlat(value.__value__.map((itemValue) => {
+                return observable.shallowArray(value.__value__.map((itemValue) => {
                     return this._wrapSingleItem(itemValue, options, null, errorContext);
-                }, this)));
+                }, this));
             } else {
                 MAILBOX.error('Unmet mutable type requirement.')
             }
         } else if (!isArray(value)) {
             MAILBOX.error('Unmet array type requirement.');
         } else {
-            return observable(asFlat(value.map((itemValue, itemIndex) => {
+            return observable.shallowArray(value.map((itemValue, itemIndex) => {
 
                 return this._wrapSingleItem(itemValue, options, null, {
                     level: errorContext.level,
                     entryPoint: errorContext.entryPoint,
                     path: errorContext.path + '[' + itemIndex + ']'
                 });
-            }, this)));
+            }, this));
         }
     }
 
