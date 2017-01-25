@@ -1,10 +1,9 @@
 import * as mutable from '../../src';
 import {expect} from 'chai';
-import {spy, Lambda, Reaction, _, isObservableObject, extras} from 'mobx';
+import {spy, Lambda, Reaction, isObservableObject, extras} from 'mobx';
 import * as sinon from 'sinon';
 import {Class, MutableObj} from "../../src/objects/types";
 import {SinonSpy} from 'sinon';
-const {getAdministration} = _;
 type Parent = {foo:number};
 type Child = Parent & {bar:number};
 
@@ -240,7 +239,7 @@ describe('[mobx contract] user defined class', () => {
 
     describe('satisfies mobx-react-devtools contract', () => {
         it('has a recognised administrator object', ()=>{
-            expect(getAdministration(child)).to.be.ok;
+            expect(extras.getAdministration(child)).to.be.ok;
         });
 
         it('satisfies mobx.isObservableObject()', ()=>{

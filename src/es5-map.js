@@ -7,7 +7,7 @@ import * as generics from './generic-types';
 import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
 import {validateAndWrap} from './type-match';
 import {MapWrapperOverDictionary} from './map-wrapper';
-import {observable, asFlat, asMap, untracked, extras, autorun} from 'mobx';
+import {observable, untracked, extras, autorun} from 'mobx';
 import {shouldAssign} from './utils';
 const MAILBOX = getMailBox('mutable.Es5Map');
 
@@ -128,7 +128,7 @@ export default class Es5Map extends MuBase {
                 result[key] = value;
             }
         }
-        return observable(asMap(result, asFlat));
+        return observable.shallowMap(result);
     }
 
     static validate(value) {

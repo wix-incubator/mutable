@@ -1,14 +1,12 @@
 # Mutable
 [![npm version](https://badge.fury.io/js/mutable.svg)](https://badge.fury.io/js/mutable)
 
-Mutable state containers in javascript with dirty checking and more
+Mutable state containers in javascript with dirty checking and more (WIP)
 
 ### What Mutable does
-Mutable is a javascript state management library designed with [React](https://github.com/facebook/react) in mind.
-It allows for simple implementation of ```shouldComponentUpdate``` by efficiently tracking state changes while avoiding the verbosity involved with using immutable data.
-In addition, Mutable enhances React components by offering a unique runtime schema engine that enforces [unidirectional data flow](https://facebook.github.io/flux/),
+Mutable is a [mobx](https://github.com/mobxjs/mobx)-compatible class system library. Mutable offers a unique runtime schema engine that enforces [unidirectional data flow](https://facebook.github.io/flux/),
 and formalizes the structure of props and state.
-Mutable also supports default or even non-nullable types.
+Mutable also supports data defaults, and non-nullable types.
 
 ## Using mutable
 Add Mutable to your project by installing it with [npm](https://www.npmjs.com/):
@@ -19,10 +17,11 @@ npm install mutable --save
 
 Simple code example:
 ```es6
-import * as Mutable from 'mutable';
+import * as mutable from 'mutable';
+import * as mobx from 'mutable';
 
-// define a Mutable type by providing a name and a spec
-const Dude = Mutable.define('Dude', {
+// define a mutable class by providing a name and a spec (class schema)
+const Dude = mutable.define('Dude', {
     spec: ()=>({
         name: Mutable.String.withDefault('Leon'),
         age: Mutable.Number.withDefault(110),
@@ -32,43 +31,13 @@ const Dude = Mutable.define('Dude', {
  
 // Mutable types accept custom data according to their spec as the first argument of their constructor
 const dude = new Dude({name:'Ido'});
- 
-// Mutable instances behave just like ordinary javascript objects
-console.log(dude.name); // prints: 'Ido'
-console.log(dude.age); // prints: 110
- 
-// Mutable instances behave just like ordinary javascript objects
-dude.name = 'Tom';
-console.log(dude.name); // prints: 'Tom'
- 
- 
-// Mutable keeps track of the state of the application by an internal revision counter.
-// changes to Mutable instances are indexed by the revision in which they occur.
- 
-// advance the revision counter. Subsequent state changes will register to the new revision.
-Mutable.revision.advance();
- 
-// read the current revision
-const firstRevision = Mutable.revision.read();
-// no changes has been made to dude since firstRevision started
-console.log(dude.$isDirty(firstRevision)); // prints: false
- 
-// advance the revision counter
-Mutable.revision.advance();
 
-// change the state of the dude
-dude.age = dude.age + 1;
-
-// the dude instance has been changed since first revision
-console.log(dude.$isDirty(firstRevision)); // prints: true
- 
-// advance revision
-Mutable.revision.advance();
-// define newRevision to point to the latest revision
-const newRevision = Mutable.revision.read();
- 
-// the dude instance has not been changed since newRevision
-console.log(dude.$isDirty(newRevision)); // prints: false
+mobx.autorun(function () {
+    console.log(dude.name + ' ' + dude.age);
+});
+// prints: Leon 110
+dude.name = 'Mike';
+// prints: Mike 110
 ```
 Integrating mutable into React components is up to the user.
 
