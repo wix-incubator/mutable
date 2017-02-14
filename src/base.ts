@@ -66,8 +66,8 @@ export abstract class MuBase<T> extends Any implements Mutable<T> {
     }
 
     protected __ctor__ = this.constructor as NonPrimitiveType<this, T>;
-    private __readOnlyInstance__: ReadonlyMutable<T>;
-    private __readWriteInstance__: Mutable<T>;
+    protected __readOnlyInstance__: ReadonlyMutable<T>;
+    protected __readWriteInstance__: Mutable<T>;
     private __id__: number;
     protected __value__ : T;
     protected __options__?:ClassOptions;

@@ -1,6 +1,9 @@
 import * as _ from 'lodash';
 import {MuBase, defineNonPrimitive} from "../base";
-import {DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, NonPrimitiveType} from "../types";
+import {
+    DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, NonPrimitiveType, ReadonlyMutable,
+    Mutable
+} from "../types";
 import {getMailBox} from "escalate";
 import {shouldAssign, getPrimeType} from "../utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "../validation";
@@ -138,6 +141,8 @@ export class MuObject<T extends {}> extends MuBase<T>{
         }
     }
     protected $mobx: FakeObjectAdministrator;
+    protected __readOnlyInstance__: ReadonlyMutable<T> & T;
+    protected __readWriteInstance__: Mutable<T> & T;
 
     constructor(value?:DeepPartial<T>|null, options?:ClassOptions, errorContext?:ErrorContext) {
         super(value, options, errorContext);
