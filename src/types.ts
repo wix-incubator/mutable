@@ -71,6 +71,7 @@ export type CtorArgs<T extends Mutable<S>|null, S> = [T|DeepPartial<S>|undefined
 
 // obj / list / map
 export interface NonPrimitiveType<T extends Mutable<S>|null, S> extends Type<T, S> {
+    name:string;
     ancestors : string[];
     prototype:T;
     createErrorContext(entryPoint:string, level:Level):ErrorContext;
