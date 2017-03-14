@@ -1,31 +1,35 @@
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as mu from '../src';
+import {IReactionDisposer, autorun} from 'mobx';
 
-class Data extends mu.Object<{foo: string, bar:string}> {
+class Data extends mu.Object<{foo: string, bar: string}> {
     foo: string;
     bar: string;
 }
 
-class DataGetter  {
+class DataGetter {
     data: Data;
 
-    getFooBar(){
+    getFooBar() {
         this.onFoobar();
         return this.data.foo + this.data.bar;
     }
-    onFoobar(){}
+
+    onFoobar() {
+    }
 }
 
-function makeObjectFromClass(dataClazz:typeof Data, dataGetterClazz:typeof DataGetter):DataGetter{
+function makeObjectFromClass(dataClazz: typeof Data, dataGetterClazz: typeof DataGetter): DataGetter {
 
-    class Data_ extends dataClazz{}
+    class Data_ extends dataClazz {
+    }
 
     const DefinedData = mu.define('MyData', {
-        spec(_:any){
+        spec(_: any){
             return {
-                foo:mu.String,
-                bar:mu.String
+                foo: mu.String,
+                bar: mu.String
             };
         }
     }, undefined, Data_);
@@ -36,29 +40,73 @@ function makeObjectFromClass(dataClazz:typeof Data, dataGetterClazz:typeof DataG
     return result;
 }
 
+class TestActions{
+    private disposer1:IReactionDisposer;
+    private disposer2:IReactionDisposer;
+    public numInvocations = 4;
+    constructor(private getter:DataGetter, private actionImpl:Function) {}
+    autorun(){
+        // will run once now and again when .foo or .bar change
+        this.disposer1 = autorun(() => {
+            this.actionImpl();
+            this.actionImpl();
+        });
+        this.disposer2 = autorun(() => {
+            this.actionImpl();
+            this.actionImpl();
+        });
+    }
+    dispose(){
+        this.disposer1();
+        this.disposer2();
+    }
+}
 
-describe.only('computed annotation', () => {
-
-    it('(if absent) on js class calls method multiple times', () => {
-        const getter = makeObjectFromClass(Data, DataGetter);
-        getter.data.foo = '1';
-        getter.data.bar = '2';
-        [1,1,1,1].forEach(()=>expect (getter.getFooBar()).to.eql('12'));
-        expect(getter.onFoobar).to.have.been.callCount(4);
-    });
-
-    it('on js class calls method once', () => {
-        class ComputedGetter extends DataGetter{
-            @mu.computed
-            getFooBar() {
-                return super.getFooBar();
+describe('computed annotation', () => {
+    describe('(Baseline - without @computed)', () => {
+        it('should not cache results when run in an action', () => {
+            const getter = makeObjectFromClass(Data, DataGetter);
+            const tester = new TestActions(getter, () => getter.getFooBar());
+            tester.autorun();
+            try {
+                expect(getter.onFoobar).to.have.callCount(1 * tester.numInvocations);
+                getter.data.foo = '7';
+                expect(getter.onFoobar).to.have.callCount(2 * tester.numInvocations);
+                getter.data.bar = '7';
+                expect(getter.onFoobar).to.have.callCount(3 * tester.numInvocations);
+            } finally {
+                tester.dispose();
             }
-        }
-        const getter = makeObjectFromClass(Data, ComputedGetter);
-        getter.data.foo = '1';
-        getter.data.bar = '2';
-        [1,1,1,1].forEach(()=>expect (getter.getFooBar()).to.eql('12'));
-        expect(getter.onFoobar).to.have.been.callCount(1);
+        });
     });
-
+    describe('on a class consuming Mutable object', ()=>{
+        let getter:DataGetter;
+        beforeEach(()=>{
+            class ComputedGetter extends DataGetter {
+                @mu.computed
+                getFooBar() {
+                    return super.getFooBar();
+                }
+            }
+            getter = makeObjectFromClass(Data, ComputedGetter);
+        });
+        it('should return the correct result', ()=>{
+            getter.data.foo = '1';
+            getter.data.bar = '2';
+            expect(getter.getFooBar()).to.eql('12');
+        });
+        it('should cache results when run in an action', () => {
+            const tester = new TestActions(getter, () => getter.getFooBar());
+            tester.autorun();
+            try {
+                expect(getter.onFoobar).to.have.callCount(1);
+                getter.data.foo = '7';
+                expect(getter.onFoobar).to.have.callCount(2);
+                getter.data.bar = '7';
+                expect(getter.onFoobar).to.have.callCount(3);
+            } finally {
+                tester.dispose();
+            }
+        });
+    });
 });
