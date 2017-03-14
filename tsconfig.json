@@ -4,6 +4,7 @@
     "module": "commonjs",
     "target": "es5",
     "noImplicitAny": true,
+    "experimentalDecorators":true,
     "strictNullChecks": true,
     "stripInternal": true,
     "sourceMap": true,

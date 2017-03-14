@@ -15,6 +15,7 @@ export {propsBase as PropsBase} from './props-base';
 export {LifeCycleManager} from './lifecycle';
 export {defineEnum, EnumBase} from './define-enum';
 export {either} from './generic-types';
+export {computed} from './computed-decorator';
 import {setGlobalModule} from './singleton-module';
 import {MuObject} from "./objects/object";
 import {MuBase} from "./base";

@@ -30,6 +30,7 @@ const RESERVED_FIELDS = Object.keys(extend({}, MuObject.prototype));
 
 export function defineClass<T>(id:string, typeDefinition: Metadata):Class<T>;
 export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent: Class<P>):Class<T>;
+export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent?: Class<P>, jsType?: {new(...args:any[]):T}):Class<T>;
 export function defineClass<T extends P, P>(id:string, typeDefinition: Metadata, parent?: Class<P>, jsType?: {new(...args:any[]):T}):Class<T> {
     parent = parent || MuObject as any as Class<P>;
     const type: Class<any> = jsType as Class<any> || inherit(id, parent as Class<any>);
