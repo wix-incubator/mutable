@@ -29,7 +29,6 @@ function generateId() {
 export abstract class MuBase<T> extends Any implements Mutable<T> {
     static ancestors = ['Base'];
     static id = 'Base';
-    static name:string;
     static uniqueId:string;
     static __refType: ReferenceType<any>;
     static byReference: (provider:() => any, path?:Array<string|number>) => any;
