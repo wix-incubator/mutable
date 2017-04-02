@@ -54,11 +54,17 @@ export function getPrimeType<T extends Type<any, any>>(type:T):T{
     return (type && type._prime || type) as T;
 }
 
-export const __extends = (this && this.__extends) || function (d:any, b:any) {
-        for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());
-    };
+export const __extends = (this && this.__extends) || (function () {
+        const extendStatics = (Object as any).setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d:any, b:any) { d.__proto__ = b; }) ||
+            function (d:any, b:any) { for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return function (d:any, b:any) {
+            extendStatics(d, b);
+            for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+            function __() { this.constructor = d; }
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());
+        };
+    })();
 
 type PreSuperFunction<R extends Type<T, S>, T extends Mutable<S>|null, S> = (type:R, value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext)=>CtorArgs<T, S>;
 
@@ -94,9 +100,7 @@ const makeSuper = isDevMode() ? namedInherit : anonymousInherit;
 export function inherit<R extends Type<T, S>, T extends Mutable<S>|null, S>(id:string, parent:R, superArgsMutator?:PreSuperFunction<R, T, S>):R{
     const type = makeSuper(id, parent, superArgsMutator);
     __extends(type, parent);
-    type.__proto__ = Object.create(parent); // inherit static properties of parent's prototype
     return type;
-
 }
 
 function clonedPreSuper<R extends Type<T, S>, T extends Mutable<S>|null, S>(type:R, value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext){
