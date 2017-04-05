@@ -55,16 +55,16 @@ export function getPrimeType<T extends Type<any, any>>(type:T):T{
 }
 
 export const __extends = (this && this.__extends) || (function () {
-        const extendStatics = (Object as any).setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d:any, b:any) { d.__proto__ = b; }) ||
-            function (d:any, b:any) { for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return function (d:any, b:any) {
-            extendStatics(d, b);
-            for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-            function __() { this.constructor = d; }
-            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());
-        };
-    })();
+    const extendStatics = (Object as any).setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d:any, b:any) { d.__proto__ = b; }) ||
+        function (d:any, b:any) { for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d:any, b:any) {
+        extendStatics(d, b);
+        for (let p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new(__ as any)());
+    };
+})();
 
 type PreSuperFunction<R extends Type<T, S>, T extends Mutable<S>|null, S> = (type:R, value?:T|DeepPartial<S>, options?:ClassOptions, errorContext?:ErrorContext)=>CtorArgs<T, S>;
 
@@ -122,7 +122,7 @@ export function cloneType<R extends Type<T, S>, T extends Mutable<S>|null, S>(id
     const type = inherit<R, T, S>(id, TypeToClone, clonedPreSuper as PreSuperFunction<R, T, S>);
     type._prime = getPrimeType(TypeToClone);
     type.options = _.defaults(options || {}, TypeToClone.options);
-    type.__proto__ = Object.create(TypeToClone);  // inherint non-enumerable static properties
+    // type.__proto__ = Object.create(TypeToClone);  // inherint non-enumerable static properties
     return type;
 }
 
