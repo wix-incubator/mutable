@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.340",
+  "version": "1.0.341",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@types/chai": "3.4.35",
-    "@types/lodash": "4.14.61",
+    "@types/lodash": "4.14.62",
     "@types/mocha": "2.2.40",
     "@types/sinon": "2.1.2",
     "@types/sinon-chai": "2.7.27",
@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "lodash": "4.17.4",
-    "escalate": "0.0.343",
+    "escalate": "0.0.344",
     "mobx": "3.1.9"
   },
   "keywords": [
