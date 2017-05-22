@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.383",
+  "version": "1.0.384",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -53,7 +53,7 @@
     "sinon": "2.2.0",
     "sinon-chai": "2.10.0",
     "source-map-support": "0.4.15",
-    "ts-loader": "2.0.3",
+    "ts-loader": "2.1.0",
     "typescript": "2.3.2",
     "webpack": "1.14.0",
     "webpack-dev-server": "1.16.2"
@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "lodash": "4.17.4",
-    "escalate": "0.0.386",
+    "escalate": "0.0.387",
     "mobx": "3.1.9"
   },
   "keywords": [
