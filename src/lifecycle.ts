@@ -72,7 +72,7 @@ function setManagerToDirtyableElement(container:Mutable<any>, element:any) {
 
 // used by setters to determine if changes are allowed to the dirty flag
 export function isDirtyable(this:Mutable<any>) {
-    return !this.__isReadOnly__ && (!this.__lifecycleManager__ || this.__lifecycleManager__.isDirtyable());
+    return !this.__isReadOnly__ //&& (!this.__lifecycleManager__ || this.__lifecycleManager__.isDirtyable());
 }
 
 export function optionalSetManager(itemValue:any, lifeCycle?:LifeCycleManager|null) {
