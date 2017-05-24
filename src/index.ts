@@ -1,25 +1,25 @@
 export {default as config} from './config';
 export {defineClass as define} from './objects/define';
 export {MuObject as Object} from "./objects/object";
-export {Any} from './any';
-export {default as String} from './primitives/string';
-export {default as Boolean} from './primitives/boolean';
-export {default as Number} from './primitives/number';
-export {default as Function} from './primitives/function';
+export {Any} from './types/any';
+export {default as String} from './types/primitives/string';
+export {default as Boolean} from './types/primitives/boolean';
+export {default as Number} from './types/primitives/number';
+export {default as Function} from './types/primitives/function';
 export {default as Reference} from './objects/reference';
-export {default as validation} from './validation';
-export {default as List} from './list';
-export {default as Es5Map, default as Map} from './es5-map';
-export {MuBase as Base} from './base';
+export {default as validation} from './core/validation';
+export {default as List} from './types/list';
+export {default as Es5Map, default as Map} from './types/es5-map';
+export {MuBase as Base} from './core/base';
 export {propsBase as PropsBase} from './props-base';
-export {LifeCycleManager} from './lifecycle';
-export {defineEnum, EnumBase} from './define-enum';
-export {either} from './generic-types';
-export {computed} from './computed-decorator';
+export {LifeCycleManager} from './core/lifecycle';
+export {defineEnum, EnumBase} from './types/define-enum';
+export {either} from './core/generic-types';
+export {computed} from './core/computed-decorator';
 import {setGlobalModule} from './singleton-module';
 import {MuObject} from "./objects/object";
-import {MuBase} from "./base";
-import {isType} from "./types";
+import {MuBase} from "./core/base";
+import {isType} from "./core/types";
 
 // TODO export isType itself
 export function isAny(type:any) {

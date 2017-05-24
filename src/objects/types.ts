@@ -1,4 +1,4 @@
-import {Type, isNonPrimitiveType, NonPrimitiveType, ClassOptions, Mutable, ErrorContext} from "../types";
+import {Type, isNonPrimitiveType, NonPrimitiveType, ClassOptions, Mutable, ErrorContext} from "../core/types";
 import {IAtom, BaseAtom} from "mobx";
 /**
  * the internal schema of a defined class

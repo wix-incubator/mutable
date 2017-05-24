@@ -3,7 +3,7 @@ import {Report} from 'escalate/dist/test-kit/testDrivers';
 import {aDataTypeWithSpec, getMobxLogOf} from '../test-kit/test-drivers';
 
 import * as mutable from '../src';
-import {either} from '../src/generic-types';
+import {either} from '../src/core/generic-types';
 import {ERROR_BAD_TYPE, ERROR_OVERRIDE_FIELD, ERROR_FIELD_MISMATCH_IN_LIST_CONSTRUCTOR, ERROR_IN_DEFAULT_VALUES, ERROR_IN_FIELD_TYPE, ERROR_MISSING_GENERICS, ERROR_RESERVED_FIELD, arrow} from '../test-kit/test-drivers/reports';
 import {typeCompatibilityTest} from "./type-compatibility.contract";
 
