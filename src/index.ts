@@ -10,6 +10,7 @@ export {default as Reference} from './objects/reference';
 export {default as validation} from './core/validation';
 export {default as List} from './data-types/list';
 export {default as Es5Map, default as Map} from './data-types/es5-map';
+export {getReadableValueTypeName} from './utils';
 export {MuBase as Base} from './core/base';
 export {propsBase as PropsBase} from './props-base';
 export {LifeCycleManager} from './core/lifecycle';
