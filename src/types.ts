@@ -1,8 +1,8 @@
 import {Level} from 'escalate';
-import {TypeMatch} from "./type-match";
-import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./lifecycle";
-import {Any} from './../data-types/any';
-import {MuBase} from "./base";
+import {TypeMatch} from "./core/type-match";
+import {LifeCycleManager, DirtyableYielder, AtomYielder} from "./core/lifecycle";
+import {Any} from './data-types/any';
+import {MuBase} from "./core/base";
 
 export type DeepPartial<T> = {
     [P in keyof T]?:DeepPartial<T[P]>|null;
