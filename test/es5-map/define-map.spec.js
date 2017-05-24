@@ -3,7 +3,7 @@ import {Report} from 'escalate/dist/test-kit/testDrivers';
 import {typeCompatibilityTest} from "../type-compatibility.contract";
 import * as mu from '../../src';
 import {ERROR_KEY_MISMATCH_IN_MAP_CONSTRUCTOR, ERROR_FIELD_MISMATCH_IN_MAP_CONSTRUCTOR} from '../../test-kit/test-drivers/reports';
-import {either} from '../../src/generic-types';
+import {either} from '../../src/core/generic-types';
 
 
 describe("defining", () => {

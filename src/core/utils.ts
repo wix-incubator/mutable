@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {default as config} from './config';
+import {default as config} from '../config';
 import {getMailBox} from 'escalate';
 const MAILBOX = getMailBox('mutable.utils');
 
@@ -7,7 +7,7 @@ import {
     Type, DeepPartial, ClassOptions, ErrorContext, Mutable, CtorArgs, cast, NonPrimitiveType,
     ErrorMessage, isType, isNonPrimitiveType
 } from "./types";
-import {Class} from "./objects/types";
+import {Class} from "../objects/types";
 import {Level} from "escalate";
 
 export function isDevMode(){

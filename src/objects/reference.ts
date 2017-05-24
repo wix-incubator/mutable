@@ -2,9 +2,9 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import {MuObject} from './object';
-import {defineNonPrimitive} from '../base';
-import {validateNullValue} from '../validation';
-import {ErrorDetails, DeepPartial, ClassOptions, ErrorContext} from "../types";
+import {defineNonPrimitive} from '../core/base';
+import {validateNullValue} from '../core/validation';
+import {ErrorDetails, DeepPartial, ClassOptions, ErrorContext} from "../core/types";
 import {Spec} from "./types";
 
 const MAILBOX = getMailBox('mutable.Reference');

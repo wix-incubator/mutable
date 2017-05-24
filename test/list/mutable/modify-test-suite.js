@@ -4,7 +4,7 @@ import * as mu from '../../../src';
 import {LifeCycleManager} from '../../../src';
 import {aNumberList, aStringList, anEmptyList, UserType, AddressType, UserWithAddressType, aVeryCompositeContainerList} from '../builders';
 import {aDataTypeWithSpec, getMobxLogOf} from '../../../test-kit/test-drivers';
-import {either} from '../../../src/generic-types';
+import {either} from '../../../src/core/generic-types';
 import {ERROR_FIELD_MISMATCH_IN_LIST_METHOD} from '../../../test-kit/test-drivers/reports';
 
 export default function modifyTestSuite(command, { complexSubTypeTests }) {
