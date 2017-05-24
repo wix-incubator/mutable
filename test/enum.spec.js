@@ -119,13 +119,6 @@ describe('Enum Type', function() {
             expect(Ape.gorilla.value.dateOfBirth).to.be.equal("12/12/1995");
         });
 
-        it("member is immutable", function() {
-            var Ape = mu.defineEnum({ chimp: 1, gorilla: 2 });
-            expect(function() {
-                Ape.chimp.blyat = "blyat";
-            }).to.throw('object is not extensible');
-        });
-
         it("instanceOf works", function() {
             var Ape = mu.defineEnum({ chimp: 1, gorilla: 2 });
             expect(Ape.chimp).to.be.instanceof(Ape);

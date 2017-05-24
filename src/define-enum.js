@@ -37,7 +37,7 @@ function createEnumMember(key, value, proto) {
             member[tkey] = value[tkey];
         });
     }
-    return Object.freeze(member);
+    return member;
 }
 
 function convertToObject(def) {
