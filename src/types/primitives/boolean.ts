@@ -1,6 +1,6 @@
 import {Any} from '../any';
-import {validateNullValue} from '../validation';
-import {Type} from "../types";
+import {validateNullValue} from '../../core/validation';
+import {Type} from "../../core/types";
 
 export default class _Boolean extends Any {
     static id = 'boolean';

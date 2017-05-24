@@ -1,10 +1,10 @@
-import {Type, isNonPrimitiveType, ReferenceType} from '../types';
+import {Type, isNonPrimitiveType, ReferenceType} from '../core/types';
 import {getMailBox} from 'escalate';
-import {inherit, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from '../utils';
+import {inherit, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from '../core/utils';
 import {forEach, extend, clone} from 'lodash';
-import {misMatchMessage} from '../validation';
+import {misMatchMessage} from '../core/validation';
 import {MuObject} from "./object";
-import {defineNonPrimitive} from '../base';
+import {defineNonPrimitive} from '../core/base';
 import {Class} from "./types";
 import {defaults} from 'lodash';
 import {nonPrimitiveElementsIterator, atomsIterator, fieldAttribute, toJSON, toJS} from "./template-object-methods";

@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
-import {getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from './utils';
-import {MuBase, defineNonPrimitive} from './base';
-import * as generics from './generic-types';
-import {validateValue, validateNullValue, misMatchMessage, arrow} from './validation';
-import {validateAndWrap} from './type-match';
-import {MapWrapperOverDictionary} from './map-wrapper';
+import {getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from  '../core/utils';
+import {MuBase, defineNonPrimitive} from '../core/base';
+import * as generics from '../core/generic-types';
+import {validateValue, validateNullValue, misMatchMessage, arrow} from '../core/validation';
+import {validateAndWrap} from '../core/type-match';
+import {MapWrapperOverDictionary} from '../types/map-wrapper';
 import {observable, untracked, extras, autorun} from 'mobx';
-import {shouldAssign} from './utils';
+import {shouldAssign} from '../core/utils';
 const MAILBOX = getMailBox('mutable.Es5Map');
 
 function entries(map){

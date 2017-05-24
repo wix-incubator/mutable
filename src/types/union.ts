@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-import {MuBase, defineNonPrimitive} from './base';
-import {validateNullValue, misMatchMessage} from './validation';
-import {TypeMatch} from './type-match';
-import {toString, toUnwrappedString} from './generic-types';
-import {Type, ErrorDetails, ErrorContext, ClassOptions} from "./types";
-import {AtomYielder, DirtyableYielder} from "./lifecycle";
-import {Class} from "./objects/types";
+import {MuBase, defineNonPrimitive} from '../core/base';
+import {validateNullValue, misMatchMessage} from '../core/validation';
+import {TypeMatch} from '../core/type-match';
+import {toString, toUnwrappedString} from '../core/generic-types';
+import {Type, ErrorDetails, ErrorContext, ClassOptions} from "../core/types";
+import {AtomYielder, DirtyableYielder} from "../core/lifecycle";
+import {Class} from "../objects/types";
 const MAILBOX = getMailBox('mutable.Union');
 
 function getTypeName(type:Type<any, any>):string {

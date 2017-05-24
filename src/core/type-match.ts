@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {misMatchMessage, validateNotNullValue} from './validation';
 import {optionalSetManager, LifeCycleManager} from './lifecycle';
-import {Any} from './any';
+import {Any} from '../types/any';
 import {Type, ErrorDetails, ErrorContext, NonPrimitiveType, isNonPrimitiveType, Mutable} from "./types";
 
 const MAILBOX = getMailBox('mutable.type-match');
