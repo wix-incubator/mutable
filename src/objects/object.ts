@@ -5,7 +5,7 @@ import {
     Mutable
 } from "../types";
 import {getMailBox} from "escalate";
-import {shouldAssign, getPrimeType} from "../core/utils";
+import {shouldAssign, getPrimeType} from "../utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "../core/validation";
 import {validateAndWrap} from "../core/type-match";
 import {optionalSetManager, DirtyableYielder, AtomYielder} from "../core/lifecycle";

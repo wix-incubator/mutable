@@ -3,7 +3,7 @@ import {getMailBox} from 'escalate';
 import {ArrayWrapper} from './array-wrapper';
 import {validateNullValue, misMatchMessage} from './../core/validation';
 import {validateAndWrap} from './../core/type-match';
-import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from './../core/utils';
+import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from './../utils';
 import {MuBase, defineNonPrimitive} from './../core/base';
 import * as generics from './../core/generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';

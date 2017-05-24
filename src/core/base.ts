@@ -3,7 +3,7 @@ import {getMailBox} from 'escalate';
 import config from './../config';
 import {setManager, isDirtyable, DirtyableYielder, AtomYielder, LifeCycleManager} from './lifecycle';
 import {Any} from './../data-types/any';
-import {getPrimeType, generateClassId} from './utils';
+import {getPrimeType, generateClassId} from '../utils';
 import {validateValue, validateNullValue} from './validation';
 import {isDataMatching} from './type-match';
 import {

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-import {cloneType, getReadableValueTypeName, defaultClassOptions} from './../core/utils';
+import {cloneType, getReadableValueTypeName, defaultClassOptions} from './../utils';
 import {TypeMatch} from './../core/type-match';
 import {
     ErrorMessage, ErrorContext, ErrorDetails, Validator,

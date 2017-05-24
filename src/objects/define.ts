@@ -1,6 +1,6 @@
 import {Type, isNonPrimitiveType, ReferenceType} from '../types';
 import {getMailBox} from 'escalate';
-import {inherit, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from '../core/utils';
+import {inherit, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from '../utils';
 import {forEach, extend, clone} from 'lodash';
 import {misMatchMessage} from '../core/validation';
 import {MuObject} from "./object";
