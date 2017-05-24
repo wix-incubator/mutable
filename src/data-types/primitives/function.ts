@@ -1,6 +1,6 @@
 import {Any} from '../any';
 import {validateNullValue} from '../../core/validation';
-import {Type} from "../../core/types";
+import {Type} from "../../types";
 
 function noop() { }
 

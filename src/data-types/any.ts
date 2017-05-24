@@ -5,7 +5,7 @@ import {TypeMatch} from './../core/type-match';
 import {
     ErrorMessage, ErrorContext, ErrorDetails, Validator,
     ClassOptions, Type, DeepPartial
-} from "./../core/types";
+} from "./../types";
 import isUndefined = require("lodash/isUndefined");
 import {validateNullValue} from "./../core/validation";
 

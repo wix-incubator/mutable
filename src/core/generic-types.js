@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {arrow} from './validation';
-import Union from './../types/union';
+import Union from './../data-types/union';
 const MAILBOX = getMailBox('mutable.genericTypes');
 
 /**

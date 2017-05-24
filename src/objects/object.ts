@@ -3,7 +3,7 @@ import {MuBase, defineNonPrimitive} from "../core/base";
 import {
     DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, NonPrimitiveType, ReadonlyMutable,
     Mutable
-} from "../core/types";
+} from "../types";
 import {getMailBox} from "escalate";
 import {shouldAssign, getPrimeType} from "../core/utils";
 import {validateNullValue, isAssignableFrom, misMatchMessage} from "../core/validation";

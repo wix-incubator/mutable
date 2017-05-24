@@ -1,5 +1,5 @@
 import {isFunction, extend} from 'lodash';
-import {Mutable, Type} from "../core/types";
+import {Mutable, Type} from "../types";
 import {DirtyableYielder, AtomYielder} from "../core/lifecycle";
 import {getMailBox} from "escalate";
 import {Class, MutableObj} from "./types";

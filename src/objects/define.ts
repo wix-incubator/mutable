@@ -1,4 +1,4 @@
-import {Type, isNonPrimitiveType, ReferenceType} from '../core/types';
+import {Type, isNonPrimitiveType, ReferenceType} from '../types';
 import {getMailBox} from 'escalate';
 import {inherit, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from '../core/utils';
 import {forEach, extend, clone} from 'lodash';

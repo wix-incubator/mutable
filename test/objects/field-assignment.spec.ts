@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {Type} from "../../src/core/types";
+import {Type} from "../../src/types";
 import * as mutable from '../../src';
 import {Class} from "../../src/objects/types";
 

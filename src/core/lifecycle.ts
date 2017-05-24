@@ -1,6 +1,6 @@
 import {getMailBox} from 'escalate';
 import {BaseAtom} from 'mobx';
-import {isMutable, Mutable} from './types';
+import {isMutable, Mutable} from '../types';
 const MAILBOX = getMailBox('mutable.lifecycle');
 
 interface BoundableAtom extends BaseAtom{

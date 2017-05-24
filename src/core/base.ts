@@ -2,14 +2,14 @@ import {getMailBox} from 'escalate';
 
 import config from './../config';
 import {setManager, isDirtyable, DirtyableYielder, AtomYielder, LifeCycleManager} from './lifecycle';
-import {Any} from './../types/any';
+import {Any} from './../data-types/any';
 import {getPrimeType, generateClassId} from './utils';
 import {validateValue, validateNullValue} from './validation';
 import {isDataMatching} from './type-match';
 import {
     Mutable, DeepPartial, ClassOptions, ErrorContext,
     Type, NonPrimitiveType, ReadonlyMutable, ErrorMessage,
-    isType, isNonPrimitiveType, ReferenceType} from "./types";
+    isType, isNonPrimitiveType, ReferenceType} from "../types";
 import {Level} from "escalate";
 import {defaultObject} from "./../objects/default-object";
 

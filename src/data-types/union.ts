@@ -4,7 +4,7 @@ import {MuBase, defineNonPrimitive} from './../core/base';
 import {validateNullValue, misMatchMessage} from './../core/validation';
 import {TypeMatch} from './../core/type-match';
 import {toString, toUnwrappedString} from '../core/generic-types';
-import {Type, ErrorDetails, ErrorContext, ClassOptions} from "./../core/types";
+import {Type, ErrorDetails, ErrorContext, ClassOptions} from "./../types";
 import {AtomYielder, DirtyableYielder} from "./../core/lifecycle";
 import {Class} from "./../objects/types";
 const MAILBOX = getMailBox('mutable.Union');

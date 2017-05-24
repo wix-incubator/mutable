@@ -6,7 +6,7 @@ const MAILBOX = getMailBox('mutable.utils');
 import {
     Type, DeepPartial, ClassOptions, ErrorContext, Mutable, CtorArgs, cast, NonPrimitiveType,
     ErrorMessage, isType, isNonPrimitiveType
-} from "./types";
+} from "../types";
 import {Class} from "./../objects/types";
 import {Level} from "escalate";
 
