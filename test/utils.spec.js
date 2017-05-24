@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import {expect} from 'chai';
 
 import {cloneType} from '../src/utils';
-import {isAssignableFrom} from '../src/validation';
+import {isAssignableFrom} from '../src/core/validation';
 
 describe('utils', function() {
 

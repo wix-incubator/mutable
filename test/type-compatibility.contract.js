@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {isAssignableFrom} from '../src/validation';
+import {isAssignableFrom} from '../src/core/validation';
 
 export function typeCompatibilityTest(typeFactory, isPrimitive) {
     describe('should be compatible', () => {

@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ArrayWrapper} from '../src/array-wrapper';
+import {ArrayWrapper} from '../src/data-types/array-wrapper';
 import {isArrayLike} from 'lodash';
 import * as sinon from 'sinon';
 

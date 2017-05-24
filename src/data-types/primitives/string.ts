@@ -1,6 +1,6 @@
 import {Any} from '../any';
-import {validateNullValue} from '../validation';
-import {Type} from "../types";
+import {validateNullValue} from '../../core/validation';
+import {Type} from "../../types";
 
 export default class _String extends Any {
     static id = 'string';

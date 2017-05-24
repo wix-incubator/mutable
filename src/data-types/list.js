@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 import {ArrayWrapper} from './array-wrapper';
-import {validateNullValue, misMatchMessage} from './validation';
-import {validateAndWrap} from './type-match';
-import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from './utils';
-import {MuBase, defineNonPrimitive} from './base';
-import * as generics from './generic-types';
+import {validateNullValue, misMatchMessage} from './../core/validation';
+import {validateAndWrap} from './../core/type-match';
+import {clone, shouldAssign, getValueFromRootRef, getReferenceWrapper, reportFieldDefinitionError} from './../utils';
+import {MuBase, defineNonPrimitive} from './../core/base';
+import * as generics from './../core/generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';
-import {optionalSetManager} from './lifecycle';
+import {optionalSetManager} from './../core/lifecycle';
 const MAILBOX = getMailBox('mutable.List');
 function isArray(val){
     return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");

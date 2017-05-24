@@ -2,8 +2,8 @@ import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
 
 import {MuObject} from './object';
-import {defineNonPrimitive} from '../base';
-import {validateNullValue} from '../validation';
+import {defineNonPrimitive} from '../core/base';
+import {validateNullValue} from '../core/validation';
 import {ErrorDetails, DeepPartial, ClassOptions, ErrorContext} from "../types";
 import {Spec} from "./types";
 

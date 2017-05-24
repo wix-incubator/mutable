@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {aDataTypeWithSpec} from '../test-kit/test-drivers';
 import * as mu from '../src';
-import {either} from '../src/generic-types';
+import {either} from '../src/core/generic-types';
 import {ERROR_FIELD_MISMATCH_IN_CONSTRUCTOR, ERROR_IN_SET} from '../test-kit/test-drivers/reports';
 import {typeCompatibilityTest} from "./type-compatibility.contract";
 

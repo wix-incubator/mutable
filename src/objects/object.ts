@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
-import {MuBase, defineNonPrimitive} from "../base";
+import {MuBase, defineNonPrimitive} from "../core/base";
 import {
     DeepPartial, Type, ErrorDetails, ClassOptions, ErrorContext, NonPrimitiveType, ReadonlyMutable,
     Mutable
 } from "../types";
 import {getMailBox} from "escalate";
 import {shouldAssign, getPrimeType} from "../utils";
-import {validateNullValue, isAssignableFrom, misMatchMessage} from "../validation";
-import {validateAndWrap} from "../type-match";
-import {optionalSetManager, DirtyableYielder, AtomYielder} from "../lifecycle";
+import {validateNullValue, isAssignableFrom, misMatchMessage} from "../core/validation";
+import {validateAndWrap} from "../core/type-match";
+import {optionalSetManager, DirtyableYielder, AtomYielder} from "../core/lifecycle";
 import {defaultObject} from "./default-object";
 import {Class, Spec, ObjectAdministrator, MutableObj} from "./types";
 import {extras, BaseAtom} from "mobx";

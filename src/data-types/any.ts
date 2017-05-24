@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import {getMailBox} from 'escalate';
-import {cloneType, getReadableValueTypeName, defaultClassOptions} from './utils';
-import {TypeMatch} from './type-match';
+import {cloneType, getReadableValueTypeName, defaultClassOptions} from './../utils';
+import {TypeMatch} from './../core/type-match';
 import {
     ErrorMessage, ErrorContext, ErrorDetails, Validator,
     ClassOptions, Type, DeepPartial
-} from "./types";
+} from "./../types";
 import isUndefined = require("lodash/isUndefined");
-import {validateNullValue} from "./validation";
+import {validateNullValue} from "./../core/validation";
 
 const MAILBOX = getMailBox('mutable.Any');
 
