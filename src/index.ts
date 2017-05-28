@@ -17,7 +17,7 @@ export {LifeCycleManager} from './core/lifecycle';
 export {defineEnum, EnumBase} from './data-types/define-enum';
 export {either} from './core/generic-types';
 export {computed} from './core/computed-decorator';
-import {setGlobalModule} from './singleton-module';
+import {ifndef} from 'ifndef';
 import {MuObject} from "./objects/object";
 import {MuBase} from "./core/base";
 import {isType} from "./types";
@@ -40,4 +40,4 @@ export function isNullable(type:any) {
 }
 
 declare const module: {exports:any};
-module.exports = setGlobalModule(module.exports);
+module.exports = ifndef('mutable', module.exports);
