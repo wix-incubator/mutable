@@ -1,3 +1,4 @@
 export default {
-    devMode : true
+    devMode : true,
+    observable: true,
 }

@@ -3,6 +3,7 @@ import {Mutable, Type} from "../types";
 import {DirtyableYielder, AtomYielder} from "../core/lifecycle";
 import {getMailBox} from "escalate";
 import {Class, MutableObj} from "./types";
+import {default as config} from '../config';
 
 /**
  * the schema of the class to define (input format)
@@ -31,18 +32,22 @@ export function nonPrimitiveElementsIterator(nonPrimitiveFields: Array<string>, 
 
 export function atomsIterator(spec: Schema, parent: Mutable<any>) {
     return function atomsIterator(yielder: AtomYielder) {
-        for (let c in spec) {
-            if (spec.hasOwnProperty(c)) {
-                yielder(this.$mobx.atoms[c]);
+        if (config.observable) {
+            for (let c in spec) {
+                if (spec.hasOwnProperty(c)) {
+                    yielder(this.$mobx.atoms[c]);
+                }
             }
+            parent && isFunction(parent.$atomsIterator) && parent.$atomsIterator.call(this, yielder);
         }
-        parent && isFunction(parent.$atomsIterator) && parent.$atomsIterator.call(this, yielder);
     };
 }
 function deepClone<T>(clazz:Class<T>, recCaller:Function){
     return function (this:PrivilegedMuObject<T>, recursive = true, typed = false):T {
         const result:T & {_type:string} = Object.keys(clazz._spec).reduce((clone, key: keyof T) => {
-            this.$mobx.atoms[key].reportObserved();
+            if (config.observable) {
+                this.$mobx.atoms[key].reportObserved();
+            }
             const fieldValue:any = this.__value__[key];
             clone[key] = recursive ? recCaller(fieldValue, typed) : fieldValue;
             return clone;
@@ -79,7 +84,9 @@ export function toJSON<T>(clazz:Class<T>){
 export function fieldAttribute(fieldName: string) {
     return {
         get: function (this:PrivilegedMuObject<any>) {
-            this.$mobx.atoms[fieldName].reportObserved();
+            if (config.observable) {
+                this.$mobx.atoms[fieldName].reportObserved();
+            }
             const value = this.__value__[fieldName];
             if (!this.__isReadOnly__ || value === null || value === undefined || !value.$asReadOnly) {
                 return value;

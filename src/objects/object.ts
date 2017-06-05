@@ -12,6 +12,7 @@ import {optionalSetManager, DirtyableYielder, AtomYielder} from "../core/lifecyc
 import {defaultObject} from "./default-object";
 import {Class, Spec, ObjectAdministrator, MutableObj} from "./types";
 import {extras, BaseAtom} from "mobx";
+import {default as config} from '../config';
 
 const MAILBOX = getMailBox('mutable.MuObject');
 
@@ -108,9 +109,11 @@ export class MuObject<T extends {}> extends MuBase<T>{
 
     static makeAdmin(name:string){
         const $mobx = new FakeObjectAdministrator(name);
-        _.each(this._spec, (fieldSpec:Type<any, any>, key:string) => {
-            $mobx.atoms[key] = new BaseAtom(`[${name}].${key}`);
-        });
+        if (config.observable) {
+            _.each(this._spec, (fieldSpec: Type<any, any>, key: string) => {
+                $mobx.atoms[key] = new BaseAtom(`[${name}].${key}`);
+            });
+        }
         return $mobx;
     }
 
@@ -226,7 +229,7 @@ export class MuObject<T extends {}> extends MuBase<T>{
             // for typed field, validate the type of the value. for untyped field (primitive), just validate the data itself
             if ((checkTyped && fieldDef.validateType(newValue)) || (!checkTyped && fieldDef.validate(newValue))) {
                 const notifySpy = extras.isSpyEnabled();
-                if (notifySpy) {
+                if (config.observable && notifySpy) {
                     extras.spyReportStart({
                         type: "update",
                         object: this,
@@ -237,9 +240,11 @@ export class MuObject<T extends {}> extends MuBase<T>{
                 }
                 this.__value__[fieldName] = newValue;
                 optionalSetManager(newValue, this.__lifecycleManager__);
-                this.$mobx.atoms[fieldName].reportChanged();
-                if (notifySpy)
-                    extras.spyReportEnd();
+                if (config.observable) {
+                    this.$mobx.atoms[fieldName].reportChanged();
+                    if (notifySpy)
+                        extras.spyReportEnd();
+                }
                 return true;
             } else {
                 if (!errorContext){
