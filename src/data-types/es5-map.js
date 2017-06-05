@@ -9,6 +9,7 @@ import {validateAndWrap} from './../core/type-match';
 import {MapWrapperOverDictionary} from './map-wrapper';
 import {observable, untracked, extras, autorun} from 'mobx';
 import {shouldAssign} from './../utils';
+import {default as config} from '../config';
 const MAILBOX = getMailBox('mutable.Es5Map');
 
 function entries(map){
@@ -128,7 +129,7 @@ export default class Es5Map extends MuBase {
                 result[key] = value;
             }
         }
-        return observable.shallowMap(result);
+        return config.observable? observable.shallowMap(result) : Object.keys(result).reduce((map, key) => map.set(key, obj[key]), new Map());
     }
 
     static validate(value) {

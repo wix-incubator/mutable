@@ -8,7 +8,9 @@ import {MuBase, defineNonPrimitive} from './../core/base';
 import * as generics from './../core/generic-types';
 import {observable, asFlat, untracked, extras} from 'mobx';
 import {optionalSetManager} from './../core/lifecycle';
+import {default as config} from '../config';
 const MAILBOX = getMailBox('mutable.List');
+
 function isArray(val){
     return _.isArray(val) || (val && val.constructor && val.constructor.name === "ObservableArray");
 }
@@ -65,26 +67,28 @@ export default class List extends MuBase {
     }
 
     static makeValue(value, options, errorContext) {
+        let toWrap;
         if (this.validateType(value)) {
             if (value.__value__.map) {
-                return observable.shallowArray(value.__value__.map((itemValue) => {
+                toWrap = value.__value__.map((itemValue) => {
                     return this._wrapSingleItem(itemValue, options, null, errorContext);
-                }, this));
+                }, this);
             } else {
                 MAILBOX.error('Unmet mutable type requirement.')
             }
         } else if (!isArray(value)) {
             MAILBOX.error('Unmet array type requirement.');
         } else {
-            return observable.shallowArray(value.map((itemValue, itemIndex) => {
+            toWrap = value.map((itemValue, itemIndex) => {
 
                 return this._wrapSingleItem(itemValue, options, null, {
                     level: errorContext.level,
                     entryPoint: errorContext.entryPoint,
                     path: errorContext.path + '[' + itemIndex + ']'
                 });
-            }, this));
+            }, this);
         }
+        return config.observable ? observable.shallowArray(toWrap) : toWrap;
     }
 
     static _wrapSingleItem(value, options, lifeCycle, errorContext) {

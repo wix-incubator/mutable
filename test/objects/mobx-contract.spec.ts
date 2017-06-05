@@ -4,6 +4,8 @@ import {spy, Lambda, Reaction, isObservableObject, extras} from 'mobx';
 import * as sinon from 'sinon';
 import {Class, MutableObj} from "../../src/objects/types";
 import {SinonSpy} from 'sinon';
+import {default as config} from '../../src/config';
+
 type Parent = {foo:number};
 type Child = Parent & {bar:number};
 
@@ -23,7 +25,7 @@ describe('[mobx contract] user defined class', () => {
         child = new Child();
     });
 
-    describe('tracks', () => {
+    const trackingActionsContract = () => {
         let reaction:Reaction;
         beforeEach(() => {
             reaction = new Reaction('obj', ()=>{});
@@ -33,33 +35,50 @@ describe('[mobx contract] user defined class', () => {
             reaction.dispose();
         });
 
+        function assertReaction(){
+            if (config.observable) {
+                expect(reaction.observing.length).to.not.eql(0);
+            } else {
+                expect(reaction.observing.length).to.eql(0);
+            }
+        }
+
         it('own field read', () => {
             reaction.track(() => {
                 child.bar;
             });
-            expect(reaction.observing.length).to.not.eql(0);
+            assertReaction();
         });
         it('inherited field read', () => {
             reaction.track(() => {
                 child.foo;
             });
-            expect(reaction.observing.length).to.not.eql(0);
+            assertReaction();
         });
         it('toJSON', () => {
             reaction.track(() => {
                 child.toJSON();
             });
-            expect(reaction.observing.length).to.not.eql(0);
+            assertReaction();
         });
         it('toJS', () => {
             reaction.track(() => {
                 child.toJS();
             });
-            expect(reaction.observing.length).to.not.eql(0);
+            assertReaction();
         });
+    };
+    describe('tracks', trackingActionsContract);
+    describe('(when config.observable is false) does not track', () => {
+        before(()=>{
+            config.observable = false;
+        });
+        after(()=>{
+            config.observable = true;
+        });
+        trackingActionsContract();
     });
-
-    describe('does not track', () => {
+    describe('never track', () => {
         let objSpy:SinonSpy, reaction:Reaction;
         beforeEach(() => {
             objSpy = sinon.spy();
