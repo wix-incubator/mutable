@@ -129,7 +129,7 @@ export default class Es5Map extends MuBase {
                 result[key] = value;
             }
         }
-        return config.observable? observable.shallowMap(result) : Object.keys(result).reduce((map, key) => map.set(key, obj[key]), new Map());
+        return config.observable? observable.shallowMap(result) : Object.keys(result).reduce((map, key) => map.set(key, result[key]), new Map());
     }
 
     static validate(value) {
@@ -402,8 +402,11 @@ export default class Es5Map extends MuBase {
         });
     }
     $atomsIterator(yielder){
-        yielder(extras.getAtom(this.__value__));
-        var disposeMeOrIWillLeak = autorun(() => this.__value__.keys().forEach(key => yielder(extras.getAtom(this.__value__, key))));
+        if(config.observable){
+            yielder(extras.getAtom(this.__value__));
+            var disposeMeOrIWillLeak = autorun(() => this.__value__.keys().forEach(key => yielder(extras.getAtom(this.__value__, key))));
+        }
+
     }
     get size() {
         return this.__value__.size;

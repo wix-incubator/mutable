@@ -479,7 +479,9 @@ export default class List extends MuBase {
         }
     }
     $atomsIterator(yielder) {
-        yielder(extras.getAtom(this.__value__));
+        if (config.observable) {
+            yielder(extras.getAtom(this.__value__));
+        }
     }
     get length(){
         return this.__value__.length;
