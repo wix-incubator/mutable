@@ -230,8 +230,13 @@ export default class Es5Map extends MuBase {
             // apply changes only after no error was thrown.
             // otherwise we can get an inconsistent map
             if (changed) {
-                this.__value__.clear();
-                this.__value__.merge(newValue);
+                if(config.observable) {
+                    this.__value__.clear();
+                    this.__value__.merge(newValue);
+                } else {
+                    this.__value__ = newValue
+                }
+
             }
         }
         return changed;

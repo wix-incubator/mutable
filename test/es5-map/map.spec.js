@@ -31,6 +31,33 @@ describe('Es5 Map', function() {
             expect(() => map.$setManager({})).to.report({ level: /error/ });
         });
     });
+    describe.only('regression with observable=false', function () {
+        before(function (){
+            mu.config.observable = false
+        })
+        after(function (){
+            mu.config.observable = true
+        })
+
+        it('handles set value deep', function () {
+            let map = new (mu.Es5Map.of(UserType))({});
+            map.set('1', new UserType({name:'Amir'}))
+            map.set('2', new UserType({name:'Doron'}))
+
+            map.setValue({
+                '2':{
+                    'age':33
+                }
+            })
+            expect(map.toJSON()).to.eql({
+                '2': {
+                    'name': new UserType().name,
+                    'age': 33
+                }
+            })
+
+        })
+    })
 });
 
 require('./mutable/instance.spec');
