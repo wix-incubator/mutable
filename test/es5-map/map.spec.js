@@ -31,7 +31,7 @@ describe('Es5 Map', function() {
             expect(() => map.$setManager({})).to.report({ level: /error/ });
         });
     });
-    describe.only('regression with observable=false', function () {
+    describe('regression with observable=false', function () {
         before(function (){
             mu.config.observable = false
         })
