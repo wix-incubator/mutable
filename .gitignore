@@ -96,3 +96,4 @@ node_modules
 
 dist/
 ./.npmrc
+yarn.lock
