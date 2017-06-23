@@ -1,6 +1,6 @@
 {
   "name": "mutable",
-  "version": "1.0.422",
+  "version": "1.0.423",
   "description": "Mutable state containers with dirty checking and more",
   "license": "SEE LICENSE IN LICENSE.md",
   "main": "dist/src/index.js",
@@ -62,8 +62,8 @@
     "node": ">=0.12"
   },
   "dependencies": {
-    "escalate": "0.0.422",
-    "ifndef": "0.0.26",
+    "escalate": "0.0.423",
+    "ifndef": "0.0.27",
     "lodash": "4.17.4",
     "mobx": "3.1.16"
   },
