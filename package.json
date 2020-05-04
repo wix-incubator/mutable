@@ -31,7 +31,9 @@
     "test:browser": "karma start --single-run",
     "test": "npm run test:node && npm run test:browser",
     "reset": "rimraf ./node_modules ./dist && npm install && npm test",
-    "start": "webpack-dev-server --progress --hot --inline --no-colors"
+    "start": "webpack-dev-server --progress --hot --inline --no-colors",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "devDependencies": {
     "@types/chai": "4.0.1",
@@ -65,7 +67,8 @@
     "escalate": "0.0.427",
     "ifndef": "0.0.31",
     "lodash": "4.17.5",
-    "mobx": "3.1.16"
+    "mobx": "3.1.16",
+    "snyk": "^1.317.0"
   },
   "keywords": [
     "flux",
@@ -89,5 +92,6 @@
     "functional-reactive-programming",
     "state management",
     "data flow"
-  ]
+  ],
+  "snyk": true
 }
